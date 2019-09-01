@@ -1,0 +1,1 @@
+sudo.cmd and sudo.ps1 are script files made to be used together (they can't be split apart). sudo.cmd is used in both cmd.exe and powershell.exe, however, sudo.cmd is just a redirector to the sudo.ps1 script where the real action goes on.

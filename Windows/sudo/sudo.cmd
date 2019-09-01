@@ -1,0 +1,1 @@
+@powershell ".\sudo.ps1 %*"
