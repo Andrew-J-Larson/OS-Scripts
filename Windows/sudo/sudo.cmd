@@ -1,1 +1,1 @@
-@powershell ".\sudo.ps1 %*"
+powershell ""%~dp0\sudo.ps1" %*"
