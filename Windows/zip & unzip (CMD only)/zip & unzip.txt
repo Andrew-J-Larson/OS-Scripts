@@ -1,0 +1,13 @@
+How to call each inside a batch file...
+
+=== unzipping ===
+
+cscript //nologo "DRIVE:\path\to\unzip.vbs" "DRIVE:\path\to\input\zip" "DRIVE:\path\to\output\folder"
+
+=== zipping ===
+
+cscript //nologo "DRIVE:\path\to\zip.vbs" "DRIVE:\path\to\input\folder" "DRIVE:\path\to\output\zip"
+
+=========================================================================
+
+I've also already taken the liberty and made them into batch functions that work inside any batch file, take a look at the "ZIP & UNZIP.bat" (it has added functionality to extract items from files)
