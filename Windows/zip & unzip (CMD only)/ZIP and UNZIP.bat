@@ -11,6 +11,15 @@ exit
 
 :unzip <InputZip> <OutputFolder>
 setlocal
+set argCount=0
+for %%x in (%*) do Set /A argCount+=1
+if not %argCount%==2 (
+  if %argCount% lss 2 (
+    echo Error: not enough arguments.
+  ) else (
+    echo Error: too many arguments.
+  )
+)
 for /f "tokens=1,2 delims=d" %%A in ("-%~a1") do if "%%B" neq "" (
   echo Error: the input, "%~1", is not a file.
   exit /b 1
@@ -66,6 +75,15 @@ exit /b
 
 :unzipItem <InputZip> <ItemInZip> <OutputFolder>
 setlocal
+set argCount=0
+for %%x in (%*) do Set /A argCount+=1
+if not %argCount%==3 (
+  if %argCount% lss 3 (
+    echo Error: not enough arguments.
+  ) else (
+    echo Error: too many arguments.
+  )
+)
 for /f "tokens=1,2 delims=d" %%A in ("-%~a1") do if "%%B" neq "" (
   echo Error: the input, "%~1", is not a file.
   exit /b
@@ -119,6 +137,15 @@ exit /b
 
 :zip <InputFolder> <CompressTo>
 setlocal
+set argCount=0
+for %%x in (%*) do Set /A argCount+=1
+if not %argCount%==2 (
+  if %argCount% lss 2 (
+    echo Error: not enough arguments.
+  ) else (
+    echo Error: too many arguments.
+  )
+)
 for /f "tokens=1,2 delims=d" %%A in ("-%~a1") do if "%%B" neq "" (
   echo Continuing>nul
 ) else if "%%A" neq "-" (
