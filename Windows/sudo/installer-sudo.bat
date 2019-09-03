@@ -93,7 +93,7 @@ echo|set /p=Processing directories for system PATH environment (%sysEnvVer%%Capt
 call :ReportFolderState "%usrbin%"
 set foldersize=%ERRORLEVEL%
 if %foldersize% equ 0 rmdir /Q "%usrbin%"
-if not exist "%usrbin%" powershell "$path = [System.Environment]::GetEnvironmentVariable('path', 'Machine');$path = ($path.Split(';') | Where-Object { $_ -ne '%removePath%' }) -join ';';[System.Environment]::SetEnvironmentVariable('path', $path, 'Machine')"
+if not exist "%usrbin%" powershell "$path = [System.Environment]::GetEnvironmentVariable('path', 'Machine');$path = ($path.Split(';') | Where-Object { $_ -ne '%usrbin%' }) -join ';';[System.Environment]::SetEnvironmentVariable('path', $path, 'Machine')"
 call :ReportFolderState "%usr%"
 set foldersize=%ERRORLEVEL%
 if %foldersize% equ 0 rmdir "%usr%"
