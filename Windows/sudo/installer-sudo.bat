@@ -32,29 +32,32 @@ del ".\pwd"
 cd \
 cd "%resources%"
 
-REM Set up variables for install location
+REM Set up variables for install/uninstall/temporary locations
 set "usr=%HOMEDRIVE%\usr"
 set "usrbin=%usr%\bin"
+set "tempStore=%tmp%\sudo"
+set install=1
 
 REM All files to install "Size on disk" from bytes converted to kilobytes
-set "size=2.40"
-set "sizeOnDisk=8.19"
+set "size=2.41"
+set "sizeOnDisk=4.09"
 
 REM Check files
-set install=1
 echo|set /p=Reading package lists...
 if exist "%usrbin%\sudo.cmd" set install=0
 if exist "%usrbin%\sudo.ps1" set install=0
 echo  Done
 echo Building dependency tree
+if exist "%tempStore%" rmdir /Q/S "%tempStore%"
+if not exist "%tempStore%" mkdir "%tempStore%"
 echo|set /p=Reading state information...
-powershell "(Get-Item -path 'C:\Windows\System32\SystemPropertiesAdvanced.exe').VersionInfo.ProductVersion | Set-Content '.\StPrAd' -NoNewLine"
-powershell "wmic os get Caption | findstr Windows | Set-Content '.\Caption' -NoNewLine"
-set /p Build=<".\StPrAd"
-set /p Caption=<".\Caption"
+powershell "(Get-Item -path 'C:\Windows\System32\SystemPropertiesAdvanced.exe').VersionInfo.ProductVersion | Set-Content '%tempStore%\StPrAd' -NoNewLine"
+powershell "wmic os get Caption | findstr Windows | Set-Content '%tempStore%\Caption' -NoNewLine"
+set /p Build=<"%tempStore%\StPrAd"
+set /p Caption=<"%tempStore%\Caption"
 set Caption=%Caption: =%
-del ".\StPrAd"
-del ".\Caption"
+del "%tempStore%\StPrAd"
+del "%tempStore%\Caption"
 echo  Done
 if %install%==0 goto uninstall
 
@@ -89,7 +92,7 @@ if exist "%usrbin%\sudo.cmd" del "%usrbin%\sudo.cmd"
 echo|set /p=Processing directories for system PATH environment (%sysEnvVer%%Caption%)
 call :ReportFolderState "%usrbin%"
 set foldersize=%ERRORLEVEL%
-if %foldersize% equ 0 rmdir "%usrbin%"
+if %foldersize% equ 0 rmdir /Q "%usrbin%"
 if not exist "%usrbin%" powershell "$path = [System.Environment]::GetEnvironmentVariable('path', 'Machine');$path = ($path.Split(';') | Where-Object { $_ -ne '%removePath%' }) -join ';';[System.Environment]::SetEnvironmentVariable('path', $path, 'Machine')"
 call :ReportFolderState "%usr%"
 set foldersize=%ERRORLEVEL%
@@ -114,4 +117,5 @@ goto :eof
 @exit /b 0
 
 :eof
+if exist "%tempStore%" rmdir /Q/S "%tempStore%"
 exit
