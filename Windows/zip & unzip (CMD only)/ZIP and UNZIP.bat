@@ -1,29 +1,45 @@
 @echo off
-setlocal
 
 REM These are fully functional zip and unzip functions made entirely just for batch/cmd, and they can be added to any file and work. There is some error handling, for which you need to test yourself
 
 REM I primarily created these with some resources online (zip and unzip I found online), however, unzipItem was created by entirely by hand
 REM - TheAlienDrew
 
+echo This batch file shows no examples (view the source code on how to use) & echo.
+pause
+exit
+
 :unzip <InputZip> <OutputFolder>
+setlocal
 for /f "tokens=1,2 delims=d" %%A in ("-%~a1") do if "%%B" neq "" (
-  echo Error: the input, %1, is not a file.
+  echo Error: the input, "%~1", is not a file.
   exit /b 1
 ) else if "%%A" neq "-" (
   echo Continuing>nul
 ) else (
-  echo Error: the input file, %1, doesn't exist.
+  echo Error: the input file, "%~1", doesn't exist.
   exit /b 1
 )
 for /f "tokens=1,2 delims=d" %%A in ("-%~a2") do if "%%B" neq "" (
   echo Adding onto folder>nul
 ) else if "%%A" neq "-" (
-  echo Error: the output, %2, already exists as a file.
+  echo Error: the output, "%~2", already exists as a file.
   exit /b 1
 ) else (
-  echo Continuing>nul
+  mkdir "%~2"
 )
+REM in case the arguments aren't using a full directory
+set "tempCheck=%tmp%\zipunzipfoldername%RANDOM%.txt"
+if exist "%tempCheck%" del /f /q "%tempCheck%"
+REM 0 = both are paths, 1 = first isn't path, 2 = second isn't path, 3 = all aren't paths
+FOR /F "tokens=* USEBACKQ" %%F IN (`where /r . "%~1"`) DO (
+set inputZip=%%F
+)
+set "folderConstant= Directory of "
+dir "%~2"|findstr ":"|findstr "%folderConstant%">"%tempCheck%"
+set /p outputDir=<"%tempCheck%"
+if exist "%tempCheck%" del /f /q "%tempCheck%"
+call set "outputDir=%%outputDir:%folderConstant%=%%"
 set "unzip=%tmp%\unzip%RANDOM%.vbs"
 if exist "%unzip%" del /f /q "%unzip%"
 >"%unzip%" echo set Args = WScript.Arguments
@@ -38,13 +54,20 @@ if exist "%unzip%" del /f /q "%unzip%"
 >>"%unzip%" echo objShell.NameSpace(target).CopyHere(itemsInZip),4
 >>"%unzip%" echo set fso = Nothing
 >>"%unzip%" echo set objShell = Nothing
-cscript //nologo "%unzip%" "%~1" "%~2"
+echo "%~1"|findstr "[:]">nul
+if %ERRORLEVEL% equ 1 (
+  cscript //nologo "%unzip%" "%inputZip%" "%outputDir%"
+) else (
+  cscript //nologo "%unzip%" "%~1" "%outputDir%"
+)
 if exist "%unzip%" del /f /q "%unzip%"
+endlocal
 exit /b
 
 :unzipItem <InputZip> <ItemInZip> <OutputFolder>
+setlocal
 for /f "tokens=1,2 delims=d" %%A in ("-%~a1") do if "%%B" neq "" (
-  echo Error: the input, %1, is not a file.
+  echo Error: the input, "%~1", is not a file.
   exit /b
 ) else if "%%A" neq "-" (
   echo Continuing>nul
@@ -58,34 +81,44 @@ for /f "tokens=1,2 delims=d" %%A in ("-%~a3") do if "%%B" neq "" (
   echo Error: the output, "%~3", already exists as a file.
   exit /b
 ) else (
-  echo Continuing>nul
+  mkdir "%~3"
 )
 set "tempItemDir=%tmp%\zipunzip%RANDOM%"
-if not exist "%tempItemDir%" mkdir "%tempItemDir%"
+if exist "%tempItemDir%" rmdir /q /s "%tempItemDir%"
 call :unzip "%~1" "%tempItemDir%"
 if %ERRORLEVEL% equ 1 (
 	echo Error: there were problems unzipping.
 	if exist "%tempItemDir%" rmdir /q /s "%tempItemDir%"
 	exit /b 1
 )
+REM in case the argument isn't using a full directory
+set "tempCheck=%tmp%\zipunzipfoldername%RANDOM%.txt"
+if exist "%tempCheck%" del /f /q "%tempCheck%"
+set "folderConstant= Directory of "
+dir "%~3"|findstr ":"|findstr "%folderConstant%">"%tempCheck%"
+set /p outputDir=<"%tempCheck%"
+if exist "%tempCheck%" del /f /q "%tempCheck%"
+call set "outputDir=%%outputDir:%folderConstant%=%%"
 REM check item
 cd "%tempItemDir%"
 for /f "tokens=1,2 delims=d" %%A in ("-%~a2") do if "%%B" neq "" (
   REM Copying folder
-  robocopy /E /J "%tempItemDir%\%~2" "%~3\%~2">nul
+  robocopy /E /J "%tempItemDir%\%~2" "%outputDir%\%~2">nul
 ) else if "%%A" neq "-" (
   REM Copying file
-  robocopy /J "%tempItemDir%" "%~3" "%~2">nul
+  robocopy /J "%tempItemDir%" "%outputDir%" "%~2">nul
 ) else (
-  echo Error: file or folder didn't extract, so nothing was copied over.
+  echo Error: file or folder didn't exist in zip file.
   if exist "%tempItemDir%" rmdir /q /s "%tempItemDir%"
   exit /b 1
 )
 cd "%~dp0"
 if exist "%tempItemDir%" rmdir /q /s "%tempItemDir%"
+endlocal
 exit /b
 
 :zip <InputFolder> <CompressTo>
+setlocal
 for /f "tokens=1,2 delims=d" %%A in ("-%~a1") do if "%%B" neq "" (
   echo Continuing>nul
 ) else if "%%A" neq "-" (
@@ -103,13 +136,23 @@ for /f "tokens=1,2 delims=d" %%A in ("-%~a2") do if "%%B" neq "" (
 ) else (
   echo Continuing>nul
 )
+REM in case the arguments aren't using a full directory
+set "tempCheck=%tmp%\zipunzipfoldername%RANDOM%.txt"
+if exist "%tempCheck%" del /f /q "%tempCheck%"
+set "folderConstant= Directory of "
+dir "%~1"|findstr ":"|findstr "%folderConstant%">"%tempCheck%"
+set /p inputDir=<"%tempCheck%"
+if exist "%tempCheck%" del /f /q "%tempCheck%"
+call set "inputDir=%%inputDir:%folderConstant%=%%"
 REM fix ending slash issues
-set "checkDir1=%~1"
-IF NOT "%checkDir1:~-1%"=="\" SET "checkDir1=%checkDir1%\"
-set "checkDir2=%~2"
-call set "checkDir3=%%checkDir2:%checkDir1%=%%"
+IF NOT "%inputDir:~-1%"=="\" SET "inputDir=%inputDir%\"
+REM no colon in name means I need to create full dir
+set "outputZip=%~2"
+echo "%~2"|findstr ":">nul
+if %ERRORLEVEL% equ 1 set "outputZip=%cd%\%~2"
 REM don't allow same dir compressing
-if not "%checkDir3%" == "%checkDir2%" (
+call set "outputCheck=%%outputZip:%inputDir%=%%"
+if not "%outputCheck%" == "%outputZip%" (
 	echo Error: Can't compress to the same directory.
 	exit /b 1
 )
@@ -153,6 +196,7 @@ if exist "%zip%" del /f /q "%zip%"
 >>"%zip%" echo set targetFolderObj = nothing
 >>"%zip%" echo set sourceFolderObj = nothing
 >>"%zip%" echo set app = nothing
-cscript //nologo "%zip%" "%~1" "%~2"
+cscript //nologo "%zip%" "%inputDir%" "%outputZip%"
 if exist "%zip%" del /f /q "%zip%"
+endlocal
 exit /b
