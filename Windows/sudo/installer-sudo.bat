@@ -25,16 +25,16 @@ if '%errorlevel%' NEQ '0' (
     CD /D "%~dp0"
 ::--------------------------------------
 
-REM Set up variables for install location
-set "usr=%HOMEDRIVE%\usr"
-set "usrbin=%usr%\bin"
-
 REM Get true directory location
 powershell "Get-Location | findstr \\ | Set-Content '.\pwd' -NoNewLine"
 set /p resources=<".\pwd"
 del ".\pwd"
-cd "%HOMEDRIVE%"
-cd %resources%
+cd \
+cd "%resources%"
+
+REM Set up variables for install location
+set "usr=%HOMEDRIVE%\usr"
+set "usrbin=%usr%\bin"
 
 REM All files to install "Size on disk" from bytes converted to kilobytes
 set "size=2.40"
@@ -67,12 +67,11 @@ if ERRORLEVEL 2 goto abort
 if not exist "%usrbin%" mkdir "%usrbin%"
 echo Need to get %size% kB of archives.
 echo After this operation, %sizeOnDisk% kB of additional disk space will be used.
-echo Unpacking sudo (.bat, .cmd, .ps1, .txt) ...
-copy /Y "%resources%\installer-sudo.bat" "%usr%">nul
+echo Unpacking sudo (.cmd, .ps1, .txt) ...
 copy /Y "%resources%\sudo*" "%usrbin%">nul
 echo Setting up sudo ...
-echo|set /p=Processing system variables for rundll32 sysdm.cpl,EditEnvironmentVariables (%sysEnvVer%%Caption%)
-setx winntlinux "C:\usr\bin" /m>nul
+echo|set /p=Processing directories for system PATH environment (%sysEnvVer%%Caption%)
+powershell "[Environment]::SetEnvironmentVariable('path', \""$([Environment]::GetEnvironmentVariable('path', 'machine'));%usrbin%\"",'Machine');"
 goto :eof
 
 :uninstall
@@ -83,15 +82,15 @@ echo 0 upgraded, 0 newly installed, 1 to remove and 0 not upgraded.
 choice /N /M "Do you want to continue? [Y/n] "
 if ERRORLEVEL 2 goto abort
 echo After this operation, %sizeOnDisk% kB disk space will be freed.
-echo Removing sudo (.bat, .cmd, .ps1, .txt) ...
+echo Removing sudo (.cmd, .ps1, .txt) ...
 if exist "%usrbin%\sudo.txt" del "%usrbin%\sudo.txt"
 if exist "%usrbin%\sudo.ps1" del "%usrbin%\sudo.ps1"
 if exist "%usrbin%\sudo.cmd" del "%usrbin%\sudo.cmd"
-echo|set /p=Processing system variables for rundll32 sysdm.cpl,EditEnvironmentVariables (%sysEnvVer%%Caption%)
+echo|set /p=Processing directories for system PATH environment (%sysEnvVer%%Caption%)
 call :ReportFolderState "%usrbin%"
 set foldersize=%ERRORLEVEL%
 if %foldersize% equ 0 rmdir "%usrbin%"
-if not exist "%usrbin%" REG delete "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment" /F /V winntlinux>nul
+if not exist "%usrbin%" powershell "$path = [System.Environment]::GetEnvironmentVariable('path', 'Machine');$path = ($path.Split(';') | Where-Object { $_ -ne '%removePath%' }) -join ';';[System.Environment]::SetEnvironmentVariable('path', $path, 'Machine')"
 call :ReportFolderState "%usr%"
 set foldersize=%ERRORLEVEL%
 if %foldersize% equ 0 rmdir "%usr%"
