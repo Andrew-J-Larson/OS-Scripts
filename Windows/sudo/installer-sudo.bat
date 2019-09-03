@@ -74,7 +74,7 @@ echo Unpacking sudo (.cmd, .ps1, .txt) ...
 copy /Y "%resources%\sudo*" "%usrbin%">nul
 echo Setting up sudo ...
 echo|set /p=Processing directories for system PATH environment (%sysEnvVer%%Caption%)
-powershell "[Environment]::SetEnvironmentVariable('path', \""$([Environment]::GetEnvironmentVariable('path', 'machine'));%usrbin%\"",'Machine');"
+powershell "[Environment]::SetEnvironmentVariable('path', \""$([Environment]::GetEnvironmentVariable('path', 'machine'));%usrbin%\"",'Machine')"
 goto :eof
 
 :uninstall
