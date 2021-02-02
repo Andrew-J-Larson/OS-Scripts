@@ -1,0 +1,467 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>AMApplicationBuild</key>
+	<string>509</string>
+	<key>AMApplicationVersion</key>
+	<string>2.10</string>
+	<key>AMDocumentVersion</key>
+	<string>2</string>
+	<key>actions</key>
+	<array>
+		<dict>
+			<key>action</key>
+			<dict>
+				<key>AMAccepts</key>
+				<dict>
+					<key>Container</key>
+					<string>List</string>
+					<key>Optional</key>
+					<true/>
+					<key>Types</key>
+					<array>
+						<string>com.apple.cocoa.path</string>
+					</array>
+				</dict>
+				<key>AMActionVersion</key>
+				<string>2.1.1</string>
+				<key>AMApplication</key>
+				<array>
+					<string>Finder</string>
+				</array>
+				<key>AMParameterProperties</key>
+				<dict/>
+				<key>AMProvides</key>
+				<dict>
+					<key>Container</key>
+					<string>List</string>
+					<key>Types</key>
+					<array>
+						<string>com.apple.cocoa.path</string>
+					</array>
+				</dict>
+				<key>AMRequiredResources</key>
+				<array/>
+				<key>ActionBundlePath</key>
+				<string>/System/Library/Automator/Get Selected Finder Items 2.action</string>
+				<key>ActionName</key>
+				<string>Get Selected Finder Items</string>
+				<key>ActionParameters</key>
+				<dict/>
+				<key>BundleIdentifier</key>
+				<string>com.apple.Automator.GetSelectedFinderItems2</string>
+				<key>CFBundleVersion</key>
+				<string>2.1.1</string>
+				<key>CanShowSelectedItemsWhenRun</key>
+				<false/>
+				<key>CanShowWhenRun</key>
+				<true/>
+				<key>Category</key>
+				<array>
+					<string>AMCategoryFilesAndFolders</string>
+				</array>
+				<key>Class Name</key>
+				<string>AMGetSelectedFinderItemsAction</string>
+				<key>InputUUID</key>
+				<string>97CBE83D-DDB0-4101-A4C3-38C15ADF35A4</string>
+				<key>Keywords</key>
+				<array/>
+				<key>OutputUUID</key>
+				<string>DF7E1917-552C-4EF2-A79B-4078CD117391</string>
+				<key>UUID</key>
+				<string>11E5E3FF-3CDD-4200-B7C0-6E54962751FF</string>
+				<key>UnlocalizedApplications</key>
+				<array>
+					<string>Finder</string>
+				</array>
+				<key>arguments</key>
+				<dict/>
+				<key>isViewVisible</key>
+				<integer>1</integer>
+				<key>location</key>
+				<string>207.000000:68.000000</string>
+			</dict>
+			<key>isViewVisible</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>action</key>
+			<dict>
+				<key>AMAccepts</key>
+				<dict>
+					<key>Container</key>
+					<string>List</string>
+					<key>Optional</key>
+					<true/>
+					<key>Types</key>
+					<array>
+						<string>com.apple.applescript.object</string>
+					</array>
+				</dict>
+				<key>AMActionVersion</key>
+				<string>1.0.2</string>
+				<key>AMApplication</key>
+				<array>
+					<string>Automator</string>
+				</array>
+				<key>AMParameterProperties</key>
+				<dict>
+					<key>source</key>
+					<dict/>
+				</dict>
+				<key>AMProvides</key>
+				<dict>
+					<key>Container</key>
+					<string>List</string>
+					<key>Types</key>
+					<array>
+						<string>com.apple.applescript.object</string>
+					</array>
+				</dict>
+				<key>ActionBundlePath</key>
+				<string>/System/Library/Automator/Run AppleScript.action</string>
+				<key>ActionName</key>
+				<string>Run AppleScript</string>
+				<key>ActionParameters</key>
+				<dict>
+					<key>source</key>
+					<string>on run {input, parameters}
+
+  set appTitle to "Change Lockscreen"
+  set scriptFile to (path to me)
+  set firstItem to (first item of input)
+
+  if firstItem is scriptFile then
+    set pickedFile to (choose file with prompt "Please select an image to use as your lockscreen" of type {"public.png","public.jpeg","public.tiff","com.apple.pict"} default location (path to pictures folder))
+
+    if pickedFile = {} then
+      set firstItem to false
+      try
+        tell app "Finder"
+          activate
+          display dialog "No file choosen, lockscreen unchanged." with title appTitle
+        end tell
+      end try
+    else
+      set firstItem to POSIX path of pickedFile
+      return firstItem
+    end if
+  else
+    return POSIX path of firstItem
+  end if
+
+end run</string>
+				</dict>
+				<key>BundleIdentifier</key>
+				<string>com.apple.Automator.RunScript</string>
+				<key>CFBundleVersion</key>
+				<string>1.0.2</string>
+				<key>CanShowSelectedItemsWhenRun</key>
+				<false/>
+				<key>CanShowWhenRun</key>
+				<true/>
+				<key>Category</key>
+				<array>
+					<string>AMCategoryUtilities</string>
+				</array>
+				<key>Class Name</key>
+				<string>RunScriptAction</string>
+				<key>InputUUID</key>
+				<string>4E2AEBC1-7EFE-4AD6-80FB-66F3A15584D3</string>
+				<key>Keywords</key>
+				<array>
+					<string>Run</string>
+				</array>
+				<key>OutputUUID</key>
+				<string>AC5FDE86-D792-4CBB-A5C8-98DC1CD71BFE</string>
+				<key>UUID</key>
+				<string>674BEF07-6E39-4B9C-A51A-0C4B2E0352D5</string>
+				<key>UnlocalizedApplications</key>
+				<array>
+					<string>Automator</string>
+				</array>
+				<key>arguments</key>
+				<dict>
+					<key>0</key>
+					<dict>
+						<key>default value</key>
+						<string>on run {input, parameters}
+	
+	(* Your script goes here *)
+	
+	return input
+end run</string>
+						<key>name</key>
+						<string>source</string>
+						<key>required</key>
+						<string>0</string>
+						<key>type</key>
+						<string>0</string>
+						<key>uuid</key>
+						<string>0</string>
+					</dict>
+				</dict>
+				<key>isViewVisible</key>
+				<integer>1</integer>
+				<key>location</key>
+				<string>329.500000:380.000000</string>
+				<key>nibPath</key>
+				<string>/System/Library/Automator/Run AppleScript.action/Contents/Resources/Base.lproj/main.nib</string>
+			</dict>
+			<key>isViewVisible</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>action</key>
+			<dict>
+				<key>AMAccepts</key>
+				<dict>
+					<key>Container</key>
+					<string>List</string>
+					<key>Optional</key>
+					<true/>
+					<key>Types</key>
+					<array>
+						<string>com.apple.cocoa.string</string>
+					</array>
+				</dict>
+				<key>AMActionVersion</key>
+				<string>2.0.3</string>
+				<key>AMApplication</key>
+				<array>
+					<string>Automator</string>
+				</array>
+				<key>AMParameterProperties</key>
+				<dict>
+					<key>COMMAND_STRING</key>
+					<dict/>
+					<key>CheckedForUserDefaultShell</key>
+					<dict/>
+					<key>inputMethod</key>
+					<dict/>
+					<key>shell</key>
+					<dict/>
+					<key>source</key>
+					<dict/>
+				</dict>
+				<key>AMProvides</key>
+				<dict>
+					<key>Container</key>
+					<string>List</string>
+					<key>Types</key>
+					<array>
+						<string>com.apple.cocoa.string</string>
+					</array>
+				</dict>
+				<key>ActionBundlePath</key>
+				<string>/System/Library/Automator/Run Shell Script.action</string>
+				<key>ActionName</key>
+				<string>Run Shell Script</string>
+				<key>ActionParameters</key>
+				<dict>
+					<key>COMMAND_STRING</key>
+					<string>APP_TITLE="Change Lockscreen"
+DESKTOP_PICTURES="/Library/Caches/Desktop Pictures"
+USER_UUID="$(dscl . -list /Users GeneratedUID | grep "$USER" | awk '{print $2}')"
+USER_DP="${DESKTOP_PICTURES}/${USER_UUID}"
+
+cd "${USER_DP}" || (
+osascript &lt;&lt;EOF
+try
+  tell app "Finder"
+    activate
+    display dialog "Error: couldn't access user specific desktop pictures folder." with title "${APP_TITLE}"
+  end tell
+end try
+EOF
+)
+
+if [ -n "$1" ]; then
+  mimetype=$(file -b --mime-type "$1")
+  type=$(echo "$mimetype" | cut -d "/" -f1)
+  subtype=$(echo "$mimetype" | cut -d "/" -f2)
+  validImage=1
+  if [ "$type" = "image" ]; then
+    if [ "$subtype" = "png" ] || [ "$subtype" = "jpeg" ] || [ "$subtype" = "tiff" ] || [ "$subtype" = "x-pict" ]; then
+      validImage=0
+    fi
+  fi
+
+  if [ $validImage -eq 0 ]; then
+    filename="$(basename -- "$1")"
+    ext="${filename##*.}"
+    rm -rf lockscreen.*
+    cp "$1" "${USER_DP}/lockscreen.$ext"
+    osascript &lt;&lt;EOF
+try
+  tell app "Finder"
+    activate
+    display dialog "Lockscreen successfully set to: \"$filename\"\n\nPlease make sure to logout first for the new lockscreen to take effect." with title "${APP_TITLE}"
+  end tell
+end try
+EOF
+  else
+    osascript &lt;&lt;EOF
+try
+  tell app "Finder"
+    activate
+    display dialog "Invalid file selected, please make sure you are selecting an image of type: png, jpeg, tiff, or pict." with title "${APP_TITLE}"
+  end tell
+end try
+EOF
+  fi
+else
+  osascript &lt;&lt;EOF
+try
+  tell app "Finder"
+    activate
+    display dialog "Error: no arguements given." with title "${APP_TITLE}"
+  end tell
+end try
+EOF
+fi</string>
+					<key>CheckedForUserDefaultShell</key>
+					<true/>
+					<key>inputMethod</key>
+					<integer>1</integer>
+					<key>shell</key>
+					<string>/bin/sh</string>
+					<key>source</key>
+					<string></string>
+				</dict>
+				<key>BundleIdentifier</key>
+				<string>com.apple.RunShellScript</string>
+				<key>CFBundleVersion</key>
+				<string>2.0.3</string>
+				<key>CanShowSelectedItemsWhenRun</key>
+				<false/>
+				<key>CanShowWhenRun</key>
+				<true/>
+				<key>Category</key>
+				<array>
+					<string>AMCategoryUtilities</string>
+				</array>
+				<key>Class Name</key>
+				<string>RunShellScriptAction</string>
+				<key>InputUUID</key>
+				<string>BC2AC5E5-DB18-48A0-B2A2-F71267B9A936</string>
+				<key>Keywords</key>
+				<array>
+					<string>Shell</string>
+					<string>Script</string>
+					<string>Command</string>
+					<string>Run</string>
+					<string>Unix</string>
+				</array>
+				<key>OutputUUID</key>
+				<string>245C216E-A646-4BCA-8411-EF414AC7873A</string>
+				<key>UUID</key>
+				<string>65312EE5-B8AD-4C0F-8A7D-026FEC3F474F</string>
+				<key>UnlocalizedApplications</key>
+				<array>
+					<string>Automator</string>
+				</array>
+				<key>arguments</key>
+				<dict>
+					<key>0</key>
+					<dict>
+						<key>default value</key>
+						<integer>0</integer>
+						<key>name</key>
+						<string>inputMethod</string>
+						<key>required</key>
+						<string>0</string>
+						<key>type</key>
+						<string>0</string>
+						<key>uuid</key>
+						<string>0</string>
+					</dict>
+					<key>1</key>
+					<dict>
+						<key>default value</key>
+						<false/>
+						<key>name</key>
+						<string>CheckedForUserDefaultShell</string>
+						<key>required</key>
+						<string>0</string>
+						<key>type</key>
+						<string>0</string>
+						<key>uuid</key>
+						<string>1</string>
+					</dict>
+					<key>2</key>
+					<dict>
+						<key>default value</key>
+						<string></string>
+						<key>name</key>
+						<string>source</string>
+						<key>required</key>
+						<string>0</string>
+						<key>type</key>
+						<string>0</string>
+						<key>uuid</key>
+						<string>2</string>
+					</dict>
+					<key>3</key>
+					<dict>
+						<key>default value</key>
+						<string></string>
+						<key>name</key>
+						<string>COMMAND_STRING</string>
+						<key>required</key>
+						<string>0</string>
+						<key>type</key>
+						<string>0</string>
+						<key>uuid</key>
+						<string>3</string>
+					</dict>
+					<key>4</key>
+					<dict>
+						<key>default value</key>
+						<string>/bin/sh</string>
+						<key>name</key>
+						<string>shell</string>
+						<key>required</key>
+						<string>0</string>
+						<key>type</key>
+						<string>0</string>
+						<key>uuid</key>
+						<string>4</string>
+					</dict>
+				</dict>
+				<key>isViewVisible</key>
+				<integer>1</integer>
+				<key>location</key>
+				<string>329.500000:562.000000</string>
+				<key>nibPath</key>
+				<string>/System/Library/Automator/Run Shell Script.action/Contents/Resources/Base.lproj/main.nib</string>
+			</dict>
+			<key>isViewVisible</key>
+			<integer>1</integer>
+		</dict>
+	</array>
+	<key>connectors</key>
+	<dict>
+		<key>58129EDC-340B-4602-9CA5-46DF4474D2E7</key>
+		<dict>
+			<key>from</key>
+			<string>11E5E3FF-3CDD-4200-B7C0-6E54962751FF - 11E5E3FF-3CDD-4200-B7C0-6E54962751FF</string>
+			<key>to</key>
+			<string>674BEF07-6E39-4B9C-A51A-0C4B2E0352D5 - 674BEF07-6E39-4B9C-A51A-0C4B2E0352D5</string>
+		</dict>
+		<key>8A3E36C8-2241-4FA2-B702-896FC2B26057</key>
+		<dict>
+			<key>from</key>
+			<string>674BEF07-6E39-4B9C-A51A-0C4B2E0352D5 - 674BEF07-6E39-4B9C-A51A-0C4B2E0352D5</string>
+			<key>to</key>
+			<string>65312EE5-B8AD-4C0F-8A7D-026FEC3F474F - 65312EE5-B8AD-4C0F-8A7D-026FEC3F474F</string>
+		</dict>
+	</dict>
+	<key>workflowMetaData</key>
+	<dict>
+		<key>workflowTypeIdentifier</key>
+		<string>com.apple.Automator.application</string>
+	</dict>
+</dict>
+</plist>
