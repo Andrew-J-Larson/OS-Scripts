@@ -73,10 +73,8 @@ getBdeRecoveryKey () {
   
   # remove temp files
   rm "${COOKIES_FILE}" "${RESULTS_FILE}" "${DECODED_FILE}"
-  
   # Results
   echo "$BitLockerKey"
-  
   # clearing stored password for security reasons
   psswrd=""
 }
