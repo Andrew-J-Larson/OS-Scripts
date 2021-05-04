@@ -3,7 +3,7 @@
 # Requires curl to be installed
 
 # Constants
-MBAM_URL="https://mbam.example.com" # the MS bitlocker website for your organization
+MBAM_URL="https://mbam.example.com" # the MBAM website for your organization
 MBAM_Admin_KeyRecoveryURL="${MBAM_URL}/HelpDesk/KeyRecoveryPage.aspx" # the page needed to get recovery information
 COOKIES_FILE=/tmp/Cookies.txt
 RESULTS_FILE=/tmp/Results.html
