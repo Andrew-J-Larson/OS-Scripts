@@ -1,9 +1,7 @@
 # Shell Scripts and Commands
-This is where I put down files that I find/create that might be useful in the future.
+This is where I'll put my custom little scripts/functions that might be useful in future projects of mine.
 
-There will be .BAT/.CMD and .SH files where I feel need fit (that don't belong to a particular project). Like, imagine this repo as a library of scripting functions, sorta...
-
-Files that can be used on OS's:
+Scripts/Apps that can be used on each OS:
 - Windows: .PS1 (Always), .BAT/.CMD (Always), .SH (Sometimes: Usually for WSL's Bash/POSIX)
 - Linux: .SH (Always: Usually Bash, otherwise POSIX), .PS1 (Sometimes: if powershell-core is installed)
 - Mac: .SCPT (Always: Usually AppleScript 2.0+), .SH (Always: Usually Zsh, otherwise Bash/POSIX), .APP (Sometimes; Usually script files bound together by Automator)
