@@ -1,5 +1,5 @@
-# Shell Scripts and Commands
-This is where I'll put my custom little scripts/functions that might be useful in future projects of mine.
+# OS Scripts
+This is where I'll put my custom scripts/functions that might be useful in future projects of mine.
 
 Scripts/Apps that can be used on each OS:
 - Windows: .PS1 (Always), .BAT/.CMD (Always), .SH (Sometimes: Usually for WSL's Bash/POSIX)
