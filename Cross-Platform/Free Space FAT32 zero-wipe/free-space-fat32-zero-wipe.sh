@@ -1,6 +1,6 @@
 #!/bin/bash
-
 # Takes an already FAT32 formatted drive, and clears up it's free space.
+
 # Copyright (C) 2020  Andrew Larson (thealiendrew@gmail.com)
 #
 # This program is free software: you can redistribute it and/or modify
