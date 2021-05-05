@@ -4,8 +4,8 @@ This is where I put down files that I find/create that might be useful in the fu
 There will be .BAT/.CMD and .SH files where I feel need fit (that don't belong to a particular project). Like, imagine this repo as a library of scripting functions, sorta...
 
 Files that can be used on OS's:
-- Windows: .BAT (Always), .CMD (Always), .SH (Sometimes: Usually for WSL's Bash/POSIX)
-- Linux: .SH (Always: Usually Bash, otherwise POSIX)
-- Mac: .SCPT (Always: Usually AppleScript 2.0+), .SH (Always: Usually Zsh, otherwise POSIX), .APP (Sometimes; Usually script files bound together by Automator)
+- Windows: .PS1 (Always), .BAT/.CMD (Always), .SH (Sometimes: Usually for WSL's Bash/POSIX)
+- Linux: .SH (Always: Usually Bash, otherwise POSIX), .PS1 (Sometimes: if powershell-core is installed)
+- Mac: .SCPT (Always: Usually AppleScript 2.0+), .SH (Always: Usually Zsh, otherwise Bash/POSIX), .APP (Sometimes; Usually script files bound together by Automator)
 
-The folder line up is, if the script(s) can't be used on more than 1 OS, then it goes to it's respective OS folder, otherwise it'll go into the cross-platform folder.
+Scripts that are specific to platform lie within their platform folder, while scripts that can be used on more than one system are put in the cross-platform folder.
