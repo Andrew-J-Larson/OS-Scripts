@@ -43,4 +43,4 @@ Ventoy_Releases="https://api.github.com/repos/ventoy/Ventoy/releases/latest"
 # TODO: from here, normal steps for using ventoy2disk.sh should all that be needed
 
 # (might need to detect when qemu shutsdown?)
-# TODO: not sure if shutting down qemu VM's will let USB drives remount back in MacOS, so I'll need to do some testing
+# TODO: not sure if shutting down qemu VM's will let USB drives automatically remount back in MacOS, so I'll need to do some testing
