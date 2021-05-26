@@ -24,7 +24,6 @@ Package_Managers="brew port fink"
 # TODO: NOTES: Aiming to support High Sierra (10.13)+ (if I can)
 #    - HomeBrew: Only supports Mojave (10.14)+, but ARM (M1 Macs) are supported
 #    - MacPorts: Supports Sierra (10.12)+, but doesn't support ARM (M1 Macs)
-#    - Fink: Appears to support from Tiger (10.4) up to Catalina (10.15)
 Ventoy_Releases="https://api.github.com/repos/ventoy/Ventoy/releases/latest"
 # TODO: any other constants needed
 
