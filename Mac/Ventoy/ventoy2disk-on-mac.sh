@@ -18,4 +18,27 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-# TODO: Everything
+# CONSTANTS
+# TODO: QEMU constants needed
+Ventoy_Releases="https://api.github.com/repos/ventoy/Ventoy/releases/latest"
+# TODO: any other constants needed
+
+# Query user on portable or permanent QEMU install
+# TODO:
+#   - Portable: Will need to download a compiled qemu package for MacOS, and then setup the VM in that.
+#   - Permanent: 
+#      * Check if qemu is already installed, then use that
+#        else, check for a package manager and ask to install qemu from there
+#        else prompt to install a package manager of choice to get qemu installed (and then rerun the script)
+
+# Check if Ventoy LiveCD is not already setup (download latest Ventoy LiveCD if the iso isn't the latest, and start setting up the VM if it's not already setup)
+# TODO: + will need to save the general command to start the VM without USB drives to work with later
+
+# Prompt for USB drive(s) selection to use with Ventoy LiveCD VM
+# TODO: need to list connected USB drives and need to support selecting 1 or more drives
+
+# Start the VM, and make sure it outputs to terminal (shouldn't need a virtual display)
+# TODO: from here, normal steps for using ventoy2disk.sh should all that be needed
+
+# (might need to detect when qemu shutsdown?)
+# TODO: not sure if shutting down qemu VM's will let USB drives remount back in MacOS, so I'll need to do some testing
