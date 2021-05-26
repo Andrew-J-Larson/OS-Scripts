@@ -35,6 +35,7 @@ Ventoy_Releases="https://api.github.com/repos/ventoy/Ventoy/releases/latest"
 #        else, check for a package manager and ask to install qemu from there
 #        else prompt to install a package manager of choice to get qemu installed (and then rerun the checks)
 #        otherwise, show a message about being unable to continue until a package manager is installed (because managing qemu updates without a package manager wouldn't be fun to code)
+#   * Need to somehow check qemu version has USB passthrough feature (`qemu-system-x86_64 -version | grep version`)
 
 # if Ventoy LiveCD virtual machine is not already setup do that
 # else, make sure the .iso file is latest
@@ -43,6 +44,7 @@ Ventoy_Releases="https://api.github.com/repos/ventoy/Ventoy/releases/latest"
 
 # Prompt for USB drive(s) selection to use with Ventoy LiveCD VM
 # TODO: need to list connected USB drives and need to support selecting 1 or more drives
+#   * This article may be useful in doing the right USB checks and attaching https://virtuozzosupport.force.com/s/article/000017379
 
 # Start the VM, and make sure it outputs to terminal (shouldn't need a virtual display)
 # TODO: from here, normal steps for using ventoy2disk.sh should all that be needed
