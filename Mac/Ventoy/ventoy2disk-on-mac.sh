@@ -34,6 +34,7 @@ Ventoy_Releases="https://api.github.com/repos/ventoy/Ventoy/releases/latest"
 
 # Check if Ventoy LiveCD is not already setup (download latest Ventoy LiveCD if the iso isn't the latest, and start setting up the VM if it's not already setup)
 # TODO: + will need to save the general command to start the VM without USB drives to work with later
+#   * live cd downloads end in `livecd.iso`
 
 # Prompt for USB drive(s) selection to use with Ventoy LiveCD VM
 # TODO: need to list connected USB drives and need to support selecting 1 or more drives
