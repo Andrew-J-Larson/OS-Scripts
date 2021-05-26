@@ -19,7 +19,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 # CONSTANTS
-# TODO: QEMU constants needed
+# TODO: QEMU portable download URL constants needed
+Package_Managers="brew port fink" # technically 4 different package managers, 2 use `brew` (HomeBrew & TigerBrew)
 Ventoy_Releases="https://api.github.com/repos/ventoy/Ventoy/releases/latest"
 # TODO: any other constants needed
 
