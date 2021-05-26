@@ -58,11 +58,11 @@ getBdeRecoveryKey () {
   # first curl to login, and get: the SessionID (from COOKIE_FILE) and the ViewState/EventValidation (from DECODED_FILE)
   curl --ntlm --user "${usr}:${psswrd}" -c "${COOKIES_FILE}" "${MBAM_Admin_KeyRecoveryURL}" -o "${RESULTS_FILE}" -s
   # capture and encode data to send back in form
-  SessionID=$(cat "${COOKIES_FILE}" | tail -1 | awk '{print $7}')
+  SessionID="$(cat "${COOKIES_FILE}" | tail -1 | awk '{print $7}')"
   parseXML "${RESULTS_FILE}" > "${DECODED_FILE}"
   # form won't be valid unless it has data from webpage also submitted with it
-  ViewState=$(rawurlencode $(cat "${DECODED_FILE}" | grep '"__VIEWSTATE"' | grep -oP '(?<=value=").*?(?=")'))
-  EventValidation=$(rawurlencode $(cat "${DECODED_FILE}" | grep '"__EVENTVALIDATION"' | grep -oP '(?<=value=").*?(?=")'))
+  ViewState="$(rawurlencode $(cat "${DECODED_FILE}" | grep '"__VIEWSTATE"' | grep -oP '(?<=value=").*?(?=")'))"
+  EventValidation="$(rawurlencode $(cat "${DECODED_FILE}" | grep '"__EVENTVALIDATION"' | grep -oP '(?<=value=").*?(?=")'))"
   DataRaw="__LASTFOCUS=&__EVENTTARGET=ctl00%24content%24SubmitButton&__EVENTARGUMENT=&__VIEWSTATE=${ViewState}&__VIEWSTATEGENERATOR=C0534C36&__EVENTVALIDATION=${EventValidation}&ctl00%24content%24DomainNameTextBox=&ctl00%24content%24UserNameTextBox=&ctl00%24content%24KeyIdTextBox=${bdeKeyID}&ctl00%24content%24ReasonCodeSelect=Other"
   # second curl to send form, and get data
   curl -L --ntlm --user "${usr}:${psswrd}" "${MBAM_Admin_KeyRecoveryURL}" -o "${RESULTS_FILE}" -s \
@@ -84,7 +84,7 @@ getBdeRecoveryKey () {
     --compressed
   # capture and use bitlocker key
   parseXML "${RESULTS_FILE}" > "${DECODED_FILE}"
-  BitLockerKey=$(cat "${DECODED_FILE}" | grep '"ctl00$content$KeyReturnField"' | grep -oP '(?<=value=").*?(?=")')
+  BitLockerKey="$(cat "${DECODED_FILE}" | grep '"ctl00$content$KeyReturnField"' | grep -oP '(?<=value=").*?(?=")')"
   
   # remove temp files
   rm "${COOKIES_FILE}" "${RESULTS_FILE}" "${DECODED_FILE}"
