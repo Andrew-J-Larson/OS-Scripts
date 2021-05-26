@@ -22,6 +22,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+# TODO: Make sure we are running in MacOS,
+#       then, make sure the MacOS version is supported.
+
 # CONSTANTS
 # TODO: QEMU portable download URL constants needed
 Package_Managers="brew port"
