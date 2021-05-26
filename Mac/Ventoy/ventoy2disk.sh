@@ -29,7 +29,8 @@ Ventoy_Releases="https://api.github.com/repos/ventoy/Ventoy/releases/latest"
 
 # Query user on portable or permanent QEMU install
 # TODO: (check if an instance of the Ventoy LiveCD virtual machine has already been created, to ignore this query)
-#   - Portable: Will need to download QEMU source then compile binaries manaually for MacOS, and then setup the VM in that.
+#   - Portable: Will need to download QEMU source then compile binaries manaually for MacOS (see https://wiki.qemu.org/Hosts/Mac#Building_QEMU_for_macOS),
+#               and then setup the VM in that.
 #   - Permanent: 
 #      * Check if qemu is already installed, check for package manager (if found, run updates), then use the installed qemu version
 #        else, check for a package manager and ask to install qemu from there
