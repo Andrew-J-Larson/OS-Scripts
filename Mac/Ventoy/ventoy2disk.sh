@@ -20,7 +20,7 @@
 
 # CONSTANTS
 # TODO: QEMU portable download URL constants needed
-Package_Managers="brew port fink"
+Package_Managers="brew port"
 # TODO: NOTES: Aiming to support High Sierra (10.13)+ (if I can)
 #    - HomeBrew: Only supports Mojave (10.14)+, but ARM (M1 Macs) are supported
 #    - MacPorts: Supports Sierra (10.12)+, but doesn't support ARM (M1 Macs)
