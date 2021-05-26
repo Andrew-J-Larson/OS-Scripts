@@ -28,9 +28,10 @@ Ventoy_Releases="https://api.github.com/repos/ventoy/Ventoy/releases/latest"
 # TODO:
 #   - Portable: Will need to download a compiled qemu package for MacOS, and then setup the VM in that.
 #   - Permanent: 
-#      * Check if qemu is already installed, then use that
+#      * Check if qemu is already installed, check for package manager (if found, run updates), then use the installed qemu version
 #        else, check for a package manager and ask to install qemu from there
-#        else prompt to install a package manager of choice to get qemu installed (and then rerun the script)
+#        else prompt to install a package manager of choice to get qemu installed (and then rerun the checks)
+#        otherwise, show a message about being unable to continue until a package manager is installed (because managing qemu updates without a package manager wouldn't be fun to code)
 
 # Check if Ventoy LiveCD is not already setup (download latest Ventoy LiveCD if the iso isn't the latest, and start setting up the VM if it's not already setup)
 # TODO: + will need to save the general command to start the VM without USB drives to work with later
