@@ -1,4 +1,8 @@
 #!/bin/sh
+##########################################################################################################
+###################################### CURRENTLY A WORK IN PROGRESS ######################################
+##########################################################################################################
+
 # This script will automatically download and run qemu (since it is portable) and create a VM to run
 # Ventoy LiveCD, simulating the same result of the `ventoy2disk.sh` script on Linux (which isn't compatible
 # with MacOS at the time of writing this, 5/26/2021).
