@@ -4,6 +4,7 @@
 ##########################################################################################################
 
 # This script will help install the following as needed:
+#  - Xcode (with CLI tools)
 #  - HomeBrew or MacPorts (package manager, only if installing to user account on a supported version)
 #  - QEMU
 #  - Ventoy LiveCD (as VM in QEMU)
@@ -27,6 +28,7 @@
 
 # CONSTANTS
 Package_Managers="brew port" # HomeBrew and MacPorts
+Xcode_App_URL="https://apps.apple.com/app/id497799835"
 QEMU_Releases="https://api.github.com/repos/qemu/qemu/releases"
 Ventoy_Releases="https://api.github.com/repos/ventoy/Ventoy/releases"
 User_Install="~/Ventoy"
@@ -39,11 +41,24 @@ minVer=
 packageManager= # needed for any install/compilation
 folderInstall= # gets set to choosen directory if installing to folder
 
-# Ensure that we are running on a MacOS system
+# Ensure that we are running on a supported MacOS system
 if [ "$(uname -s)" = "Darwin" ]; then
   macVersion="$(sw_vers -productVersion)"
   majVer="$(echo "$macVersion" | cut -d'.' -f1)"
   minVer="$(echo "$macVersion" | cut -d'.' -f2)"
+  if [ -z "$minVer" ]; then minVer="0"; fi
+
+  # check version
+  if [ "$majVer" -le 10 ]; then
+    unsupported=0
+    if [ "$majVer" -eq 10 ] && [ "$minVer" -lt 5 ]; then unsupported=1; fi
+    if [ "$majVer" -lt 10 ]; then unsupported=1; fi
+
+    if [ "$unsupported" -eq 1 ]; then
+      echo "Sorry, but this version of MacOS ($macVersion) is not supported."
+      exit 1
+    fi
+  fi
 else # not a mac
   echo "Sorry, not running on a MacOS system, aborting."
   exit 1
