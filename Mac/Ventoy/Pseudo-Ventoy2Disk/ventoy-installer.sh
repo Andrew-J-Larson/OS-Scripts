@@ -26,11 +26,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 # CONSTANTS
-Package_Managers="brew port"
+Package_Managers="brew port" # HomeBrew and MacPorts
 QEMU_Releases="https://api.github.com/repos/qemu/qemu/releases"
-# TODO: NOTES: (unsupported Mac version will need to compile/install without package manager)
-#    - HomeBrew: Only supports Mojave (10.14)+, but ARM (M1 Macs) are supported
-#    - MacPorts: Supports Sierra (10.12)+, but doesn't support ARM (M1 Macs)
 Ventoy_Releases="https://api.github.com/repos/ventoy/Ventoy/releases"
 User_Install="~/Ventoy"
 # TODO: any other constants needed
@@ -63,13 +60,15 @@ done
 # TODO: (check for user account Ventoy installation first)
 #   - If a user install is detected, prompt for uninstallation or repair
 #   - Locally: Will need to download QEMU source then compile binaries manaually for MacOS (see https://wiki.qemu.org/Hosts/Mac#Building_QEMU_for_macOS),
-#               and then setup the VM in that.
-#   - User account: 
+#              and then setup the VM in that. Will need a package manager to install the resources needed to compile.
+#      * If location selected has an install, prompt for removal or repair
+#   - User account:
+#      * HomeBrew: Only supports Mojave (10.14)+, but ARM (M1 Macs) are supported
+#      * MacPorts: Supports Sierra (10.12)+, but doesn't support ARM (M1 Macs)
 #      * Check if qemu is already installed, check for package manager (if found, run updates), then use the installed qemu version
 #        else, check for a package manager and ask to install qemu from there
 #        else prompt to install a package manager of choice to get qemu installed (and then rerun the checks)
 #        otherwise, show a message about being unable to continue until a package manager is installed (because managing qemu updates without a package manager wouldn't be fun to code)
-#   * Need to somehow check qemu version has USB passthrough feature (`qemu-system-x86_64 -version | grep version`)
 
 # If Ventoy LiveCD virtual machine is not already setup do that
 # TODO: + will need to save the general command to start the VM without USB drives to work with later
