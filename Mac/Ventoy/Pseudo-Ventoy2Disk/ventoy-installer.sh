@@ -33,10 +33,11 @@ User_Install="~/Ventoy"
 # TODO: any other constants needed
 
 # VARIABLES
-macVersion= # this and the following 2 get in the compatibility check
+macVersion= # this and the following 2 get set in the compatibility check
 majVer=
 minVer=
-packageManager= # if permanent install is chosen, this will get set
+packageManager= # needed for any install/compilation
+folderInstall= # gets set to choosen directory if installing to folder
 
 # Ensure that we are running on a MacOS system
 if [ "$(uname -s)" = "Darwin" ]; then
@@ -48,13 +49,13 @@ else # not a mac
   exit 1
 fi
 
-# Query user about local or permanent install
+# Query user about user or folder install
 while true; do
-    read -p "Would you like to install to [U]ser account or [L]ocally? " ul
-    case $ul in
+    read -p "Would you like to install to [U]ser account or [F]older? " uf
+    case $uf in
         [Uu]* ) ...; break;; # TODO:
-        [Ll]* ) ...; break;; # TODO:
-        * ) echo "Please answer with U (User account) or L (Locally).";;
+        [Ff]* ) ...; break;; # TODO:
+        * ) echo "Please answer with U (User account) or F (Folder).";;
     esac
 done
 # TODO: (check for user account Ventoy installation first)
