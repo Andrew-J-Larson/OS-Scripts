@@ -113,11 +113,11 @@ else
   exit 1
 fi
 
-# Check for package manager
-if command -v brew &> /dev/null; then
-  packageManager="brew"
-elif command -v port &> /dev/null; then
-  packageManager="port"
+# Check for package manager, and make sure QEMU is installed
+if command -v brew 2>&1 >/dev/null; then
+  echo "HomeBrew detected."
+elif command -v port 2>&1 >/dev/null; then
+  echo "MacPorts detected."
 else # prompt to install a package manager
   echo "No package manager installed."
   while true; do
@@ -129,15 +129,29 @@ else # prompt to install a package manager
       * ) echo "Please answer with H (HomeBrew) or M (MacPorts), or C (Cancel installation).";;
     esac
     read -p "Then, press any key to continue."
-    if command -v brew &> /dev/null; then
-      packageManager="brew"
-    elif command -v port &> /dev/null; then
-      packageManager="port"
-    else
-      echo "Package manager couldn't be installed."
-      exit 1
-    fi
   done
+fi
+if command -v brew 2>&1 >/dev/null; then
+  packageManager="brew"
+  echo "Updating HomeBrew packages..."
+  brew update
+  brew upgrade
+  if ! brew list qemu 2>&1 >/dev/null; then
+    echo "Installing QEMU via HomeBrew..."
+    brew install qemu
+  fi
+elif command -v port 2>&1 >/dev/null; then
+  packageManager="port"
+  echo "Updating MacPorts packages..."
+  sudo port selfupdate
+  sudo port upgrade outdated
+  if ! port installed qemu 2>&1 >/dev/null; then
+    echo "Installing QEMU via MacPorts..."
+    sudo port install qemu
+  fi
+else
+  echo "Package manager couldn't be installed."
+  exit 1
 fi
 
 # Choose between user or folder install
@@ -152,7 +166,7 @@ while true; do
   esac
 done
 if [ "${installType}" = "U" ]; then
-  # install to user's folder
+  # install to user's folder, if not already
   # TODO: ...
 elif [ "${installType}" = "F" ]; then
   # install to specific folder (doesn't install QEMU to system, or create VM in user folder)
