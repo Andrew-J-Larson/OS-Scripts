@@ -3,9 +3,12 @@
 ###################################### CURRENTLY A WORK IN PROGRESS ######################################
 ##########################################################################################################
 
-# This script will automatically download and run qemu (since it is portable) and create a VM to run
-# Ventoy LiveCD, simulating the same result of the `ventoy2disk.sh` script on Linux (which isn't compatible
-# with MacOS at the time of writing this, 5/26/2021).
+# This script will help install the following as needed:
+#  - HomeBrew or MacPorts (package manager, only if installing to system)
+#  - QEMU
+#  - Ventoy LiveCD (as VM in QEMU)
+# The aim is to simulate the `Ventoy2Disk.sh` script used on Linux.
+# (which isn't compatible with MacOS at the time of writing this, 5/26/2021)
 
 # Copyright (C) 2020  Andrew Larson (thealiendrew@gmail.com)
 #
@@ -29,7 +32,7 @@ QEMU_Releases="https://api.github.com/repos/qemu/qemu/releases"
 #    - HomeBrew: Only supports Mojave (10.14)+, but ARM (M1 Macs) are supported
 #    - MacPorts: Supports Sierra (10.12)+, but doesn't support ARM (M1 Macs)
 Ventoy_Releases="https://api.github.com/repos/ventoy/Ventoy/releases"
-Install_Location="~/Ventoy"
+User_Install="~/Ventoy"
 # TODO: any other constants needed
 
 # VARIABLES
@@ -50,35 +53,24 @@ fi
 
 # Query user about local or permanent install
 while true; do
-    read -p "Would you like to install this program?" yn
-    case $yn in
-        [Yy]* ) break;;
-        [Nn]* ) exit 1;;
-        * ) echo "Please answer yes or no.";;
+    read -p "Would you like to install to [U]ser account or [L]ocally? " ul
+    case $ul in
+        [Uu]* ) ...; break;; # TODO:
+        [Ll]* ) ...; break;; # TODO:
+        * ) echo "Please answer with U (User account) or L (Locally).";;
     esac
 done
-# TODO: (check if an instance of the Ventoy LiveCD virtual machine has already been created, to ignore this query)
-#   - Portable: Will need to download QEMU source then compile binaries manaually for MacOS (see https://wiki.qemu.org/Hosts/Mac#Building_QEMU_for_macOS),
+# TODO: (check for user account Ventoy installation first)
+#   - If a user install is detected, prompt for uninstallation or repair
+#   - Locally: Will need to download QEMU source then compile binaries manaually for MacOS (see https://wiki.qemu.org/Hosts/Mac#Building_QEMU_for_macOS),
 #               and then setup the VM in that.
-#   - Permanent: 
+#   - User account: 
 #      * Check if qemu is already installed, check for package manager (if found, run updates), then use the installed qemu version
 #        else, check for a package manager and ask to install qemu from there
 #        else prompt to install a package manager of choice to get qemu installed (and then rerun the checks)
 #        otherwise, show a message about being unable to continue until a package manager is installed (because managing qemu updates without a package manager wouldn't be fun to code)
 #   * Need to somehow check qemu version has USB passthrough feature (`qemu-system-x86_64 -version | grep version`)
 
-# if Ventoy LiveCD virtual machine is not already setup do that
-# else, make sure the .iso file is latest
+# If Ventoy LiveCD virtual machine is not already setup do that
 # TODO: + will need to save the general command to start the VM without USB drives to work with later
 #   * live cd download naming scheme is `ventoy-[version]-livecd.iso`
-
-# Prompt for USB drive(s) selection to use with Ventoy LiveCD VM
-# NOTE!!! If the script is on a USB device, will need to exclude it from the list
-# TODO: need to list connected USB drives and need to support selecting 1 or more drives
-#   * This article may be useful in doing the right USB checks and attaching https://virtuozzosupport.force.com/s/article/000017379
-
-# Start the VM, and make sure it outputs to terminal (shouldn't need a virtual display)
-# TODO: from here, normal steps for using ventoy2disk.sh should all that be needed
-
-# (might need to detect when qemu shutsdown?)
-# TODO: not sure if shutting down qemu VM's will let USB drives automatically remount back in MacOS, so I'll need to do some testing
