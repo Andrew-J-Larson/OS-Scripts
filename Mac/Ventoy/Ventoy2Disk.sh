@@ -22,19 +22,41 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-# TODO: Make sure we are running in MacOS,
-#       then, make sure the MacOS version is supported.
-
 # CONSTANTS
-# TODO: QEMU portable download URL constants needed
 Package_Managers="brew port"
-# TODO: NOTES: Aiming to support High Sierra (10.13)+ (if I can)
+QEMU_Releases="https://api.github.com/repos/qemu/qemu/releases"
+# TODO: NOTES: (unsupported Mac version will need to compile/install without package manager)
 #    - HomeBrew: Only supports Mojave (10.14)+, but ARM (M1 Macs) are supported
 #    - MacPorts: Supports Sierra (10.12)+, but doesn't support ARM (M1 Macs)
-Ventoy_Releases="https://api.github.com/repos/ventoy/Ventoy/releases/latest"
+Ventoy_Releases="https://api.github.com/repos/ventoy/Ventoy/releases"
+Install_Location="~/Ventoy"
 # TODO: any other constants needed
 
-# Query user on portable or permanent QEMU install
+# VARIABLES
+macVersion= # this and the following 2 get in the compatibility check
+majVer=
+minVer=
+packageManager= # if permanent install is chosen, this will get set
+
+# Ensure that we are running on a MacOS system
+if [ "$(uname -s)" = "Darwin" ]; then
+  macVersion="$(sw_vers -productVersion)"
+  majVer="$(echo "$macVersion" | cut -d'.' -f1)"
+  minVer="$(echo "$macVersion" | cut -d'.' -f2)"
+else # not a mac
+  echo "Sorry, not running on a MacOS system, aborting."
+  exit 1
+fi
+
+# Query user about local or permanent install
+while true; do
+    read -p "Would you like to install this program?" yn
+    case $yn in
+        [Yy]* ) break;;
+        [Nn]* ) exit 1;;
+        * ) echo "Please answer yes or no.";;
+    esac
+done
 # TODO: (check if an instance of the Ventoy LiveCD virtual machine has already been created, to ignore this query)
 #   - Portable: Will need to download QEMU source then compile binaries manaually for MacOS (see https://wiki.qemu.org/Hosts/Mac#Building_QEMU_for_macOS),
 #               and then setup the VM in that.
@@ -51,6 +73,7 @@ Ventoy_Releases="https://api.github.com/repos/ventoy/Ventoy/releases/latest"
 #   * live cd download naming scheme is `ventoy-[version]-livecd.iso`
 
 # Prompt for USB drive(s) selection to use with Ventoy LiveCD VM
+# NOTE!!! If the script is on a USB device, will need to exclude it from the list
 # TODO: need to list connected USB drives and need to support selecting 1 or more drives
 #   * This article may be useful in doing the right USB checks and attaching https://virtuozzosupport.force.com/s/article/000017379
 
