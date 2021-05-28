@@ -4,7 +4,7 @@
 ##########################################################################################################
 
 # This script will help install the following as needed:
-#  - HomeBrew or MacPorts (package manager, only if installing to system)
+#  - HomeBrew or MacPorts (package manager, only if installing to user account)
 #  - QEMU
 #  - Ventoy LiveCD (as VM in QEMU)
 # The aim is to simulate the `Ventoy2Disk.sh` script used on Linux.
