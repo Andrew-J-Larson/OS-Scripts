@@ -27,7 +27,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 # CONSTANTS
-Package_Managers="brew port" # HomeBrew and MacPorts
 Xcode_Install="/Applications/Xcode.app"
 Xcode_App_URL="https://apps.apple.com/app/id497799835"
 QEMU_Releases="https://api.github.com/repos/qemu/qemu/releases"
@@ -66,6 +65,18 @@ else # not a mac
   exit 1
 fi
 
+# Internet connection required
+connected=1
+case "$(curl -s --max-time 2 -I https://google.com | sed 's/^[^ ]*  *\([0-9]\).*/\1/; 1q')" in
+  [23]) connected=0;;
+  5) echo "Sorry, but the web proxy won't let us through.";;
+  *) echo "Sorry, but the network is down or very slow.";;
+esac
+if [ "$connected" -eq 1 ]; then
+  echo "Please make sure you are connected to a network that has internet access."
+  exit 1
+fi
+
 # Make sure Xcode is installed with CLI tools
 if [ ! -f "${Xcode_Install}" ]; then
   printf "Xcode isn't installed, but required.\nPlease go to ${Xcode_App_URL} and install the Xcode app.\n\n"
@@ -76,7 +87,7 @@ if [ -f "${Xcode_Install}" ]; then
   ACCEPTED_LICENSE_VERSION=`defaults read /Library/Preferences/com.apple.dt.Xcode 2> /dev/null | grep IDEXcodeVersionForAgreedToGMLicense | cut -d '"' -f 2`
 
   # Accept Xcode license, if not already
-  if [ "$XCODE_VERSION" != "$ACCEPTED_LICENSE_VERSION" ]; then
+  if [ "${XCODE_VERSION}" != "${ACCEPTED_LICENSE_VERSION}" ]; then
     echo "Please accept the Xcode license..."
     sudo xcodebuild -license
     if [ $? -eq 1 ]; then
@@ -95,22 +106,58 @@ if [ -f "${Xcode_Install}" ]; then
       echo "Xcode CLI tools couldn't install, aborting."
       exit 1
     fi
-    echo "Xcode CLIT tools installed."
+    echo "Xcode CLI Tools installed."
   fi
 else
   echo "Xcode not installed, aborting."
   exit 1
 fi
 
-# Query user about user or folder install
-while true; do
-    read -p "Would you like to install to [U]ser account or [F]older? " uf
-    case ${uf} in
-        [Uu]* ) ...; break;; # TODO:
-        [Ff]* ) ...; break;; # TODO:
-        * ) echo "Please answer with U (User account) or F (Folder).";;
+# Check for package manager
+if command -v brew &> /dev/null; then
+  packageManager="brew"
+elif command -v port &> /dev/null; then
+  packageManager="port"
+else # prompt to install a package manager
+  echo "No package manager installed."
+  while true; do
+    read -p "Would you like to install the [H]omeBrew or [M]acPorts package manager, or [C]ancel installation? " hm
+    case ${hm} in
+      [Hh]* ) /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"; break;;
+      [Mm]* ) echo "Please go to https://www.macports.org/install.php and download/install the package for your system."; break;;
+      [Cc]* ) exit 1; break;;
+      * ) echo "Please answer with H (HomeBrew) or M (MacPorts), or C (Cancel installation).";;
     esac
+    read -p "Then, press any key to continue."
+    if command -v brew &> /dev/null; then
+      packageManager="brew"
+    elif command -v port &> /dev/null; then
+      packageManager="port"
+    else
+      echo "Package manager couldn't be installed."
+      exit 1
+    fi
+  done
+fi
+
+# Choose between user or folder install
+installType=
+while true; do
+  read -p "Would you like to install to [U]ser account or [F]older, or [C]ancel installation?" uf
+  case ${uf} in
+    [Uu]* ) installType="U"; break;;
+    [Ff]* ) installType="F"; break;;
+    [Cc]* ) exit 1; break;;
+    * ) echo "Please answer with U (User account) or F (Folder), or C (Cancel installation).";;
+  esac
 done
+if [ "${installType}" = "U" ]; then
+  # install to user's folder
+  # TODO: ...
+elif [ "${installType}" = "F" ]; then
+  # install to specific folder (doesn't install QEMU to system, or create VM in user folder)
+  # TODO: ...
+fi
 # TODO: (check for user account Ventoy installation first)
 #   - If a user install is detected, prompt for uninstallation or repair
 #   - Locally: Will need to download QEMU source then compile binaries manaually for MacOS (see https://wiki.qemu.org/Hosts/Mac#Building_QEMU_for_macOS),
