@@ -28,6 +28,7 @@
 
 # CONSTANTS
 Package_Managers="brew port" # HomeBrew and MacPorts
+Xcode_Install="/Applications/Xcode.app"
 Xcode_App_URL="https://apps.apple.com/app/id497799835"
 QEMU_Releases="https://api.github.com/repos/qemu/qemu/releases"
 Ventoy_Releases="https://api.github.com/repos/ventoy/Ventoy/releases"
@@ -44,18 +45,19 @@ folderInstall= # gets set to choosen directory if installing to folder
 # Ensure that we are running on a supported MacOS system
 if [ "$(uname -s)" = "Darwin" ]; then
   macVersion="$(sw_vers -productVersion)"
-  majVer="$(echo "$macVersion" | cut -d'.' -f1)"
-  minVer="$(echo "$macVersion" | cut -d'.' -f2)"
-  if [ -z "$minVer" ]; then minVer="0"; fi
+  majVer="$(echo "${macVersion}" | cut -d'.' -f1)"
+  minVer="$(echo "${macVersion}" | cut -d'.' -f2)"
+  if [ -z "${minVer}" ]; then minVer="0"; fi
 
-  # check version
-  if [ "$majVer" -le 10 ]; then
+  # check version: QEMU is only supported on 10.5+,
+  # but I'm only going to support the top 3 major Mac versions
+  if [ "${majVer}" -le 10 ]; then
     unsupported=0
-    if [ "$majVer" -eq 10 ] && [ "$minVer" -lt 5 ]; then unsupported=1; fi
-    if [ "$majVer" -lt 10 ]; then unsupported=1; fi
+    if [ "${majVer}" -eq 10 ] && [ "${minVer}" -lt 14 ]; then unsupported=1; fi
+    if [ "${majVer}" -lt 10 ]; then unsupported=1; fi
 
-    if [ "$unsupported" -eq 1 ]; then
-      echo "Sorry, but this version of MacOS ($macVersion) is not supported."
+    if [ "${unsupported}" -eq 1 ]; then
+      echo "Sorry, but this version of MacOS (${macVersion}) is not supported."
       exit 1
     fi
   fi
@@ -64,10 +66,46 @@ else # not a mac
   exit 1
 fi
 
+# Make sure Xcode is installed with CLI tools
+if [ ! -f "${Xcode_Install}" ]; then
+  printf "Xcode isn't installed, but required.\nPlease go to ${Xcode_App_URL} and install the Xcode app.\n\n"
+  read -p "Then, press any key to continue."
+fi # second if is to check if it was installed before the end of the read command
+if [ -f "${Xcode_Install}" ]; then
+  XCODE_VERSION=`xcodebuild -version | grep '^Xcode\s' | sed -E 's/^Xcode[[:space:]]+([0-9\.]+)/\1/'`
+  ACCEPTED_LICENSE_VERSION=`defaults read /Library/Preferences/com.apple.dt.Xcode 2> /dev/null | grep IDEXcodeVersionForAgreedToGMLicense | cut -d '"' -f 2`
+
+  # Accept Xcode license, if not already
+  if [ "$XCODE_VERSION" != "$ACCEPTED_LICENSE_VERSION" ]; then
+    echo "Please accept the Xcode license..."
+    sudo xcodebuild -license
+    if [ $? -eq 1 ]; then
+      echo "Xcode license not accepted, aborting."
+      exit 1
+    fi
+    echo "Xcode license accepted."
+  fi
+
+  # Install CLI tools, if not already installed.
+  xcode-select -p 1>/dev/null
+  if [ $? -eq 2 ]; then
+    echo "Installing Xcode CLI tools..."
+    sudo xcode-select --install
+    if [ $? -ne 0 ]; then
+      echo "Xcode CLI tools couldn't install, aborting."
+      exit 1
+    fi
+    echo "Xcode CLIT tools installed."
+  fi
+else
+  echo "Xcode not installed, aborting."
+  exit 1
+fi
+
 # Query user about user or folder install
 while true; do
     read -p "Would you like to install to [U]ser account or [F]older? " uf
-    case $uf in
+    case ${uf} in
         [Uu]* ) ...; break;; # TODO:
         [Ff]* ) ...; break;; # TODO:
         * ) echo "Please answer with U (User account) or F (Folder).";;
