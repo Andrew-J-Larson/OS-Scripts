@@ -49,15 +49,15 @@ fi
 # CONSTANTS
 Xcode_Install="/Applications/Xcode.app"
 Xcode_App_URL="https://apps.apple.com/app/id497799835"
-MacPorts_Releases="https://api.github.com/repos/macports/macports-base/releases"
 QEMU_Releases="https://api.github.com/repos/qemu/qemu/releases"
 Ventoy_Releases="https://api.github.com/repos/ventoy/Ventoy/releases"
 # TODO: any other constants needed
 
 # VARIABLES
-macVersion= # this and the following 2 get set in the compatibility check
+macVersion= # this and the following 3 get set in the OS check
 majVer=
 minVer=
+macCodename=
 packageManager= # needed for any install/compilation
 folderInstall= # gets set to choosen directory if installing to folder
 
@@ -66,6 +66,7 @@ if [ "$(uname -s)" = "Darwin" ]; then
   macVersion="$(sw_vers -productVersion)"
   majVer="$(echo "$macVersion" | cut -d'.' -f1)"
   minVer="$(echo "$macVersion" | cut -d'.' -f2)"
+  macCodename="$(awk '/SOFTWARE LICENSE AGREEMENT FOR macOS/' '/System/Library/CoreServices/Setup Assistant.app/Contents/Resources/en.lproj/OSXSoftwareLicense.rtf' | awk -F 'macOS ' '{print $NF}' | awk '{print substr($0, 0, length($0)-1)}')"
   if [ -z "$minVer" ]; then minVer="0"; fi
 
   # check version: QEMU is only supported on 10.5+,
@@ -76,7 +77,7 @@ if [ "$(uname -s)" = "Darwin" ]; then
     if [ "$majVer" -lt 10 ]; then unsupported=1; fi
 
     if [ "$unsupported" -eq 1 ]; then
-      echo "Sorry, but this version of MacOS ($macVersion) is not supported."
+      echo "Sorry, but MacOS $macVersion $macCodename is not currently supported."
       exit 1
     fi
   fi
@@ -94,46 +95,57 @@ fi
 # Internet connection required
 connected=1
 echo "Checking internet connection..."
-case "$(curl -s --max-time 4 -I https://google.com | sed 's/^[^ ]*  *\([0-9]\).*/\1/; 1q')" in
-  [23]) connected=0;;
-  5) echo "Sorry, but the web proxy won't let us through.";;
-  *) echo "Sorry, but the network is down or very slow.";;
-esac
-if [ "$connected" -eq 1 ]; then
+curl -s https://www.google.com -o /dev/null
+if [ $? -eq 1 ]; then
   echo "Please make sure you are connected to a network that has internet access."
   exit 1
 fi
 
+# Check system updates first
+echo "Checking for system updates..."
+if softwareupdate -l | grep -q "Action: restart"; then
+  echo "MacOS needs some updates first before we can continue with this script. Enter your password when prompted."
+  sudo softwareupdate --install --restart --all
+  exit 1
+fi
+
 # Make sure Xcode is installed with CLI tools
-if [ ! -f "${Xcode_Install}" ]; then
-  echo -e "Xcode isn't installed, but required.\nPlease go to ${Xcode_App_URL} and install the Xcode app.\n"
+if [ ! -d "${Xcode_Install}" ] || [ -z "$(xcode-select -p 2>/dev/null)" ]; then
+  echo "Xcode isn't installed, but required.\nPlease go to ${Xcode_App_URL} and install the Xcode app."
   read -p "Then, press any key to continue."
-fi # second if is to check if it was installed before the end of the read command
-if [ -f "${Xcode_Install}" ]; then
-  XCODE_VERSION=`xcodebuild -version | grep '^Xcode\s' | sed -E 's/^Xcode[[:space:]]+([0-9\.]+)/\1/'`
-  ACCEPTED_LICENSE_VERSION=`defaults read /Library/Preferences/com.apple.dt.Xcode 2> /dev/null | grep IDEXcodeVersionForAgreedToGMLicense | cut -d '"' -f 2`
+fi # check if it was installed before the end of the read command
+if [ -d "${Xcode_Install}" ]; then
+  echo "Verified that Xcode is installed."
 
-  # Accept Xcode license, if not already
-  if [ "${XCODE_VERSION}" != "${ACCEPTED_LICENSE_VERSION}" ]; then
-    echo "Please accept the Xcode license..."
-    sudo xcodebuild -license
-    if [ $? -eq 1 ]; then
-      echo "Xcode license not accepted, aborting."
-      exit 1
-    fi
-    echo "Xcode license accepted."
-  fi
+  # Make sure we actually need to install the CLI
+  if [ -z "$(xcode-select -p 2>/dev/null)" ]; then
+    XCODE_VERSION=`xcodebuild -version | grep '^Xcode\s' | sed -E 's/^Xcode[[:space:]]+([0-9\.]+)/\1/'`
+    ACCEPTED_LICENSE_VERSION=`defaults read /Library/Preferences/com.apple.dt.Xcode 2> /dev/null | grep IDEXcodeVersionForAgreedToGMLicense | cut -d '"' -f 2`
 
-  # Install CLI tools, if not already installed.
-  xcode-select -p 1>/dev/null
-  if [ $? -eq 2 ]; then
-    echo "Installing Xcode CLI tools..."
-    sudo xcode-select --install
-    if [ $? -ne 0 ]; then
-      echo "Xcode CLI tools couldn't install, aborting."
-      exit 1
+    # Accept Xcode license, if not already
+    if [ "${XCODE_VERSION}" != "${ACCEPTED_LICENSE_VERSION}" ]; then
+      echo "Please accept the Xcode license..."
+      sudo xcodebuild -license
+      if [ $? -eq 1 ]; then
+        echo "Xcode license not accepted, aborting."
+        exit 1
+      fi
+      echo "Xcode license accepted."
     fi
-    echo "Xcode CLI Tools installed."
+
+    # Install CLI tools, if not already installed.
+    xcode-select -p 1>/dev/null
+    if [ $? -eq 2 ]; then
+      echo "Installing Xcode CLI tools..."
+      sudo xcode-select --install
+      if [ $? -ne 0 ]; then
+        echo "Xcode CLI tools couldn't install, aborting."
+        exit 1
+      fi
+      echo "Xcode CLI Tools installed."
+    fi
+  else
+    echo "Verified that Xcode CLI Tools are installed."
   fi
 else
   echo "Xcode not installed, aborting."
@@ -151,7 +163,7 @@ else # prompt to install a package manager
     read -p "Would you like to install the [H]omeBrew or [M]acPorts package manager, or [C]ancel installation? " hm
     case ${hm} in
       [Hh]* ) $SHELL -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"; break;;
-      [Mm]* ) echo "Please go to https://www.macports.org/install.php and download/install the package for your system."; break;;
+      [Mm]* ) $SHELL -c "$(curl -fsSL https://raw.githubusercontent.com/TheAlienDrew/OS-Scripts/master/Mac/MacPorts/installer.sh)"; break;;
       [Cc]* ) exit 1; break;;
       * ) echo "Please answer with H (HomeBrew) or M (MacPorts), or C (Cancel installation).";;
     esac
