@@ -51,7 +51,6 @@ Xcode_Install="/Applications/Xcode.app"
 Xcode_App_URL="https://apps.apple.com/app/id497799835"
 QEMU_Releases="https://api.github.com/repos/qemu/qemu/releases"
 Ventoy_Releases="https://api.github.com/repos/ventoy/Ventoy/releases"
-# TODO: any other constants needed
 
 # VARIABLES
 macVersion= # this and the following 4 get set in the OS check
@@ -309,7 +308,7 @@ done
 # confirm all required files are installed
 # TODO: (doesn't install QEMU to system, or create VM in user folder)
 # TODO: (check for user account Ventoy installation first)
-#   - If a user install is detected, prompt for uninstallation or repair
+#   - If a user account install is detected, prompt for uninstallation or repair
 #   - Locally: Will need to download QEMU source then compile binaries manaually for MacOS (see https://wiki.qemu.org/Hosts/Mac#Building_QEMU_for_macOS),
 #              and then setup the VM in that. Will need a package manager to install the resources needed to compile.
 #      * If location selected has an install, prompt for removal or repair
