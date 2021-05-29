@@ -74,48 +74,49 @@ fi
 # Internet connection required
 connected=1
 echo "Checking internet connection..."
-case "$(curl -s --max-time 4 -I https://google.com | sed 's/^[^ ]*  *\([0-9]\).*/\1/; 1q')" in
-  [23]) connected=0;;
-  5) echo "Sorry, but the web proxy won't let us through.";;
-  *) echo "Sorry, but the network is down or very slow.";;
-esac
-if [ "$connected" -eq 1 ]; then
+curl -s https://www.google.com -o /dev/null
+if [ $? -eq 1 ]; then
   echo "Please make sure you are connected to a network that has internet access."
   exit 1
 fi
 
 # Make sure Xcode is installed with CLI tools
-if [ ! -f "${Xcode_Install}" ]; then
+if [ ! -d "${Xcode_Install}" ] || [ -z "$(xcode-select -p 2>/dev/null)" ]; then
   echo "Xcode isn't installed, but required.\nPlease go to ${Xcode_App_URL} and install the Xcode app."
   read -p "Then, press any key to continue."
 fi # check if it was installed before the end of the read command
-if [ -f "${Xcode_Install}" ]; then
+if [ -d "${Xcode_Install}" ]; then
   XCODE_VERSION=`xcodebuild -version | grep '^Xcode\s' | sed -E 's/^Xcode[[:space:]]+([0-9\.]+)/\1/'`
   ACCEPTED_LICENSE_VERSION=`defaults read /Library/Preferences/com.apple.dt.Xcode 2> /dev/null | grep IDEXcodeVersionForAgreedToGMLicense | cut -d '"' -f 2`
 
   echo "Verified that Xcode is installed."
 
-  # Accept Xcode license, if not already
-  if [ "${XCODE_VERSION}" != "${ACCEPTED_LICENSE_VERSION}" ]; then
-    echo "Please accept the Xcode license..."
-    sudo xcodebuild -license
-    if [ $? -eq 1 ]; then
-      echo "Xcode license not accepted, aborting."
-      exit 1
+  # Make sure we actually need to install the CLI
+  if [ -z "$(xcode-select -p 2>/dev/null)" ]; then
+    # Accept Xcode license, if not already
+    if [ "${XCODE_VERSION}" != "${ACCEPTED_LICENSE_VERSION}" ]; then
+      echo "Please accept the Xcode license..."
+      sudo xcodebuild -license
+      if [ $? -eq 1 ]; then
+        echo "Xcode license not accepted, aborting."
+        exit 1
+      fi
+      echo "Xcode license accepted."
     fi
-    echo "Xcode license accepted."
-  fi
 
-  # Install CLI tools, if not already installed.
-  xcode-select -p 1>/dev/null
-  if [ $? -eq 2 ]; then
-    echo "Installing Xcode CLI tools..."
-    sudo xcode-select --install
-    if [ $? -ne 0 ]; then
-      echo "Xcode CLI tools couldn't install, aborting."
-      exit 1
+    # Install CLI tools, if not already installed.
+    xcode-select -p 1>/dev/null
+    if [ $? -eq 2 ]; then
+      echo "Installing Xcode CLI tools..."
+      sudo xcode-select --install
+      if [ $? -ne 0 ]; then
+        echo "Xcode CLI tools couldn't install, aborting."
+        exit 1
+      fi
+      echo "Xcode CLI Tools installed."
     fi
-    echo "Xcode CLI Tools installed."
+  else
+    echo "Verified that Xcode CLI Tools are installed."
   fi
 else
   echo "Xcode not installed, aborting."
