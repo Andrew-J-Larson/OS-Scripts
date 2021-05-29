@@ -21,6 +21,26 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+# Conditionally start script in zsh or bash
+if [ "$SHELL" = "/bin/sh" ]; then
+  # preferably start in zsh
+  shell=
+  if [ -f /bin/zsh ]; then
+    shell=/bin/zsh
+  elif [ -f /bin/bash ]; then
+    shell=/bin/bash
+  fi
+
+  # execute in shell or warn that we can't execute
+  if [ -n "$shell" ]; then
+    exec $shell "$0"
+    exit
+  else
+    printf "Can't execute script, can't find a required shell environment:\n - zsh (missing)\n - bash (missing)\n"
+    exit 1
+  fi
+fi
+
 # TODO: Check to make sure Ventory iso is updated
 
 # Prompt for USB drive(s) selection to use with Ventoy LiveCD VM
