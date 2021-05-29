@@ -81,6 +81,7 @@ if [ $? -eq 1 ]; then
 fi
 
 # Check system updates first
+echo "Checking for system updates..."
 if softwareupdate -l | grep -q "Action: restart"; then
   echo "MacOS needs some updates first before we can continue with this script. Enter your password when prompted."
   sudo softwareupdate --install --restart --all
@@ -150,7 +151,7 @@ else
     exit 1
   else
     echo "Password will be required to install MacPorts, please enter when prompted."
-    sudo installer -allowUntrusted -verboseR -pkg "$downloadFile" -target /
+    sudo installer -allowUntrusted -verbose -pkg "$downloadFile" -target /
     if [ $? -ne 0 ]; then
       echo "Couldn't install MacPorts. (did you enter the right password?)"
       exit 1
