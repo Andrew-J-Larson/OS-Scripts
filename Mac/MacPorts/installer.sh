@@ -83,8 +83,7 @@ fi
 # Check system updates first
 if softwareupdate -l | grep -q "Action: restart"; then
   echo "MacOS needs some updates first before we can continue with this script. Enter your password when prompted."
-  sudo softwareupdate -i -a
-  sudo shutdown -r now
+  sudo softwareupdate --install --restart --all
   exit 1
 fi
 
