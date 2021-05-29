@@ -86,13 +86,13 @@ if [ ! -d "${Xcode_Install}" ] || [ -z "$(xcode-select -p 2>/dev/null)" ]; then
   read -p "Then, press any key to continue."
 fi # check if it was installed before the end of the read command
 if [ -d "${Xcode_Install}" ]; then
-  XCODE_VERSION=`xcodebuild -version | grep '^Xcode\s' | sed -E 's/^Xcode[[:space:]]+([0-9\.]+)/\1/'`
-  ACCEPTED_LICENSE_VERSION=`defaults read /Library/Preferences/com.apple.dt.Xcode 2> /dev/null | grep IDEXcodeVersionForAgreedToGMLicense | cut -d '"' -f 2`
-
   echo "Verified that Xcode is installed."
 
   # Make sure we actually need to install the CLI
   if [ -z "$(xcode-select -p 2>/dev/null)" ]; then
+    XCODE_VERSION=`xcodebuild -version | grep '^Xcode\s' | sed -E 's/^Xcode[[:space:]]+([0-9\.]+)/\1/'`
+    ACCEPTED_LICENSE_VERSION=`defaults read /Library/Preferences/com.apple.dt.Xcode 2> /dev/null | grep IDEXcodeVersionForAgreedToGMLicense | cut -d '"' -f 2`
+
     # Accept Xcode license, if not already
     if [ "${XCODE_VERSION}" != "${ACCEPTED_LICENSE_VERSION}" ]; then
       echo "Please accept the Xcode license..."
