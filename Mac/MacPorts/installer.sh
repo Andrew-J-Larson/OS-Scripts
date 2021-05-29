@@ -152,7 +152,9 @@ else
   else
     echo "Password will be required to install MacPorts, please enter when prompted."
     sudo installer -allowUntrusted -verbose -pkg "$downloadFile" -target /
-    if [ $? -ne 0 ]; then
+    installerResult=$?
+    rm "$downloadFile"
+    if [ "$installerResult" -ne 0 ]; then
       echo "Couldn't install MacPorts. (did you enter the right password?)"
       exit 1
     fi
