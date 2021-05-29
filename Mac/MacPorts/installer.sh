@@ -80,6 +80,12 @@ if [ $? -eq 1 ]; then
   exit 1
 fi
 
+# Check system updates first
+if softwareupdate -l | grep -q "Action: restart"; then
+  read -p "System needs updates and a restart before continuing. (press enter to continue)"
+  softwareupdate -i -a
+fi
+
 # Make sure Xcode is installed with CLI tools
 if [ ! -d "${Xcode_Install}" ] || [ -z "$(xcode-select -p 2>/dev/null)" ]; then
   echo "Xcode isn't installed, but required.\nPlease go to ${Xcode_App_URL} and install the Xcode app."
@@ -124,6 +130,7 @@ else
 fi
 
 # Check the MacPorts releases
+echo "Finding latest release..."
 downloadUrl="$(curl -s "https://api.github.com/repos/macports/macports-base/releases" | grep '"browser_download_url": "http.*.pkg"' | grep -v "beta\|rc" | grep "$(echo "$macCodename" | tr -d ' ')" | head -1 | cut -d : -f 2,3 | tr -d \" | tr -d ' ')"
 
 # can't download when the link is empty
@@ -132,6 +139,7 @@ if [ -z "$downloadUrl" ]; then
   exit 1
 else
   # grab file name and download to tmp
+  echo "Downloading the latest release from: $downloadUrl"
   downloadFile="/tmp/$(basename -- "$downloadUrl")"
   curl -L "$downloadUrl" -o "$downloadFile"
 
