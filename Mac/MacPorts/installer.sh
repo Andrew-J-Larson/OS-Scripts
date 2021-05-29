@@ -1,8 +1,4 @@
 #!/bin/sh
-##########################################################################################################
-###################################### CURRENTLY A WORK IN PROGRESS ######################################
-##########################################################################################################
-
 # Auto installs the MacPorts package manager.
 
 # Copyright (C) 2020  Andrew Larson (thealiendrew@gmail.com)
@@ -90,7 +86,7 @@ fi
 
 # Make sure Xcode is installed with CLI tools
 if [ ! -f "${Xcode_Install}" ]; then
-  echo -e "Xcode isn't installed, but required.\nPlease go to ${Xcode_App_URL} and install the Xcode app.\n"
+  echo "Xcode isn't installed, but required.\nPlease go to ${Xcode_App_URL} and install the Xcode app."
   read -p "Then, press any key to continue."
 fi # check if it was installed before the end of the read command
 if [ -f "${Xcode_Install}" ]; then
