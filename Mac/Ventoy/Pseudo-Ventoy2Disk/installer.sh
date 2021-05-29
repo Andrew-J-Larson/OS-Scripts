@@ -54,10 +54,11 @@ Ventoy_Releases="https://api.github.com/repos/ventoy/Ventoy/releases"
 # TODO: any other constants needed
 
 # VARIABLES
-macVersion= # this and the following 3 get set in the OS check
+macVersion= # this and the following 4 get set in the OS check
 majVer=
 minVer=
 macCodename=
+macArch=
 packageManager= # needed for any install/compilation
 folderInstall= # gets set to choosen directory if installing to folder
 
@@ -67,6 +68,7 @@ if [ "$(uname -s)" = "Darwin" ]; then
   majVer="$(echo "$macVersion" | cut -d'.' -f1)"
   minVer="$(echo "$macVersion" | cut -d'.' -f2)"
   macCodename="$(awk '/SOFTWARE LICENSE AGREEMENT FOR macOS/' '/System/Library/CoreServices/Setup Assistant.app/Contents/Resources/en.lproj/OSXSoftwareLicense.rtf' | awk -F 'macOS ' '{print $NF}' | awk '{print substr($0, 0, length($0)-1)}')"
+  macArch="$(/usr/bin/arch)"
   if [ -z "$minVer" ]; then minVer="0"; fi
 
   # check version: QEMU is only supported on 10.5+,
@@ -107,6 +109,34 @@ if softwareupdate -l | grep -q "Action: restart"; then
   echo "MacOS needs some updates first before we can continue with this script. Enter your password when prompted."
   sudo softwareupdate --install --restart --all
   exit 1
+fi
+
+# arm64 MacOS specific things
+brewQemuStateArm64=
+portQemuStateArm64=
+if [ "$macArch" = "arm64" ]; then
+  # TODO: TEMP: check to see if at least one or both package managers has resolved the M1 mac compile issue
+  brewQemuIssueArm64="https://api.github.com/repos/Homebrew/homebrew-core/issues/73286"
+  portQemuPullArm64="https://api.github.com/repos/macports/macports-ports/pulls/9955"
+  # get current states
+  brewQemuStateArm64="$(curl -s "$brewQemuIssueArm64" | grep '"state"' | cut -d : -f 2,3 | tr -d \" | tr -d ' ' | cut -d , -f 1)"
+  portQemuStateArm64="$(curl -s "$portQemuPullArm64" | grep '"state"' | cut -d : -f 2,3 | tr -d \" | tr -d ' ' | cut -d , -f 1)"
+  if [ "$brewQemuStateArm64" = "open" ] && [ "$portQemuStateArm64" = "open" ]; then
+    echo "Not supported on ARM yet. (QEMU doesn't work yet)"
+    exit 1
+  fi
+
+  # M1 macs will need Rosetta (for brew or macports)
+  if [[ ! -f "/Library/Apple/System/Library/LaunchDaemons/com.apple.oahd.plist" ]]; then
+    echo "Rosetta may need to be required. Enter your password when prompted."
+    sudo softwareupdate –install-rosetta –agree-to-license
+  fi
+  if [[ -f "/Library/Apple/System/Library/LaunchDaemons/com.apple.oahd.plist" ]]; then
+    echo "Verified that Rosetta is installed"
+  else
+    echo "Failed to install Rosetta."
+    exit 1
+  fi
 fi
 
 # Make sure Xcode is installed with CLI tools
@@ -153,25 +183,92 @@ else
 fi
 
 # Check for package manager, and make sure QEMU is installed
+doChoice=1
 if command -v brew 2>&1 >/dev/null; then
   echo "HomeBrew detected."
-elif command -v port 2>&1 >/dev/null; then
-  echo "MacPorts detected."
-else # prompt to install a package manager
-  echo "No package manager installed."
-  while true; do
-    read -p "Would you like to install the [H]omeBrew or [M]acPorts package manager, or [C]ancel installation? " hm
-    case ${hm} in
-      [Hh]* ) $SHELL -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"; break;;
-      [Mm]* ) $SHELL -c "$(curl -fsSL https://raw.githubusercontent.com/TheAlienDrew/OS-Scripts/master/Mac/MacPorts/installer.sh)"; break;;
-      [Cc]* ) exit 1; break;;
-      * ) echo "Please answer with H (HomeBrew) or M (MacPorts), or C (Cancel installation).";;
-    esac
-    read -p "Then, press any key to continue."
-  done
+  # force choice
+  if [ "$macArch" = "arm64" ] && [ "$brewQemuStateArm64" = "open"]; then
+    doChoice=0
+  elif [ -z "$packageManager" ]; then
+    packageManager="brew"
+  fi
 fi
-if command -v brew 2>&1 >/dev/null; then
-  packageManager="brew"
+if command -v port 2>&1 >/dev/null; then
+  echo "MacPorts detected."
+  # force choice
+  if [ "$macArch" = "arm64" ] && [ "$portQemuStateArm64" = "open"]; then
+    doChoice=0
+  elif [ -z "$packageManager" ]; then
+    packageManager="port"
+  fi
+fi
+if [ -z "$packageManager" ] # prompt to install a package manager
+  echo "No package manager installed, but one is required."
+
+  # can't allow picking of package manager when there is only one available
+  allowPick=0
+  if [ "$macArch" = "arm64" ]; then
+    if [ "$brewQemuStateArm64" = "open" ] || [ "$portQemuStateArm64" = "open" ]; then
+      allowPick=1
+    fi
+  fi
+
+  if [ "$allowPick" -eq 0 ]; then
+    while true; do
+      read -p "Would you like to install the [H]omeBrew or [M]acPorts package manager, or [C]ancel installation? " hm
+      case ${hm} in
+        [Hh]* ) $SHELL -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"; break;;
+        [Mm]* ) $SHELL -c "$(curl -fsSL https://raw.githubusercontent.com/TheAlienDrew/OS-Scripts/master/Mac/MacPorts/installer.sh)"; break;;
+        [Cc]* ) exit 1; break;;
+        * ) echo "Please answer with H (HomeBrew) or M (MacPorts), or C (Cancel installation).";;
+      esac
+      read -p "Then, press any key to continue."
+      if command -v brew 2>&1 >/dev/null; then
+        packageManager="brew"
+      elif command -v port 2>&1 >/dev/null; then
+        packageManager="port"
+      fi
+    done
+  else # Ask to install only package manager compatible
+    if [ "$brewQemuStateArm64" != "open" ] && [ "$portQemuStateArm64" = "open" ]; then
+      # brew has qemu ARM
+  
+      while true; do
+        read -p "Would you like to install the HomeBrew package manager? (only one supported with Ventoy at this time) " yn
+        case ${yn} in
+          [Yy]* ) $SHELL -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"; break;;
+          [Nn]* ) exit 1; break;;
+          * ) echo "Please answer yes or no..";;
+        esac
+        read -p "Then, press any key to continue."
+        if command -v brew 2>&1 >/dev/null; then
+          packageManager="brew"
+        fi
+      done
+    elif [ "$brewQemuStateArm64" = "open" ] && [ "$portQemuStateArm64" != "open" ]; then
+      # port has qemu ARM
+
+      while true; do
+        read -p "Would you like to install the MacPorts package manager? (only one supported with Ventoy at this time) " yn
+        case ${yn} in
+          [Yy]* ) $SHELL -c "$(curl -fsSL https://raw.githubusercontent.com/TheAlienDrew/OS-Scripts/master/Mac/MacPorts/installer.sh)"; break;;
+          [Nn]* ) exit 1; break;;
+          * ) echo "Please answer yes or no..";;
+        esac
+        read -p "Then, press any key to continue."
+        if command -v port 2>&1 >/dev/null; then
+          packageManager="port"
+        fi
+      done
+    fi
+  fi
+fi
+if [ -z "$packageManager" ]; then
+  echo "Package manager couldn't be installed."
+  exit 1
+fi
+# update specific package manager, and maybe install qemu
+if [ "$packageManager" = "brew" ]; then
   echo "Updating HomeBrew packages..."
   brew update
   brew upgrade
@@ -179,8 +276,7 @@ if command -v brew 2>&1 >/dev/null; then
     echo "Installing QEMU via HomeBrew..."
     brew install qemu
   fi
-elif command -v port 2>&1 >/dev/null; then
-  packageManager="port"
+elif [ "$packageManager" = "port" ]; then
   echo "Updating MacPorts packages..."
   sudo port selfupdate
   sudo port upgrade outdated
@@ -188,9 +284,6 @@ elif command -v port 2>&1 >/dev/null; then
     echo "Installing QEMU via MacPorts..."
     sudo port install qemu
   fi
-else
-  echo "Package manager couldn't be installed."
-  exit 1
 fi
 
 # Choose between user or folder install
@@ -198,18 +291,18 @@ needQemuPackage=0 # used to optionally prompt to uninstall from package manager 
 while true; do
   read -p "Would you like to install to [U]ser account or [F]older, or [C]ancel installation?" uf
   case ${uf} in
-    [Uu]* ) folderInstall="~/"; break;;
+    [Uu]* ) folderInstall="~/Ventoy"; mkdir -p "$folderInstall"; break;;
     [Ff]* ) folderInstall=`/usr/bin/osascript << EOT
                 tell application "Finder"
                     activate
                     set folderInstall to choose folder with prompt "Select the folder you want to install Ventoy to"
                 end tell
                 return (posix path of folderInstall)
-EOT`; if [ -z "$folderInstall" ]; then echo "No folder selected, aborted."; exit 1; fi; break;;
+EOT`; if [ -z "$folderInstall" ]; then echo "No folder selected, aborted."; exit 1;
+            else folderInstall+="Ventoy"; mkdir -p "$folderInstall" 2>/dev/null && break || echo "No write permissions for that folder, please choose a different directory."; fi;;
     [Cc]* ) exit 1; break;;
     * ) echo "Please answer with U (User account) or F (Folder), or C (Cancel installation).";;
   esac
-  folderInstall+="Ventoy"
 done
 
 # Check if location already has install
@@ -221,8 +314,8 @@ done
 #              and then setup the VM in that. Will need a package manager to install the resources needed to compile.
 #      * If location selected has an install, prompt for removal or repair
 #   - User account:
-#      * HomeBrew: Only supports Mojave (10.14)+, but ARM (M1 Macs) are supported
-#      * MacPorts: Supports Sierra (10.12)+, but doesn't support ARM (M1 Macs)
+#      * HomeBrew: Only supports Mojave (10.14)+
+#      * MacPorts: Supports Sierra (10.12)+
 #      * Check if qemu is already installed, check for package manager (if found, run updates), then use the installed qemu version
 #        else, check for a package manager and ask to install qemu from there
 #        else prompt to install a package manager of choice to get qemu installed (and then rerun the checks)
