@@ -1,0 +1,6 @@
+For the current version of QEMU in brew (v6.0.0) and in macports (v5.2.0), the version of libusb used (1.0.24 or older) will not be able to use USB devices unless the kext is unloaded to the specific USB device.
+
+The following should be handy resources for working around this issue, until a new version of libusb is release, and subsequently QEMU:
+- https://stackoverflow.com/questions/20253350/unable-to-claim-usb-interface-with-c-libusb-on-mac-os-x
+- https://osxdaily.com/2015/06/24/load-unload-kernel-extensions-mac-os-x/
+- https://stackoverflow.com/questions/38120966/find-the-driver-of-a-usb-device-on-darwin
