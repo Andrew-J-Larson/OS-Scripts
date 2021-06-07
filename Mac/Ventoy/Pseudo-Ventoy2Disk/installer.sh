@@ -94,7 +94,6 @@ if [ "$EUID" -eq 0 ]; then
 fi
 
 # Internet connection required
-connected=1
 echo "Checking internet connection..."
 curl -s https://www.google.com -o /dev/null
 if [ $? -eq 1 ]; then
