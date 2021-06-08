@@ -3,6 +3,7 @@
 GITHUB_RELEASES="https://api.github.com/repos/ventoy/Ventoy/releases"
 OLDDIR="$(cd "$(dirname "$0")" 2>&1 >/dev/null && pwd)"
 SCRIPT="$(basename "$0")"
+PID="$$"
 
 if [ -f ./ventoy/version ]; then
     curver="$(cat ./ventoy/version)"
@@ -41,9 +42,19 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-IS_RUNNING="$(ps aux | grep -v 'grep' | grep -F "/bin/sh ./$SCRIPT" | awk '{print $2}' | grep -vF "$$")"
+IS_RUNNING="$(ps -A -ww -o pid,ppid,command | grep -v "grep\|$PID" | grep -F "/bin/sh ./$SCRIPT")"
 if [ -n "$IS_RUNNING" ]; then
     echo "Please only run one instance of the updater at a time."
+    exit 1
+fi
+
+SHOW_FILES_IN_DIR="ls -A1 '$OLDDIR' | sed '/^$SCRIPT\$/d' | sed 's/.*/\"&\"/'"
+FILES_IN_DIR="$(eval "$SHOW_FILES_IN_DIR")"
+echo "Checking if files are in use..."
+CHECK_IN_USE="$(echo "$FILES_IN_DIR" | xargs  lsof)"
+if [ -n "$CHECK_IN_USE" ]; then
+    echo "Unable to delete old version, the following files are still in use:"
+    echo "$FILES_IN_DIR" | xargs -I {} sh -c 'if lsof "{}" >/dev/null; then echo "* \"{}\""; fi'
     exit 1
 fi
 
@@ -77,13 +88,11 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-SHOW_OLD="ls -1 "$OLDDIR" | sed '/^$SCRIPT\$/d' | sed 's/.*/\"&\"/'"
-TO_REMOVE="$(eval "$SHOW_OLD")"
-if [ -n "$TO_REMOVE" ]; then
+if [ -n "$FILES_IN_DIR" ]; then
     echo ''
     while true; do
         echo "The following files/folders in \"$OLDDIR\" will be removed:"
-        echo "$TO_REMOVE" | sed 's/^/* /g'
+        echo "$FILES_IN_DIR" | sed 's/^/* /g'
         echo ''
         read -p "Continue? " yn
         case $yn in
@@ -93,8 +102,8 @@ if [ -n "$TO_REMOVE" ]; then
         esac
     done
     echo "Removing older version..."
-    RM_OLD="echo \"$TO_REMOVE\" | xargs rm -rf"
-    eval "$RM_OLD"
+    RM_OLD_FILES="echo \"$FILES_IN_DIR\" | xargs rm -rf"
+    eval "$RM_OLD_FILES"
     if [ $? -ne 0 ]; then
         echo "Unable to delete old version, please make sure you have write permissions in this directory."
         exit 1
