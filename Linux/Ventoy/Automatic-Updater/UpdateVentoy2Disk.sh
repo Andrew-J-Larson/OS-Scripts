@@ -57,7 +57,7 @@ if [ -n "$FILES_IN_USE" ]; then
     exit 1
 fi
 
-echo "############### Ventoy Updater ###############"
+echo "############ $SCRIPT ############"
 
 echo "Checking for latest version..."
 DOWNLOAD_URL="$(eval "$GET_RELEASES" | grep '"browser_download_url".*-linux\.tar\.gz' | awk '{print $2}' | tr -d \" | head -1)"
