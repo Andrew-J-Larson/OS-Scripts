@@ -91,9 +91,9 @@ if [ -n "$FILES_IN_DIR" ]; then
     echo ''
     while true; do
         echo "The following files/folders in \"$OLDDIR\" will be removed:"
-        echo "$FILES_IN_DIR" | sed 's/^/* /g'
+        echo "$FILES_IN_DIR" | sed 's/^/ > /g'
         echo ''
-        read -p "Continue? " yn
+        read -p "Continue? (Y/N): " yn
         case $yn in
             [Yy]* ) break;;
             [Nn]* ) echo "Aborted."; exit 1;;
