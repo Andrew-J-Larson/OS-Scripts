@@ -31,8 +31,8 @@ echo ''
 
 if [ -z "$dltool" ]; then
     echo "A file download tool is not available, please install one of the following tools to continue:"
-    echo "* wget"
-    echo "* curl"
+    echo " * wget"
+    echo " * curl"
     exit 1
 fi
 
@@ -50,7 +50,7 @@ fi
 
 SHOW_FILES_IN_DIR="ls -A1 '$OLDDIR' | sed '/^$SCRIPT\$/d' | sed 's/.*/\"&\"/'"
 FILES_IN_DIR="$(eval "$SHOW_FILES_IN_DIR")"
-FILES_IN_USE="$(echo "$FILES_IN_DIR" | xargs -I {} sh -c 'if lsof "{}" >/dev/null; then echo "* \"{}\""; fi')"
+FILES_IN_USE="$(echo "$FILES_IN_DIR" | xargs -I {} sh -c 'if lsof "{}" >/dev/null; then echo " > \"{}\""; fi')"
 if [ -n "$FILES_IN_USE" ]; then
     echo "Unable to delete old version, the following files are still in use:"
     echo "$FILES_IN_USE"
