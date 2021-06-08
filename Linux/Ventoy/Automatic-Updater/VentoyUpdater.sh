@@ -50,11 +50,10 @@ fi
 
 SHOW_FILES_IN_DIR="ls -A1 '$OLDDIR' | sed '/^$SCRIPT\$/d' | sed 's/.*/\"&\"/'"
 FILES_IN_DIR="$(eval "$SHOW_FILES_IN_DIR")"
-echo "Checking if files are in use..."
-CHECK_IN_USE="$(echo "$FILES_IN_DIR" | xargs  lsof)"
-if [ -n "$CHECK_IN_USE" ]; then
+FILES_IN_USE="$(echo "$FILES_IN_DIR" | xargs -I {} sh -c 'if lsof "{}" >/dev/null; then echo "* \"{}\""; fi')"
+if [ -n "$FILES_IN_USE" ]; then
     echo "Unable to delete old version, the following files are still in use:"
-    echo "$FILES_IN_DIR" | xargs -I {} sh -c 'if lsof "{}" >/dev/null; then echo "* \"{}\""; fi'
+    echo "$FILES_IN_USE"
     exit 1
 fi
 
