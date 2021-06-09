@@ -1,7 +1,7 @@
 #!/bin/sh
 
 GITHUB_RELEASES="https://api.github.com/repos/ventoy/Ventoy/releases"
-OLDDIR="$(cd "$(dirname "$0")" 2>&1 >/dev/null && pwd)"
+OLDDIR="$(cd "$(dirname "$0")" >/dev/null 2>&1 && pwd)"
 SCRIPT="$(basename "$0")"
 PID="$$"
 
