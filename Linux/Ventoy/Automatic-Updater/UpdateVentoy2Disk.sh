@@ -9,11 +9,11 @@ if [ -f ./ventoy/version ]; then
     curver="$(cat ./ventoy/version)"
 fi
 
-if command -v curl 2>&1 >/dev/null; then
+if command -v curl >/dev/null 2>&1; then
     dltool=curl
     CHECK_CONNECTION="curl -s https://github.com -o /dev/null"
     GET_RELEASES="curl -s \"$GITHUB_RELEASES\""
-elif command -v wget 2>&1 >/dev/null; then
+elif command -v wget >/dev/null 2>&1; then
     dltool=wget
     CHECK_CONNECTION="wget -q --spider https://github.com"
     GET_RELEASES="wget -q -O - \"$GITHUB_RELEASES\""
@@ -36,8 +36,7 @@ if [ -z "$dltool" ]; then
     exit 1
 fi
 
-$CHECK_CONNECTION
-if [ $? -ne 0 ]; then
+if ! $CHECK_CONNECTION; then
     echo "Please make sure you are connected to a network that has internet access."
     exit 1
 fi
@@ -81,8 +80,8 @@ if [ "$dltool" = "wget" ]; then
 elif [ "$dltool" = "curl" ]; then
     DL_NEW="curl -L -o \"$DL_FILE\" -C - \"$DOWNLOAD_URL\""
 fi
-eval "$DL_NEW"
-if [ $? -ne 0 ]; then
+
+if ! eval "$DL_NEW"; then
     echo "Couldn't download latest release, please make sure you have a constant internet connection."
     exit 1
 fi
@@ -93,7 +92,8 @@ if [ -n "$FILES_IN_DIR" ]; then
         echo "The following files/folders in \"$OLDDIR\" will be removed:"
         echo "$FILES_IN_DIR" | sed 's/^/ > /g'
         echo ''
-        read -p "Continue? (Y/N): " yn
+        printf "%s" "Continue? (Y/N): "
+        read yn
         case $yn in
             [Yy]* ) break;;
             [Nn]* ) echo "Aborted."; exit 1;;
@@ -102,8 +102,7 @@ if [ -n "$FILES_IN_DIR" ]; then
     done
     echo "Removing older version..."
     RM_OLD_FILES="echo \"$FILES_IN_DIR\" | xargs rm -rf"
-    eval "$RM_OLD_FILES"
-    if [ $? -ne 0 ]; then
+    if ! eval "$RM_OLD_FILES"; then
         echo "Unable to delete old version, please make sure you have write permissions in this directory."
         exit 1
     fi
@@ -112,13 +111,11 @@ fi
 
 echo "Extracting new version..."
 DL_DIR="/tmp/$(echo "$DOWNLOAD_FILE" | cut -d - -f1,2)"
-tar -vxf "$DL_FILE" -C "/tmp"
-if [ $? -ne 0 ]; then
+if ! tar -vxf "$DL_FILE" -C "/tmp"; then
     echo "Extraction failed, reason unknown."
     exit 1
 fi
-eval mv "$DL_DIR/*" "$OLDDIR/"
-if [ $? -ne 0 ]; then
+if ! eval mv "$DL_DIR/*" "$OLDDIR/"; then
     echo "Unable to move new version, please make sure you have write permissions in this directory."
     exit 1
 fi
