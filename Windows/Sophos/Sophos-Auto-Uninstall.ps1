@@ -3,9 +3,12 @@
   Script that aids in the mass uninstallation of Sophos anti-virus.
 
   .DESCRIPTION
+  Version 1.0.0
+  
   This script is meant to be used in aid of mass uninstallation of Sophos anti-virus in any organization,
   per computer. It should be able to be ran in the background, as long as a computer has internet access,
-  and the required API information has been filled out below in the constants.
+  and the required API information has been filled out below in the constants. Make sure the API constants
+  have been filled in prior to running the script.
 
   .PARAMETER Help
   Brings up this help page, but won't run script.
@@ -45,7 +48,6 @@
 #>
 
 #Requires -RunAsAdministrator
-# Version 1.0.0
 
 # Copyright (C) 2020  Andrew Larson (thealiendrew@gmail.com)
 #
