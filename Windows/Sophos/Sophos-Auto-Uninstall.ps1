@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Script that aids in the mass uninstallation of Sophos.
+  Script that aids in the mass uninstallation of Sophos anti-virus.
 
   .DESCRIPTION
   This script is meant to be used in aid of mass uninstallation of Sophos anti-virus in any organization,
