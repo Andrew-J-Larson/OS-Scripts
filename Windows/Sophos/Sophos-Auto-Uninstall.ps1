@@ -3,7 +3,7 @@
   Script that aids in the mass uninstallation of Sophos anti-virus.
 
   .DESCRIPTION
-  Version 1.0.0
+  Version 1.1.0
   
   This script is meant to be used in aid of mass uninstallation of Sophos anti-virus in any organization,
   per computer. It should be able to be ran in the background, as long as a computer has internet access,
@@ -73,18 +73,16 @@ param(
 )
 
 # Constants
+Set-Variable -Name apiSophosIdURL -Value "https://id.sophos.com/api/v2/oauth2/token" -Option Constant
+Set-Variable -Name apiSophosGlobalURL -Value "https://api.central.sophos.com" -Option Constant
 Set-Variable -Name SEDcliExe -Value "C:\Program Files\Sophos\Endpoint Defense\SEDcli.exe" -Option Constant
 Set-Variable -Name uninstallcliExe -Value "C:\Program Files\Sophos\Sophos Endpoint Agent\uninstallcli.exe" -Option Constant
 Set-Variable -Name EndpointIdentityTxt -Value "C:\ProgramData\Sophos\Management Communications System\Endpoint\Persist\EndpointIdentity.txt" -Option Constant
 
 # Sophos API Constants: the following NEEDS to be filled out BEFORE the script can work
 # see https://docs.sophos.com/central/Customer/help/en-us/ManageYourProducts/Overview/GlobalSettings/ApiTokenManagement/index.html
-Set-Variable -Name tenantID -Value "" -Option Constant
-Set-Variable -Name authToken -Value "" -Option Constant
-Set-Variable -Name dataRegion -Value "" -Option Constant # this can be determined from https://developer.sophos.com/intro
-
-# Other Sophos API Constants (no changes need to be made here)
-Set-Variable -Name apiURL -Value "https://api-${dataRegion}.central.sophos.com/endpoint/v1/endpoints" -Option Constant
+Set-Variable -Name tenantClientID -Value "" -Option Constant
+Set-Variable -Name tenantClientSecret -Value "" -Option Constant
 
 # check for parameters and execute accordingly
 if ($Help.IsPresent) {
@@ -92,11 +90,6 @@ if ($Help.IsPresent) {
   exit
 }
 $Restart = $Restart.IsPresent
-
-# exit if any of the API constants are empty (or else script doesn't function)
-if ([string]::IsNullOrEmpty($tenantID) -Or [string]::IsNullOrEmpty($authToken) -Or [string]::IsNullOrEmpty($dataRegion)) {
-  throw "One or more constants have been left empty, please edit the script and fill in your Sophos API information."
-}
 
 # exit if we are missing required exe's
 if (-Not ($(Test-Path "$SEDcliExe") -And $(Test-Path "$uninstallcliExe"))) {
@@ -108,12 +101,38 @@ if (& "$SEDcliExe" -s | Select-String -Pattern "denied" -SimpleMatch -Quiet) {
   throw "This script requires being ran as admin."
 }
 
-# set headers required to GET data from Soghos API later
+# authenticate to Sophos ID and get tenant auth token
+
+$tenantAuthToken = ""
+$response = Invoke-RestMethod "$apiSophosIdURL" -Method 'POST' -Body "grant_type=client_credentials&client_id=${tenantClientID}&client_secret=${tenantClientSecret}&scope=token"
+if ($response.errorCode -eq "success") {
+  $tenantAuthToken = $response.access_token
+}
+if ([string]::IsNullOrEmpty($tenantAuthToken)) {
+  throw "Couldn't authenticate, please make sure you're using the correct credentials for your tenant."
+}
+
+# get the tenant ID and API region url to make requests to the tenant
+
+$tenantID = ""
+$apiSophosRegionURL = ""
+$apiSophosRegionEndpointsURL = ""
 $headers = New-Object "System.Collections.Generic.Dictionary[[String],[String]]"
-$headers.Add("X-Tenant-ID", "${tenantID}")
-$headers.Add("Authorization", "Bearer ${authToken} ")
+$headers.Add("Authorization", "Bearer ${tenantAuthToken} ")
+$response = Invoke-RestMethod "${apiSophosGlobalURL}/whoami/v1" -Method 'GET' -Headers $headers
+if ([string]::IsNullOrEmpty($response.idType)) {
+  throw "Couldn't connect to API" # shouldn't ever get here
+} elseif ($response.idType -eq "tenant") {
+  $tenantID = $response.id
+  $apiSophosRegionURL = $response.apiHosts.dataRegion
+  $apiSophosRegionEndpointsURL = "${apiSophosRegionURL}/endpoint/v1/endpoints"
+} else {
+  throw "Authenticated, but wrong credentials were used! Please make sure you are using the tenant's credentials."
+}
 
 # get per computer specific information
+
+$headers.Add("X-Tenant-ID", "${tenantID}")
 
 $endpointID = ""
 if (Test-Path "$EndpointIdentityTxt") {
@@ -125,24 +144,20 @@ if ([string]::IsNullOrEmpty($endpointID)) {
   $hostname = [System.Net.Dns]::GetHostName()
 
   # find endpoint ID per computer hostname in Sophos
-  $response = Invoke-RestMethod "${apiURL}?hostnameContains=${hostname}" -Method 'GET' -Headers $headers
-
-  $endpointID = $response.items[0]
-  if ($endpointID) {
-    $endpointID = $endpointID.id
+  $response = Invoke-RestMethod "${apiSophosRegionEndpointsURL}?hostnameContains=${hostname}" -Method 'GET' -Headers $headers
+  if (-Not $response.items -Or -Not $response.items[0]) {
+    throw "Couldn't retrieve endpoint ID for local machine or from API search results." # shouldn't ever get here
   }
-
-  # if still can't get endpoint ID, may have to work with machine manually
-  if ([string]::IsNullOrEmpty($endpointID)) {
-    throw "Couldn't find endpoint ID on the local machine or in Sophos API."
-  }
+  $endpointID = $response.items[0].id
 }
 
-# grab tamper protection password from Sophos
+# get tamper protection password
 
-$response = Invoke-RestMethod "${apiURL}/${endpointID}/tamper-protection" -Method 'GET' -Headers $headers
-
+$response = Invoke-RestMethod "${apiSophosRegionEndpointsURL}/${endpointID}/tamper-protection" -Method 'GET' -Headers $headers
 $tpPassword = $response.password
+if ([string]::IsNullOrEmpty($tpPassword)) {
+  throw "Unable to get tamper protection password." # shouldn't ever get here
+}
 
 # disable tamper protection on computer
 
