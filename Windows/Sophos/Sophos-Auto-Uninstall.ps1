@@ -85,7 +85,7 @@ Set-Variable -Name dataRegion -Value "" -Option Constant # this can be determine
 Set-Variable -Name apiURL -Value "https://api-${dataRegion}.central.sophos.com/endpoint/v1/endpoints" -Option Constant
 
 # check for parameters and execute accordingly
-if ($Help.IsPresent -Or $H.IsPresent) {
+if ($Help.IsPresent) {
   Get-Help $MyInvocation.MyCommand.Path
   exit
 }
