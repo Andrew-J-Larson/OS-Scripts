@@ -21,9 +21,6 @@
 # Constants
 Set-Variable HEIF_MSSTORE_APP_ID -Option Constant -Value "9PMMSR1CGPWG"
 Set-Variable HEVC_MSSTORE_APP_ID -Option Constant -Value "9N4WGH0Z6VHQ"
-Set-Variable REG_POLICY_MS -Option Constant -Value "HKLM:\Software\Policies\Microsoft"
-Set-Variable REG_MSSTORE -Option Constant -Value "${REG_POLICY_MS}\WindowsStore"
-Set-Variable WS_RESET -Option Constant -Value "${env:systemroot}\system32\WSReset.exe"
 
 # Functions
 
