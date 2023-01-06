@@ -27,6 +27,7 @@ Set-Variable WS_RESET -Option Constant -Value "${env:systemroot}\system32\WSRese
 
 # Functions
 
+# Only takes a single argument as the ProductId of an application in the Microsoft Store
 function Download-AppxPackage {
   $apiUrl = "https://store.rg-adguard.net/api/GetFiles"
 
@@ -54,20 +55,22 @@ function Download-AppxPackage {
        if($text -match "_x64.*`.appx(|bundle)$") {
          $downloadFile = Join-Path $downloadFolder $text
 
-         $confirmation = ''
+         # If file already exists, ask to replace it
          if(Test-Path $downloadFile) {
            Write-Host "`"${text}`" already exists at `"${downloadFile}`"."
            $confirmation = ''
            while (!(($confirmation -eq 'Y') -Or ($confirmation -eq 'N'))) {
-             $confirmation = Read-Host "Would you like to download and overwrite the file at `"${downloadFile}`" (Y/N)?"
+             $confirmation = Read-Host "Would you like to re-download and overwrite the file at `"${downloadFile}`" (Y/N)?"
              $confirmation = $confirmation.ToUpper()
            }
-           if ($confirmation -eq 'Y') {Remove-Item –Path $downloadFile -Force}
-         } else {
-           $confirmation = 'Y'
+           if ($confirmation -eq 'Y') {
+             Remove-Item –Path $downloadFile -Force
+           } else {
+             return $downloadFile
+           }
          }
 
-         if (($confirmation -eq 'Y') -And !(Test-Path $downloadFile)) {
+         if (!(Test-Path $downloadFile)) {
            Write-Host "Attempting download of `"${text}`" to `"${downloadFile}`" . . ."
            Invoke-WebRequest -Uri $url -OutFile $downloadFile
            return $downloadFile
