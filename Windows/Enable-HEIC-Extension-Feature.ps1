@@ -114,4 +114,4 @@ try {
   throw "Error occured"
 }
 
-Write-Host "HEIC extension feature installed successfully."
+Write-Host "HEIC extension feature enabled successfully."
