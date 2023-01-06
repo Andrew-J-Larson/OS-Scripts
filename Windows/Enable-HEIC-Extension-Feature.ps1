@@ -61,7 +61,7 @@ function Download-AppxPackage {
              $confirmation = $confirmation.ToUpper()
            }
            if ($confirmation -eq 'Y') {
-             Remove-Item –Path $downloadFile -Force
+             Remove-Item -Path $downloadFile -Force
            } else {
              return $downloadFile
            }
