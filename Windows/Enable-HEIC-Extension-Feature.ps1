@@ -1,4 +1,4 @@
-﻿# 1/06/2023
+# 1/06/2023
 # This powershell script automatically goes through the process of installing the needed extension apps from the Microsoft Store (servers) to have support for viewing/editing HEIF/HEVC/HEIC file types.
 # * Dell machines support installation of the "HEVC Video Extensions from Device Manufacturer" app for free from the app store, but it's not something you can search for to install.
 # * HEIC is a proprietary file type by Apple which combines the use of HEIF/HEVC in an HEIC container.
