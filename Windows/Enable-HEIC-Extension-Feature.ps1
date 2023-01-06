@@ -99,7 +99,7 @@ try {
     $appxHEIF = Download-AppxPackage ${HEIF_MSSTORE_APP_ID}
     Write-Host 'Installing "HEIF Image Extensions"...'
     Add-AppxPackage -Path $appxHEIF
-    
+    if ($?) {Write-Host '"HEIF Image Extensions" installed successfully.'}
   }
   # need HEVC (device manufacturer version) installed after
   if (Get-AppxPackage -Name "Microsoft.HEVCVideoExtension") {
@@ -108,9 +108,10 @@ try {
     $appxHEVC = Download-AppxPackage ${HEVC_MSSTORE_APP_ID}
     Write-Host 'Installing "HEVC Video Extensions from Device Manufacturer"...'
     Add-AppxPackage -Path $appxHEVC
+    if ($?) {Write-Host '"HEVC Video Extensions from Device Manufacturer" installed successfully.'}
   }
 } catch {
   throw "Error occured"
 }
 
-Write-Host "HEIC feature installed successfully."
+Write-Host "HEIC extension feature installed successfully."
