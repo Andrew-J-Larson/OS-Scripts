@@ -3,11 +3,13 @@
   Script that helps facilitate downloading Microsoft Store apps from their servers (via third-party API's).
 
   .DESCRIPTION
-  Version 1.0.0
+  Version 1.0.1
   
   This script is meant to be used as an alternative from the Microsoft Store and winget, to download application
   packages, for installation, such as in the case where an app is blocked from being downloaded directly from
   the store (e.g. HEVC Video Extensions from Device Manufacturer).
+
+  By default, the script downloads the the x64 Retail version of the .appx files.
 
   .PARAMETER Help
   Brings up this help page, but won't run script.
@@ -93,7 +95,7 @@ function Download-AppxPackage {
              $confirmation = $confirmation.ToUpper()
            }
            if ($confirmation -eq 'Y') {
-             Remove-Item –Path $downloadFile -Force
+             Remove-Item -Path $downloadFile -Force
            } else {
              return $downloadFile
            }
