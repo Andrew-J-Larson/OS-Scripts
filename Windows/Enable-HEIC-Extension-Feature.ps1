@@ -3,7 +3,7 @@
   Script downloads and installs all extensions needed for viewing/editing HEIF/HEVC/HEIC file types.
 
   .DESCRIPTION
-  Version 1.0.5
+  Version 1.0.6
   
   Since updated versions of Windows installations don't always include this support, this script is handy to turn
   on HEIC extension feature.
@@ -141,8 +141,8 @@ function Download-AppxPackage {
        }
      }
 
-  If ($errored) {Write-Host "Completed with some errors."}
-  if $(-Not $allFilesDownloaded) {Write-Host "Warning: Not all packages could be downloaded."}
+  if ($errored) {Write-Host "Completed with some errors."}
+  if (-Not $allFilesDownloaded) {Write-Host "Warning: Not all packages could be downloaded."}
   return $DownloadedFiles
 }
 
@@ -197,3 +197,4 @@ try {
 
 Write-Host "HEIC extension feature enabled successfully."
 return $true
+

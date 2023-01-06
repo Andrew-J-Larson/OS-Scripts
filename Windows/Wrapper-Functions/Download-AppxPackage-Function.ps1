@@ -3,7 +3,7 @@
   Script that helps facilitate downloading Microsoft Store apps from their servers (via third-party API's).
 
   .DESCRIPTION
-  Version 1.0.4
+  Version 1.0.5
   
   This script is meant to be used as an alternative from the Microsoft Store and winget, to download application
   packages, for installation, such as in the case where an app is blocked from being downloaded directly from
@@ -132,8 +132,8 @@ function Download-AppxPackage {
        }
      }
 
-  If ($errored) {Write-Host "Completed with some errors."}
-  if $(-Not $allFilesDownloaded) {Write-Host "Warning: Not all packages could be downloaded."}
+  if ($errored) {Write-Host "Completed with some errors."}
+  if (-Not $allFilesDownloaded) {Write-Host "Warning: Not all packages could be downloaded."}
   return $DownloadedFiles
 }
 
