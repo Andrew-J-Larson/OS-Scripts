@@ -3,7 +3,7 @@
   Script downloads and installs all extensions needed for viewing/editing HEIF/HEVC/HEIC file types.
 
   .DESCRIPTION
-  Version 1.0.4
+  Version 1.0.5
   
   Since updated versions of Windows installations don't always include this support, this script is handy to turn
   on HEIC extension feature.
@@ -102,7 +102,9 @@ function Download-AppxPackage {
     $raw = Invoke-RestMethod -Method Post -Uri $apiUrl -ContentType 'application/x-www-form-urlencoded' -Body $body
   } catch {$errored = $true}
 
-  $useArch = if ($packages -match ".*_${arch}_.*") {$arch} else {"neutral"}
+  $packageList = $raw | Select-String '<tr style.*<a href=\"(?<url>.*)"\s.*>(?<text>.*)<\/a>' -AllMatches | % { $_.Matches } | % { $_.Groups[2].Value }
+
+  $useArch = if ($packageList -match ".*_${arch}_.*") {$arch} else {"neutral"}
 
   $raw | Select-String '<tr style.*<a href=\"(?<url>.*)"\s.*>(?<text>.*)<\/a>' -AllMatches | % { $_.Matches } |
    % { $url = $_.Groups[1].Value

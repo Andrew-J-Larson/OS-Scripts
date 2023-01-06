@@ -3,7 +3,7 @@
   Script that helps facilitate downloading Microsoft Store apps from their servers (via third-party API's).
 
   .DESCRIPTION
-  Version 1.0.3
+  Version 1.0.4
   
   This script is meant to be used as an alternative from the Microsoft Store and winget, to download application
   packages, for installation, such as in the case where an app is blocked from being downloaded directly from
@@ -93,7 +93,9 @@ function Download-AppxPackage {
     $raw = Invoke-RestMethod -Method Post -Uri $apiUrl -ContentType 'application/x-www-form-urlencoded' -Body $body
   } catch {$errored = $true}
 
-  $useArch = if ($packages -match ".*_${arch}_.*") {$arch} else {"neutral"}
+  $packageList = $raw | Select-String '<tr style.*<a href=\"(?<url>.*)"\s.*>(?<text>.*)<\/a>' -AllMatches | % { $_.Matches } | % { $_.Groups[2].Value }
+
+  $useArch = if ($packageList -match ".*_${arch}_.*") {$arch} else {"neutral"}
 
   $raw | Select-String '<tr style.*<a href=\"(?<url>.*)"\s.*>(?<text>.*)<\/a>' -AllMatches | % { $_.Matches } |
    % { $url = $_.Groups[1].Value
