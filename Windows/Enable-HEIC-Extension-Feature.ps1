@@ -1,7 +1,37 @@
-# 1/06/2023
-# This powershell script automatically goes through the process of installing the needed extension apps from the Microsoft Store (servers) to have support for viewing/editing HEIF/HEVC/HEIC file types.
-# * Dell machines support installation of the "HEVC Video Extensions from Device Manufacturer" app for free from the app store, but it's not something you can search for to install.
-# * HEIC is a proprietary file type by Apple which combines the use of HEIF/HEVC in an HEIC container.
+<#
+  .SYNOPSIS
+  Script downloads and installs all extensions needed for viewing/editing HEIF/HEVC/HEIC file types.
+
+  .DESCRIPTION
+  Version 1.0.4
+  
+  Since updated versions of Windows installations don't always include this support, this script is handy to turn
+  on HEIC extension feature.
+  
+  NOTE: This is a per user profile thing, so this needs to be done in all profiles where .HEIC aren't working.
+  
+  * Some Windows computers (e.g. Dell) support installation of the "HEVC Video Extensions from Device Manufacturer"
+    app for free from the app store, but it's not something you can search for to install.
+  * HEIC is a proprietary file type by Apple which combines the use of HEIF/HEVC in an HEIC container.
+
+  .PARAMETER Help
+  Brings up this help page, but won't run script.
+
+  .INPUTS
+  Only takes one argument: the product ID as a string
+
+  .OUTPUTS
+  Display errors if any, otherwise, should return boolean result of script.
+
+  .EXAMPLE
+  PS> .\Enable-HEIC-Extension-Feature.ps1
+
+  .LINK
+  Third-Party API for Downloading Microsoft Store Apps: https://store.rg-adguard.net/
+
+  .LINK
+  Script downloaded from: https://github.com/TheAlienDrew/OS-Scripts/blob/master/Windows/Enable-HEIC-Extension-Feature.ps1
+#>
 
 # Copyright (C) 2020  Andrew Larson (thealiendrew@gmail.com)
 #
@@ -18,14 +48,31 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+param(
+  [Alias("h")]
+  [switch]$Help
+)
+
+# check for parameters and execute accordingly
+if ($Help.IsPresent) {
+  Get-Help $MyInvocation.MyCommand.Path
+  exit
+}
+
 # Constants
 Set-Variable HEIF_MSSTORE_APP_ID -Option Constant -Value "9PMMSR1CGPWG"
 Set-Variable HEVC_MSSTORE_APP_ID -Option Constant -Value "9N4WGH0Z6VHQ"
 
 # Functions
 
-# Only takes a single argument as the ProductId of an application in the Microsoft Store
+# Input = Product ID of Microsoft Store app
+# Output = Array of paths to successfully downloaded packages
+# Errors  = Display in console
 function Download-AppxPackage {
+  $DownloadedFiles = @()
+  $errored = $false
+  $allFilesDownloaded = $true
+
   $apiUrl = "https://store.rg-adguard.net/api/GetFiles"
   $versionRing = "Retail"
 
@@ -50,7 +97,10 @@ function Download-AppxPackage {
     lang = 'en-US'
   }
 
-  $raw = Invoke-RestMethod -Method Post -Uri $apiUrl -ContentType 'application/x-www-form-urlencoded' -Body $body
+  $raw = $null
+  try {
+    $raw = Invoke-RestMethod -Method Post -Uri $apiUrl -ContentType 'application/x-www-form-urlencoded' -Body $body
+  } catch {$errored = $true}
 
   $useArch = if ($packages -match ".*_${arch}_.*") {$arch} else {"neutral"}
 
@@ -72,31 +122,42 @@ function Download-AppxPackage {
            if ($confirmation -eq 'Y') {
              Remove-Item -Path $downloadFile -Force
            } else {
-             return $downloadFile
+             $DownloadedFiles += $downloadFile
            }
          }
 
          if (!(Test-Path $downloadFile)) {
            Write-Host "Attempting download of `"${text}`" to `"${downloadFile}`" . . ."
-           Invoke-WebRequest -Uri $url -OutFile $downloadFile
-           return $downloadFile
+           $fileDownloaded = $null
+           try {
+             Invoke-WebRequest -Uri $url -OutFile $downloadFile
+             $fileDownloaded = $?
+           } catch {$errored = $true}
+           if ($fileDownloaded) {$DownloadedFiles += $downloadFile}
+           else {$allFilesDownloaded = $false}
          }
        }
      }
+
+  If ($errored) {Write-Host "Completed with some errors."}
+  if $(-Not $allFilesDownloaded) {Write-Host "Warning: Not all packages could be downloaded."}
+  return $DownloadedFiles
 }
 
 # MAIN
 
 # make sure we are online first
 if (-Not $(Test-NetConnection -InformationLevel Quiet)) {
-    throw "Please make sure you're connected to the internet, then try again."
+  throw "Please make sure you're connected to the internet, then try again."
+  return $false
 }
 
 # need to make sure the logged in user is running the script
 $powershellUser = $(whoami)
 $loggedInUser = $(Get-WMIObject -class Win32_ComputerSystem).username.toString()
 if ($powershellUser -ne $loggedInUser) {
-    throw "Please make sure the script is running as user (e.g. don't run as admin)."
+  throw "Please make sure the script is running as user (e.g. don't run as admin)."
+  return $false
 }
 
 # Now we just need the HEIF and HEVC extension apps installed
@@ -105,22 +166,32 @@ try {
   if (Get-AppxPackage -Name "Microsoft.HEIFImageExtension") {
     Write-Host '"HEIF Image Extensions" already installed.'
   } else {
-    $appxHEIF = Download-AppxPackage ${HEIF_MSSTORE_APP_ID}
+    $appxPackagesHEIF = Download-AppxPackage ${HEIF_MSSTORE_APP_ID}
     Write-Host 'Installing "HEIF Image Extensions"...'
-    Add-AppxPackage -Path $appxHEIF
-    if ($?) {Write-Host '"HEIF Image Extensions" installed successfully.'}
+    for ($i = 0; $i -lt $appxPackagesHEIF.count; $i++) {
+      $appxFilePath = $appxPackagesHEIF[$i]
+      $appxFileName = Split-Path $appxFilePath -leaf
+      Add-AppxPackage -Path $appxFile
+      if ($?) {Write-Host "`"$appxFileName`" installed successfully."}
+    }
   }
   # need HEVC (device manufacturer version) installed after
   if (Get-AppxPackage -Name "Microsoft.HEVCVideoExtension") {
     Write-Host '"HEVC Video Extensions from Device Manufacturer" already installed.'
   } else {
-    $appxHEVC = Download-AppxPackage ${HEVC_MSSTORE_APP_ID}
+    $appxPackagesHEVC = Download-AppxPackage ${HEVC_MSSTORE_APP_ID}
     Write-Host 'Installing "HEVC Video Extensions from Device Manufacturer"...'
-    Add-AppxPackage -Path $appxHEVC
-    if ($?) {Write-Host '"HEVC Video Extensions from Device Manufacturer" installed successfully.'}
+    for ($i = 0; $i -lt $appxPackagesHEVC.count; $i++) {
+      $appxFilePath = $appxPackagesHEVC[$i]
+      $appxFileName = Split-Path $appxFilePath -leaf
+      Add-AppxPackage -Path $appxFile
+      if ($?) {Write-Host "`"$appxFileName`" installed successfully."}
+    }
   }
 } catch {
   throw "Error occured"
+  return $false
 }
 
 Write-Host "HEIC extension feature enabled successfully."
+return $true

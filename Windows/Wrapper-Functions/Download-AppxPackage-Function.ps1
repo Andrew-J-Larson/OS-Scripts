@@ -3,24 +3,24 @@
   Script that helps facilitate downloading Microsoft Store apps from their servers (via third-party API's).
 
   .DESCRIPTION
-  Version 1.0.2
+  Version 1.0.3
   
   This script is meant to be used as an alternative from the Microsoft Store and winget, to download application
   packages, for installation, such as in the case where an app is blocked from being downloaded directly from
   the store (e.g. HEVC Video Extensions from Device Manufacturer).
-
+  
   By default, the script downloads the the Retail version of the .appx files (as architecture of OS if available).
 
   .PARAMETER Help
   Brings up this help page, but won't run script.
 
   .INPUTS
-  None. You cannot pipe objects to this script or the function.
+  Script: None. You cannot pipe objects to this script.
+  Function: Only takes one argument, the product ID as a string
 
   .OUTPUTS
-  Script only will activate the function in the current PowerShell session, but otherwise, the function itself
-  will likely display errors if it's unable to connect to the internet or the third-party API. When a download
-  completes successfully, it'll output it's location without errors.
+  Script: Only will activate the function in the current PowerShell session.
+  Function: Display errors if any, but returned is an array of paths to successfully downloaded files.
 
   .EXAMPLE
   PS> Download-AppxPackage 9P1J8S7CCWWT # Product ID for "Clipchamp - Video Editor"
@@ -58,8 +58,12 @@ if ($Help.IsPresent) {
   exit
 }
 
-# Only takes a single argument as the ProductId of an application in the Microsoft Store
+# MAIN function
 function Download-AppxPackage {
+  $DownloadedFiles = @()
+  $errored = $false
+  $allFilesDownloaded = $true
+
   $apiUrl = "https://store.rg-adguard.net/api/GetFiles"
   $versionRing = "Retail"
 
@@ -84,7 +88,10 @@ function Download-AppxPackage {
     lang = 'en-US'
   }
 
-  $raw = Invoke-RestMethod -Method Post -Uri $apiUrl -ContentType 'application/x-www-form-urlencoded' -Body $body
+  $raw = $null
+  try {
+    $raw = Invoke-RestMethod -Method Post -Uri $apiUrl -ContentType 'application/x-www-form-urlencoded' -Body $body
+  } catch {$errored = $true}
 
   $useArch = if ($packages -match ".*_${arch}_.*") {$arch} else {"neutral"}
 
@@ -106,16 +113,25 @@ function Download-AppxPackage {
            if ($confirmation -eq 'Y') {
              Remove-Item -Path $downloadFile -Force
            } else {
-             return $downloadFile
+             $DownloadedFiles += $downloadFile
            }
          }
 
          if (!(Test-Path $downloadFile)) {
            Write-Host "Attempting download of `"${text}`" to `"${downloadFile}`" . . ."
-           Invoke-WebRequest -Uri $url -OutFile $downloadFile
-           return $downloadFile
+           $fileDownloaded = $null
+           try {
+             Invoke-WebRequest -Uri $url -OutFile $downloadFile
+             $fileDownloaded = $?
+           } catch {$errored = $true}
+           if ($fileDownloaded) {$DownloadedFiles += $downloadFile}
+           else {$allFilesDownloaded = $false}
          }
        }
      }
+
+  If ($errored) {Write-Host "Completed with some errors."}
+  if $(-Not $allFilesDownloaded) {Write-Host "Warning: Not all packages could be downloaded."}
+  return $DownloadedFiles
 }
 
