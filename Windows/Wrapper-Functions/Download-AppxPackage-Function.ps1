@@ -3,13 +3,13 @@
   Script that helps facilitate downloading Microsoft Store apps from their servers (via third-party API's).
 
   .DESCRIPTION
-  Version 1.0.1
+  Version 1.0.2
   
   This script is meant to be used as an alternative from the Microsoft Store and winget, to download application
   packages, for installation, such as in the case where an app is blocked from being downloaded directly from
   the store (e.g. HEVC Video Extensions from Device Manufacturer).
 
-  By default, the script downloads the the x64 Retail version of the .appx files.
+  By default, the script downloads the the Retail version of the .appx files (as architecture of OS if available).
 
   .PARAMETER Help
   Brings up this help page, but won't run script.
@@ -61,6 +61,14 @@ if ($Help.IsPresent) {
 # Only takes a single argument as the ProductId of an application in the Microsoft Store
 function Download-AppxPackage {
   $apiUrl = "https://store.rg-adguard.net/api/GetFiles"
+  $versionRing = "Retail"
+
+  $arch = switch ($env:PROCESSOR_ARCHITECTURE) {
+    "x86" {"x86"}
+    "AMD64" {"x64"}
+    "ARM64" {"arm64"}
+    default {"neutral"}
+  }
 
   $ProductId = $args[0]
 
@@ -72,18 +80,19 @@ function Download-AppxPackage {
   $body = @{
     type = 'ProductId'
     url  = $ProductId
-    ring = 'Retail'
+    ring = $versionRing
     lang = 'en-US'
   }
 
   $raw = Invoke-RestMethod -Method Post -Uri $apiUrl -ContentType 'application/x-www-form-urlencoded' -Body $body
 
-  $raw | Select-String '<tr style.*<a href=\"(?<url>.*)"\s.*>(?<text>.*)<\/a>' -AllMatches|
-   % { $_.Matches } |
+  $useArch = if ($packages -match ".*_${arch}_.*") {$arch} else {"neutral"}
+
+  $raw | Select-String '<tr style.*<a href=\"(?<url>.*)"\s.*>(?<text>.*)<\/a>' -AllMatches | % { $_.Matches } |
    % { $url = $_.Groups[1].Value
        $text = $_.Groups[2].Value
 
-       if($text -match "_x64.*`.appx(|bundle)$") {
+       if($text -match "_${useArch}_.*`.appx(|bundle)$") {
          $downloadFile = Join-Path $downloadFolder $text
 
          # If file already exists, ask to replace it

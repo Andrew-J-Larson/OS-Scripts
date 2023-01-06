@@ -27,6 +27,14 @@ Set-Variable HEVC_MSSTORE_APP_ID -Option Constant -Value "9N4WGH0Z6VHQ"
 # Only takes a single argument as the ProductId of an application in the Microsoft Store
 function Download-AppxPackage {
   $apiUrl = "https://store.rg-adguard.net/api/GetFiles"
+  $versionRing = "Retail"
+
+  $arch = switch ($env:PROCESSOR_ARCHITECTURE) {
+    "x86" {"x86"}
+    "AMD64" {"x64"}
+    "ARM64" {"arm64"}
+    default {"neutral"}
+  }
 
   $ProductId = $args[0]
 
@@ -38,18 +46,19 @@ function Download-AppxPackage {
   $body = @{
     type = 'ProductId'
     url  = $ProductId
-    ring = 'Retail'
+    ring = $versionRing
     lang = 'en-US'
   }
 
   $raw = Invoke-RestMethod -Method Post -Uri $apiUrl -ContentType 'application/x-www-form-urlencoded' -Body $body
 
-  $raw | Select-String '<tr style.*<a href=\"(?<url>.*)"\s.*>(?<text>.*)<\/a>' -AllMatches|
-   % { $_.Matches } |
+  $useArch = if ($packages -match ".*_${arch}_.*") {$arch} else {"neutral"}
+
+  $raw | Select-String '<tr style.*<a href=\"(?<url>.*)"\s.*>(?<text>.*)<\/a>' -AllMatches | % { $_.Matches } |
    % { $url = $_.Groups[1].Value
        $text = $_.Groups[2].Value
 
-       if($text -match "_x64.*`.appx(|bundle)$") {
+       if($text -match "_${useArch}_.*`.appx(|bundle)$") {
          $downloadFile = Join-Path $downloadFolder $text
 
          # If file already exists, ask to replace it
