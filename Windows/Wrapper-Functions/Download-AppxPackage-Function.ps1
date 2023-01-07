@@ -3,7 +3,7 @@
   Script that helps facilitate downloading Microsoft Store apps from their servers (via third-party API's).
 
   .DESCRIPTION
-  Version 1.0.5
+  Version 1.0.6
   
   This script is meant to be used as an alternative from the Microsoft Store and winget, to download application
   packages, for installation, such as in the case where an app is blocked from being downloaded directly from
@@ -23,7 +23,7 @@
   Function: Display errors if any, but returned is an array of paths to successfully downloaded files.
 
   .EXAMPLE
-  PS> Download-AppxPackage 9P1J8S7CCWWT # Product ID for "Clipchamp - Video Editor"
+  PS> [Array]$packages = Download-AppxPackage 9P1J8S7CCWWT # Product ID for "Clipchamp - Video Editor"
 
   .LINK
   Third-Party API for Downloading Microsoft Store Apps: https://store.rg-adguard.net/

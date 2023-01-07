@@ -3,7 +3,7 @@
   Script downloads and installs all extensions needed for viewing/editing HEIF/HEVC/HEIC file types.
 
   .DESCRIPTION
-  Version 1.0.6
+  Version 1.0.7
   
   Since updated versions of Windows installations don't always include this support, this script is handy to turn
   on HEIC extension feature.
@@ -168,12 +168,12 @@ try {
   if (Get-AppxPackage -Name "Microsoft.HEIFImageExtension") {
     Write-Host '"HEIF Image Extensions" already installed.'
   } else {
-    $appxPackagesHEIF = Download-AppxPackage ${HEIF_MSSTORE_APP_ID}
+    [Array]$appxPackagesHEIF = Download-AppxPackage ${HEIF_MSSTORE_APP_ID}
     Write-Host 'Installing "HEIF Image Extensions"...'
     for ($i = 0; $i -lt $appxPackagesHEIF.count; $i++) {
       $appxFilePath = $appxPackagesHEIF[$i]
       $appxFileName = Split-Path $appxFilePath -leaf
-      Add-AppxPackage -Path $appxFile
+      Add-AppxPackage -Path $appxFilePath
       if ($?) {Write-Host "`"$appxFileName`" installed successfully."}
     }
   }
@@ -181,12 +181,12 @@ try {
   if (Get-AppxPackage -Name "Microsoft.HEVCVideoExtension") {
     Write-Host '"HEVC Video Extensions from Device Manufacturer" already installed.'
   } else {
-    $appxPackagesHEVC = Download-AppxPackage ${HEVC_MSSTORE_APP_ID}
+    [Array]$appxPackagesHEVC = Download-AppxPackage ${HEVC_MSSTORE_APP_ID}
     Write-Host 'Installing "HEVC Video Extensions from Device Manufacturer"...'
     for ($i = 0; $i -lt $appxPackagesHEVC.count; $i++) {
       $appxFilePath = $appxPackagesHEVC[$i]
       $appxFileName = Split-Path $appxFilePath -leaf
-      Add-AppxPackage -Path $appxFile
+      Add-AppxPackage -Path $appxFilePath
       if ($?) {Write-Host "`"$appxFileName`" installed successfully."}
     }
   }
