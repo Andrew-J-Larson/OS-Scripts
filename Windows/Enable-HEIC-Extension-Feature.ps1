@@ -3,7 +3,7 @@
   Script downloads and installs all extensions needed for viewing/editing HEIF/HEVC/HEIC file types.
 
   .DESCRIPTION
-  Version 2.2.0
+  Version 2.0.0
   
   Since old manufacturer installed Windows installations don't always include this support, this script is handy to turn
   on HEIC file support without needing admin access or even the Microsoft Store.
