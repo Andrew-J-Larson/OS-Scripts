@@ -3,7 +3,7 @@
   Script that helps facilitate downloading Microsoft Store apps from their servers (via third-party API's).
 
   .DESCRIPTION
-  Version 1.0.6
+  Version 1.0.7
   
   This script is meant to be used as an alternative from the Microsoft Store and winget, to download application
   packages, for installation, such as in the case where an app is blocked from being downloaded directly from
@@ -109,7 +109,7 @@ function Download-AppxPackage {
            Write-Host "`"${text}`" already exists at `"${downloadFile}`"."
            $confirmation = ''
            while (!(($confirmation -eq 'Y') -Or ($confirmation -eq 'N'))) {
-             $confirmation = Read-Host "Would you like to re-download and overwrite the file at `"${downloadFile}`" (Y/N)?"
+             $confirmation = Read-Host "`nWould you like to re-download and overwrite the file at `"${downloadFile}`" (Y/N)?"
              $confirmation = $confirmation.ToUpper()
            }
            if ($confirmation -eq 'Y') {

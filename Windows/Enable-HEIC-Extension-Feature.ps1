@@ -3,7 +3,7 @@
   Script downloads and installs all extensions needed for viewing/editing HEIF/HEVC/HEIC file types.
 
   .DESCRIPTION
-  Version 1.0.7
+  Version 1.0.8
   
   Since updated versions of Windows installations don't always include this support, this script is handy to turn
   on HEIC extension feature.
@@ -118,7 +118,7 @@ function Download-AppxPackage {
            Write-Host "`"${text}`" already exists at `"${downloadFile}`"."
            $confirmation = ''
            while (!(($confirmation -eq 'Y') -Or ($confirmation -eq 'N'))) {
-             $confirmation = Read-Host "Would you like to re-download and overwrite the file at `"${downloadFile}`" (Y/N)?"
+             $confirmation = Read-Host "`nWould you like to re-download and overwrite the file at `"${downloadFile}`" (Y/N)?"
              $confirmation = $confirmation.ToUpper()
            }
            if ($confirmation -eq 'Y') {
@@ -150,23 +150,23 @@ function Download-AppxPackage {
 
 # make sure we are online first
 if (-Not $(Test-NetConnection -InformationLevel Quiet)) {
-  throw "Please make sure you're connected to the internet, then try again."
-  return $false
+  Write-Host "Please make sure you're connected to the internet, then try again."
+  exit 1
 }
 
 # need to make sure the logged in user is running the script
 $powershellUser = $(whoami)
 $loggedInUser = $(Get-WMIObject -class Win32_ComputerSystem).username.toString()
 if ($powershellUser -ne $loggedInUser) {
-  throw "Please make sure the script is running as user (e.g. don't run as admin)."
-  return $false
+  Write-Host "Please make sure the script is running as user (e.g. don't run as admin)."
+  exit 1
 }
 
 # Now we just need the HEIF and HEVC extension apps installed
 try {
   # need HEIF installed first, if not already
   if (Get-AppxPackage -Name "Microsoft.HEIFImageExtension") {
-    Write-Host '"HEIF Image Extensions" already installed.'
+    Write-Host '"HEIF Image Extensions" already installed.`n'
   } else {
     [Array]$appxPackagesHEIF = Download-AppxPackage ${HEIF_MSSTORE_APP_ID}
     Write-Host 'Installing "HEIF Image Extensions"...'
@@ -174,12 +174,12 @@ try {
       $appxFilePath = $appxPackagesHEIF[$i]
       $appxFileName = Split-Path $appxFilePath -leaf
       Add-AppxPackage -Path $appxFilePath
-      if ($?) {Write-Host "`"$appxFileName`" installed successfully."}
+      if ($?) {Write-Host "`"$appxFileName`" installed successfully.`n"}
     }
   }
   # need HEVC (device manufacturer version) installed after
   if (Get-AppxPackage -Name "Microsoft.HEVCVideoExtension") {
-    Write-Host '"HEVC Video Extensions from Device Manufacturer" already installed.'
+    Write-Host '"HEVC Video Extensions from Device Manufacturer" already installed.`n'
   } else {
     [Array]$appxPackagesHEVC = Download-AppxPackage ${HEVC_MSSTORE_APP_ID}
     Write-Host 'Installing "HEVC Video Extensions from Device Manufacturer"...'
@@ -187,14 +187,14 @@ try {
       $appxFilePath = $appxPackagesHEVC[$i]
       $appxFileName = Split-Path $appxFilePath -leaf
       Add-AppxPackage -Path $appxFilePath
-      if ($?) {Write-Host "`"$appxFileName`" installed successfully."}
+      if ($?) {Write-Host "`"$appxFileName`" installed successfully.`n"}
     }
   }
 } catch {
-  throw "Error occured"
-  return $false
+  Write-Host "Error occured"
+  exit 1
 }
 
 Write-Host "HEIC extension feature enabled successfully."
-return $true
+exit 0
 
