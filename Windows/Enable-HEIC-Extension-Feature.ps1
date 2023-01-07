@@ -3,16 +3,17 @@
   Script downloads and installs all extensions needed for viewing/editing HEIF/HEVC/HEIC file types.
 
   .DESCRIPTION
-  Version 1.0.8
+  Version 1.0.9
   
-  Since updated versions of Windows installations don't always include this support, this script is handy to turn
-  on HEIC extension feature.
+  Since old manufacturer installed Windows installations don't always include this support, this script is handy to turn
+  on HEIC file support without needing admin access or even the Microsoft Store.
   
   NOTE: This is a per user profile thing, so this needs to be done in all profiles where .HEIC aren't working.
   
   * Some Windows computers (e.g. Dell) support installation of the "HEVC Video Extensions from Device Manufacturer"
     app for free from the app store, but it's not something you can search for to install.
   * HEIC is a proprietary file type by Apple which combines the use of HEIF/HEVC in an HEIC container.
+  * Microsoft Photos is required for the extensions to work.
 
   .PARAMETER Help
   Brings up this help page, but won't run script.
@@ -60,6 +61,7 @@ if ($Help.IsPresent) {
 }
 
 # Constants
+Set-Variable PHOTOS_MSSTORE_APP_ID -Option Constant -Value "9WZDNCRFJBH4"
 Set-Variable HEIF_MSSTORE_APP_ID -Option Constant -Value "9PMMSR1CGPWG"
 Set-Variable HEVC_MSSTORE_APP_ID -Option Constant -Value "9N4WGH0Z6VHQ"
 
@@ -162,9 +164,22 @@ if ($powershellUser -ne $loggedInUser) {
   exit 1
 }
 
-# Now we just need the HEIF and HEVC extension apps installed
+# Install apps needed, if they're not already installed
 try {
-  # need HEIF installed first, if not already
+  # First, Microsoft Photos
+  if (Get-AppxPackage -Name "Microsoft.Windows.Photos") {
+    Write-Host '"Microsoft Photos" already installed.`n'
+  } else {
+    [Array]$appxPackagesPHOTOS = Download-AppxPackage ${PHOTOS_MSSTORE_APP_ID}
+    Write-Host 'Installing "Microsoft Photos"...'
+    for ($i = 0; $i -lt $appxPackagesPHOTOS.count; $i++) {
+      $appxFilePath = $appxPackagesPHOTOS[$i]
+      $appxFileName = Split-Path $appxFilePath -leaf
+      Add-AppxPackage -Path $appxFilePath
+      if ($?) {Write-Host "`"$appxFileName`" installed successfully.`n"}
+    }
+  }
+  # Then, HEIF Image Extensions
   if (Get-AppxPackage -Name "Microsoft.HEIFImageExtension") {
     Write-Host '"HEIF Image Extensions" already installed.`n'
   } else {
@@ -177,7 +192,7 @@ try {
       if ($?) {Write-Host "`"$appxFileName`" installed successfully.`n"}
     }
   }
-  # need HEVC (device manufacturer version) installed after
+  # Lastly, HEVC Video Extensions from Device Manufacturer
   if (Get-AppxPackage -Name "Microsoft.HEVCVideoExtension") {
     Write-Host '"HEVC Video Extensions from Device Manufacturer" already installed.`n'
   } else {
