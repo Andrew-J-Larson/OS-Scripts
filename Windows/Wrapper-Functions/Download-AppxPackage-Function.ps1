@@ -158,7 +158,7 @@ function Download-AppxPackage {
   $latestPackages | % {
     $url = $_.url
     $filename = $_.filename
-    # TODO: may need to include detection in the future of expired package download URLs..... in the case that downloads take over an hour to complete
+    # TODO: may need to include detection in the future of expired package download URLs..... in the case that downloads take over 10 minutes to complete
 
     $downloadFile = Join-Path $downloadFolder $filename
 
