@@ -3,7 +3,7 @@
   Script downloads and installs all extensions needed for viewing/editing HEIF/HEVC/HEIC file types.
 
   .DESCRIPTION
-  Version 2.0.5
+  Version 2.0.6
   
   Since old manufacturer installed Windows installations don't always include this support, this script is handy to turn
   on HEIC file support without needing admin access or even the Microsoft Store.
@@ -233,7 +233,7 @@ function Install-AppxPackage {
       } else {
         Add-AppxPackage -Path $appxFilePath
         if ($?) {Write-Host "`"${appxPackageName}`" installed successfully."}
-        else throw "`"${appxPackageName}`" failed to install."
+        else {throw "`"${appxPackageName}`" failed to install."}
       }
     }
   } catch {
