@@ -3,7 +3,7 @@
   Script downloads and installs all extensions needed for viewing/editing HEIF/HEVC/HEIC file types.
 
   .DESCRIPTION
-  Version 2.0.3
+  Version 2.0.4
   
   Since old manufacturer installed Windows installations don't always include this support, this script is handy to turn
   on HEIC file support without needing admin access or even the Microsoft Store.
@@ -262,11 +262,13 @@ if ($powershellUser -ne $loggedInUser) {
 }
 
 # Install apps needed, if they're not already installed
+$installedApps = 0
 try {
   # First, Microsoft Photos
   if (Get-AppxPackage -Name ${PHOTOS_APPX_NAME}) {
     Write-Host """Microsoft Photos"" already installed.`n"
   } else {
+    $installedApps++
     Write-Host 'Installing "Microsoft Photos"...'
     Install-AppxPackage ${PHOTOS_APPX_PACKAGEFAMILYNAME}
   }
@@ -274,6 +276,7 @@ try {
   if (Get-AppxPackage -Name ${HEIF_APPX_NAME}) {
     Write-Host """HEIF Image Extensions"" already installed.`n"
   } else {
+    $installedApps++
     Write-Host 'Installing "HEIF Image Extensions"...'
     Install-AppxPackage ${HEIF_APPX_PACKAGEFAMILYNAME}
   }
@@ -281,6 +284,7 @@ try {
   if (Get-AppxPackage -Name ${HEVC_APPX_NAME}) {
     Write-Host """HEVC Video Extensions from Device Manufacturer"" already installed.`n"
   } else {
+    $installedApps++
     Write-Host 'Installing "HEVC Video Extensions from Device Manufacturer"...'
     Install-AppxPackage ${HEVC_APPX_PACKAGEFAMILYNAME}
   }
@@ -290,7 +294,11 @@ try {
   exit 1
 }
 
-if (Get-AppxPackage -Name "Microsoft.HEVCVideoExtension") {Write-Host "HEIC extension feature enabled successfully."}
-else {Write-Host "Something went wrong, HEIC extension feature NOT enabled."}
-
-exit 0
+if (Get-AppxPackage -Name "Microsoft.HEVCVideoExtension") {
+  if ($installedApps -gt 0) {Write-Host "HEIC extension feature enabled successfully."}
+  else {Write-Host "HEIC extension feature was already enabled, no changes made."}
+  exit 0
+} else {
+  Write-Host "Something went wrong, HEIC extension feature NOT enabled."
+  exit 1
+}
