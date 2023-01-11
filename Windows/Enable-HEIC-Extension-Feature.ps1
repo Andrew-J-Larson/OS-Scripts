@@ -3,7 +3,7 @@
   Script downloads and installs all extensions needed for viewing/editing HEIF/HEVC/HEIC file types.
 
   .DESCRIPTION
-  Version 2.0.1
+  Version 2.0.2
   
   Since old manufacturer installed Windows installations don't always include this support, this script is handy to turn
   on HEIC file support without needing admin access or even the Microsoft Store.
@@ -265,21 +265,21 @@ if ($powershellUser -ne $loggedInUser) {
 try {
   # First, Microsoft Photos
   if (Get-AppxPackage -Name ${PHOTOS_APPX_NAME}) {
-    Write-Host '"Microsoft Photos" already installed.`n'
+    Write-Host """Microsoft Photos"" already installed.`n"
   } else {
     Write-Host 'Installing "Microsoft Photos"...'
     Install-AppxPackage ${PHOTOS_APPX_PACKAGEFAMILYNAME}
   }
   # Then, HEIF Image Extensions
   if (Get-AppxPackage -Name ${HEIF_APPX_NAME}) {
-    Write-Host '"HEIF Image Extensions" already installed.`n'
+    Write-Host """HEIF Image Extensions"" already installed.`n"
   } else {
     Write-Host 'Installing "HEIF Image Extensions"...'
     Install-AppxPackage ${HEIF_APPX_PACKAGEFAMILYNAME}
   }
   # Lastly, HEVC Video Extensions from Device Manufacturer
   if (Get-AppxPackage -Name ${HEVC_APPX_NAME}) {
-    Write-Host '"HEVC Video Extensions from Device Manufacturer" already installed.`n'
+    Write-Host """HEVC Video Extensions from Device Manufacturer"" already installed.`n"
   } else {
     Write-Host 'Installing "HEVC Video Extensions from Device Manufacturer"...'
     Install-AppxPackage ${HEVC_APPX_PACKAGEFAMILYNAME}
