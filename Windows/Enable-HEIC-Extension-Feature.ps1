@@ -3,7 +3,7 @@
   Script downloads and installs all extensions needed for viewing/editing HEIF/HEVC/HEIC file types.
 
   .DESCRIPTION
-  Version 2.0.4
+  Version 2.0.5
   
   Since old manufacturer installed Windows installations don't always include this support, this script is handy to turn
   on HEIC file support without needing admin access or even the Microsoft Store.
@@ -218,10 +218,10 @@ function Download-AppxPackage {
 function Install-AppxPackage {
   $errored = $false
 
-  $ProductId = $args[0]
+  $PFN = $args[0] # PackageFamilyName
 
   try {
-    [Array]$appxPackages = Download-AppxPackage $ProductId
+    [Array]$appxPackages = Download-AppxPackage $PFN
     for ($i = 0; $i -lt $appxPackages.count; $i++) {
       $appxFilePath = $appxPackages[$i]
       $appxFileName = Split-Path $appxFilePath -leaf
@@ -233,6 +233,7 @@ function Install-AppxPackage {
       } else {
         Add-AppxPackage -Path $appxFilePath
         if ($?) {Write-Host "`"${appxPackageName}`" installed successfully."}
+        else throw "`"${appxPackageName}`" failed to install."
       }
     }
   } catch {
@@ -266,27 +267,27 @@ $installedApps = 0
 try {
   # First, Microsoft Photos
   if (Get-AppxPackage -Name ${PHOTOS_APPX_NAME}) {
-    Write-Host """Microsoft Photos"" already installed.`n"
+    Write-Host "`"Microsoft Photos`" already installed.`n"
   } else {
     $installedApps++
     Write-Host 'Installing "Microsoft Photos"...'
-    Install-AppxPackage ${PHOTOS_APPX_PACKAGEFAMILYNAME}
+    if (-Not (Install-AppxPackage ${PHOTOS_APPX_PACKAGEFAMILYNAME})) {throw "Couldn't install `"Microsoft Photos`""}
   }
   # Then, HEIF Image Extensions
   if (Get-AppxPackage -Name ${HEIF_APPX_NAME}) {
-    Write-Host """HEIF Image Extensions"" already installed.`n"
+    Write-Host "`"HEIF Image Extensions`" already installed.`n"
   } else {
     $installedApps++
     Write-Host 'Installing "HEIF Image Extensions"...'
-    Install-AppxPackage ${HEIF_APPX_PACKAGEFAMILYNAME}
+    if (-Not (Install-AppxPackage ${HEIF_APPX_PACKAGEFAMILYNAME})) {throw "Couldn't install `"HEIF Image Extensions`""}
   }
   # Lastly, HEVC Video Extensions from Device Manufacturer
   if (Get-AppxPackage -Name ${HEVC_APPX_NAME}) {
-    Write-Host """HEVC Video Extensions from Device Manufacturer"" already installed.`n"
+    Write-Host "`"HEVC Video Extensions from Device Manufacturer`" already installed.`n"
   } else {
     $installedApps++
     Write-Host 'Installing "HEVC Video Extensions from Device Manufacturer"...'
-    Install-AppxPackage ${HEVC_APPX_PACKAGEFAMILYNAME}
+    if (-Not (Install-AppxPackage ${HEVC_APPX_PACKAGEFAMILYNAME})) {throw "Couldn't install `"HEVC Video Extensions from Device Manufacturer`""}
   }
 } catch {
   Write-Host "An error occurred:"
