@@ -3,7 +3,7 @@
   Script that helps facilitate downloading Microsoft Store apps from their servers (via third-party API's).
 
   .DESCRIPTION
-  Version 2.0.0
+  Version 2.0.1
   
   This script is meant to be used as an alternative from the Microsoft Store and winget, to download application
   packages, for installation, such as in the case where an app is blocked from being downloaded directly from
@@ -76,8 +76,8 @@ function Download-AppxPackage {
     default {"neutral"} # should never get here
   }
 
-  $PackageFamilyName = $args[0]
-  $AppxName = $PackageFamilyName.split('_')[0]
+  $AppxPackageFamilyName = $args[0]
+  $AppxName = $AppxPackageFamilyName.split('_')[0]
 
   $downloadFolder = Join-Path $env:TEMP "StoreDownloads"
   if(!(Test-Path $downloadFolder -PathType Container)) {
@@ -86,7 +86,7 @@ function Download-AppxPackage {
 
   $body = @{
     type = 'PackageFamilyName'
-    url  = $PackageFamilyName
+    url  = $AppxPackageFamilyName
     ring = $versionRing
     lang = 'en-US'
   }
@@ -95,8 +95,8 @@ function Download-AppxPackage {
   try {
     $raw = Invoke-RestMethod -Method Post -Uri $apiUrl -ContentType 'application/x-www-form-urlencoded' -Body $body
   } catch {
-    Write-Host "An error occurred:"
-    Write-Host $_
+    $errorMsg = "An error occurred: "+$_
+    Write-Host $errorMsg
     $errored = $true
     return $false
   }
@@ -106,7 +106,7 @@ function Download-AppxPackage {
   #    > values = arrays of packages as objects (containing: url, filename, name, version, arch, publisherId, type)
   [Collections.Generic.Dictionary[string, Collections.Generic.Dictionary[string, array]]] $packageList = @{}
   # populate $packageList
-  $patternUrlAndText = '<tr style.*<a href=\"(?<url>.*)"\s.*>(?<text>.*)<\/a>'
+  $patternUrlAndText = '<tr style.*<a href=\"(?<url>.*)"\s.*>(?<text>.*\.(app|msi)x.*)<\/a>'
   $raw | Select-String $patternUrlAndText -AllMatches | % { $_.Matches } | % {
     $url = ($_.Groups['url']).Value
     $text = ($_.Groups['text']).Value
@@ -184,8 +184,8 @@ function Download-AppxPackage {
         Invoke-WebRequest -Uri $url -OutFile $downloadFile
         $fileDownloaded = $?
       } catch {
-        Write-Host "An error occurred:"
-        Write-Host $_
+        $errorMsg = "An error occurred: "+$_
+        Write-Host $errorMsg
         $errored = $true
         break $false
       }

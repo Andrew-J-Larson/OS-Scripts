@@ -3,7 +3,7 @@
   Script downloads and installs all extensions needed for viewing/editing HEIF/HEVC/HEIC file types.
 
   .DESCRIPTION
-  Version 2.0.6
+  Version 2.0.7
   
   Since old manufacturer installed Windows installations don't always include this support, this script is handy to turn
   on HEIC file support without needing admin access or even the Microsoft Store.
@@ -89,8 +89,8 @@ function Download-AppxPackage {
     default {"neutral"} # should never get here
   }
 
-  $PackageFamilyName = $args[0]
-  $AppxName = $PackageFamilyName.split('_')[0]
+  $AppxPackageFamilyName = $args[0]
+  $AppxName = $AppxPackageFamilyName.split('_')[0]
 
   $downloadFolder = Join-Path $env:TEMP "StoreDownloads"
   if(!(Test-Path $downloadFolder -PathType Container)) {
@@ -99,7 +99,7 @@ function Download-AppxPackage {
 
   $body = @{
     type = 'PackageFamilyName'
-    url  = $PackageFamilyName
+    url  = $AppxPackageFamilyName
     ring = $versionRing
     lang = 'en-US'
   }
@@ -108,8 +108,8 @@ function Download-AppxPackage {
   try {
     $raw = Invoke-RestMethod -Method Post -Uri $apiUrl -ContentType 'application/x-www-form-urlencoded' -Body $body
   } catch {
-    Write-Host "An error occurred:"
-    Write-Host $_
+    $errorMsg = "An error occurred: "+$_
+    Write-Host $errorMsg
     $errored = $true
     return $false
   }
@@ -119,7 +119,7 @@ function Download-AppxPackage {
   #    > values = arrays of packages as objects (containing: url, filename, name, version, arch, publisherId, type)
   [Collections.Generic.Dictionary[string, Collections.Generic.Dictionary[string, array]]] $packageList = @{}
   # populate $packageList
-  $patternUrlAndText = '<tr style.*<a href=\"(?<url>.*)"\s.*>(?<text>.*)<\/a>'
+  $patternUrlAndText = '<tr style.*<a href=\"(?<url>.*)"\s.*>(?<text>.*\.(app|msi)x.*)<\/a>'
   $raw | Select-String $patternUrlAndText -AllMatches | % { $_.Matches } | % {
     $url = ($_.Groups['url']).Value
     $text = ($_.Groups['text']).Value
@@ -197,8 +197,8 @@ function Download-AppxPackage {
         Invoke-WebRequest -Uri $url -OutFile $downloadFile
         $fileDownloaded = $?
       } catch {
-        Write-Host "An error occurred:"
-        Write-Host $_
+        $errorMsg = "An error occurred: "+$_
+        Write-Host $errorMsg
         $errored = $true
         break $false
       }
@@ -218,10 +218,10 @@ function Download-AppxPackage {
 function Install-AppxPackage {
   $errored = $false
 
-  $PFN = $args[0] # PackageFamilyName
+  $AppxPackageFamilyName = $args[0]
 
   try {
-    [Array]$appxPackages = Download-AppxPackage $PFN
+    [Array]$appxPackages = Download-AppxPackage $AppxPackageFamilyName
     for ($i = 0; $i -lt $appxPackages.count; $i++) {
       $appxFilePath = $appxPackages[$i]
       $appxFileName = Split-Path $appxFilePath -leaf
@@ -237,8 +237,8 @@ function Install-AppxPackage {
       }
     }
   } catch {
-    Write-Host "An error occurred:"
-    Write-Host $_
+    $errorMsg = "An error occurred: "+$_
+    Write-Host $errorMsg
     $errored = $true
   }
   Write-Host ""
@@ -290,8 +290,8 @@ try {
     if (-Not (Install-AppxPackage ${HEVC_APPX_PACKAGEFAMILYNAME})) {throw "Couldn't install `"HEVC Video Extensions from Device Manufacturer`""}
   }
 } catch {
-  Write-Host "An error occurred:"
-  Write-Host $_
+  $errorMsg = "An error occurred: "+$_
+  Write-Host $errorMsg
   exit 1
 }
 
