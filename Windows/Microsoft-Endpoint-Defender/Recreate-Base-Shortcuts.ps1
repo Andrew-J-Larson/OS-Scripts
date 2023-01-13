@@ -60,11 +60,30 @@ for ($i = 0; $i -lt $sysAppList.length; $i++) {
   Recreate-Shortcut $aName $aSystemLnk $aTarget $sArguments $aStartIn
 }
 
-# Installed system applications
+# OEM System Applications (e.g. Dell)
 
 #  @{Name='[name of shortcut here]'; SystemLnk='[path to lnk or name of app here]'; Target='[path to exe here]'; Arguments='[any arguments that an app starts with here]'; StartIn='[start in path if needed, here]'}
 #  @{Name=''; SystemLnk=''; Target=''; Arguments=''; StartIn=''}
-$sysUserAppList = @(
+<# $oemSysAppList = @(
+  @{Name=''; SystemLnk=''; Target=''; Arguments=''; StartIn=''}
+)
+
+for ($i = 0; $i -lt $oemSysAppList.length; $i++) {
+  $app = $oemSysAppList[$i]
+  $aName = $app.Name
+  $aSystemLnk = $app.SystemLnk
+  $aTarget = $app.Target
+  $aArguments = $app.Arguments
+  $aStartIn = if ($app.StartIn) {$app.StartIn} else {''}
+
+  Recreate-Shortcut $aName $aSystemLnk $aTarget $sArguments $aStartIn
+} #>
+
+# Third-Party System Applications (not made by Microsoft)
+
+#  @{Name='[name of shortcut here]'; SystemLnk='[path to lnk or name of app here]'; Target='[path to exe here]'; Arguments='[any arguments that an app starts with here]'; StartIn='[start in path if needed, here]'}
+#  @{Name=''; SystemLnk=''; Target=''; Arguments=''; StartIn=''}
+$sys3rdPartyAppList = @(
   @{Name='Google Chrome'; SystemLnk='Google Chrome'; Target='C:\Program Files\Google\Chrome\Application\chrome.exe'},
   @{Name='Google Chrome (32-bit)'; SystemLnk='Google Chrome (32-bit)'; Target='C:\Program Files (x86)\Google\Chrome\Application\chrome.exe'},
   @{Name='Firefox'; SystemLnk='Firefox'; Target='C:\Program Files\Mozilla Firefox\firefox.exe'},
@@ -77,8 +96,8 @@ $sysUserAppList = @(
   @{Name='Altair Monarch 2020'; SystemLnk='Altair Monarch 2020\Altair Monarch 2020'; Target='C:\Program Files\Altair Monarch 2020\DWMonarch.exe'}
 )
 
-for ($i = 0; $i -lt $sysUserAppList.length; $i++) {
-  $app = $sysUserAppList[$i]
+for ($i = 0; $i -lt $sys3rdPartyAppList.length; $i++) {
+  $app = $sys3rdPartyAppList[$i]
   $aName = $app.Name
   $aSystemLnk = $app.SystemLnk
   $aTarget = $app.Target
@@ -88,7 +107,7 @@ for ($i = 0; $i -lt $sysUserAppList.length; $i++) {
   Recreate-Shortcut $aName $aSystemLnk $aTarget $sArguments $aStartIn
 }
 
-# Installed user applications (per user profile)
+# User Applications (per user installed apps)
 
 $Users = (Get-ChildItem 'C:\Users\' | % { $_.name })
 # only one user
