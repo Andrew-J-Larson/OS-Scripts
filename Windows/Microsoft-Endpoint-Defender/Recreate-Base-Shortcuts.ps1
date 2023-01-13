@@ -29,12 +29,32 @@ function Recreate-Shortcut {
   }
 }
 
-# All User Applications
+# System Applications
 
-#  @{Name='[name of shortcut here]'; SystemLnk='[path to lnk or name of app here]'; Target='[path to exe here]'; StartIn='[start in path if needed, here]'}
+#  @{Name='[name of shortcut here]'; SystemLnk='[path to lnk or name of app here]'; Target='[path to exe here]'; Arguments='[any arguments that an app starts with here]'; StartIn='[start in path if needed, here]'}
+#  @{Name=''; SystemLnk=''; Target=''; Arguments=''; StartIn=''}
+$sysAppList = @(
+  @{Name='Microsoft Edge'; SystemLnk='Microsoft Edge'; Target='C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe'}#,
+#  @{Name=''; SystemLnk=''; Target=''},
 #  @{Name=''; SystemLnk=''; Target=''; StartIn=''}
-$appList = @(
-  @{Name='Microsoft Edge'; SystemLnk='Microsoft Edge'; Target='C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe'},
+)
+
+for ($i = 0; $i -lt $sysAppList.length; $i++) {
+  $app = $sysAppList[$i]
+  $aName = $app.Name
+  $aSystemLnk = $app.SystemLnk
+  $aTarget = $app.Target
+  $aArguments = $app.Arguments
+  $aStartIn = if ($app.StartIn) {$app.StartIn} else {''}
+
+  Recreate-Shortcut $aName $aSystemLnk $aTarget $sArguments $aStartIn
+}
+
+# Installed system applications
+
+#  @{Name='[name of shortcut here]'; SystemLnk='[path to lnk or name of app here]'; Target='[path to exe here]'; Arguments='[any arguments that an app starts with here]'; StartIn='[start in path if needed, here]'}
+#  @{Name=''; SystemLnk=''; Target=''; Arguments=''; StartIn=''}
+$sysUserAppList = @(
   @{Name='Access'; SystemLnk='Access'; Target='C:\Program Files\Microsoft Office\root\Office16\MSACCESS.EXE'},
   @{Name='Excel'; SystemLnk='Excel'; Target='C:\Program Files\Microsoft Office\root\Office16\EXCEL.EXE'},
   @{Name='OneNote'; SystemLnk='OneNote'; Target='C:\Program Files\Microsoft Office\root\Office16\ONENOTE.EXE'},
@@ -49,12 +69,13 @@ $appList = @(
   @{Name='OpenVPN'; SystemLnk='OpenVPN\OpenVPN GUI'; Target='C:\Program Files\OpenVPN\bin\openvpn-gui.exe'},
   @{Name='Adobe Acrobat'; SystemLnk='Adobe Acrobat'; Target='C:\Program Files\Adobe\Acrobat DC\Acrobat\Acrobat.exe'},
   @{Name='Adobe Acrobat (32-bit)'; SystemLnk='Adobe Acrobat (32-bit)'; Target='C:\Program Files (x86)\Adobe\Acrobat DC\Acrobat\Acrobat.exe'},
-  @{Name='Epson Scan 2'; SystemLnk='EPSON\Epson Scan 2\Epson Scan 2'; Target='C:\Program Files (x86)\epson\Epson Scan 2\Core\es2launcher.exe'; StartIn=''},
-  @{Name='FAX Utility'; SystemLnk='EPSON Software\FAX Utility'; Target='C:\Program Files (x86)\Epson Software\FAX Utility\FUFAXCNT.exe'; StartIn=''}
+  @{Name='Epson Scan 2'; SystemLnk='EPSON\Epson Scan 2\Epson Scan 2'; Target='C:\Program Files (x86)\epson\Epson Scan 2\Core\es2launcher.exe'},
+  @{Name='FAX Utility'; SystemLnk='EPSON Software\FAX Utility'; Target='C:\Program Files (x86)\Epson Software\FAX Utility\FUFAXCNT.exe'},
+  @{Name='Altair Monarch 2020'; SystemLnk='Altair Monarch 2020\Altair Monarch 2020'; Target='C:\Program Files\Altair Monarch 2020\DWMonarch.exe'}
 )
 
-for ($i = 0; $i -lt $appList.length; $i++) {
-  $app = $appList[$i]
+for ($i = 0; $i -lt $sysUserAppList.length; $i++) {
+  $app = $sysUserAppList[$i]
   $aName = $app.Name
   $aSystemLnk = $app.SystemLnk
   $aTarget = $app.Target
@@ -64,14 +85,14 @@ for ($i = 0; $i -lt $appList.length; $i++) {
   Recreate-Shortcut $aName $aSystemLnk $aTarget $sArguments $aStartIn
 }
 
-# User Profile Applications
+# Installed applications (per user profile)
 
 $Users = (Get-ChildItem 'C:\Users\' | % { $_.name })
 # only one user
 if ($Users[0].length -eq 0) {$Users = @("$Users")}
 
-#  @{Name='[name of shortcut here]'; SystemLnk='[path to lnk or name of app here]'; Target='[path to exe here]'; StartIn='[start in path if needed, here]'}
-#  @{Name=''; SystemLnk=''; Target=''; StartIn=''}
+#  @{Name='[name of shortcut here]'; SystemLnk='[path to lnk or name of app here]'; Target='[path to exe here]'; Arguments='[any arguments that an app starts with here]'; StartIn='[start in path if needed, here]'}
+#  @{Name=''; SystemLnk=''; Target=''; Arguments=''; StartIn=''}
 $userAppList = @( # all instances of '%username%' get's replaced with the username
   @{Name='Microsoft Teams'; SystemLnk='Microsoft Teams'; Target='C:\Users\%username%\AppData\Local\Microsoft\Teams\Update.exe'; Arguments='--processStart "Teams.exe"'},
   @{Name='Google Chrome'; SystemLnk='Google Chrome'; Target='C:\Users\%username%\AppData\Local\Programs\Chrome\Application\chrome.exe'},
