@@ -1,5 +1,6 @@
 #Requires -RunAsAdministrator
 # Recreate Base Shortcuts - https://github.com/TheAlienDrew/OS-Scripts/blob/master/Windows/Microsoft-Endpoint-Defender\Recreate-Base-Shortcuts.ps1
+# Script only recreates shortcuts to applications it knows are installed, and also works for user profile installed applications.
 # About the issue: https://www.bleepingcomputer.com/news/microsoft/buggy-microsoft-defender-asr-rule-deletes-windows-app-shortcuts/
 
 function Recreate-Shortcut {
