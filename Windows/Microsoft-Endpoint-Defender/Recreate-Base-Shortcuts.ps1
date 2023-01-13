@@ -48,7 +48,9 @@ $appList = @(
   @{Name='Global VPN Client'; SystemLnk='Global VPN Client'; Target='C:\Program Files\SonicWALL\Global VPN Client\SWGVC.exe'},
   @{Name='OpenVPN'; SystemLnk='OpenVPN\OpenVPN GUI'; Target='C:\Program Files\OpenVPN\bin\openvpn-gui.exe'},
   @{Name='Adobe Acrobat'; SystemLnk='Adobe Acrobat'; Target='C:\Program Files\Adobe\Acrobat DC\Acrobat\Acrobat.exe'},
-  @{Name='Adobe Acrobat (32-bit)'; SystemLnk='Adobe Acrobat (32-bit)'; Target='C:\Program Files (x86)\Adobe\Acrobat DC\Acrobat\Acrobat.exe'}
+  @{Name='Adobe Acrobat (32-bit)'; SystemLnk='Adobe Acrobat (32-bit)'; Target='C:\Program Files (x86)\Adobe\Acrobat DC\Acrobat\Acrobat.exe'},
+  @{Name='Epson Scan 2'; SystemLnk='EPSON\Epson Scan 2\Epson Scan 2'; Target='C:\Program Files (x86)\epson\Epson Scan 2\Core\es2launcher.exe'; StartIn=''},
+  @{Name='FAX Utility'; SystemLnk='EPSON Software\FAX Utility'; Target='C:\Program Files (x86)\Epson Software\FAX Utility\FUFAXCNT.exe'; StartIn=''}
 )
 
 for ($i = 0; $i -lt $appList.length; $i++) {
