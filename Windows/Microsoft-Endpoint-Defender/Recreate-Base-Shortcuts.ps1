@@ -34,7 +34,15 @@ function Recreate-Shortcut {
 #  @{Name='[name of shortcut here]'; SystemLnk='[path to lnk or name of app here]'; Target='[path to exe here]'; Arguments='[any arguments that an app starts with here]'; StartIn='[start in path if needed, here]'}
 #  @{Name=''; SystemLnk=''; Target=''; Arguments=''; StartIn=''}
 $sysAppList = @(
-  @{Name='Microsoft Edge'; SystemLnk='Microsoft Edge'; Target='C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe'}#,
+  @{Name='Microsoft Edge'; SystemLnk='Microsoft Edge'; Target='C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe'}
+  @{Name='OneDrive'; SystemLnk='OneDrive'; Target='C:\Program Files\Microsoft OneDrive\OneDrive.exe'},
+  @{Name='Access'; SystemLnk='Access'; Target='C:\Program Files\Microsoft Office\root\Office16\MSACCESS.EXE'},
+  @{Name='Excel'; SystemLnk='Excel'; Target='C:\Program Files\Microsoft Office\root\Office16\EXCEL.EXE'},
+  @{Name='OneNote'; SystemLnk='OneNote'; Target='C:\Program Files\Microsoft Office\root\Office16\ONENOTE.EXE'},
+  @{Name='Outlook'; SystemLnk='Outlook'; Target='C:\Program Files\Microsoft Office\root\Office16\OUTLOOK.EXE'},
+  @{Name='PowerPoint'; SystemLnk='PowerPoint'; Target='C:\Program Files\Microsoft Office\root\Office16\POWERPNT.EXE'},
+  @{Name='Publisher'; SystemLnk='Publisher'; Target='C:\Program Files\Microsoft Office\root\Office16\MSPUB.EXE'},
+  @{Name='Word'; SystemLnk='Word'; Target='C:\Program Files\Microsoft Office\root\Office16\WINWORD.EXE'}#,
 #  @{Name=''; SystemLnk=''; Target=''},
 #  @{Name=''; SystemLnk=''; Target=''; StartIn=''}
 )
@@ -55,13 +63,6 @@ for ($i = 0; $i -lt $sysAppList.length; $i++) {
 #  @{Name='[name of shortcut here]'; SystemLnk='[path to lnk or name of app here]'; Target='[path to exe here]'; Arguments='[any arguments that an app starts with here]'; StartIn='[start in path if needed, here]'}
 #  @{Name=''; SystemLnk=''; Target=''; Arguments=''; StartIn=''}
 $sysUserAppList = @(
-  @{Name='Access'; SystemLnk='Access'; Target='C:\Program Files\Microsoft Office\root\Office16\MSACCESS.EXE'},
-  @{Name='Excel'; SystemLnk='Excel'; Target='C:\Program Files\Microsoft Office\root\Office16\EXCEL.EXE'},
-  @{Name='OneNote'; SystemLnk='OneNote'; Target='C:\Program Files\Microsoft Office\root\Office16\ONENOTE.EXE'},
-  @{Name='Outlook'; SystemLnk='Outlook'; Target='C:\Program Files\Microsoft Office\root\Office16\OUTLOOK.EXE'},
-  @{Name='PowerPoint'; SystemLnk='PowerPoint'; Target='C:\Program Files\Microsoft Office\root\Office16\POWERPNT.EXE'},
-  @{Name='Publisher'; SystemLnk='Publisher'; Target='C:\Program Files\Microsoft Office\root\Office16\MSPUB.EXE'},
-  @{Name='Word'; SystemLnk='Word'; Target='C:\Program Files\Microsoft Office\root\Office16\WINWORD.EXE'},
   @{Name='Google Chrome'; SystemLnk='Google Chrome'; Target='C:\Program Files\Google\Chrome\Application\chrome.exe'},
   @{Name='Google Chrome (32-bit)'; SystemLnk='Google Chrome (32-bit)'; Target='C:\Program Files (x86)\Google\Chrome\Application\chrome.exe'},
   @{Name='Firefox'; SystemLnk='Firefox'; Target='C:\Program Files\Mozilla Firefox\firefox.exe'},
@@ -94,6 +95,7 @@ if ($Users[0].length -eq 0) {$Users = @("$Users")}
 #  @{Name='[name of shortcut here]'; SystemLnk='[path to lnk or name of app here]'; Target='[path to exe here]'; Arguments='[any arguments that an app starts with here]'; StartIn='[start in path if needed, here]'}
 #  @{Name=''; SystemLnk=''; Target=''; Arguments=''; StartIn=''}
 $userAppList = @( # all instances of '%username%' get's replaced with the username
+  @{Name='OneDrive'; SystemLnk='OneDrive'; Target='C:\Users\%username%\AppData\Local\Microsoft\OneDrive\OneDrive.exe'},
   @{Name='Microsoft Teams'; SystemLnk='Microsoft Teams'; Target='C:\Users\%username%\AppData\Local\Microsoft\Teams\Update.exe'; Arguments='--processStart "Teams.exe"'},
   @{Name='Google Chrome'; SystemLnk='Google Chrome'; Target='C:\Users\%username%\AppData\Local\Programs\Chrome\Application\chrome.exe'},
   @{Name='Firefox'; SystemLnk='Firefox'; Target='C:\Users\%username%\AppData\Local\Programs\Mozilla Firefox\firefox.exe'},
