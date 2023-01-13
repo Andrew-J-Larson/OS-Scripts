@@ -86,7 +86,7 @@ for ($i = 0; $i -lt $sysUserAppList.length; $i++) {
   Recreate-Shortcut $aName $aSystemLnk $aTarget $sArguments $aStartIn
 }
 
-# Installed applications (per user profile)
+# Installed user applications (per user profile)
 
 $Users = (Get-ChildItem 'C:\Users\' | % { $_.name })
 # only one user
