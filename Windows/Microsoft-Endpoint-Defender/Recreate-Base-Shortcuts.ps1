@@ -54,11 +54,11 @@ function Recreate-Shortcut {
 # System Applications
 
 $sysAppList = @(
-  @{Name="Microsoft Edge"; Target="C:\Program Files\Microsoft\Edge\Application\msedge.exe"} # it's the only install on 32-bit
-  @{Name="Microsoft Edge"; Target="C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"} # it's the only install on 64-bit
-  @{Name="OneDrive"; Target="C:\Program Files\Microsoft OneDrive\OneDrive.exe"},
-  @{Name="Access"; Target="C:\Program Files\Microsoft Office\root\Office16\MSACCESS.EXE"},
-  @{Name="Excel"; Target="C:\Program Files\Microsoft Office\root\Office16\EXCEL.EXE"},
+  @{Name="Microsoft Edge"; Target="C:\Program Files\Microsoft\Edge\Application\msedge.exe"; StartIn="C:\Program Files\Microsoft\Edge\Application"; Description="Browse the web"} # it's the only install on 32-bit
+  @{Name="Microsoft Edge"; Target="C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"; StartIn="C:\Program Files (x86)\Microsoft\Edge\Application"; Description="Browse the web"} # it's the only install on 64-bit
+  @{Name="OneDrive"; Target="C:\Program Files\Microsoft OneDrive\OneDrive.exe"; Description="Keep your most important files with you wherever you go, on any device."},
+  @{Name="Access"; Target="C:\Program Files\Microsoft Office\root\Office16\MSACCESS.EXE"; Description="Build a professional app quickly to manage data."},
+  @{Name="Excel"; Target="C:\Program Files\Microsoft Office\root\Office16\EXCEL.EXE"; Description="Easily discover, visualize, and share insights from your data."},
   @{Name="OneNote"; Target="C:\Program Files\Microsoft Office\root\Office16\ONENOTE.EXE"},
   @{Name="Outlook"; Target="C:\Program Files\Microsoft Office\root\Office16\OUTLOOK.EXE"},
   @{Name="PowerPoint"; Target="C:\Program Files\Microsoft Office\root\Office16\POWERPNT.EXE"},
@@ -67,7 +67,7 @@ $sysAppList = @(
   @{Name="Database Compare"; Target="C:\Program Files\Microsoft Office\root\Client\AppVLP.exe"; Arguments="`"C:\Program Files (x86)\Microsoft Office\Office16\DCF\DATABASECOMPARE.EXE`""; SystemLnk="Microsoft Office Tools\"},
   @{Name="Office Language Preferences"; Target="C:\Program Files\Microsoft Office\root\Office16\SETLANG.EXE"; SystemLnk="Microsoft Office Tools\"},
   @{Name="Spreadsheet Compare"; Target="C:\Program Files\Microsoft Office\root\Client\AppVLP.exe" ; Arguments="`"C:\Program Files (x86)\Microsoft Office\Office16\DCF\SPREADSHEETCOMPARE.EXE`""; SystemLnk="Microsoft Office Tools\"},
-  @{Name="Telemetry Log for Office"; Target="C:\Program Files\Microsoft Office\root\Office16\msoev.exe"; SystemLnk="Microsoft Office Tools\"},
+  @{Name="Telemetry Log for Office"; Target="C:\Program Files\Microsoft Office\root\Office16\msoev.exe"; SystemLnk="Microsoft Office Tools\"}
 #  @{Name=""; Target=""; Arguments=""; SystemLnk=""; StartIn=""; Description=""}
 )
 
@@ -108,8 +108,8 @@ for ($i = 0; $i -lt $oemSysAppList.length; $i++) {
 $sys3rdPartyAppList = @(
   @{Name="Google Chrome"; Target="C:\Program Files\Google\Chrome\Application\chrome.exe"},
   @{Name="Google Chrome (32-bit)"; Target="C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"},
-  @{Name="Firefox"; Target="C:\Program Files\Mozilla Firefox\firefox.exe"},
-  @{Name="Firefox (32-bit)"; Target="C:\Program Files (x86)\Mozilla Firefox\firefox.exe"},
+  @{Name="Firefox"; Target="C:\Program Files\Mozilla Firefox\firefox.exe"; StartIn="C:\Program Files\Mozilla Firefox"},
+  @{Name="Firefox (32-bit)"; Target="C:\Program Files (x86)\Mozilla Firefox\firefox.exe"; StartIn="C:\Program Files (x86)\Mozilla Firefox"},
   @{Name="Adobe Acrobat"; Target="C:\Program Files\Adobe\Acrobat DC\Acrobat\Acrobat.exe"},
   @{Name="Adobe Acrobat (32-bit)"; Target="C:\Program Files (x86)\Adobe\Acrobat DC\Acrobat\Acrobat.exe"},
   @{Name="Global VPN Client"; Target="C:\Program Files\SonicWALL\Global VPN Client\SWGVC.exe"},
@@ -119,7 +119,7 @@ $sys3rdPartyAppList = @(
   @{Name="User's manual"; Target="C:\Program Files\CodeTwo\CodeTwo Active Directory Photos\Data\User's manual.url"; SystemLnk="CodeTwo\CodeTwo Active Directory Photos\";},
   @{Name="LAPS UI"; Target="C:\Program Files\LAPS\AdmPwd.UI.exe"; SystemLnk="LAPS\"},
   @{Name="Microsoft Intune Management Extension"; Target="C:\Program Files (x86)\Microsoft Intune Management Extension\AgentExecutor.exe"; SystemLnk="Microsoft Intune Management Extension\"},
-#  @{Name=""; Target=""; Arguments=""; SystemLnk=""; StartIn=""; Description=""},
+  @{Name=""; Target=""; Arguments=""; SystemLnk=""; StartIn=""; Description=""},
   @{Name="Epson Scan 2"; Target="C:\Program Files (x86)\epson\Epson Scan 2\Core\es2launcher.exe"; SystemLnk="EPSON\Epson Scan 2\"},
   @{Name="FAX Utility"; Target="C:\Program Files (x86)\Epson Software\FAX Utility\FUFAXCNT.exe"; SystemLnk="EPSON Software\"},
   @{Name="Altair Monarch 2020"; Target="C:\Program Files\Altair Monarch 2020\DWMonarch.exe"; SystemLnk="Altair Monarch 2020\"},
