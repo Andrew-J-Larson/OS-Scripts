@@ -48,9 +48,18 @@ function Recreate-Shortcut {
     if ($sDescription) {$newLNK.Description = $sDescription}
 
     $newLNK.Save()
-    if ($?) {Write-Host "Created shortcut at: ${sSystemLnk}"}
-    else {Write-Error "Failed to create shortcut, with target at: ${sTarget}"}
-  } else {Write-Error "Target invalid! Doesn't exist or is spelled wrong: ${sTarget}"}
+    if ($?) {
+      Write-Host "Created shortcut at: ${sSystemLnk}"
+      return $true
+    }
+    else {
+      Write-Error "Failed to create shortcut, with target at: ${sTarget}"
+      return $false
+    }
+  } else {
+    Write-Error "Target invalid! Doesn't exist or is spelled wrong: ${sTarget}"
+    return $false
+  }
 }
 
 # System Applications
@@ -82,7 +91,7 @@ for ($i = 0; $i -lt $sysAppList.length; $i++) {
   $aStartIn = if ($app.StartIn) {$app.StartIn} else {""}
   $aDescription = if ($app.Description) {$app.Description} else {""}
 
-  Recreate-Shortcut $aName $aTarget $sArguments $aSystemLnk $aStartIn $aDescription
+  $Result = Recreate-Shortcut $aName $aTarget $sArguments $aSystemLnk $aStartIn $aDescription
 }
 
 # OEM System Applications (e.g. Dell)
@@ -102,7 +111,7 @@ for ($i = 0; $i -lt $oemSysAppList.length; $i++) {
   $aStartIn = if ($app.StartIn) {$app.StartIn} else {""}
   $aDescription = if ($app.Description) {$app.Description} else {""}
 
-  Recreate-Shortcut $aName $aTarget $sArguments $aSystemLnk $aStartIn $aDescription
+  $Result = Recreate-Shortcut $aName $aTarget $sArguments $aSystemLnk $aStartIn $aDescription
 }
 
 # Third-Party System Applications (not made by Microsoft)
@@ -138,7 +147,7 @@ for ($i = 0; $i -lt $sys3rdPartyAppList.length; $i++) {
   $aStartIn = if ($app.StartIn) {$app.StartIn} else {""}
   $aDescription = if ($app.Description) {$app.Description} else {""}
 
-  Recreate-Shortcut $aName $aTarget $sArguments $aSystemLnk $aStartIn $aDescription
+  $Result = Recreate-Shortcut $aName $aTarget $sArguments $aSystemLnk $aStartIn $aDescription
 }
 
 # User Applications (per user installed apps)
@@ -170,6 +179,6 @@ for ($i = 0; $i -lt $userAppList.length; $i++) {
     $aTarget = ($app.Target).replace("%username%", $aUser)
     $aSystemLnk = "C:\Users\${aUser}\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\"+$(if ($app.SystemLnk) {$app.SystemLnk} else {$aName})
 
-    Recreate-Shortcut $aName $aTarget $sArguments $aSystemLnk $aStartIn $aDescription
+    $Result = Recreate-Shortcut $aName $aTarget $sArguments $aSystemLnk $aStartIn $aDescription
   }
 }
