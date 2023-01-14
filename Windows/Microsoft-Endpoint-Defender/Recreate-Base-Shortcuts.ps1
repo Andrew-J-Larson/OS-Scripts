@@ -22,15 +22,12 @@ $isWindows10 = ((Get-WMIObject win32_operatingsystem).Caption).StartsWith("Micro
 # Functions
 
 function Recreate-Shortcut {
-  Set-Variable ProgramShortcutsPath -Option Constant -Value "C:\ProgramData\Microsoft\Windows\Start Menu\Programs"
-  Set-Variable UserProgramShortcutsPath -Option Constant -Value "C:\Users\%username%\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\"
-
-  param(
-    [Parameter(Mandatory=$true]
+    param(
+    [Parameter(Mandatory=$true)]
     [Alias("name","n")]
     [string]$sName,
 
-    [Parameter(Mandatory=$true]
+    [Parameter(Mandatory=$true)]
     [Alias("targetpath","tp")]
     [string]$sTargetPath,
 
@@ -47,14 +44,19 @@ function Recreate-Shortcut {
     [string]$sDescription, # Optional (some shortcuts have comments for tooltips)
     
     [Alias("runasadmin", "r")]
-    [switch]$sRunAsAdmin # Optional (if the shortcut should be ran as admin)
+    [switch]$sRunAsAdmin, # Optional (if the shortcut should be ran as admin)
 
     [Alias("user", "u")]
-    [string]$sUser, # Optional (username of the user to install shortcut to)
+    [string]$sUser # Optional (username of the user to install shortcut to)
   )
 
+  Set-Variable ProgramShortcutsPath -Option Constant -Value "C:\ProgramData\Microsoft\Windows\Start Menu\Programs"
+  Set-Variable UserProgramShortcutsPath -Option Constant -Value "C:\Users\%username%\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\"
+
+  
+
   # only create shortcut if name and target given, and target exists
-  if ($sName -And $sTargetPath -And Test-Path $sTargetPath -PathType leaf) {
+  if ($sName -And $sTargetPath -And (Test-Path $sTargetPath -PathType leaf)) {
     $WScriptObj = New-Object -ComObject WScript.Shell
 
     # if shortcut path not given, create one at default location with $sName
@@ -100,7 +102,7 @@ function Recreate-Shortcut {
       Write-Error "Failed to create shortcut, with target at: ${sTarget}"
       return $false
     }
-  } else if (-Not ($sName -Or $sTargetPath)) {
+  } elseif (-Not ($sName -Or $sTargetPath)) {
     if (-Not $sName) {
       Write-Error "Error! Name is missing!"
       return $false
