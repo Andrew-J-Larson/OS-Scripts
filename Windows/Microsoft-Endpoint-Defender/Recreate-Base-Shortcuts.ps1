@@ -14,6 +14,12 @@
        Description="[comment that shows up in tooltip, here]"
    } #>
 
+# Variables
+$isWindows11 = ((Get-WMIObject win32_operatingsystem).Caption).StartsWith("Microsoft Windows 11")
+$isWindows10 = ((Get-WMIObject win32_operatingsystem).Caption).StartsWith("Microsoft Windows 10")
+
+# Functions
+
 function Recreate-Shortcut {
   Set-Variable ProgramShortcutsPath -Option Constant -Value "C:\ProgramData\Microsoft\Windows\Start Menu\Programs"
 
@@ -70,6 +76,8 @@ function Recreate-Shortcut {
     return $false
   }
 }
+
+# MAIN
 
 # System Applications
 
@@ -162,13 +170,13 @@ for ($i = 0; $i -lt $sys3rdPartyAppList.length; $i++) {
 # User Applications (per user installed apps)
 
 $userAppList = @( # all instances of "%username%" get's replaced with the username
-  @{Name="OneDrive"; Target="C:\Users\%username%\AppData\Local\Microsoft\OneDrive\OneDrive.exe"},
-  @{Name="Microsoft Teams"; Target="C:\Users\%username%\AppData\Local\Microsoft\Teams\Update.exe"; Arguments="--processStart `"Teams.exe`""},
+  @{Name="OneDrive"; Target="C:\Users\%username%\AppData\Local\Microsoft\OneDrive\OneDrive.exe"; Description="Keep your most important files with you wherever you go, on any device."},
+  @{Name=if ($isWindows11) {"Microsoft Teams (work or school)"} else {"Microsoft Teams"}; Target="C:\Users\%username%\AppData\Local\Microsoft\Teams\Update.exe"; Arguments="--processStart `"Teams.exe`""; StartIn="C:\Users\%username%\AppData\Local\Microsoft\Teams"},
   @{Name="Google Chrome"; Target="C:\Users\%username%\AppData\Local\Google\Chrome\Application\chrome.exe"; StartIn="C:\Users\%username%\AppData\Local\Google\Chrome\Application"; Description="Access the Internet"},
   @{Name="Firefox"; Target="C:\Users\%username%\AppData\Local\Mozilla Firefox\firefox.exe"; StartIn="C:\Users\%username%\AppData\Local\Mozilla Firefox"},
-  @{Name="RingCentral"; Target="C:\Users\%username%\AppData\Local\Programs\RingCentral\RingCentral.exe"},
-  @{Name="RingCentral Meetings"; Target="C:\Users\%username%\AppData\Roaming\RingCentralMeetings\bin\RingCentralMeetings.exe"; SystemLnk="RingCentral Meetings\"},
-  @{Name="Uninstall RingCentral Meetings"; Target="C:\Users\Andrew\AppData\Roaming\RingCentralMeetings\uninstall\Installer.exe"; Arguments="/uninstall"; SystemLnk="RingCentral Meetings\"}
+  @{Name="RingCentral"; Target="C:\Users\%username%\AppData\Local\Programs\RingCentral\RingCentral.exe"; StartIn="C:\Users\%username%\AppData\Local\Programs\RingCentral"; Description="RingCentral"},
+  @{Name="RingCentral Meetings"; Target="C:\Users\%username%\AppData\Roaming\RingCentralMeetings\bin\RingCentralMeetings.exe"; SystemLnk="RingCentral Meetings\"; Description="RingCentral Meetings"},
+  @{Name="Uninstall RingCentral Meetings"; Target="C:\Users\%username%\AppData\Roaming\RingCentralMeetings\uninstall\Installer.exe"; Arguments="/uninstall"; SystemLnk="RingCentral Meetings\"; Description="Uninstall RingCentral Meetings"}
 #  @{Name=""; Target=""; Arguments=""; SystemLnk=""; StartIn=""; Description=""}
 )
 
