@@ -48,7 +48,9 @@ function Recreate-Shortcut {
     if ($sDescription) {$newLNK.Description = $sDescription}
 
     $newLNK.Save()
-  }
+    if ($?) {Write-Host "Created shortcut at: ${sSystemLnk}"}
+    else {Write-Error "Failed to create shortcut, with target at: ${sTarget}"}
+  } else {Write-Error "Target invalid! Doesn't exist or is spelled wrong: ${sTarget}"}
 }
 
 # System Applications
@@ -75,10 +77,10 @@ for ($i = 0; $i -lt $sysAppList.length; $i++) {
   $app = $sysAppList[$i]
   $aName = $app.Name
   $aTarget = $app.Target
-  $aArguments = $app.Arguments
-  $aSystemLnk = $app.SystemLnk
+  $aArguments = if ($app.Arguments) {$app.Arguments} else {""}
+  $aSystemLnk = if ($app.SystemLnk) {$app.SystemLnk} else {""}
   $aStartIn = if ($app.StartIn) {$app.StartIn} else {""}
-  $aDescription = $app.Description
+  $aDescription = if ($app.Description) {$app.Description} else {""}
 
   Recreate-Shortcut $aName $aTarget $sArguments $aSystemLnk $aStartIn $aDescription
 }
@@ -86,7 +88,7 @@ for ($i = 0; $i -lt $sysAppList.length; $i++) {
 # OEM System Applications (e.g. Dell)
 
 $oemSysAppList = @(
-  @{Name="Dell OS Recovery Tool"; Target="C:\Program Files (x86)\Dell\OS Recovery Tool\DellOSRecoveryTool.exe"; SystemLnk="Dell\"},
+  @{Name="Dell OS Recovery Tool"; Target="C:\Program Files (x86)\Dell\OS Recovery Tool\DellOSRecoveryTool.exe"; SystemLnk="Dell\"; StartIn="C:\Program Files (x86)\Dell\OS Recovery Tool\"},
   @{Name="SupportAssist Recovery Assistant"; Target="C:\Program Files\Dell\SARemediation\postosri\osrecoveryagent.exe"; SystemLnk="Dell\SupportAssist\"}
 #  @{Name=""; Target=""; Arguments=""; SystemLnk=""; StartIn=""; Description=""}
 )
@@ -94,11 +96,11 @@ $oemSysAppList = @(
 for ($i = 0; $i -lt $oemSysAppList.length; $i++) {
   $app = $oemSysAppList[$i]
   $aName = $app.Name
-  $aSystemLnk = $app.SystemLnk
   $aTarget = $app.Target
-  $aArguments = $app.Arguments
+  $aArguments = if ($app.Arguments) {$app.Arguments} else {""}
+  $aSystemLnk = if ($app.SystemLnk) {$app.SystemLnk} else {""}
   $aStartIn = if ($app.StartIn) {$app.StartIn} else {""}
-  $aDescription = $app.Description
+  $aDescription = if ($app.Description) {$app.Description} else {""}
 
   Recreate-Shortcut $aName $aTarget $sArguments $aSystemLnk $aStartIn $aDescription
 }
@@ -114,9 +116,9 @@ $sys3rdPartyAppList = @(
   @{Name="Adobe Acrobat (32-bit)"; Target="C:\Program Files (x86)\Adobe\Acrobat DC\Acrobat\Acrobat.exe"},
   @{Name="Global VPN Client"; Target="C:\Program Files\SonicWALL\Global VPN Client\SWGVC.exe"},
   @{Name="OpenVPN"; Target="C:\Program Files\OpenVPN\bin\openvpn-gui.exe"; SystemLnk="OpenVPN\OpenVPN GUI"},
-  @{Name="CodeTwo Active Directory Photos"; Target="C:\Program Files\CodeTwo\CodeTwo Active Directory Photos\CodeTwo Active Directory Photos.exe"; SystemLnk="CodeTwo\CodeTwo Active Directory Photos\"},
-  @{Name="Go to program home page"; Target="C:\Program Files\CodeTwo\CodeTwo Active Directory Photos\Data\HomePage.url"; SystemLnk="CodeTwo\CodeTwo Active Directory Photos\"},
-  @{Name="User's manual"; Target="C:\Program Files\CodeTwo\CodeTwo Active Directory Photos\Data\User's manual.url"; SystemLnk="CodeTwo\CodeTwo Active Directory Photos\";},
+  @{Name="CodeTwo Active Directory Photos"; Target="C:\Program Files\CodeTwo\CodeTwo Active Directory Photos\CodeTwo Active Directory Photos.exe"; SystemLnk="CodeTwo\CodeTwo Active Directory Photos\"; Description="CodeTwo Active Directory Photos"},
+  @{Name="Go to program home page"; Target="C:\Program Files\CodeTwo\CodeTwo Active Directory Photos\Data\HomePage.url"; SystemLnk="CodeTwo\CodeTwo Active Directory Photos\"; Description="CodeTwo Active Directory Photos home page"},
+  @{Name="User's manual"; Target="C:\Program Files\CodeTwo\CodeTwo Active Directory Photos\Data\User's manual.url"; SystemLnk="CodeTwo\CodeTwo Active Directory Photos\"; Description="Go to User Guide"},
   @{Name="LAPS UI"; Target="C:\Program Files\LAPS\AdmPwd.UI.exe"; SystemLnk="LAPS\"},
   @{Name="Microsoft Intune Management Extension"; Target="C:\Program Files (x86)\Microsoft Intune Management Extension\AgentExecutor.exe"; SystemLnk="Microsoft Intune Management Extension\"},
 #  @{Name=""; Target=""; Arguments=""; SystemLnk=""; StartIn=""; Description=""},
@@ -130,11 +132,11 @@ $sys3rdPartyAppList = @(
 for ($i = 0; $i -lt $sys3rdPartyAppList.length; $i++) {
   $app = $sys3rdPartyAppList[$i]
   $aName = $app.Name
-  $aSystemLnk = $app.SystemLnk
   $aTarget = $app.Target
-  $aArguments = $app.Arguments
+  $aArguments = if ($app.Arguments) {$app.Arguments} else {""}
+  $aSystemLnk = if ($app.SystemLnk) {$app.SystemLnk} else {""}
   $aStartIn = if ($app.StartIn) {$app.StartIn} else {""}
-  $aDescription = $app.Description
+  $aDescription = if ($app.Description) {$app.Description} else {""}
 
   Recreate-Shortcut $aName $aTarget $sArguments $aSystemLnk $aStartIn $aDescription
 }
@@ -159,14 +161,14 @@ if ($Users[0].length -eq 1) {$Users = @("$Users")} # if only one user, array nee
 for ($i = 0; $i -lt $userAppList.length; $i++) {
   $app = $userAppList[$i]
   $aName = $app.Name
-  $aArguments = $app.Arguments
+  $aArguments = if ($app.Arguments) {$app.Arguments} else {""}
   $aStartIn = if ($app.StartIn) {$app.StartIn} else {""}
-  $aDescription = $app.Description
+  $aDescription = if ($app.Description) {$app.Description} else {""}
 
   for ($j = 0; $j -lt $Users.length; $j++) {
     $aUser = $Users[$j]
     $aTarget = ($app.Target).replace("%username%", $aUser)
-    $aSystemLnk = ("C:\Users\${aUser}\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\"+$app.SystemLnk)
+    $aSystemLnk = "C:\Users\${aUser}\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\"+$(if ($app.SystemLnk) {$app.SystemLnk} else {$aName})
 
     Recreate-Shortcut $aName $aTarget $sArguments $aSystemLnk $aStartIn $aDescription
   }
