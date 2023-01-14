@@ -120,19 +120,19 @@ function Recreate-Shortcut {
 # System Applications
 
 $sysAppList = @(
-  # Microsoft Edge
+  # Edge
   @{Name="Microsoft Edge"; TargetPath="C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"; StartIn="C:\Program Files (x86)\Microsoft\Edge\Application"; Description="Browse the web"}, # it's the only install on 64-bit
   @{Name="Microsoft Edge"; TargetPath="C:\Program Files\Microsoft\Edge\Application\msedge.exe"; StartIn="C:\Program Files\Microsoft\Edge\Application"; Description="Browse the web"}, # it's the only install on 32-bit
   # PowerShell 7
   @{Name="PowerShell 7 (x86)"; TargetPath="C:\Program Files (x86)\PowerShell\7\pwsh.exe"; Arguments="-WorkingDirectory ~"; SystemLnk="PowerShell\"; Description="PowerShell 7 (x86)"},
   @{Name="PowerShell 7 (x64)"; TargetPath="C:\Program Files\PowerShell\7\pwsh.exe"; Arguments="-WorkingDirectory ~"; SystemLnk="PowerShell\"; Description="PowerShell 7 (x64)"},
-  # Microsoft Intune Management Extension
+  # Intune Management Extension
   @{Name="Microsoft Intune Management Extension"; TargetPath="C:\Program Files (x86)\Microsoft Intune Management Extension\AgentExecutor.exe"; SystemLnk="Microsoft Intune Management Extension\"; Description="Microsoft Intune Management Extension"},
   # PowerToys
   @{Name=if (winget list -q "Microsoft.PowerToys" -e | Select-String "^PowerToys \(Preview\)") {"PowerToys (Preview)"} else {"PowerToys"}; TargetPath="C:\Program Files\PowerToys\PowerToys.exe"; SystemLnk=if (winget list -q "Microsoft.PowerToys" -e | Select-String "^PowerToys \(Preview\)") {"PowerToys (Preview)\"} else {"PowerToys\"}; StartIn="C:\Program Files\PowerToys\"; Description="PowerToys - Windows system utilities to maximize productivity"},
   # OneDrive
   @{Name="OneDrive"; TargetPath="C:\Program Files\Microsoft OneDrive\OneDrive.exe"; Description="Keep your most important files with you wherever you go, on any device."},
-  # Microsoft Office Apps
+  # Office Apps
   @{Name="Access"; TargetPath="C:\Program Files\Microsoft Office\root\Office16\MSACCESS.EXE"; Description="Build a professional app quickly to manage data."},
   @{Name="Excel"; TargetPath="C:\Program Files\Microsoft Office\root\Office16\EXCEL.EXE"; Description="Easily discover, visualize, and share insights from your data."},
   @{Name="OneNote"; TargetPath="C:\Program Files\Microsoft Office\root\Office16\ONENOTE.EXE"; Description="Take notes and have them when you need them."},
@@ -143,7 +143,9 @@ $sysAppList = @(
   @{Name="Database Compare"; TargetPath="C:\Program Files\Microsoft Office\root\Client\AppVLP.exe"; Arguments="`"C:\Program Files (x86)\Microsoft Office\Office16\DCF\DATABASECOMPARE.EXE`""; SystemLnk="Microsoft Office Tools\"; Description="Compare versions of an Access database."},
   @{Name="Office Language Preferences"; TargetPath="C:\Program Files\Microsoft Office\root\Office16\SETLANG.EXE"; SystemLnk="Microsoft Office Tools\"; Description="Change the language preferences for Office applications."},
   @{Name="Spreadsheet Compare"; TargetPath="C:\Program Files\Microsoft Office\root\Client\AppVLP.exe" ; Arguments="`"C:\Program Files (x86)\Microsoft Office\Office16\DCF\SPREADSHEETCOMPARE.EXE`""; SystemLnk="Microsoft Office Tools\"; Description="Compare versions of an Excel workbook."},
-  @{Name="Telemetry Log for Office"; TargetPath="C:\Program Files\Microsoft Office\root\Office16\msoev.exe"; SystemLnk="Microsoft Office Tools\"; Description="View critical errors, compatibility issues and workaround information for your Office solutions by using Office Telemetry Log."}
+  @{Name="Telemetry Log for Office"; TargetPath="C:\Program Files\Microsoft Office\root\Office16\msoev.exe"; SystemLnk="Microsoft Office Tools\"; Description="View critical errors, compatibility issues and workaround information for your Office solutions by using Office Telemetry Log."},
+  # Visual Studio
+  @{Name="Visual Studio Code"; TargetPath="C:\Program Files\Microsoft VS Code\Code.exe"; SystemLnk="Visual Studio Code\"; StartIn="C:\Program Files\Microsoft VS Code"}
 #  @{Name=""; TargetPath=""; Arguments=""; SystemLnk=""; StartIn=""; Description=""; RunAsAdmin=($true|$false)}
 )
 
@@ -167,7 +169,7 @@ $oemSysAppList = @(
   @{Name="Dell OS Recovery Tool"; TargetPath="C:\Program Files (x86)\Dell\OS Recovery Tool\DellOSRecoveryTool.exe"; SystemLnk="Dell\"; StartIn="C:\Program Files (x86)\Dell\OS Recovery Tool\"},
   @{Name="SupportAssist Recovery Assistant"; TargetPath="C:\Program Files\Dell\SARemediation\postosri\osrecoveryagent.exe"; SystemLnk="Dell\SupportAssist\"},
   # NVIDIA Corporation
-  @{Name="GeForce Experience"; TargetPath="C:\Program Files\NVIDIA Corporation\NVIDIA GeForce Experience\NVIDIA GeForce Experience.exe"; SystemLnk="NVIDIA Corporation\"; StartIn="C:\Program Files\NVIDIA Corporation\NVIDIA GeForce Experience"},
+  @{Name="GeForce Experience"; TargetPath="C:\Program Files\NVIDIA Corporation\NVIDIA GeForce Experience\NVIDIA GeForce Experience.exe"; SystemLnk="NVIDIA Corporation\"; StartIn="C:\Program Files\NVIDIA Corporation\NVIDIA GeForce Experience"}
 #  @{Name=""; TargetPath=""; Arguments=""; SystemLnk=""; StartIn=""; Description=""; RunAsAdmin=($true|$false)}
 )
 
@@ -193,12 +195,14 @@ $sys3rdPartyAppList = @(
   # Mozilla
   @{Name="Firefox (32-bit)"; TargetPath="C:\Program Files (x86)\Mozilla Firefox\firefox.exe"; StartIn="C:\Program Files (x86)\Mozilla Firefox"},
   @{Name="Firefox"; TargetPath="C:\Program Files\Mozilla Firefox\firefox.exe"; StartIn="C:\Program Files\Mozilla Firefox"},
-  #@{Name=""; TargetPath=""; SystemLnk=""; StartIn=""},
+  @{Name="Thunderbird"; TargetPath="C:\Program Files\Mozilla Thunderbird\thunderbird.exe"; StartIn="C:\Program Files\Mozilla Thunderbird"},
   # 7-Zip
   @{Name="7-Zip File Manager (32-bit)"; TargetPath="C:\Program Files (x86)\7-Zip\7zFM.exe"; SystemLnk="7-Zip\"},
   @{Name="7-Zip File Manager"; TargetPath="C:\Program Files\7-Zip\7zFM.exe"; SystemLnk="7-Zip\"},
   @{Name="7-Zip Help"; TargetPath="C:\Program Files (x86)\7-Zip\7-zip.chm"; SystemLnk="7-Zip\"},
   @{Name="7-Zip Help"; TargetPath="C:\Program Files\7-Zip\7-zip.chm"; SystemLnk="7-Zip\"},
+  # Audacity
+  @{Name="Audacity"; TargetPath="C:\Program Files\Audacity\Audacity.exe"; StartIn="C:\Program Files\Audacity"},
   # VideoLAN
   @{Name="Documentation"; TargetPath="C:\Program Files\VideoLAN\VLC\Documentation.url"; SystemLnk="VideoLAN\"; StartIn="C:\Program Files\VideoLAN\VLC"},
   @{Name="Release Notes"; TargetPath="C:\Program Files\VideoLAN\VLC\NEWS.txt"; SystemLnk="VideoLAN\"; StartIn="C:\Program Files\VideoLAN\VLC"},
@@ -206,6 +210,8 @@ $sys3rdPartyAppList = @(
   @{Name="VLC media player - reset preferences and cache files"; TargetPath="C:\Program Files\VideoLAN\VLC\vlc.exe"; Arguments="--reset-config --reset-plugins-cache vlc://quit"; SystemLnk="VideoLAN\"; StartIn="C:\Program Files\VideoLAN\VLC"},
   @{Name="VLC media player skinned"; TargetPath="C:\Program Files\VideoLAN\VLC\vlc.exe"; Arguments="-Iskins"; SystemLnk="VideoLAN\"; StartIn="C:\Program Files\VideoLAN\VLC"},
   @{Name="VLC media player"; TargetPath="C:\Program Files\VideoLAN\VLC\vlc.exe"; SystemLnk="VideoLAN\"; StartIn="C:\Program Files\VideoLAN\VLC"},
+  # Notepad++
+  @{Name="Notepad++"; TargetPath="C:\Program Files\Notepad++\notepad++.exe"; StartIn="C:\Program Files\Notepad++"},
   # AutoHotkey
   @{Name="AutoHotkey Help File"; TargetPath="C:\Program Files\AutoHotkey\AutoHotkey.chm"; SystemLnk="AutoHotkey\"},
   @{Name="AutoHotkey Setup"; TargetPath="C:\Program Files\AutoHotkey\Installer.ahk"; SystemLnk="AutoHotkey\"},
@@ -238,6 +244,8 @@ $sys3rdPartyAppList = @(
   # RealVNC
   @{Name="VNC Server"; TargetPath="C:\Program Files\RealVNC\VNC Server\vncguihelper.exe"; Arguments="vncserver.exe -_fromGui -start -showstatus"; SystemLnk="RealVNC\"; StartIn="C:\Program Files\RealVNC\VNC Server\"},
   @{Name="VNC Viewer"; TargetPath="C:\Program Files\RealVNC\VNC Viewer\vncviewer.exe"; SystemLnk="RealVNC\"; StartIn="C:\Program Files\RealVNC\VNC Viewer\"},
+  # WinSCP
+  @{Name="WinSCP"; TargetPath="C:\Program Files (x86)\WinSCP\WinSCP.exe"; StartIn="C:\Program Files (x86)\WinSCP"; Description="WinSCP: SFTP, FTP, WebDAV and SCP client"},
   # Winaero
   @{Name="EULA"; TargetPath="C:\Program Files\Winaero Tweaker\Winaero EULA.txt"; SystemLnk="Winaero Tweaker\"; StartIn="C:\Program Files\Winaero Tweaker"; Description="Read the license agreement"},
   @{Name="Winaero Tweaker"; TargetPath="C:\Program Files\Winaero Tweaker\WinaeroTweaker.exe"; SystemLnk="Winaero Tweaker\"; StartIn="C:\Program Files\Winaero Tweaker"},
@@ -262,10 +270,12 @@ $sys3rdPartyAppList = @(
   # Adobe Acrobat
   @{Name="Adobe Acrobat (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Acrobat DC\Acrobat\Acrobat.exe"},
   @{Name="Adobe Acrobat"; TargetPath="C:\Program Files\Adobe\Acrobat DC\Acrobat\Acrobat.exe"},
-  # Epson Print/Scan/Fax
+  # Samsung
+  @{Name="Samsung DeX"; TargetPath="C:\Program Files (x86)\Samsung\Samsung DeX\SamsungDeX.exe"; StartIn="C:\Program Files (x86)\Samsung\Samsung DeX\"},
+  # Epson
   @{Name="Epson Scan 2"; TargetPath="C:\Program Files (x86)\epson\Epson Scan 2\Core\es2launcher.exe"; SystemLnk="EPSON\Epson Scan 2\"},
   @{Name="FAX Utility"; TargetPath="C:\Program Files (x86)\Epson Software\FAX Utility\FUFAXCNT.exe"; SystemLnk="EPSON Software\"},
-  # Altair Monarch 2020
+  # Altair Monarch
   @{Name="Altair Monarch 2020"; TargetPath="C:\Program Files\Altair Monarch 2020\DWMonarch.exe"; SystemLnk="Altair Monarch 2020\"},
   # USB Redirector TS Edition
   @{Name="USB Redirector TS Edition - Workstation"; TargetPath="C:\Program Files\USB Redirector TS Edition - Workstation\usbredirectortsw.exe"; SystemLnk="USB Redirector TS Edition - Workstation\"}
@@ -288,9 +298,9 @@ for ($i = 0; $i -lt $sys3rdPartyAppList.length; $i++) {
 # User Applications (per user installed apps)
 
 $userAppList = @( # all instances of "%username%" get's replaced with the username
-  # Microsft OneDrive
+  # Microsoft
+  @{Name="Visual Studio Code"; TargetPath="C:\Users\%username%\AppData\Local\Programs\Microsoft VS Code\Code.exe"; SystemLnk="Visual Studio Code\"; StartIn="C:\Users\%username%\AppData\Local\Programs\Microsoft VS Code"},
   @{Name="OneDrive"; TargetPath="C:\Users\%username%\AppData\Local\Microsoft\OneDrive\OneDrive.exe"; Description="Keep your most important files with you wherever you go, on any device."},
-  # Microsoft Teams
   @{Name=if ($isWindows11) {"Microsoft Teams (work or school)"} else {"Microsoft Teams"}; TargetPath="C:\Users\%username%\AppData\Local\Microsoft\Teams\Update.exe"; Arguments="--processStart `"Teams.exe`""; StartIn="C:\Users\%username%\AppData\Local\Microsoft\Teams"},
   # Google
   @{Name="Google Chrome"; TargetPath="C:\Users\%username%\AppData\Local\Google\Chrome\Application\chrome.exe"; StartIn="C:\Users\%username%\AppData\Local\Google\Chrome\Application"; Description="Access the Internet"},
@@ -299,9 +309,7 @@ $userAppList = @( # all instances of "%username%" get's replaced with the userna
   # RingCentral
   @{Name="RingCentral"; TargetPath="C:\Users\%username%\AppData\Local\Programs\RingCentral\RingCentral.exe"; StartIn="C:\Users\%username%\AppData\Local\Programs\RingCentral"; Description="RingCentral"},
   @{Name="RingCentral Meetings"; TargetPath="C:\Users\%username%\AppData\Roaming\RingCentralMeetings\bin\RingCentralMeetings.exe"; SystemLnk="RingCentral Meetings\"; Description="RingCentral Meetings"},
-  @{Name="Uninstall RingCentral Meetings"; TargetPath="C:\Users\%username%\AppData\Roaming\RingCentralMeetings\uninstall\Installer.exe"; Arguments="/uninstall"; SystemLnk="RingCentral Meetings\"; Description="Uninstall RingCentral Meetings"},
-  # Discord
-  #@{Name=""; TargetPath=""; Arguments=""; SystemLnk=""; StartIn=""; Description="Discord - https://discord.com"}
+  @{Name="Uninstall RingCentral Meetings"; TargetPath="C:\Users\%username%\AppData\Roaming\RingCentralMeetings\uninstall\Installer.exe"; Arguments="/uninstall"; SystemLnk="RingCentral Meetings\"; Description="Uninstall RingCentral Meetings"}
 #  @{Name=""; TargetPath=""; Arguments=""; SystemLnk=""; StartIn=""; Description=""; RunAsAdmin=($true|$false)}
 )
 
