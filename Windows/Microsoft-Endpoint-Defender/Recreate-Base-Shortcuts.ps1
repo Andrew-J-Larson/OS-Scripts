@@ -22,22 +22,25 @@ $isWindows10 = ((Get-WMIObject win32_operatingsystem).Caption).StartsWith("Micro
 
 function Recreate-Shortcut {
   Set-Variable ProgramShortcutsPath -Option Constant -Value "C:\ProgramData\Microsoft\Windows\Start Menu\Programs"
+  Set-Variable UserProgramShortcutsPath -Option Constant -Value "C:\Users\%username%\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\"
 
   $sName = $args[0] # Required
   $sTarget = $args[1] # Required
-  $sArguments = $args[2] # Optional (for special shortcuts)
-  $sSystemLnk = $args[3] # Optional (for if name / path is different from normal)
-  $sStartIn = $args[4] # Optional (for special shortcuts)
-  $sDescription = $args[5] # Optional (some shortcuts have comments for tooltips)
+  $sArguments = $args[2] # Optional (for special shortcuts), but still needs to be empty string if not used
+  $sSystemLnk = $args[3] # Optional (for if name / path is different from normal), but still needs to be empty string if not used
+  $sStartIn = $args[4] # Optional (for special shortcuts), but still needs to be empty string if not used
+  $sDescription = $args[5] # Optional (some shortcuts have comments for tooltips), but still needs to be empty string if not used
+  $sUser = $args[6] # Optional (if the app is installed in user profiles)
 
   if ($sName -And $sTarget -And Test-Path $sTarget -PathType leaf) {
     $WScriptObj = New-Object -ComObject ("WScript.Shell")
 
     # if shortcut path not given, create one at default location with $sName
     if (-Not ($sSystemLnk)) {$sSystemLnk = $sName}
-    # if doesn't have $ProgramShortcutsPath path included (and not start with drive letter), it'll assume to create path there
-    if (-Not ($sSystemLnk -match '^[a-zA-Z]:\\.*' -Or $sSystemLnk -match ('^'+[Regex]::Escape($ProgramShortcutsPath)+'.*'))) {
-      $sSystemLnk = $ProgramShortcutsPath+'\'+$sSystemLnk
+    # if doesn't have $ProgramShortcutsPath or $UserProgramShortcutsPath (and not start with drive letter), it'll assume a path for it
+    if (-Not ($sSystemLnk -match '^[a-zA-Z]:\\.*' -Or $sSystemLnk -match ('^'+[Regex]::Escape($ProgramShortcutsPath)+'.*') -Or $sSystemLnk -match ('^'+[Regex]::Escape($UserProgramShortcutsPath)+'.*'))) {
+      if ($sUser) {$sSystemLnk = $UserProgramShortcutsPath.replace("%username%", $aUser)+'\'+$sSystemLnk}
+      else {$sSystemLnk = $ProgramShortcutsPath+'\'+$sSystemLnk}
     }
     # if it ends with '\', then we append the name to the end
     if ($sSystemLnk.EndsWith('\')) {$sSystemLnk = $sSystemLnk+$sName}
@@ -45,11 +48,11 @@ function Recreate-Shortcut {
     if (-Not ($sSystemLnk -match '.*\.lnk$')) {$sSystemLnk = $sSystemLnk+'.lnk'}
     $newLNK = $WscriptObj.CreateShortcut($sSystemLnk)
 
-    $newLNK.TargetPath = $sTarget
+    $newLNK.TargetPath = if ($sUser) {$sTarget.replace("%username%", $aUser)} else {$sTarget}
 
-    if ($sArguments) {$newLNK.Arguments = $sArguments}
+    if ($sArguments) {$newLNK.Arguments = if ($sUser) {$sArguments.replace("%username%", $aUser)} else {$sArguments}}
 
-    if ($sStartIn) {$newLNK.WorkingDirectory = $sStartIn}
+    if ($sStartIn) {$newLNK.WorkingDirectory = if ($sUser) {$sStartIn.replace("%username%", $aUser)} else {$sStartIn}}
 
     if ($sDescription) {$newLNK.Description = $sDescription}
 
@@ -189,15 +192,13 @@ for ($i = 0; $i -lt $userAppList.length; $i++) {
   $aName = $app.Name
   $aTarget = $app.Target
   $aArguments = if ($app.Arguments) {$app.Arguments} else {""}
+  $aSystemLnk = if ($app.SystemLnk) {$app.SystemLnk} else {""}
   $aStartIn = if ($app.StartIn) {$app.StartIn} else {""}
   $aDescription = if ($app.Description) {$app.Description} else {""}
 
   for ($j = 0; $j -lt $Users.length; $j++) {
     $aUser = $Users[$j]
-    $aTarget = $aTarget.replace("%username%", $aUser)
-    $aStartIn = $aStartIn.replace("%username%", $aUser)
-    $aSystemLnk = "C:\Users\${aUser}\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\"+$(if ($app.SystemLnk) {$app.SystemLnk} else {$aName})
 
-    $Result = Recreate-Shortcut $aName $aTarget $sArguments $aSystemLnk $aStartIn $aDescription
+    $Result = Recreate-Shortcut $aName $aTarget $sArguments $aSystemLnk $aStartIn $aDescription $aUser
   }
 }
