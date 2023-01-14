@@ -24,7 +24,7 @@ function Recreate-Shortcut {
   $sStartIn = $args[4] # Optional (for special shortcuts)
   $sDescription = $args[5] # Optional (some shortcuts have comments for tooltips)
 
-  if (Test-Path $sTarget -PathType leaf) {
+  if ($sName -And $sTarget -And Test-Path $sTarget -PathType leaf) {
     $WScriptObj = New-Object -ComObject ("WScript.Shell")
 
     # if shortcut path not given, create one at default location with $sName
@@ -56,6 +56,15 @@ function Recreate-Shortcut {
       Write-Error "Failed to create shortcut, with target at: ${sTarget}"
       return $false
     }
+  } else if (-Not ($sName -Or $sTarget)) {
+    if (-Not $sName) {
+      Write-Error "Error! Name is missing!"
+      return $false
+    }
+    if (-Not $sTarget) {
+      Write-Error "Error! Target is missing!"
+      return $false
+    }
   } else {
     Write-Error "Target invalid! Doesn't exist or is spelled wrong: ${sTarget}"
     return $false
@@ -75,10 +84,10 @@ $sysAppList = @(
   @{Name="PowerPoint"; Target="C:\Program Files\Microsoft Office\root\Office16\POWERPNT.EXE"; Description="Design and deliver beautiful presentations with ease and confidence."},
   @{Name="Publisher"; Target="C:\Program Files\Microsoft Office\root\Office16\MSPUB.EXE"; Description="Create professional-grade publications that make an impact."},
   @{Name="Word"; Target="C:\Program Files\Microsoft Office\root\Office16\WINWORD.EXE"; Description="Create beautiful documents, easily work with others, and enjoy the read."},
-  @{Name="Database Compare"; Target="C:\Program Files\Microsoft Office\root\Client\AppVLP.exe"; Arguments="`"C:\Program Files (x86)\Microsoft Office\Office16\DCF\DATABASECOMPARE.EXE`""; SystemLnk="Microsoft Office Tools\"},
-  @{Name="Office Language Preferences"; Target="C:\Program Files\Microsoft Office\root\Office16\SETLANG.EXE"; SystemLnk="Microsoft Office Tools\"},
-  @{Name="Spreadsheet Compare"; Target="C:\Program Files\Microsoft Office\root\Client\AppVLP.exe" ; Arguments="`"C:\Program Files (x86)\Microsoft Office\Office16\DCF\SPREADSHEETCOMPARE.EXE`""; SystemLnk="Microsoft Office Tools\"},
-  @{Name="Telemetry Log for Office"; Target="C:\Program Files\Microsoft Office\root\Office16\msoev.exe"; SystemLnk="Microsoft Office Tools\"}
+  @{Name="Database Compare"; Target="C:\Program Files\Microsoft Office\root\Client\AppVLP.exe"; Arguments="`"C:\Program Files (x86)\Microsoft Office\Office16\DCF\DATABASECOMPARE.EXE`""; SystemLnk="Microsoft Office Tools\"; Description="Compare versions of an Access database."},
+  @{Name="Office Language Preferences"; Target="C:\Program Files\Microsoft Office\root\Office16\SETLANG.EXE"; SystemLnk="Microsoft Office Tools\"; Description="Change the language preferences for Office applications."},
+  @{Name="Spreadsheet Compare"; Target="C:\Program Files\Microsoft Office\root\Client\AppVLP.exe" ; Arguments="`"C:\Program Files (x86)\Microsoft Office\Office16\DCF\SPREADSHEETCOMPARE.EXE`""; SystemLnk="Microsoft Office Tools\"; Description="Compare versions of an Excel workbook."},
+  @{Name="Telemetry Log for Office"; Target="C:\Program Files\Microsoft Office\root\Office16\msoev.exe"; SystemLnk="Microsoft Office Tools\"; Description="View critical errors, compatibility issues and workaround information for your Office solutions by using Office Telemetry Log."}
 #  @{Name=""; Target=""; Arguments=""; SystemLnk=""; StartIn=""; Description=""}
 )
 
@@ -117,8 +126,8 @@ for ($i = 0; $i -lt $oemSysAppList.length; $i++) {
 # Third-Party System Applications (not made by Microsoft)
 
 $sys3rdPartyAppList = @(
-  @{Name="Google Chrome"; Target="C:\Program Files\Google\Chrome\Application\chrome.exe"},
-  @{Name="Google Chrome (32-bit)"; Target="C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"},
+  @{Name="Google Chrome"; Target="C:\Program Files\Google\Chrome\Application\chrome.exe"; StartIn="C:\Program Files\Google\Chrome\Application"; Description="Access the Internet"},
+  @{Name="Google Chrome (32-bit)"; Target="C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"; StartIn="C:\Program Files (x86)\Google\Chrome\Application"; Description="Access the Internet"},
   @{Name="Firefox"; Target="C:\Program Files\Mozilla Firefox\firefox.exe"; StartIn="C:\Program Files\Mozilla Firefox"},
   @{Name="Firefox (32-bit)"; Target="C:\Program Files (x86)\Mozilla Firefox\firefox.exe"; StartIn="C:\Program Files (x86)\Mozilla Firefox"},
   @{Name="Adobe Acrobat"; Target="C:\Program Files\Adobe\Acrobat DC\Acrobat\Acrobat.exe"},
@@ -128,8 +137,8 @@ $sys3rdPartyAppList = @(
   @{Name="CodeTwo Active Directory Photos"; Target="C:\Program Files\CodeTwo\CodeTwo Active Directory Photos\CodeTwo Active Directory Photos.exe"; SystemLnk="CodeTwo\CodeTwo Active Directory Photos\"; Description="CodeTwo Active Directory Photos"},
   @{Name="Go to program home page"; Target="C:\Program Files\CodeTwo\CodeTwo Active Directory Photos\Data\HomePage.url"; SystemLnk="CodeTwo\CodeTwo Active Directory Photos\"; Description="CodeTwo Active Directory Photos home page"},
   @{Name="User's manual"; Target="C:\Program Files\CodeTwo\CodeTwo Active Directory Photos\Data\User's manual.url"; SystemLnk="CodeTwo\CodeTwo Active Directory Photos\"; Description="Go to User Guide"},
-  @{Name="LAPS UI"; Target="C:\Program Files\LAPS\AdmPwd.UI.exe"; SystemLnk="LAPS\"},
-  @{Name="Microsoft Intune Management Extension"; Target="C:\Program Files (x86)\Microsoft Intune Management Extension\AgentExecutor.exe"; SystemLnk="Microsoft Intune Management Extension\"},
+  @{Name="LAPS UI"; Target="C:\Program Files\LAPS\AdmPwd.UI.exe"; SystemLnk="LAPS\"; StartIn="C:\Program Files\LAPS\"},
+  @{Name="Microsoft Intune Management Extension"; Target="C:\Program Files (x86)\Microsoft Intune Management Extension\AgentExecutor.exe"; SystemLnk="Microsoft Intune Management Extension\"; Description="Microsoft Intune Management Extension"},
 #  @{Name=""; Target=""; Arguments=""; SystemLnk=""; StartIn=""; Description=""},
   @{Name="Epson Scan 2"; Target="C:\Program Files (x86)\epson\Epson Scan 2\Core\es2launcher.exe"; SystemLnk="EPSON\Epson Scan 2\"},
   @{Name="FAX Utility"; Target="C:\Program Files (x86)\Epson Software\FAX Utility\FUFAXCNT.exe"; SystemLnk="EPSON Software\"},
@@ -155,8 +164,8 @@ for ($i = 0; $i -lt $sys3rdPartyAppList.length; $i++) {
 $userAppList = @( # all instances of "%username%" get's replaced with the username
   @{Name="OneDrive"; Target="C:\Users\%username%\AppData\Local\Microsoft\OneDrive\OneDrive.exe"},
   @{Name="Microsoft Teams"; Target="C:\Users\%username%\AppData\Local\Microsoft\Teams\Update.exe"; Arguments="--processStart `"Teams.exe`""},
-  @{Name="Google Chrome"; Target="C:\Users\%username%\AppData\Local\Google\Chrome\Application\chrome.exe"},
-  @{Name="Firefox"; Target="C:\Users\%username%\AppData\Local\Mozilla Firefox\firefox.exe"},
+  @{Name="Google Chrome"; Target="C:\Users\%username%\AppData\Local\Google\Chrome\Application\chrome.exe"; StartIn="C:\Users\%username%\AppData\Local\Google\Chrome\Application"; Description="Access the Internet"},
+  @{Name="Firefox"; Target="C:\Users\%username%\AppData\Local\Mozilla Firefox\firefox.exe"; StartIn="C:\Users\%username%\AppData\Local\Mozilla Firefox"},
   @{Name="RingCentral"; Target="C:\Users\%username%\AppData\Local\Programs\RingCentral\RingCentral.exe"},
   @{Name="RingCentral Meetings"; Target="C:\Users\%username%\AppData\Roaming\RingCentralMeetings\bin\RingCentralMeetings.exe"; SystemLnk="RingCentral Meetings\"},
   @{Name="Uninstall RingCentral Meetings"; Target="C:\Users\Andrew\AppData\Roaming\RingCentralMeetings\uninstall\Installer.exe"; Arguments="/uninstall"; SystemLnk="RingCentral Meetings\"}
@@ -170,13 +179,15 @@ if ($Users[0].length -eq 1) {$Users = @("$Users")} # if only one user, array nee
 for ($i = 0; $i -lt $userAppList.length; $i++) {
   $app = $userAppList[$i]
   $aName = $app.Name
+  $aTarget = $app.Target
   $aArguments = if ($app.Arguments) {$app.Arguments} else {""}
   $aStartIn = if ($app.StartIn) {$app.StartIn} else {""}
   $aDescription = if ($app.Description) {$app.Description} else {""}
 
   for ($j = 0; $j -lt $Users.length; $j++) {
     $aUser = $Users[$j]
-    $aTarget = ($app.Target).replace("%username%", $aUser)
+    $aTarget = $aTarget.replace("%username%", $aUser)
+    $aStartIn = $aStartIn.replace("%username%", $aUser)
     $aSystemLnk = "C:\Users\${aUser}\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\"+$(if ($app.SystemLnk) {$app.SystemLnk} else {$aName})
 
     $Result = Recreate-Shortcut $aName $aTarget $sArguments $aSystemLnk $aStartIn $aDescription
