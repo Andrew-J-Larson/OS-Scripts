@@ -7,11 +7,12 @@
 # Application objects are setup like so:
 <# @{
        Name="[name of shortcut here]";
-       Target="[path to exe here]";
+       TargetPath="[path to exe/url/folder here]";
        Arguments="[any arguments that an app starts with here]";
        SystemLnk="[path to lnk or name of app here]";
-       StartIn="[start in path if needed, here]";
-       Description="[comment that shows up in tooltip, here]"
+       StartIn="[start in path, if needed, here]";
+       Description="[comment, that shows up in tooltip, here]"
+       RunAsAdmin="[true or false, if needed]"
    } #>
 
 # Variables
@@ -30,8 +31,8 @@ function Recreate-Shortcut {
     [string]$sName,
 
     [Parameter(Mandatory=$true]
-    [Alias("target","t")]
-    [string]$sTarget,
+    [Alias("targetpath","tp")]
+    [string]$sTargetPath,
 
     [Alias("arguments","a")]
     [string]$sArguments, # Optional (for special shortcuts)
@@ -44,13 +45,17 @@ function Recreate-Shortcut {
 
     [Alias("description", "d")]
     [string]$sDescription, # Optional (some shortcuts have comments for tooltips)
+    
+    [Alias("runasadmin", "r")]
+    [switch]$sRunAsAdmin # Optional (if the shortcut should be ran as admin)
 
     [Alias("user", "u")]
-    [string]$sUser # Optional (if the app is installed in user profiles)
+    [string]$sUser, # Optional (username of the user to install shortcut to)
   )
 
-  if ($sName -And $sTarget -And Test-Path $sTarget -PathType leaf) {
-    $WScriptObj = New-Object -ComObject ("WScript.Shell")
+  # only create shortcut if name and target given, and target exists
+  if ($sName -And $sTargetPath -And Test-Path $sTargetPath -PathType leaf) {
+    $WScriptObj = New-Object -ComObject WScript.Shell
 
     # if shortcut path not given, create one at default location with $sName
     if (-Not ($sSystemLnk)) {$sSystemLnk = $sName}
@@ -65,7 +70,7 @@ function Recreate-Shortcut {
     if (-Not ($sSystemLnk -match '.*\.lnk$')) {$sSystemLnk = $sSystemLnk+'.lnk'}
     $newLNK = $WscriptObj.CreateShortcut($sSystemLnk)
 
-    $newLNK.TargetPath = if ($sUser) {$sTarget.replace("%username%", $aUser)} else {$sTarget}
+    $newLNK.TargetPath = if ($sUser) {$sTargetPath.replace("%username%", $aUser)} else {$sTargetPath}
 
     if ($sArguments) {$newLNK.Arguments = if ($sUser) {$sArguments.replace("%username%", $aUser)} else {$sArguments}}
 
@@ -74,20 +79,33 @@ function Recreate-Shortcut {
     if ($sDescription) {$newLNK.Description = $sDescription}
 
     $newLNK.Save()
-    if ($?) {
+    $result = $?
+    [Runtime.InteropServices.Marshal]::ReleaseComObject($Shell) | Out-Null
+
+    if ($result) {
       Write-Host "Created shortcut at: ${sSystemLnk}"
-      return $true
-    }
-    else {
+
+      # set to run as admin if needed
+      if ($sRunAsAdmin) {
+        $bytes = [System.IO.File]::ReadAllBytes($sSystemLnk)
+        $bytes[0x15] = $bytes[0x15] -bor 0x20 #set byte 21 (0x15) bit 6 (0x20) ON
+        [System.IO.File]::WriteAllBytes($sSystemLnk, $bytes)
+        $result = $?
+        if ($result) {Write-Host "Shortcut set to Run as Admin, at: ${sSystemLnk}"}
+        else {Write-Error "Failed to set shortcut to Run as Admin, at: ${sSystemLnk}"}
+      }
+
+      return $result
+    } else {
       Write-Error "Failed to create shortcut, with target at: ${sTarget}"
       return $false
     }
-  } else if (-Not ($sName -Or $sTarget)) {
+  } else if (-Not ($sName -Or $sTargetPath)) {
     if (-Not $sName) {
       Write-Error "Error! Name is missing!"
       return $false
     }
-    if (-Not $sTarget) {
+    if (-Not $sTargetPath) {
       Write-Error "Error! Target is missing!"
       return $false
     }
@@ -102,102 +120,189 @@ function Recreate-Shortcut {
 # System Applications
 
 $sysAppList = @(
-  @{Name="Microsoft Edge"; Target="C:\Program Files\Microsoft\Edge\Application\msedge.exe"; StartIn="C:\Program Files\Microsoft\Edge\Application"; Description="Browse the web"} # it's the only install on 32-bit
-  @{Name="Microsoft Edge"; Target="C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"; StartIn="C:\Program Files (x86)\Microsoft\Edge\Application"; Description="Browse the web"} # it's the only install on 64-bit
-  @{Name="OneDrive"; Target="C:\Program Files\Microsoft OneDrive\OneDrive.exe"; Description="Keep your most important files with you wherever you go, on any device."},
-  @{Name="Access"; Target="C:\Program Files\Microsoft Office\root\Office16\MSACCESS.EXE"; Description="Build a professional app quickly to manage data."},
-  @{Name="Excel"; Target="C:\Program Files\Microsoft Office\root\Office16\EXCEL.EXE"; Description="Easily discover, visualize, and share insights from your data."},
-  @{Name="OneNote"; Target="C:\Program Files\Microsoft Office\root\Office16\ONENOTE.EXE"; Description="Take notes and have them when you need them."},
-  @{Name="Outlook"; Target="C:\Program Files\Microsoft Office\root\Office16\OUTLOOK.EXE"; Description="Manage your email, schedules, contacts, and to-dos."},
-  @{Name="PowerPoint"; Target="C:\Program Files\Microsoft Office\root\Office16\POWERPNT.EXE"; Description="Design and deliver beautiful presentations with ease and confidence."},
-  @{Name="Publisher"; Target="C:\Program Files\Microsoft Office\root\Office16\MSPUB.EXE"; Description="Create professional-grade publications that make an impact."},
-  @{Name="Word"; Target="C:\Program Files\Microsoft Office\root\Office16\WINWORD.EXE"; Description="Create beautiful documents, easily work with others, and enjoy the read."},
-  @{Name="Database Compare"; Target="C:\Program Files\Microsoft Office\root\Client\AppVLP.exe"; Arguments="`"C:\Program Files (x86)\Microsoft Office\Office16\DCF\DATABASECOMPARE.EXE`""; SystemLnk="Microsoft Office Tools\"; Description="Compare versions of an Access database."},
-  @{Name="Office Language Preferences"; Target="C:\Program Files\Microsoft Office\root\Office16\SETLANG.EXE"; SystemLnk="Microsoft Office Tools\"; Description="Change the language preferences for Office applications."},
-  @{Name="Spreadsheet Compare"; Target="C:\Program Files\Microsoft Office\root\Client\AppVLP.exe" ; Arguments="`"C:\Program Files (x86)\Microsoft Office\Office16\DCF\SPREADSHEETCOMPARE.EXE`""; SystemLnk="Microsoft Office Tools\"; Description="Compare versions of an Excel workbook."},
-  @{Name="Telemetry Log for Office"; Target="C:\Program Files\Microsoft Office\root\Office16\msoev.exe"; SystemLnk="Microsoft Office Tools\"; Description="View critical errors, compatibility issues and workaround information for your Office solutions by using Office Telemetry Log."}
-#  @{Name=""; Target=""; Arguments=""; SystemLnk=""; StartIn=""; Description=""}
+  # Microsoft Edge
+  @{Name="Microsoft Edge"; TargetPath="C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"; StartIn="C:\Program Files (x86)\Microsoft\Edge\Application"; Description="Browse the web"}, # it's the only install on 64-bit
+  @{Name="Microsoft Edge"; TargetPath="C:\Program Files\Microsoft\Edge\Application\msedge.exe"; StartIn="C:\Program Files\Microsoft\Edge\Application"; Description="Browse the web"}, # it's the only install on 32-bit
+  # PowerShell 7
+  @{Name="PowerShell 7 (x86)"; TargetPath="C:\Program Files (x86)\PowerShell\7\pwsh.exe"; Arguments="-WorkingDirectory ~"; SystemLnk="PowerShell\"; Description="PowerShell 7 (x86)"},
+  @{Name="PowerShell 7 (x64)"; TargetPath="C:\Program Files\PowerShell\7\pwsh.exe"; Arguments="-WorkingDirectory ~"; SystemLnk="PowerShell\"; Description="PowerShell 7 (x64)"},
+  # Microsoft Intune Management Extension
+  @{Name="Microsoft Intune Management Extension"; TargetPath="C:\Program Files (x86)\Microsoft Intune Management Extension\AgentExecutor.exe"; SystemLnk="Microsoft Intune Management Extension\"; Description="Microsoft Intune Management Extension"},
+  # PowerToys
+  @{Name=if (winget list -q "Microsoft.PowerToys" -e | Select-String "^PowerToys \(Preview\)") {"PowerToys (Preview)"} else {"PowerToys"}; TargetPath="C:\Program Files\PowerToys\PowerToys.exe"; SystemLnk=if (winget list -q "Microsoft.PowerToys" -e | Select-String "^PowerToys \(Preview\)") {"PowerToys (Preview)\"} else {"PowerToys\"}; StartIn="C:\Program Files\PowerToys\"; Description="PowerToys - Windows system utilities to maximize productivity"},
+  # OneDrive
+  @{Name="OneDrive"; TargetPath="C:\Program Files\Microsoft OneDrive\OneDrive.exe"; Description="Keep your most important files with you wherever you go, on any device."},
+  # Microsoft Office Apps
+  @{Name="Access"; TargetPath="C:\Program Files\Microsoft Office\root\Office16\MSACCESS.EXE"; Description="Build a professional app quickly to manage data."},
+  @{Name="Excel"; TargetPath="C:\Program Files\Microsoft Office\root\Office16\EXCEL.EXE"; Description="Easily discover, visualize, and share insights from your data."},
+  @{Name="OneNote"; TargetPath="C:\Program Files\Microsoft Office\root\Office16\ONENOTE.EXE"; Description="Take notes and have them when you need them."},
+  @{Name="Outlook"; TargetPath="C:\Program Files\Microsoft Office\root\Office16\OUTLOOK.EXE"; Description="Manage your email, schedules, contacts, and to-dos."},
+  @{Name="PowerPoint"; TargetPath="C:\Program Files\Microsoft Office\root\Office16\POWERPNT.EXE"; Description="Design and deliver beautiful presentations with ease and confidence."},
+  @{Name="Publisher"; TargetPath="C:\Program Files\Microsoft Office\root\Office16\MSPUB.EXE"; Description="Create professional-grade publications that make an impact."},
+  @{Name="Word"; TargetPath="C:\Program Files\Microsoft Office\root\Office16\WINWORD.EXE"; Description="Create beautiful documents, easily work with others, and enjoy the read."},
+  @{Name="Database Compare"; TargetPath="C:\Program Files\Microsoft Office\root\Client\AppVLP.exe"; Arguments="`"C:\Program Files (x86)\Microsoft Office\Office16\DCF\DATABASECOMPARE.EXE`""; SystemLnk="Microsoft Office Tools\"; Description="Compare versions of an Access database."},
+  @{Name="Office Language Preferences"; TargetPath="C:\Program Files\Microsoft Office\root\Office16\SETLANG.EXE"; SystemLnk="Microsoft Office Tools\"; Description="Change the language preferences for Office applications."},
+  @{Name="Spreadsheet Compare"; TargetPath="C:\Program Files\Microsoft Office\root\Client\AppVLP.exe" ; Arguments="`"C:\Program Files (x86)\Microsoft Office\Office16\DCF\SPREADSHEETCOMPARE.EXE`""; SystemLnk="Microsoft Office Tools\"; Description="Compare versions of an Excel workbook."},
+  @{Name="Telemetry Log for Office"; TargetPath="C:\Program Files\Microsoft Office\root\Office16\msoev.exe"; SystemLnk="Microsoft Office Tools\"; Description="View critical errors, compatibility issues and workaround information for your Office solutions by using Office Telemetry Log."}
+#  @{Name=""; TargetPath=""; Arguments=""; SystemLnk=""; StartIn=""; Description=""; RunAsAdmin=($true|$false)}
 )
 
 for ($i = 0; $i -lt $sysAppList.length; $i++) {
   $app = $sysAppList[$i]
   $aName = $app.Name
-  $aTarget = $app.Target
+  $aTargetPath = $app.TargetPath
   $aArguments = if ($app.Arguments) {$app.Arguments} else {""}
   $aSystemLnk = if ($app.SystemLnk) {$app.SystemLnk} else {""}
   $aStartIn = if ($app.StartIn) {$app.StartIn} else {""}
   $aDescription = if ($app.Description) {$app.Description} else {""}
+  $aRunAsAdmin = if ($app.RunAsAdmin) {$app.RunAsAdmin} else {$false}
 
-  $Result = Recreate-Shortcut -n $aName -t $aTarget -a $sArguments -sl $aSystemLnk -si $aStartIn -d $aDescription
+  $Result = Recreate-Shortcut -n $aName -tp $aTargetPath -a $sArguments -sl $aSystemLnk -si $aStartIn -d $aDescription -r $aRunAsAdmin
 }
 
 # OEM System Applications (e.g. Dell)
 
 $oemSysAppList = @(
-  @{Name="Dell OS Recovery Tool"; Target="C:\Program Files (x86)\Dell\OS Recovery Tool\DellOSRecoveryTool.exe"; SystemLnk="Dell\"; StartIn="C:\Program Files (x86)\Dell\OS Recovery Tool\"},
-  @{Name="SupportAssist Recovery Assistant"; Target="C:\Program Files\Dell\SARemediation\postosri\osrecoveryagent.exe"; SystemLnk="Dell\SupportAssist\"}
-#  @{Name=""; Target=""; Arguments=""; SystemLnk=""; StartIn=""; Description=""}
+  # Dell
+  @{Name="Dell OS Recovery Tool"; TargetPath="C:\Program Files (x86)\Dell\OS Recovery Tool\DellOSRecoveryTool.exe"; SystemLnk="Dell\"; StartIn="C:\Program Files (x86)\Dell\OS Recovery Tool\"},
+  @{Name="SupportAssist Recovery Assistant"; TargetPath="C:\Program Files\Dell\SARemediation\postosri\osrecoveryagent.exe"; SystemLnk="Dell\SupportAssist\"},
+  # NVIDIA Corporation
+  @{Name="GeForce Experience"; TargetPath="C:\Program Files\NVIDIA Corporation\NVIDIA GeForce Experience\NVIDIA GeForce Experience.exe"; SystemLnk="NVIDIA Corporation\"; StartIn="C:\Program Files\NVIDIA Corporation\NVIDIA GeForce Experience"},
+#  @{Name=""; TargetPath=""; Arguments=""; SystemLnk=""; StartIn=""; Description=""; RunAsAdmin=($true|$false)}
 )
 
 for ($i = 0; $i -lt $oemSysAppList.length; $i++) {
   $app = $oemSysAppList[$i]
   $aName = $app.Name
-  $aTarget = $app.Target
+  $aTargetPath = $app.TargetPath
   $aArguments = if ($app.Arguments) {$app.Arguments} else {""}
   $aSystemLnk = if ($app.SystemLnk) {$app.SystemLnk} else {""}
   $aStartIn = if ($app.StartIn) {$app.StartIn} else {""}
   $aDescription = if ($app.Description) {$app.Description} else {""}
+  $aRunAsAdmin = if ($app.RunAsAdmin) {$app.RunAsAdmin} else {$false}
 
-  $Result = Recreate-Shortcut -n $aName -t $aTarget -a $sArguments -sl $aSystemLnk -si $aStartIn -d $aDescription
+  $Result = Recreate-Shortcut -n $aName -tp $aTargetPath -a $sArguments -sl $aSystemLnk -si $aStartIn -d $aDescription -r $aRunAsAdmin
 }
 
 # Third-Party System Applications (not made by Microsoft)
 
 $sys3rdPartyAppList = @(
-  @{Name="Google Chrome"; Target="C:\Program Files\Google\Chrome\Application\chrome.exe"; StartIn="C:\Program Files\Google\Chrome\Application"; Description="Access the Internet"},
-  @{Name="Google Chrome (32-bit)"; Target="C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"; StartIn="C:\Program Files (x86)\Google\Chrome\Application"; Description="Access the Internet"},
-  @{Name="Firefox"; Target="C:\Program Files\Mozilla Firefox\firefox.exe"; StartIn="C:\Program Files\Mozilla Firefox"},
-  @{Name="Firefox (32-bit)"; Target="C:\Program Files (x86)\Mozilla Firefox\firefox.exe"; StartIn="C:\Program Files (x86)\Mozilla Firefox"},
-  @{Name="Adobe Acrobat"; Target="C:\Program Files\Adobe\Acrobat DC\Acrobat\Acrobat.exe"},
-  @{Name="Adobe Acrobat (32-bit)"; Target="C:\Program Files (x86)\Adobe\Acrobat DC\Acrobat\Acrobat.exe"},
-  @{Name="Global VPN Client"; Target="C:\Program Files\SonicWALL\Global VPN Client\SWGVC.exe"},
-  @{Name="OpenVPN"; Target="C:\Program Files\OpenVPN\bin\openvpn-gui.exe"; SystemLnk="OpenVPN\OpenVPN GUI"},
-  @{Name="CodeTwo Active Directory Photos"; Target="C:\Program Files\CodeTwo\CodeTwo Active Directory Photos\CodeTwo Active Directory Photos.exe"; SystemLnk="CodeTwo\CodeTwo Active Directory Photos\"; Description="CodeTwo Active Directory Photos"},
-  @{Name="Go to program home page"; Target="C:\Program Files\CodeTwo\CodeTwo Active Directory Photos\Data\HomePage.url"; SystemLnk="CodeTwo\CodeTwo Active Directory Photos\"; Description="CodeTwo Active Directory Photos home page"},
-  @{Name="User's manual"; Target="C:\Program Files\CodeTwo\CodeTwo Active Directory Photos\Data\User's manual.url"; SystemLnk="CodeTwo\CodeTwo Active Directory Photos\"; Description="Go to User Guide"},
-  @{Name="LAPS UI"; Target="C:\Program Files\LAPS\AdmPwd.UI.exe"; SystemLnk="LAPS\"; StartIn="C:\Program Files\LAPS\"},
-  @{Name="Microsoft Intune Management Extension"; Target="C:\Program Files (x86)\Microsoft Intune Management Extension\AgentExecutor.exe"; SystemLnk="Microsoft Intune Management Extension\"; Description="Microsoft Intune Management Extension"},
-#  @{Name=""; Target=""; Arguments=""; SystemLnk=""; StartIn=""; Description=""},
-  @{Name="Epson Scan 2"; Target="C:\Program Files (x86)\epson\Epson Scan 2\Core\es2launcher.exe"; SystemLnk="EPSON\Epson Scan 2\"},
-  @{Name="FAX Utility"; Target="C:\Program Files (x86)\Epson Software\FAX Utility\FUFAXCNT.exe"; SystemLnk="EPSON Software\"},
-  @{Name="Altair Monarch 2020"; Target="C:\Program Files\Altair Monarch 2020\DWMonarch.exe"; SystemLnk="Altair Monarch 2020\"},
-  @{Name="USB Redirector TS Edition - Workstation"; Target="C:\Program Files\USB Redirector TS Edition - Workstation\usbredirectortsw.exe"; SystemLnk="USB Redirector TS Edition - Workstation\"}
-#  @{Name=""; Target=""; Arguments=""; SystemLnk=""; StartIn=""; Description=""}
+  # Google
+  @{Name="Google Chrome (32-bit)"; TargetPath="C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"; StartIn="C:\Program Files (x86)\Google\Chrome\Application"; Description="Access the Internet"},
+  @{Name="Google Chrome"; TargetPath="C:\Program Files\Google\Chrome\Application\chrome.exe"; StartIn="C:\Program Files\Google\Chrome\Application"; Description="Access the Internet"},
+  # Mozilla
+  @{Name="Firefox (32-bit)"; TargetPath="C:\Program Files (x86)\Mozilla Firefox\firefox.exe"; StartIn="C:\Program Files (x86)\Mozilla Firefox"},
+  @{Name="Firefox"; TargetPath="C:\Program Files\Mozilla Firefox\firefox.exe"; StartIn="C:\Program Files\Mozilla Firefox"},
+  #@{Name=""; TargetPath=""; SystemLnk=""; StartIn=""},
+  # 7-Zip
+  @{Name="7-Zip File Manager (32-bit)"; TargetPath="C:\Program Files (x86)\7-Zip\7zFM.exe"; SystemLnk="7-Zip\"},
+  @{Name="7-Zip File Manager"; TargetPath="C:\Program Files\7-Zip\7zFM.exe"; SystemLnk="7-Zip\"},
+  @{Name="7-Zip Help"; TargetPath="C:\Program Files (x86)\7-Zip\7-zip.chm"; SystemLnk="7-Zip\"},
+  @{Name="7-Zip Help"; TargetPath="C:\Program Files\7-Zip\7-zip.chm"; SystemLnk="7-Zip\"},
+  # VideoLAN
+  @{Name="Documentation"; TargetPath="C:\Program Files\VideoLAN\VLC\Documentation.url"; SystemLnk="VideoLAN\"; StartIn="C:\Program Files\VideoLAN\VLC"},
+  @{Name="Release Notes"; TargetPath="C:\Program Files\VideoLAN\VLC\NEWS.txt"; SystemLnk="VideoLAN\"; StartIn="C:\Program Files\VideoLAN\VLC"},
+  @{Name="VideoLAN Website"; TargetPath="C:\Program Files\VideoLAN\VLC\VideoLAN Website.url"; SystemLnk="VideoLAN\"; StartIn="C:\Program Files\VideoLAN\VLC"},
+  @{Name="VLC media player - reset preferences and cache files"; TargetPath="C:\Program Files\VideoLAN\VLC\vlc.exe"; Arguments="--reset-config --reset-plugins-cache vlc://quit"; SystemLnk="VideoLAN\"; StartIn="C:\Program Files\VideoLAN\VLC"},
+  @{Name="VLC media player skinned"; TargetPath="C:\Program Files\VideoLAN\VLC\vlc.exe"; Arguments="-Iskins"; SystemLnk="VideoLAN\"; StartIn="C:\Program Files\VideoLAN\VLC"},
+  @{Name="VLC media player"; TargetPath="C:\Program Files\VideoLAN\VLC\vlc.exe"; SystemLnk="VideoLAN\"; StartIn="C:\Program Files\VideoLAN\VLC"},
+  # AutoHotkey
+  @{Name="AutoHotkey Help File"; TargetPath="C:\Program Files\AutoHotkey\AutoHotkey.chm"; SystemLnk="AutoHotkey\"},
+  @{Name="AutoHotkey Setup"; TargetPath="C:\Program Files\AutoHotkey\Installer.ahk"; SystemLnk="AutoHotkey\"},
+  @{Name="AutoHotkey"; TargetPath="C:\Program Files\AutoHotkey\AutoHotkey.exe"; SystemLnk="AutoHotkey\"},
+  @{Name="Convert .ahk to .exe"; TargetPath="C:\Program Files\AutoHotkey\Compiler\Ahk2Exe.exe"; SystemLnk="AutoHotkey\"},
+  @{Name="Website"; TargetPath="C:\Program Files\AutoHotkey\AutoHotkey Website.url"; SystemLnk="AutoHotkey\"},
+  @{Name="Window Spy"; TargetPath="C:\Program Files\AutoHotkey\WindowSpy.ahk"; SystemLnk="AutoHotkey\"},
+  # Bulk Crap Uninstaller
+  @{Name="BCUninstaller"; TargetPath="C:\Program Files\BCUninstaller\BCUninstaller.exe"; SystemLnk="BCUninstaller\"; StartIn="C:\Program Files\BCUninstaller"},
+  @{Name="Uninstall BCUninstaller"; TargetPath="C:\Program Files\BCUninstaller\unins000.exe"; SystemLnk="BCUninstaller\"; StartIn="C:\Program Files\BCUninstaller"},
+  # CodeTwo Active Directory Photos
+  @{Name="CodeTwo Active Directory Photos"; TargetPath="C:\Program Files\CodeTwo\CodeTwo Active Directory Photos\CodeTwo Active Directory Photos.exe"; SystemLnk="CodeTwo\CodeTwo Active Directory Photos\"; Description="CodeTwo Active Directory Photos"},
+  @{Name="Go to program home page"; TargetPath="C:\Program Files\CodeTwo\CodeTwo Active Directory Photos\Data\HomePage.url"; SystemLnk="CodeTwo\CodeTwo Active Directory Photos\"; Description="CodeTwo Active Directory Photos home page"},
+  @{Name="User's manual"; TargetPath="C:\Program Files\CodeTwo\CodeTwo Active Directory Photos\Data\User's manual.url"; SystemLnk="CodeTwo\CodeTwo Active Directory Photos\"; Description="Go to User Guide"},
+  # Local Administrator Password Solution
+  @{Name="LAPS UI"; TargetPath="C:\Program Files\LAPS\AdmPwd.UI.exe"; SystemLnk="LAPS\"; StartIn="C:\Program Files\LAPS\"},
+  # VMware
+  @{Name="Command Prompt for vctl"; TargetPath="C:\Windows\System32\cmd.exe"; Arguments="/k set PATH=C:\Program Files (x86)\VMware\VMware Player\;%PATH% && vctl.exe -h"; SystemLnk="VMware\"; StartIn="C:\Program Files (x86)\VMware\VMware Player\bin\"},
+  @{Name="VMware Workstation 16 Player"; TargetPath="C:\Program Files (x86)\VMware\VMware Player\vmplayer.exe"; SystemLnk="VMware\"; StartIn="C:\Program Files (x86)\VMware\VMware Player\"},
+  # Oracle
+  @{Name="License (English)"; TargetPath="C:\Program Files\Oracle\VirtualBox\License_en_US.rtf"; SystemLnk="Oracle VM VirtualBox\"; StartIn="C:\Program Files\Oracle\VirtualBox\"; Description="License"},
+  @{Name="Oracle VM VirtualBox"; TargetPath="C:\Program Files\Oracle\VirtualBox\VirtualBox.exe"; SystemLnk="Oracle VM VirtualBox\"; StartIn="C:\Program Files\Oracle\VirtualBox\"; Description="Oracle VM VirtualBox"},
+  @{Name="User manual (CHM, English)"; TargetPath="C:\Program Files\Oracle\VirtualBox\VirtualBox.chm"; SystemLnk="Oracle VM VirtualBox\"; Description="User manual"},
+  @{Name="User manual (PDF, English)"; TargetPath="C:\Program Files\Oracle\VirtualBox\doc\UserManual.pdf"; SystemLnk="Oracle VM VirtualBox\"; Description="User manual"},
+  # OSFMount
+  @{Name="OSFMount Documentation"; TargetPath="C:\Program Files\OSFMount\osfmount_Help.exe"; SystemLnk="OSFMount\"; StartIn="C:\Program Files\OSFMount"},
+  @{Name="OSFMount on the Web"; TargetPath="C:\Program Files\OSFMount\OSFMount.url"; SystemLnk="OSFMount\"; StartIn="C:\Program Files\OSFMount"},
+  @{Name="OSFMount"; TargetPath="C:\Program Files\OSFMount\OSFMount.exe"; SystemLnk="OSFMount\"; StartIn="C:\Program Files\OSFMount"},
+  @{Name="Uninstall OSFMount"; TargetPath="C:\Program Files\OSFMount\unins000.exe"; SystemLnk="OSFMount\"; StartIn="C:\Program Files\OSFMount"},
+  # RealVNC
+  @{Name="VNC Server"; TargetPath="C:\Program Files\RealVNC\VNC Server\vncguihelper.exe"; Arguments="vncserver.exe -_fromGui -start -showstatus"; SystemLnk="RealVNC\"; StartIn="C:\Program Files\RealVNC\VNC Server\"},
+  @{Name="VNC Viewer"; TargetPath="C:\Program Files\RealVNC\VNC Viewer\vncviewer.exe"; SystemLnk="RealVNC\"; StartIn="C:\Program Files\RealVNC\VNC Viewer\"},
+  # Winaero
+  @{Name="EULA"; TargetPath="C:\Program Files\Winaero Tweaker\Winaero EULA.txt"; SystemLnk="Winaero Tweaker\"; StartIn="C:\Program Files\Winaero Tweaker"; Description="Read the license agreement"},
+  @{Name="Winaero Tweaker"; TargetPath="C:\Program Files\Winaero Tweaker\WinaeroTweaker.exe"; SystemLnk="Winaero Tweaker\"; StartIn="C:\Program Files\Winaero Tweaker"},
+  @{Name="Winaero Website"; TargetPath="C:\Program Files\Winaero Tweaker\Winaero.url"; SystemLnk="Winaero Tweaker\"; StartIn="C:\Program Files\Winaero Tweaker"; Description="Winaero is about Windows 10 / 8 / 7 and covers all topics that will interest every Windows user."},
+  # SoundSwitch
+  @{Name="SoundSwitch"; TargetPath="C:\Program Files\SoundSwitch\SoundSwitch.exe"; SystemLnk="SoundSwitch\"; StartIn="C:\Program Files\SoundSwitch"},
+  @{Name="Uninstall SoundSwitch"; TargetPath="C:\Program Files\SoundSwitch\unins000.exe"; SystemLnk="SoundSwitch\"; StartIn="C:\Program Files\SoundSwitch"},
+  # OpenVPN
+  @{Name="OpenVPN"; TargetPath="C:\Program Files\OpenVPN\bin\openvpn-gui.exe"; SystemLnk="OpenVPN\OpenVPN GUI"; StartIn="C:\Program Files\OpenVPN\bin\"},
+  @{Name="OpenVPN Manual Page"; TargetPath="C:\Program Files\OpenVPN\doc\openvpn.8.html"; SystemLnk="OpenVPN\Documentation\"; StartIn="C:\Program Files\OpenVPN\doc\"},
+  @{Name="OpenVPN Windows Notes"; TargetPath="C:\Program Files\OpenVPN\doc\INSTALL-win32.txt"; SystemLnk="OpenVPN\Documentation\"; StartIn="C:\Program Files\OpenVPN\doc\"},
+  @{Name="OpenVPN Configuration File Directory"; TargetPath="C:\Program Files\OpenVPN\config"; SystemLnk="OpenVPN\Shortcuts\"; StartIn="C:\Program Files\OpenVPN\config\"},
+  @{Name="OpenVPN Log File Directory"; TargetPath="C:\Program Files\OpenVPN\log"; SystemLnk="OpenVPN\Shortcuts\"; StartIn="C:\Program Files\OpenVPN\log\"},
+  @{Name="OpenVPN Sample Configuration Files"; TargetPath="C:\Program Files\OpenVPN\sample-config"; SystemLnk="OpenVPN\Shortcuts\"; StartIn="C:\Program Files\OpenVPN\sample-config\"},
+  @{Name="Add a new TAP-Windows6 virtual network adapter"; TargetPath="C:\Program Files\OpenVPN\bin\tapctl.exe"; Arguments="create --hwid root\tap0901"; SystemLnk="OpenVPN\Utilities\"; StartIn="C:\Program Files\OpenVPN\bin\"},
+  @{Name="Add a new Wintun virtual network adapter"; TargetPath="C:\Program Files\OpenVPN\bin\tapctl.exe"; Arguments="create --hwid wintun"; SystemLnk="OpenVPN\Utilities\"; StartIn="C:\Program Files\OpenVPN\bin\"},
+  # SonicWall Global VPN Client
+  @{Name="Global VPN Client"; TargetPath="C:\Program Files\SonicWALL\Global VPN Client\SWGVC.exe"; StartIn="C:\Program Files\SonicWall\Global VPN Client\"; Description="Launch the Global VPN Client"},
+  # GoTo
+  @{Name="GoTo Resolve Desktop Console (32-bit)"; TargetPath="C:\Program Files (x86)\GoTo\GoTo Resolve Desktop Console\ra-technician-console.exe"; StartIn="C:\Program Files (x86)\GoTo\GoTo Resolve Desktop Console\"},
+  @{Name="GoTo Resolve Desktop Console (64-bit)"; TargetPath="C:\Program Files\GoTo\GoTo Resolve Desktop Console\ra-technician-console.exe"; StartIn="C:\Program Files\GoTo\GoTo Resolve Desktop Console\"},
+  # Adobe Acrobat
+  @{Name="Adobe Acrobat (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Acrobat DC\Acrobat\Acrobat.exe"},
+  @{Name="Adobe Acrobat"; TargetPath="C:\Program Files\Adobe\Acrobat DC\Acrobat\Acrobat.exe"},
+  # Epson Print/Scan/Fax
+  @{Name="Epson Scan 2"; TargetPath="C:\Program Files (x86)\epson\Epson Scan 2\Core\es2launcher.exe"; SystemLnk="EPSON\Epson Scan 2\"},
+  @{Name="FAX Utility"; TargetPath="C:\Program Files (x86)\Epson Software\FAX Utility\FUFAXCNT.exe"; SystemLnk="EPSON Software\"},
+  # Altair Monarch 2020
+  @{Name="Altair Monarch 2020"; TargetPath="C:\Program Files\Altair Monarch 2020\DWMonarch.exe"; SystemLnk="Altair Monarch 2020\"},
+  # USB Redirector TS Edition
+  @{Name="USB Redirector TS Edition - Workstation"; TargetPath="C:\Program Files\USB Redirector TS Edition - Workstation\usbredirectortsw.exe"; SystemLnk="USB Redirector TS Edition - Workstation\"}
+#  @{Name=""; TargetPath=""; Arguments=""; SystemLnk=""; StartIn=""; Description=""; RunAsAdmin=($true|$false)}
 )
 
 for ($i = 0; $i -lt $sys3rdPartyAppList.length; $i++) {
   $app = $sys3rdPartyAppList[$i]
   $aName = $app.Name
-  $aTarget = $app.Target
+  $aTargetPath = $app.TargetPath
   $aArguments = if ($app.Arguments) {$app.Arguments} else {""}
   $aSystemLnk = if ($app.SystemLnk) {$app.SystemLnk} else {""}
   $aStartIn = if ($app.StartIn) {$app.StartIn} else {""}
   $aDescription = if ($app.Description) {$app.Description} else {""}
+  $aRunAsAdmin = if ($app.RunAsAdmin) {$app.RunAsAdmin} else {$false}
 
-  $Result = Recreate-Shortcut -n $aName -t $aTarget -a $sArguments -sl $aSystemLnk -si $aStartIn -d $aDescription
+  $Result = Recreate-Shortcut -n $aName -tp $aTargetPath -a $sArguments -sl $aSystemLnk -si $aStartIn -d $aDescription -r $aRunAsAdmin
 }
 
 # User Applications (per user installed apps)
 
 $userAppList = @( # all instances of "%username%" get's replaced with the username
-  @{Name="OneDrive"; Target="C:\Users\%username%\AppData\Local\Microsoft\OneDrive\OneDrive.exe"; Description="Keep your most important files with you wherever you go, on any device."},
-  @{Name=if ($isWindows11) {"Microsoft Teams (work or school)"} else {"Microsoft Teams"}; Target="C:\Users\%username%\AppData\Local\Microsoft\Teams\Update.exe"; Arguments="--processStart `"Teams.exe`""; StartIn="C:\Users\%username%\AppData\Local\Microsoft\Teams"},
-  @{Name="Google Chrome"; Target="C:\Users\%username%\AppData\Local\Google\Chrome\Application\chrome.exe"; StartIn="C:\Users\%username%\AppData\Local\Google\Chrome\Application"; Description="Access the Internet"},
-  @{Name="Firefox"; Target="C:\Users\%username%\AppData\Local\Mozilla Firefox\firefox.exe"; StartIn="C:\Users\%username%\AppData\Local\Mozilla Firefox"},
-  @{Name="RingCentral"; Target="C:\Users\%username%\AppData\Local\Programs\RingCentral\RingCentral.exe"; StartIn="C:\Users\%username%\AppData\Local\Programs\RingCentral"; Description="RingCentral"},
-  @{Name="RingCentral Meetings"; Target="C:\Users\%username%\AppData\Roaming\RingCentralMeetings\bin\RingCentralMeetings.exe"; SystemLnk="RingCentral Meetings\"; Description="RingCentral Meetings"},
-  @{Name="Uninstall RingCentral Meetings"; Target="C:\Users\%username%\AppData\Roaming\RingCentralMeetings\uninstall\Installer.exe"; Arguments="/uninstall"; SystemLnk="RingCentral Meetings\"; Description="Uninstall RingCentral Meetings"}
-#  @{Name=""; Target=""; Arguments=""; SystemLnk=""; StartIn=""; Description=""}
+  # Microsft OneDrive
+  @{Name="OneDrive"; TargetPath="C:\Users\%username%\AppData\Local\Microsoft\OneDrive\OneDrive.exe"; Description="Keep your most important files with you wherever you go, on any device."},
+  # Microsoft Teams
+  @{Name=if ($isWindows11) {"Microsoft Teams (work or school)"} else {"Microsoft Teams"}; TargetPath="C:\Users\%username%\AppData\Local\Microsoft\Teams\Update.exe"; Arguments="--processStart `"Teams.exe`""; StartIn="C:\Users\%username%\AppData\Local\Microsoft\Teams"},
+  # Google
+  @{Name="Google Chrome"; TargetPath="C:\Users\%username%\AppData\Local\Google\Chrome\Application\chrome.exe"; StartIn="C:\Users\%username%\AppData\Local\Google\Chrome\Application"; Description="Access the Internet"},
+  # Mozilla
+  @{Name="Firefox"; TargetPath="C:\Users\%username%\AppData\Local\Mozilla Firefox\firefox.exe"; StartIn="C:\Users\%username%\AppData\Local\Mozilla Firefox"},
+  # RingCentral
+  @{Name="RingCentral"; TargetPath="C:\Users\%username%\AppData\Local\Programs\RingCentral\RingCentral.exe"; StartIn="C:\Users\%username%\AppData\Local\Programs\RingCentral"; Description="RingCentral"},
+  @{Name="RingCentral Meetings"; TargetPath="C:\Users\%username%\AppData\Roaming\RingCentralMeetings\bin\RingCentralMeetings.exe"; SystemLnk="RingCentral Meetings\"; Description="RingCentral Meetings"},
+  @{Name="Uninstall RingCentral Meetings"; TargetPath="C:\Users\%username%\AppData\Roaming\RingCentralMeetings\uninstall\Installer.exe"; Arguments="/uninstall"; SystemLnk="RingCentral Meetings\"; Description="Uninstall RingCentral Meetings"},
+  # Discord
+  #@{Name=""; TargetPath=""; Arguments=""; SystemLnk=""; StartIn=""; Description="Discord - https://discord.com"}
+#  @{Name=""; TargetPath=""; Arguments=""; SystemLnk=""; StartIn=""; Description=""; RunAsAdmin=($true|$false)}
 )
 
 # get all users 
@@ -207,15 +312,16 @@ if ($Users[0].length -eq 1) {$Users = @("$Users")} # if only one user, array nee
 for ($i = 0; $i -lt $userAppList.length; $i++) {
   $app = $userAppList[$i]
   $aName = $app.Name
-  $aTarget = $app.Target
+  $aTargetPath = $app.TargetPath
   $aArguments = if ($app.Arguments) {$app.Arguments} else {""}
   $aSystemLnk = if ($app.SystemLnk) {$app.SystemLnk} else {""}
   $aStartIn = if ($app.StartIn) {$app.StartIn} else {""}
   $aDescription = if ($app.Description) {$app.Description} else {""}
+  $aRunAsAdmin = if ($app.RunAsAdmin) {$app.RunAsAdmin} else {$false}
 
   for ($j = 0; $j -lt $Users.length; $j++) {
     $aUser = $Users[$j]
 
-    $Result = Recreate-Shortcut -n $aName -t $aTarget -a $sArguments -sl $aSystemLnk -si $aStartIn -d $aDescription -u $aUser
+    $Result = Recreate-Shortcut -n $aName -tp $aTargetPath -a $sArguments -sl $aSystemLnk -si $aStartIn -d $aDescription -r $aRunAsAdmin -u $aUser
   }
 }
