@@ -24,13 +24,30 @@ function Recreate-Shortcut {
   Set-Variable ProgramShortcutsPath -Option Constant -Value "C:\ProgramData\Microsoft\Windows\Start Menu\Programs"
   Set-Variable UserProgramShortcutsPath -Option Constant -Value "C:\Users\%username%\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\"
 
-  $sName = $args[0] # Required
-  $sTarget = $args[1] # Required
-  $sArguments = $args[2] # Optional (for special shortcuts), but still needs to be empty string if not used
-  $sSystemLnk = $args[3] # Optional (for if name / path is different from normal), but still needs to be empty string if not used
-  $sStartIn = $args[4] # Optional (for special shortcuts), but still needs to be empty string if not used
-  $sDescription = $args[5] # Optional (some shortcuts have comments for tooltips), but still needs to be empty string if not used
-  $sUser = $args[6] # Optional (if the app is installed in user profiles)
+  param(
+    [Parameter(Mandatory=$true]
+    [Alias("name","n")]
+    [string]$sName,
+
+    [Parameter(Mandatory=$true]
+    [Alias("target","t")]
+    [string]$sTarget,
+
+    [Alias("arguments","a")]
+    [string]$sArguments, # Optional (for special shortcuts)
+
+    [Alias("systemlnk", "sl")]
+    [string]$sSystemLnk, # Optional (for if name / path is different from normal)
+
+    [Alias("startin","si")]
+    [string]$sStartIn, # Optional (for special shortcuts)
+
+    [Alias("description", "d")]
+    [string]$sDescription, # Optional (some shortcuts have comments for tooltips)
+
+    [Alias("user", "u")]
+    [string]$sUser # Optional (if the app is installed in user profiles)
+  )
 
   if ($sName -And $sTarget -And Test-Path $sTarget -PathType leaf) {
     $WScriptObj = New-Object -ComObject ("WScript.Shell")
@@ -111,7 +128,7 @@ for ($i = 0; $i -lt $sysAppList.length; $i++) {
   $aStartIn = if ($app.StartIn) {$app.StartIn} else {""}
   $aDescription = if ($app.Description) {$app.Description} else {""}
 
-  $Result = Recreate-Shortcut $aName $aTarget $sArguments $aSystemLnk $aStartIn $aDescription
+  $Result = Recreate-Shortcut -n $aName -t $aTarget -a $sArguments -sl $aSystemLnk -si $aStartIn -d $aDescription
 }
 
 # OEM System Applications (e.g. Dell)
@@ -131,7 +148,7 @@ for ($i = 0; $i -lt $oemSysAppList.length; $i++) {
   $aStartIn = if ($app.StartIn) {$app.StartIn} else {""}
   $aDescription = if ($app.Description) {$app.Description} else {""}
 
-  $Result = Recreate-Shortcut $aName $aTarget $sArguments $aSystemLnk $aStartIn $aDescription
+  $Result = Recreate-Shortcut -n $aName -t $aTarget -a $sArguments -sl $aSystemLnk -si $aStartIn -d $aDescription
 }
 
 # Third-Party System Applications (not made by Microsoft)
@@ -167,7 +184,7 @@ for ($i = 0; $i -lt $sys3rdPartyAppList.length; $i++) {
   $aStartIn = if ($app.StartIn) {$app.StartIn} else {""}
   $aDescription = if ($app.Description) {$app.Description} else {""}
 
-  $Result = Recreate-Shortcut $aName $aTarget $sArguments $aSystemLnk $aStartIn $aDescription
+  $Result = Recreate-Shortcut -n $aName -t $aTarget -a $sArguments -sl $aSystemLnk -si $aStartIn -d $aDescription
 }
 
 # User Applications (per user installed apps)
@@ -199,6 +216,6 @@ for ($i = 0; $i -lt $userAppList.length; $i++) {
   for ($j = 0; $j -lt $Users.length; $j++) {
     $aUser = $Users[$j]
 
-    $Result = Recreate-Shortcut $aName $aTarget $sArguments $aSystemLnk $aStartIn $aDescription $aUser
+    $Result = Recreate-Shortcut -n $aName -t $aTarget -a $sArguments -sl $aSystemLnk -si $aStartIn -d $aDescription -u $aUser
   }
 }
