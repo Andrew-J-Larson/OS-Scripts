@@ -307,11 +307,13 @@ for ($i = 0; $i -lt $oemSysAppList.length; $i++) {
 
 # Adobe
 $Aero_TargetPath = "C:\Program Files\Adobe\"
-$Aero_Name = if (Test-Path -Path $Aero_TargetPath) {(Get-ChildItem -Directory -Path $Aero_TargetPath | Where-Object {$_.Name -match '^.*Aero(?!.*\(Beta\)$)'} | Sort-Object -Descending)[0].name} else {"Aero"}
+$Aero_Name = if (Test-Path -Path $Aero_TargetPath) {(Get-ChildItem -Directory -Path $Aero_TargetPath | Where-Object { $_.Name -match '^.*Aero(?!.*\(Beta\)$)' } | Sort-Object -Descending)[0].name}
+if (-Not $Aero_Name) {$Aero_Name = "Aero"}
 $Aero_StartIn = $Aero_TargetPath+$Aero_Name
 $Aero_TargetPath = $Aero_StartIn+"\Aero.exe"
 $Aero_Beta_TargetPath = "C:\Program Files\Adobe\"
-$Aero_Beta_Name = if (Test-Path -Path $Aero_Beta_StartIn) {(Get-ChildItem -Directory -Path $Aero_Beta_StartIn | Where-Object {$_.Name -match '^.*Aero.*\(Beta\)'} | Sort-Object -Descending)[0].name} else {"Aero (Beta)"}
+$Aero_Beta_Name = if (Test-Path -Path $Aero_Beta_StartIn) {(Get-ChildItem -Directory -Path $Aero_Beta_StartIn | Where-Object { $_.Name -match '^.*Aero.*\(Beta\)' } | Sort-Object -Descending)[0].name}
+if (-Not $Aero_Beta_Name) {$Aero_Beta_Name = "Aero (Beta)"}
 $Aero_Beta_StartIn = $Aero_Beta_TargetPath+$Aero_Beta_Name
 $Aero_Beta_TargetPath = $Aero_Beta_StartIn+"\Aero.exe"
 # GIMP
