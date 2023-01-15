@@ -307,23 +307,25 @@ for ($i = 0; $i -lt $oemSysAppList.length; $i++) {
 
 # Adobe
 $Aero_TargetPath = "C:\Program Files\Adobe\"
-$Aero_Name = if (Test-Path -Path $Aero_TargetPath) {(Get-ChildItem -Directory -Path $Aero_TargetPath | Where-Object { $_.Name -match '^.*Aero(?!.*\(Beta\)$)' } | Sort-Object -Descending)[0].name}
-if (-Not $Aero_Name) {$Aero_Name = "Aero"}
+$Aero_Name = if (Test-Path -Path $Aero_TargetPath) {Get-ChildItem -Directory -Path $Aero_TargetPath | Where-Object { $_.Name -match '^.*Aero(?!.*\(Beta\)$)' } | Sort-Object -Descending}
+$Aero_Name = if ($Aero_Name.length -ge 1) {$Aero_Name[0].name} else {"Aero"}
 $Aero_StartIn = $Aero_TargetPath+$Aero_Name
 $Aero_TargetPath = $Aero_StartIn+"\Aero.exe"
 $Aero_Beta_TargetPath = "C:\Program Files\Adobe\"
-$Aero_Beta_Name = if (Test-Path -Path $Aero_Beta_StartIn) {(Get-ChildItem -Directory -Path $Aero_Beta_StartIn | Where-Object { $_.Name -match '^.*Aero.*\(Beta\)' } | Sort-Object -Descending)[0].name}
-if (-Not $Aero_Beta_Name) {$Aero_Beta_Name = "Aero (Beta)"}
+$Aero_Beta_Name = if (Test-Path -Path $Aero_Beta_StartIn) {Get-ChildItem -Directory -Path $Aero_Beta_StartIn | Where-Object { $_.Name -match '^.*Aero.*\(Beta\)' } | Sort-Object -Descending}
+$Aero_Beta_Name = if ($Aero_Beta_Name.length -ge 1) {$Aero_Beta_Name[0].name} else {"Aero (Beta)"}
 $Aero_Beta_StartIn = $Aero_Beta_TargetPath+$Aero_Beta_Name
 $Aero_Beta_TargetPath = $Aero_Beta_StartIn+"\Aero.exe"
 # GIMP
 $GIMP_TargetPath = "C:\Program Files\"
-$GIMP_FindFolder = (Get-ChildItem -Directory -Path $GIMP_TargetPath | Where-Object {$_.Name -match '^GIMP'} | Sort-Object -Descending)[0].name
+$GIMP_FindFolder = Get-ChildItem -Directory -Path $GIMP_TargetPath | Where-Object {$_.Name -match '^GIMP'} | Sort-Object -Descending
+$GIMP_FindFolder = if ($GIMP_FindFolder.length -ge 1) {$GIMP_FindFolder[0].name}
 $GIMP_TargetPath += if ($GIMP_FindFolder) {"${GIMP_FindFolder}\bin\"} else {"${NotInstalled}\${NotInstalled}\"}
 $GIMP_FindExe = if (Test-Path -Path $GIMP_TargetPath) {(Get-ChildItem -File -Path $GIMP_TargetPath | Where-Object {$_.Name -match '^gimp\-[.0-9]+exe$'} | Sort-Object -Descending)[0].name}
 $GIMP_TargetPath += if ($GIMP_FindExe) {$GIMP_FindExe} else {"${NotInstalled}.exe"}
 $GIMP_32bit_TargetPath = "C:\Program Files (x86)\"
-$GIMP_32bit_FindFolder = (Get-ChildItem -Directory -Path $GIMP_32bit_TargetPath | Where-Object {$_.Name -match '^GIMP'} | Sort-Object -Descending)[0].name
+$GIMP_32bit_FindFolder = Get-ChildItem -Directory -Path $GIMP_32bit_TargetPath | Where-Object {$_.Name -match '^GIMP'} | Sort-Object -Descending
+$GIMP_32bit_FindFolder = if ($GIMP_32bit_FindFolder.length -ge 1) {$GIMP_32bit_FindFolder[0].name}
 $GIMP_32bit_TargetPath += if ($GIMP_32bit_FindFolder) {"${GIMP_32bit_FindFolder}\bin\"} else {"${NotInstalled}\${NotInstalled}\"}
 $GIMP_32bit_FindExe = if (Test-Path -Path $GIMP_32bit_TargetPath) {(Get-ChildItem -File -Path $GIMP_32bit_TargetPath | Where-Object {$_.Name -match '^gimp\-[.0-9]+exe$'} | Sort-Object -Descending)[0].name}
 $GIMP_32bit_TargetPath += if ($GIMP_32bit_FindExe) {$GIMP_32bit_FindExe} else {"${NotInstalled}.exe"}
@@ -336,10 +338,11 @@ $GoogleOneVPN_Version = if (Test-Path -Path $GoogleOneVPN_TargetPath) {(Get-Chil
 $GoogleOneVPN_TargetPath += if ($GoogleOneVPN_Version) {"${GoogleOneVPN_Version}\googleone.exe"} else {"${NotInstalled}\${NotInstalled}.exe"}
 # KeePass
 $KeePass_StartIn = "C:\Program Files\"
-$KeePass_FindFolder = (Get-ChildItem -Directory -Path $KeePass_StartIn | Where-Object {$_.Name -match '^KeePass Password Safe'} | Sort-Object -Descending)[0].name
-$KeePass_TargetPath = if ($KeePass_FindFolder) {"${KeePass_FindFolder}\KeePass.exe"} else {"${NotInstalled}\${NotInstalled}.exe"}
+$KeePass_FindFolder = Get-ChildItem -Directory -Path $KeePass_StartIn | Where-Object {$_.Name -match '^KeePass Password Safe'} | Sort-Object -Descending
+if ($KeePass_FindFolder.length -ge 1) {$KeePass_FindFolder[0].name} else {$NotInstalled}
+$KeePass_TargetPath = "${KeePass_FindFolder}\KeePass.exe"
 $KeePass_32bit_StartIn = "C:\Program Files (x86)\"
-$KeePass_32bit_FindFolder = (Get-ChildItem -Directory -Path $KeePass_32bit_StartIn | Where-Object {$_.Name -match '^KeePass Password Safe'} | Sort-Object -Descending)[0].name
+$KeePass_32bit_FindFolder = Get-ChildItem -Directory -Path $KeePass_32bit_StartIn | Where-Object {$_.Name -match '^KeePass Password Safe'} | Sort-Object -Descending
 $KeePass_32bit_TargetPath = if ($KeePass_32bit_FindFolder) {"${KeePass_32bit_FindFolder}\KeePass.exe"} else {"${NotInstalled}\${NotInstalled}.exe"}
 # VMware
 $VMwareWorkstationPlayer_TargetPath = "C:\Program Files\VMware\VMware Player\vmplayer.exe"
@@ -365,10 +368,10 @@ $KeePass_32bit_Version = if ($KeePass_32bit_FileVersionRaw) {$KeePass_32bit_File
 $KeePass_32bit_Name = "KeePass ${KeePass_Version}"
 # VMware
 $VMwareWorkstationPlayer_FileVersionRaw = if (Test-Path -Path $VMwareWorkstationPlayer_TargetPath -PathType Leaf) {(Get-Item $VMwareWorkstationPlayer_TargetPath).VersionInfo.FileVersionRaw}
-$VMwareWorkstationPlayer_Version = if ($VMwareWorkstationPlayer_FileVersionRaw) {(Get-Item $file).VersionInfo.FileVersionRaw.Major} else {$NotInstalled}
+$VMwareWorkstationPlayer_Version = if ($VMwareWorkstationPlayer_FileVersionRaw) {$VMwareWorkstationPlayer_FileVersionRaw.VersionInfo.FileVersionRaw.Major} else {$NotInstalled}
 $VMwareWorkstationPlayer_Name = "VMware Workstation "+$(if ($VMwareWorkstationPlayer_Version) {$VMwareWorkstationPlayer_Version} else {$NotInstalled})+" Player"
 $VMwareWorkstationPlayer_32bit_FileVersionRaw = if (Test-Path -Path $VMwareWorkstationPlayer_32bit_TargetPath -PathType Leaf) {(Get-Item $VMwareWorkstationPlayer_32bit_TargetPath).VersionInfo.FileVersionRaw}
-$VMwareWorkstationPlayer_32bit_Version = if ($VMwareWorkstationPlayer_32bit_FileVersionRaw) {(Get-Item $VMwareWorkstationPlayer_32bit_FileVersionRaw).VersionInfo.FileVersionRaw.Major} else {$NotInstalled}
+$VMwareWorkstationPlayer_32bit_Version = if ($VMwareWorkstationPlayer_32bit_FileVersionRaw) {$VMwareWorkstationPlayer_32bit_FileVersionRaw.VersionInfo.FileVersionRaw.Major} else {$NotInstalled}
 $VMwareWorkstationPlayer_32bit_Name = "VMware Workstation "+$(if ($VMwareWorkstationPlayer_32bit_Version) {$VMwareWorkstationPlayer_32bit_Version} else {$NotInstalled})+" Player"
 
 $sys3rdPartyAppList = @(
