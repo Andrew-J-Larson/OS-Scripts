@@ -176,6 +176,8 @@ $PowerShell_TargetPath += if ($PowerShell_Version) {"${PowerShell_Version}\pwsh.
 
 # App names dependant on OS or app version
 
+# Windows Accessories
+$WindowsMediaPlayerOld_Name = "Windows Media Player"+$(if ($isWindows11) {" Legacy"})
 # PowerShell (7 or newer)
 $PowerShell_32bit_Name = "PowerShell "+$(if ($PowerShell_Version) {$PowerShell_Version} else {$NotInstalled})+" (x86)"
 $PowerShell_Name = "PowerShell "+$(if ($PowerShell_Version) {$PowerShell_Version} else {$NotInstalled})+" (x64)"
@@ -183,6 +185,14 @@ $PowerShell_Name = "PowerShell "+$(if ($PowerShell_Version) {$PowerShell_Version
 $PowerToys_Name = "PowerToys"+$(if (winget list -q "Microsoft.PowerToys" -e | Select-String "^PowerToys \(Preview\)") {" (Preview)"})
 
 $sysAppList = @(
+  # Windows Accessories
+  @{Name="Remote Desktop Connection"; TargetPath="%windir%\system32\mstsc.exe"; SystemLnk="Accessories\"; StartIn="%windir%\system32\"; Description="Use your computer to connect to a computer that is located elsewhere and run programs or access files."},
+  @{Name="Steps Recorder"; TargetPath="%windir%\system32\psr.exe"; SystemLnk="Accessories\"; Description="Capture steps with screenshots to save or share."},
+  @{Name="Windows Fax and Scan"; TargetPath="%windir%\system32\WFS.exe"; SystemLnk="Accessories\"; Description="Send and receive faxes or scan pictures and documents."},
+  @{Name=$WindowsMediaPlayerOld_Name; TargetPath="%ProgramFiles(x86)%\Windows Media Player\wmplayer.exe"; Arguments="/prefetch:1"; SystemLnk="Accessories\"; StartIn="%ProgramFiles(x86)%\Windows Media Player"}, # it's the only install on 64-bit
+  @{Name=$WindowsMediaPlayerOld_Name; TargetPath="%ProgramFiles%\Windows Media Player\wmplayer.exe"; Arguments="/prefetch:1"; SystemLnk="Accessories\"; StartIn="%ProgramFiles(x86)%\Windows Media Player"}, # it's the only install on 32-bit
+  @{Name="WordPad"; TargetPath="%ProgramFiles%\Windows NT\Accessories\wordpad.exe"; SystemLnk="Accessories\"; Description="Creates and edits text documents with complex formatting."},
+  @{Name="Character Map"; TargetPath="%windir%\system32\charmap.exe"; SystemLnk="Accessories\System Tools\"; Description="Selects special characters and copies them to your document."},
   # Edge
   @{Name="Microsoft Edge"; TargetPath="C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"; StartIn="C:\Program Files (x86)\Microsoft\Edge\Application"; Description="Browse the web"}, # it's the only install on 64-bit
   @{Name="Microsoft Edge"; TargetPath="C:\Program Files\Microsoft\Edge\Application\msedge.exe"; StartIn="C:\Program Files\Microsoft\Edge\Application"; Description="Browse the web"}, # it's the only install on 32-bit
