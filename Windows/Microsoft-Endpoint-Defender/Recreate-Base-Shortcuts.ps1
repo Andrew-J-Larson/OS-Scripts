@@ -188,6 +188,8 @@ $PowerToys_Name = "PowerToys"+$(if ($PowerToys_isPreview) {" (Preview)"})
 $WindowsMediaPlayerOld_Name = "Windows Media Player"+$(if ($isWindows11) {" Legacy"})
 
 $sysAppList = @(
+  # Azure
+  @{Name="Azure Data Studio"; TargetPath="C:\Program Files\Azure Data Studio\azuredatastudio.exe"; SystemLnk="Azure Data Studio\"; StartIn="C:\Program Files\Azure Data Studio"},
   # Edge
   @{Name="Microsoft Edge"; TargetPath="C:\Program Files\Microsoft\Edge\Application\msedge.exe"; StartIn="C:\Program Files\Microsoft\Edge\Application"; Description="Browse the web"}, # it's the only install on 32-bit
   @{Name="Microsoft Edge"; TargetPath="C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"; StartIn="C:\Program Files (x86)\Microsoft\Edge\Application"; Description="Browse the web"}, # it's the only install on 64-bit
@@ -655,6 +657,7 @@ for ($i = 0; $i -lt $Users.length; $i++) {
     @{Name="Inkview"; TargetPath="C:\Program Files\Inkscape\bin\inkview.exe"; SystemLnk="Inkscape\"; StartIn="C:\Program Files\Inkscape\bin\"},
     @{Name="Inkview (32-bit)"; TargetPath="C:\Program Files (x86)\Inkscape\bin\inkview.exe"; SystemLnk="Inkscape\"; StartIn="C:\Program Files (x86)\Inkscape\bin\"},
     # Microsoft
+    @{Name="Azure Data Studio"; TargetPath="C:\Users\${aUser}\AppData\Local\Programs\Azure Data Studio\azuredatastudio.exe"; SystemLnk="Azure Data Studio\"; StartIn="C:\Users\${aUser}\AppData\Local\Programs\Azure Data Studio"},
     @{Name="Visual Studio Code"; TargetPath="C:\Users\${aUser}\AppData\Local\Programs\Microsoft VS Code\Code.exe"; SystemLnk="Visual Studio Code\"; StartIn="C:\Users\${aUser}\AppData\Local\Programs\Microsoft VS Code"},
     @{Name="OneDrive"; TargetPath="C:\Users\${aUser}\AppData\Local\Microsoft\OneDrive\OneDrive.exe"; Description="Keep your most important files with you wherever you go, on any device."},
     @{Name=$MicrosoftTeams_Name; TargetPath="C:\Users\${aUser}\AppData\Local\Microsoft\Teams\Update.exe"; Arguments="--processStart `"Teams.exe`""; StartIn="C:\Users\${aUser}\AppData\Local\Microsoft\Teams"},
