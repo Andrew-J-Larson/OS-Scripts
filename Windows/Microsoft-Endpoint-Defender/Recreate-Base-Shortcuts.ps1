@@ -167,20 +167,20 @@ if (-Not $isWin10orNewer) {
 # App paths dependant on app version
 
 # Powershell (7 or newer)
-$PowerShell_32bit_TargetPath = "C:\Program Files (x86)\PowerShell\"
-$PowerShell_32bit_Version = if (Test-Path -Path $PowerShell_32bit_TargetPath) {(Get-ChildItem -Directory -Path $PowerShell_32bit_TargetPath | Where-Object {$_.Name -match '^[0-9]+$'} | Sort-Object -Descending)[0].name}
-$PowerShell_32bit_TargetPath += if ($PowerShell_32bit_Version) {"${PowerShell32bit_Version}\pwsh.exe"} else {"${NotInstalled}\${NotInstalled}.exe"}
 $PowerShell_TargetPath = "C:\Program Files\PowerShell\"
 $PowerShell_Version = if (Test-Path -Path $PowerShell_TargetPath) {(Get-ChildItem -Directory -Path $PowerShell_TargetPath | Where-Object {$_.Name -match '^[0-9]+$'} | Sort-Object -Descending)[0].name}
 $PowerShell_TargetPath += if ($PowerShell_Version) {"${PowerShell_Version}\pwsh.exe"} else {"${NotInstalled}\${NotInstalled}.exe"}
+$PowerShell_32bit_TargetPath = "C:\Program Files (x86)\PowerShell\"
+$PowerShell_32bit_Version = if (Test-Path -Path $PowerShell_32bit_TargetPath) {(Get-ChildItem -Directory -Path $PowerShell_32bit_TargetPath | Where-Object {$_.Name -match '^[0-9]+$'} | Sort-Object -Descending)[0].name}
+$PowerShell_32bit_TargetPath += if ($PowerShell_32bit_Version) {"${PowerShell32bit_Version}\pwsh.exe"} else {"${NotInstalled}\${NotInstalled}.exe"}
 
 # App names dependant on OS or app version
 
 # Windows Accessories
 $WindowsMediaPlayerOld_Name = "Windows Media Player"+$(if ($isWindows11) {" Legacy"})
 # PowerShell (7 or newer)
-$PowerShell_32bit_Name = "PowerShell "+$(if ($PowerShell_Version) {$PowerShell_Version} else {$NotInstalled})+" (x86)"
 $PowerShell_Name = "PowerShell "+$(if ($PowerShell_Version) {$PowerShell_Version} else {$NotInstalled})+" (x64)"
+$PowerShell_32bit_Name = "PowerShell "+$(if ($PowerShell_Version) {$PowerShell_Version} else {$NotInstalled})+" (x86)"
 # PowerToys
 $PowerToys_Name = "PowerToys"+$(if (winget list -q "Microsoft.PowerToys" -e | Select-String "^PowerToys \(Preview\)") {" (Preview)"})
 
@@ -189,22 +189,23 @@ $sysAppList = @(
   @{Name="Remote Desktop Connection"; TargetPath="%windir%\system32\mstsc.exe"; SystemLnk="Accessories\"; StartIn="%windir%\system32\"; Description="Use your computer to connect to a computer that is located elsewhere and run programs or access files."},
   @{Name="Steps Recorder"; TargetPath="%windir%\system32\psr.exe"; SystemLnk="Accessories\"; Description="Capture steps with screenshots to save or share."},
   @{Name="Windows Fax and Scan"; TargetPath="%windir%\system32\WFS.exe"; SystemLnk="Accessories\"; Description="Send and receive faxes or scan pictures and documents."},
-  @{Name=$WindowsMediaPlayerOld_Name; TargetPath="%ProgramFiles(x86)%\Windows Media Player\wmplayer.exe"; Arguments="/prefetch:1"; SystemLnk="Accessories\"; StartIn="%ProgramFiles(x86)%\Windows Media Player"}, # it's the only install on 64-bit
   @{Name=$WindowsMediaPlayerOld_Name; TargetPath="%ProgramFiles%\Windows Media Player\wmplayer.exe"; Arguments="/prefetch:1"; SystemLnk="Accessories\"; StartIn="%ProgramFiles(x86)%\Windows Media Player"}, # it's the only install on 32-bit
+  @{Name=$WindowsMediaPlayerOld_Name; TargetPath="%ProgramFiles(x86)%\Windows Media Player\wmplayer.exe"; Arguments="/prefetch:1"; SystemLnk="Accessories\"; StartIn="%ProgramFiles(x86)%\Windows Media Player"}, # it's the only install on 64-bit
   @{Name="WordPad"; TargetPath="%ProgramFiles%\Windows NT\Accessories\wordpad.exe"; SystemLnk="Accessories\"; Description="Creates and edits text documents with complex formatting."},
   @{Name="Character Map"; TargetPath="%windir%\system32\charmap.exe"; SystemLnk="Accessories\System Tools\"; Description="Selects special characters and copies them to your document."},
   # Edge
-  @{Name="Microsoft Edge"; TargetPath="C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"; StartIn="C:\Program Files (x86)\Microsoft\Edge\Application"; Description="Browse the web"}, # it's the only install on 64-bit
   @{Name="Microsoft Edge"; TargetPath="C:\Program Files\Microsoft\Edge\Application\msedge.exe"; StartIn="C:\Program Files\Microsoft\Edge\Application"; Description="Browse the web"}, # it's the only install on 32-bit
+  @{Name="Microsoft Edge"; TargetPath="C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"; StartIn="C:\Program Files (x86)\Microsoft\Edge\Application"; Description="Browse the web"}, # it's the only install on 64-bit
   # PowerShell (7 or newer)
-  @{Name=$PowerShell_32bit_Name; TargetPath=$PowerShell_32bit_TargetPath; Arguments="-WorkingDirectory ~"; SystemLnk="PowerShell\"; Description=$PowerShell_32bit_Name},
   @{Name=$PowerShell_Name; TargetPath=$PowerShell_TargetPath; Arguments="-WorkingDirectory ~"; SystemLnk="PowerShell\"; Description=$PowerShell_Name},
+  @{Name=$PowerShell_32bit_Name; TargetPath=$PowerShell_32bit_TargetPath; Arguments="-WorkingDirectory ~"; SystemLnk="PowerShell\"; Description=$PowerShell_32bit_Name},
   # Intune Management Extension
   @{Name="Microsoft Intune Management Extension"; TargetPath="C:\Program Files (x86)\Microsoft Intune Management Extension\AgentExecutor.exe"; SystemLnk="Microsoft Intune Management Extension\"; Description="Microsoft Intune Management Extension"},
   # PowerToys
   @{Name=$PowerToys_Name; TargetPath="C:\Program Files\PowerToys\PowerToys.exe"; SystemLnk=$PowerToys_Name+'\'; StartIn="C:\Program Files\PowerToys\"; Description="PowerToys - Windows system utilities to maximize productivity"},
   # OneDrive
   @{Name="OneDrive"; TargetPath="C:\Program Files\Microsoft OneDrive\OneDrive.exe"; Description="Keep your most important files with you wherever you go, on any device."},
+  @{Name="OneDrive (32-bit)"; TargetPath="C:\Program Files (x86)\Microsoft OneDrive\OneDrive.exe"; Description="Keep your most important files with you wherever you go, on any device."},
   # Office
   @{Name="Access"; TargetPath="C:\Program Files\Microsoft Office\root\Office16\MSACCESS.EXE"; Description="Build a professional app quickly to manage data."},
   @{Name="Excel"; TargetPath="C:\Program Files\Microsoft Office\root\Office16\EXCEL.EXE"; Description="Easily discover, visualize, and share insights from your data."},
@@ -217,9 +218,21 @@ $sysAppList = @(
   @{Name="Office Language Preferences"; TargetPath="C:\Program Files\Microsoft Office\root\Office16\SETLANG.EXE"; SystemLnk="Microsoft Office Tools\"; Description="Change the language preferences for Office applications."},
   @{Name="Spreadsheet Compare"; TargetPath="C:\Program Files\Microsoft Office\root\Client\AppVLP.exe"; Arguments="`"C:\Program Files (x86)\Microsoft Office\Office16\DCF\SPREADSHEETCOMPARE.EXE`""; SystemLnk="Microsoft Office Tools\"; Description="Compare versions of an Excel workbook."},
   @{Name="Telemetry Log for Office"; TargetPath="C:\Program Files\Microsoft Office\root\Office16\msoev.exe"; SystemLnk="Microsoft Office Tools\"; Description="View critical errors, compatibility issues and workaround information for your Office solutions by using Office Telemetry Log."},
+  @{Name="Access (32-bit)"; TargetPath="C:\Program Files (x86)\Microsoft Office\root\Office16\MSACCESS.EXE"; Description="Build a professional app quickly to manage data."},
+  @{Name="Excel (32-bit)"; TargetPath="C:\Program Files (x86)\Microsoft Office\root\Office16\EXCEL.EXE"; Description="Easily discover, visualize, and share insights from your data."},
+  @{Name="OneNote (32-bit)"; TargetPath="C:\Program Files (x86)\Microsoft Office\root\Office16\ONENOTE.EXE"; Description="Take notes and have them when you need them."},
+  @{Name="Outlook (32-bit)"; TargetPath="C:\Program Files (x86)\Microsoft Office\root\Office16\OUTLOOK.EXE"; Description="Manage your email, schedules, contacts, and to-dos."},
+  @{Name="PowerPoint (32-bit)"; TargetPath="C:\Program Files (x86)\Microsoft Office\root\Office16\POWERPNT.EXE"; Description="Design and deliver beautiful presentations with ease and confidence."},
+  @{Name="Publisher (32-bit)"; TargetPath="C:\Program Files (x86)\Microsoft Office\root\Office16\MSPUB.EXE"; Description="Create professional-grade publications that make an impact."},
+  @{Name="Word (32-bit)"; TargetPath="C:\Program Files (x86)\Microsoft Office\root\Office16\WINWORD.EXE"; Description="Create beautiful documents, easily work with others, and enjoy the read."},
+  @{Name="Database Compare (32-bit)"; TargetPath="C:\Program Files (x86)\Microsoft Office\root\Client\AppVLP.exe"; Arguments="`"C:\Program Files (x86)\Microsoft Office\Office16\DCF\DATABASECOMPARE.EXE`""; SystemLnk="Microsoft Office Tools\"; Description="Compare versions of an Access database."},
+  @{Name="Office Language Preferences (32-bit)"; TargetPath="C:\Program Files (x86)\Microsoft Office\root\Office16\SETLANG.EXE"; SystemLnk="Microsoft Office Tools\"; Description="Change the language preferences for Office applications."},
+  @{Name="Spreadsheet Compare (32-bit)"; TargetPath="C:\Program Files (x86)\Microsoft Office\root\Client\AppVLP.exe"; Arguments="`"C:\Program Files (x86)\Microsoft Office\Office16\DCF\SPREADSHEETCOMPARE.EXE`""; SystemLnk="Microsoft Office Tools\"; Description="Compare versions of an Excel workbook."},
+  @{Name="Telemetry Log for Office (32-bit)"; TargetPath="C:\Program Files (x86)\Microsoft Office\root\Office16\msoev.exe"; SystemLnk="Microsoft Office Tools\"; Description="View critical errors, compatibility issues and workaround information for your Office solutions by using Office Telemetry Log."},
   # Visual Studio
   @{Name="Visual Studio Installer"; TargetPath="C:\Program Files (x86)\Microsoft Visual Studio\Installer\setup.exe"; StartIn="C:\Program Files (x86)\Microsoft Visual Studio\Installer"},
-  @{Name="Visual Studio Code"; TargetPath="C:\Program Files\Microsoft VS Code\Code.exe"; SystemLnk="Visual Studio Code\"; StartIn="C:\Program Files\Microsoft VS Code"}
+  @{Name="Visual Studio Code"; TargetPath="C:\Program Files\Microsoft VS Code\Code.exe"; SystemLnk="Visual Studio Code\"; StartIn="C:\Program Files\Microsoft VS Code"},
+  @{Name="Visual Studio Code (32-bit)"; TargetPath="C:\Program Files (x86)\Microsoft VS Code\Code.exe"; SystemLnk="Visual Studio Code\"; StartIn="C:\Program Files\Microsoft VS Code"}
 #  @{Name=""; TargetPath=""; Arguments=""; SystemLnk=""; StartIn=""; Description=""; RunAsAdmin=($true|$false)}
 )
 
@@ -302,21 +315,21 @@ $GIMP_Name = "GIMP "+$(if ($GIMP_Version) {$GIMP_Version} else {$NotInstalled})
 
 $sys3rdPartyAppList = @(
   # Google
-  @{Name="Google Chrome (32-bit)"; TargetPath="C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"; StartIn="C:\Program Files (x86)\Google\Chrome\Application"; Description="Access the Internet"},
   @{Name="Google Chrome"; TargetPath="C:\Program Files\Google\Chrome\Application\chrome.exe"; StartIn="C:\Program Files\Google\Chrome\Application"; Description="Access the Internet"},
+  @{Name="Google Chrome (32-bit)"; TargetPath="C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"; StartIn="C:\Program Files (x86)\Google\Chrome\Application"; Description="Access the Internet"},
   @{Name="Google Drive"; TargetPath=$GoogleDrive_TargetPath; Description="Google Drive"},
   @{Name="VPN by Google One"; TargetPath=$GoogleOneVPN_TargetPath; Description="VPN by Google One"},
   # Mozilla
-  @{Name="Firefox (32-bit)"; TargetPath="C:\Program Files (x86)\Mozilla Firefox\firefox.exe"; StartIn="C:\Program Files (x86)\Mozilla Firefox"},
-  @{Name="Firefox Private Browsing (32-bit)"; TargetPath="C:\Program Files (x86)\Mozilla Firefox\private_browsing.exe"; StartIn="C:\Program Files (x86)\Mozilla Firefox"; Description="Firefox Private Browsing"},
   @{Name="Firefox"; TargetPath="C:\Program Files\Mozilla Firefox\firefox.exe"; StartIn="C:\Program Files\Mozilla Firefox"},
   @{Name="Firefox Private Browsing"; TargetPath="C:\Program Files\Mozilla Firefox\private_browsing.exe"; StartIn="C:\Program Files\Mozilla Firefox"; Description="Firefox Private Browsing"},
+  @{Name="Firefox (32-bit)"; TargetPath="C:\Program Files (x86)\Mozilla Firefox\firefox.exe"; StartIn="C:\Program Files (x86)\Mozilla Firefox"},
+  @{Name="Firefox Private Browsing (32-bit)"; TargetPath="C:\Program Files (x86)\Mozilla Firefox\private_browsing.exe"; StartIn="C:\Program Files (x86)\Mozilla Firefox"; Description="Firefox Private Browsing"},
   @{Name="Thunderbird"; TargetPath="C:\Program Files\Mozilla Thunderbird\thunderbird.exe"; StartIn="C:\Program Files\Mozilla Thunderbird"},
   # 7-Zip
-  @{Name="7-Zip File Manager (32-bit)"; TargetPath="C:\Program Files (x86)\7-Zip\7zFM.exe"; SystemLnk="7-Zip\"},
   @{Name="7-Zip File Manager"; TargetPath="C:\Program Files\7-Zip\7zFM.exe"; SystemLnk="7-Zip\"},
-  @{Name="7-Zip Help"; TargetPath="C:\Program Files (x86)\7-Zip\7-zip.chm"; SystemLnk="7-Zip\"},
   @{Name="7-Zip Help"; TargetPath="C:\Program Files\7-Zip\7-zip.chm"; SystemLnk="7-Zip\"},
+  @{Name="7-Zip File Manager (32-bit)"; TargetPath="C:\Program Files (x86)\7-Zip\7zFM.exe"; SystemLnk="7-Zip\"},
+  @{Name="7-Zip Help"; TargetPath="C:\Program Files (x86)\7-Zip\7-zip.chm"; SystemLnk="7-Zip\"},
   # GIMP
   @{Name=$GIMP_Name; TargetPath=$GIMP_TargetPath; StartIn="%USERPROFILE%"; Description=$GIMP_Name},
   # Audacity
@@ -376,6 +389,8 @@ $sys3rdPartyAppList = @(
   # SoundSwitch
   @{Name="SoundSwitch"; TargetPath="C:\Program Files\SoundSwitch\SoundSwitch.exe"; SystemLnk="SoundSwitch\"; StartIn="C:\Program Files\SoundSwitch"},
   @{Name="Uninstall SoundSwitch"; TargetPath="C:\Program Files\SoundSwitch\unins000.exe"; SystemLnk="SoundSwitch\"; StartIn="C:\Program Files\SoundSwitch"},
+  # KeePass
+  @{Name="KeePass"; TargetPath="C:\Program Files (x86)\KeePass Password Safe\KeePass.exe"; StartIn="C:\Program Files (x86)\KeePass Password Safe"},
   # OpenVPN
   @{Name="OpenVPN"; TargetPath="C:\Program Files\OpenVPN\bin\openvpn-gui.exe"; SystemLnk="OpenVPN\OpenVPN GUI"; StartIn="C:\Program Files\OpenVPN\bin\"},
   @{Name="OpenVPN Manual Page"; TargetPath="C:\Program Files\OpenVPN\doc\openvpn.8.html"; SystemLnk="OpenVPN\Documentation\"; StartIn="C:\Program Files\OpenVPN\doc\"},
@@ -388,11 +403,11 @@ $sys3rdPartyAppList = @(
   # SonicWall Global VPN Client
   @{Name="Global VPN Client"; TargetPath="C:\Program Files\SonicWALL\Global VPN Client\SWGVC.exe"; StartIn="C:\Program Files\SonicWall\Global VPN Client\"; Description="Launch the Global VPN Client"},
   # GoTo
-  @{Name="GoTo Resolve Desktop Console (32-bit)"; TargetPath="C:\Program Files (x86)\GoTo\GoTo Resolve Desktop Console\ra-technician-console.exe"; StartIn="C:\Program Files (x86)\GoTo\GoTo Resolve Desktop Console\"},
   @{Name="GoTo Resolve Desktop Console (64-bit)"; TargetPath="C:\Program Files\GoTo\GoTo Resolve Desktop Console\ra-technician-console.exe"; StartIn="C:\Program Files\GoTo\GoTo Resolve Desktop Console\"},
+  @{Name="GoTo Resolve Desktop Console (32-bit)"; TargetPath="C:\Program Files (x86)\GoTo\GoTo Resolve Desktop Console\ra-technician-console.exe"; StartIn="C:\Program Files (x86)\GoTo\GoTo Resolve Desktop Console\"},
   # Adobe Acrobat
-  @{Name="Adobe Acrobat (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Acrobat DC\Acrobat\Acrobat.exe"},
   @{Name="Adobe Acrobat"; TargetPath="C:\Program Files\Adobe\Acrobat DC\Acrobat\Acrobat.exe"},
+  @{Name="Adobe Acrobat (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Acrobat DC\Acrobat\Acrobat.exe"},
   @{Name="Adobe Acrobat Reader (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Acrobat Reader DC\Reader\AcroRd32.exe"},
   # Samsung
   @{Name="Samsung DeX"; TargetPath="C:\Program Files (x86)\Samsung\Samsung DeX\SamsungDeX.exe"; StartIn="C:\Program Files (x86)\Samsung\Samsung DeX\"},
