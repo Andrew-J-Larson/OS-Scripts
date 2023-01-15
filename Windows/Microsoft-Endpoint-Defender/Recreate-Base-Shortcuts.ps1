@@ -15,13 +15,19 @@
        RunAsAdmin="[true or false, if needed]"
    } #>
 
+
+
 # Constants
 Set-Variable NotInstalled -Option Constant -Value "NOT-INSTALLED"
+
+
 
 # Variables
 $isWindows11 = ((Get-WMIObject win32_operatingsystem).Caption).StartsWith("Microsoft Windows 11")
 $isWindows10 = ((Get-WMIObject win32_operatingsystem).Caption).StartsWith("Microsoft Windows 10")
 $isWin10orNewer = [System.Environment]::OSVersion.Version.Major -ge 10
+
+
 
 # Functions
 
@@ -60,7 +66,7 @@ function Recreate-Shortcut {
   $errorMsg = @()
 
   Set-Variable ProgramShortcutsPath -Option Constant -Value "C:\ProgramData\Microsoft\Windows\Start Menu\Programs"
-  Set-Variable UserProgramShortcutsPath -Option Constant -Value "C:\Users\%username%\AppData\Roaming\Microsoft\Windows\Start Menu\Programs"
+  Set-Variable UserProgramShortcutsPath -Option Constant -Value "C:\Users\${sUser}\AppData\Roaming\Microsoft\Windows\Start Menu\Programs"
 
   # only create shortcut if name and target given, and target exists
   if ($sName -And $sTargetPath -And (Test-Path $sTargetPath -PathType leaf)) {
@@ -70,8 +76,7 @@ function Recreate-Shortcut {
     if (-Not ($sSystemLnk)) {$sSystemLnk = $sName}
     # if doesn't have $ProgramShortcutsPath or $UserProgramShortcutsPath (and not start with drive letter), it'll assume a path for it
     if (-Not ($sSystemLnk -match '^[a-zA-Z]:\\.*' -Or $sSystemLnk -match ('^'+[Regex]::Escape($ProgramShortcutsPath)+'.*') -Or $sSystemLnk -match ('^'+[Regex]::Escape($UserProgramShortcutsPath)+'.*'))) {
-      if ($sUser) {$sSystemLnk = $UserProgramShortcutsPath.replace("%username%", $aUser)+'\'+$sSystemLnk}
-      else {$sSystemLnk = $ProgramShortcutsPath+'\'+$sSystemLnk}
+      $sSystemLnk = $(if ($sUser) {$UserProgramShortcutsPath} else {$ProgramShortcutsPath})+'\'+$sSystemLnk
     }
     # if it ends with '\', then we append the name to the end
     if ($sSystemLnk.EndsWith('\')) {$sSystemLnk = $sSystemLnk+$sName}
@@ -79,16 +84,13 @@ function Recreate-Shortcut {
     if (-Not ($sSystemLnk -match '.*\.lnk$')) {$sSystemLnk = $sSystemLnk+'.lnk'}
     $newLNK = $WscriptObj.CreateShortcut($sSystemLnk)
 
-    if ($sUser) {$sTargetPath = $sTargetPath.replace("%username%", $aUser)}
     $newLNK.TargetPath = $sTargetPath
 
     if ($sArguments) {
-      if ($sUser) {$sArguments = $sArguments.replace("%username%", $aUser)}
       $newLNK.Arguments =  $sArguments
     }
 
     if ($sStartIn) {
-      if ($sUser) {$sStartIn = $sStartIn.replace("%username%", $aUser)}
       $newLNK.WorkingDirectory = $sStartIn
     }
 
@@ -150,6 +152,8 @@ function Recreate-Shortcut {
   return $result
 }
 
+
+
 # MAIN
 
 if (-Not $isWin10orNewer) {
@@ -157,14 +161,16 @@ if (-Not $isWin10orNewer) {
   exit 1
 }
 
+
+
 # System Applications
 
-# Names dependant on OS or app version
+# App names dependant on OS or app version
 
 # PowerToys
 $PowerToys_Name = "PowerToys"+$(if (winget list -q "Microsoft.PowerToys" -e | Select-String "^PowerToys \(Preview\)") {" (Preview)"})
 
-# Paths dependant on app version
+# System app paths dependant on app version
 
 ## App Name
 #$App_TargetPath = ...
@@ -213,14 +219,16 @@ for ($i = 0; $i -lt $sysAppList.length; $i++) {
   $Results = Recreate-Shortcut -n $aName -tp $aTargetPath -a $sArguments -sl $aSystemLnk -si $aStartIn -d $aDescription -r $aRunAsAdmin
 }
 
+
+
 # OEM System Applications (e.g. Dell)
 
-# Names dependant on OS or app version
+# App names dependant on OS or app version
 
 ## App Name
 #$App_Name = ...
 
-# Paths dependant on app version
+# System app paths dependant on app version
 
 ## App Name
 #$App_TargetPath = ...
@@ -247,28 +255,30 @@ for ($i = 0; $i -lt $oemSysAppList.length; $i++) {
   $Results = Recreate-Shortcut -n $aName -tp $aTargetPath -a $sArguments -sl $aSystemLnk -si $aStartIn -d $aDescription -r $aRunAsAdmin
 }
 
+
+
 # Third-Party System Applications (not made by Microsoft)
 
-# Names dependant on OS or app version
+# App names dependant on OS or app version
 
 # GIMP
 $GIMP_Version = ([string](winget list -q "GIMP.GIMP" -e | Select-String "^GIMP")).split(' ')[3]
 $GIMP_Name = "GIMP "+$(if ($GIMP_Version) {$GIMP_Version} else {$NotInstalled})
 
-# Paths dependant on app version
+# System app paths dependant on app version
 
 # Google Drive
 $GoogleDrive_TargetPath = "C:\Program Files\Google\Drive File Stream\"
 $GoogleDrive_Version = (Get-ChildItem -Directory -Path $GoogleDrive_TargetPath | Where-Object {$_.Name -match '^[.0-9]+$'} | Sort-Object -Descending)[0].name
-$GoogleDrive_TargetPath += if ($GoogleDrive_Version) {"${GoogleDrive_Version}\GoogleDriveFS.exe"} else {"${NotInstalled}.exe"}
+$GoogleDrive_TargetPath += if ($GoogleDrive_Version) {"${GoogleDrive_Version}\GoogleDriveFS.exe"} else {"${NotInstalled}\${NotInstalled}.exe"}
 # VPN By Google One
 $GoogleOneVPN_TargetPath = "C:\Program Files\Google\VPN by Google One\"
 $GoogleOneVPN_Version = (Get-ChildItem -Directory -Path $GoogleOneVPN_TargetPath | Where-Object {$_.Name -match '^[.0-9]+$'} | Sort-Object -Descending)[0].name
-$GoogleOneVPN_TargetPath += if ($GoogleOneVPN_Version) {"${GoogleOneVPN_Version}\googleone.exe"} else {"${NotInstalled}.exe"}
+$GoogleOneVPN_TargetPath += if ($GoogleOneVPN_Version) {"${GoogleOneVPN_Version}\googleone.exe"} else {"${NotInstalled}\${NotInstalled}.exe"}
 # GIMP
 $GIMP_TargetPath = "C:\Program Files\"
 $GIMP_FindFolder = (Get-ChildItem -Directory -Path $GIMP_TargetPath | Where-Object {$_.Name -match '^GIMP'} | Sort-Object -Descending)[0].name
-$GIMP_TargetPath += if ($GIMP_FindFolder) {"${GIMP_FindFolder}\bin\"} else {"${NotInstalled}\"}
+$GIMP_TargetPath += if ($GIMP_FindFolder) {"${GIMP_FindFolder}\bin\"} else {"${NotInstalled}\${NotInstalled}\"}
 $GIMP_FindExe = (Get-ChildItem -File -Path $GIMP_TargetPath | Where-Object {$_.Name -match '^gimp\-[.0-9]+exe$'} | Sort-Object -Descending)[0].name
 $GIMP_TargetPath += if ($GIMP_FindExe) {$GIMP_FindExe} else {"${NotInstalled}.exe"}
 
@@ -387,14 +397,16 @@ for ($i = 0; $i -lt $sys3rdPartyAppList.length; $i++) {
   $Results = Recreate-Shortcut -n $aName -tp $aTargetPath -a $sArguments -sl $aSystemLnk -si $aStartIn -d $aDescription -r $aRunAsAdmin
 }
 
+
+
 # User Applications (per user installed apps)
 
-# Names dependant on OS or app version
+# App names dependant on OS or app version
 
 # Microsoft Teams
 $MicrosoftTeams_Name = "Microsoft Teams"+$(if ($isWindows11) {" (work or school)"})
 
-# Paths dependant on app version
+# System app paths dependant on app version
 
 # Blender
 $Blender_TargetPath = "C:\Program Files\Blender Foundation\"
@@ -402,46 +414,57 @@ $Blender_FindFolder = (Get-ChildItem -Directory -Path $Blender_TargetPath | Wher
 $Blender_StartIn = $Blender_TargetPath+$(if ($Blender_FindFolder) {"${Blender_FindFolder}\"} else {"${NotInstalled}\"})
 $Blender_TargetPath = $Blender_StartIn+$(if ($Blender_FindFolder) {"blender-launcher.exe"} else {"${NotInstalled}.exe"})
 
-$userAppList = @( # all instances of "%username%" get's replaced with the username
-  # Microsoft
-  @{Name="Visual Studio Code"; TargetPath="C:\Users\%username%\AppData\Local\Programs\Microsoft VS Code\Code.exe"; SystemLnk="Visual Studio Code\"; StartIn="C:\Users\%username%\AppData\Local\Programs\Microsoft VS Code"},
-  @{Name="OneDrive"; TargetPath="C:\Users\%username%\AppData\Local\Microsoft\OneDrive\OneDrive.exe"; Description="Keep your most important files with you wherever you go, on any device."},
-  @{Name=$MicrosoftTeams_Name; TargetPath="C:\Users\%username%\AppData\Local\Microsoft\Teams\Update.exe"; Arguments="--processStart `"Teams.exe`""; StartIn="C:\Users\%username%\AppData\Local\Microsoft\Teams"},
-  # Google
-  @{Name="Google Chrome"; TargetPath="C:\Users\%username%\AppData\Local\Google\Chrome\Application\chrome.exe"; StartIn="C:\Users\%username%\AppData\Local\Google\Chrome\Application"; Description="Access the Internet"},
-  # Mozilla
-  @{Name="Firefox"; TargetPath="C:\Users\%username%\AppData\Local\Mozilla Firefox\firefox.exe"; StartIn="C:\Users\%username%\AppData\Local\Mozilla Firefox"},
-  # NVIDIA Corporation
-  @{Name="NVIDIA GeForce NOW"; TargetPath="C:\Users\%username%\AppData\Local\NVIDIA Corporation\GeForceNOW\CEF\GeForceNOW.exe"; StartIn="C:\Users\%username%\AppData\Local\NVIDIA Corporation\GeForceNOW\CEF"},
-  # Blender ... C:\Users\Andrew\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\blender\Blender.lnk
-  @{Name="Blender"; TargetPath=$Blender_TargetPath; SystemLnk="blender\"; StartIn=$Blender_StartIn},
-  # balenaEtcher
-  @{Name="balenaEtcher"; TargetPath="C:\Users\%username%\AppData\Local\Programs\balena-etcher\balenaEtcher.exe"; StartIn="C:\Users\%username%\AppData\Local\Programs\balena-etcher"; Description="Flash OS images to SD cards and USB drives, safely and easily."},
-  # Raspberry Pi Imager
-  @{Name="Raspberry Pi Imager"; TargetPath="C:\Program Files (x86)\Raspberry Pi Imager\rpi-imager.exe"; StartIn="C:\Program Files (x86)\Raspberry Pi Imager"},
-  # RingCentral
-  @{Name="RingCentral"; TargetPath="C:\Users\%username%\AppData\Local\Programs\RingCentral\RingCentral.exe"; StartIn="C:\Users\%username%\AppData\Local\Programs\RingCentral"; Description="RingCentral"},
-  @{Name="RingCentral Meetings"; TargetPath="C:\Users\%username%\AppData\Roaming\RingCentralMeetings\bin\RingCentralMeetings.exe"; SystemLnk="RingCentral Meetings\"; Description="RingCentral Meetings"},
-  @{Name="Uninstall RingCentral Meetings"; TargetPath="C:\Users\%username%\AppData\Roaming\RingCentralMeetings\uninstall\Installer.exe"; Arguments="/uninstall"; SystemLnk="RingCentral Meetings\"; Description="Uninstall RingCentral Meetings"}
-#  @{Name=""; TargetPath=""; Arguments=""; SystemLnk=""; StartIn=""; Description=""; RunAsAdmin=($true|$false)}
-)
-
 # get all users 
 $Users = (Get-ChildItem "C:\Users\" | % { $_.name })
 if ($Users[0].length -eq 1) {$Users = @("$Users")} # if only one user, array needs to be recreated
 
-for ($i = 0; $i -lt $userAppList.length; $i++) {
-  $app = $userAppList[$i]
-  $aName = $app.Name
-  $aTargetPath = $app.TargetPath
-  $aArguments = if ($app.Arguments) {$app.Arguments} else {""}
-  $aSystemLnk = if ($app.SystemLnk) {$app.SystemLnk} else {""}
-  $aStartIn = if ($app.StartIn) {$app.StartIn} else {""}
-  $aDescription = if ($app.Description) {$app.Description} else {""}
-  $aRunAsAdmin = if ($app.RunAsAdmin) {$app.RunAsAdmin} else {$false}
+for ($i = 0; $i -lt $Users.length; $i++) {
+  # get user
+  $aUser = $Users[$i]
 
-  for ($j = 0; $j -lt $Users.length; $j++) {
-    $aUser = $Users[$j]
+  # User app paths dependant on app version
+
+  # GitHub Desktop
+  $GitHubDesktop_StartIn = "C:\Users\${aUser}\AppData\Local\GitHubDesktop\"
+  $GitHubDesktop_TargetPath = $GitHubDesktop_StartIn+"GitHubDesktop.exe"
+  $GitHubDesktop_Version = (Get-ChildItem -Directory -Path $GitHubDesktop_StartIn | Where-Object {$_.Name -match '^app\-[.0-9]+$'} | Sort-Object -Descending)[0].name
+  $GitHubDesktop_StartIn += if ($GitHubDesktop_Version) {"${GitHubDesktop_Version}"} else {"${NotInstalled}"}
+
+  $userAppList = @( # all instances of "${aUser}" get's replaced with the username
+    # Microsoft
+    @{Name="Visual Studio Code"; TargetPath="C:\Users\${aUser}\AppData\Local\Programs\Microsoft VS Code\Code.exe"; SystemLnk="Visual Studio Code\"; StartIn="C:\Users\${aUser}\AppData\Local\Programs\Microsoft VS Code"},
+    @{Name="OneDrive"; TargetPath="C:\Users\${aUser}\AppData\Local\Microsoft\OneDrive\OneDrive.exe"; Description="Keep your most important files with you wherever you go, on any device."},
+    @{Name=$MicrosoftTeams_Name; TargetPath="C:\Users\${aUser}\AppData\Local\Microsoft\Teams\Update.exe"; Arguments="--processStart `"Teams.exe`""; StartIn="C:\Users\${aUser}\AppData\Local\Microsoft\Teams"},
+    # Google
+    @{Name="Google Chrome"; TargetPath="C:\Users\${aUser}\AppData\Local\Google\Chrome\Application\chrome.exe"; StartIn="C:\Users\${aUser}\AppData\Local\Google\Chrome\Application"; Description="Access the Internet"},
+    # Mozilla
+    @{Name="Firefox"; TargetPath="C:\Users\${aUser}\AppData\Local\Mozilla Firefox\firefox.exe"; StartIn="C:\Users\${aUser}\AppData\Local\Mozilla Firefox"},
+    # NVIDIA Corporation
+    @{Name="NVIDIA GeForce NOW"; TargetPath="C:\Users\${aUser}\AppData\Local\NVIDIA Corporation\GeForceNOW\CEF\GeForceNOW.exe"; StartIn="C:\Users\${aUser}\AppData\Local\NVIDIA Corporation\GeForceNOW\CEF"},
+    # Blender
+    @{Name="Blender"; TargetPath=$Blender_TargetPath; SystemLnk="blender\"; StartIn=$Blender_StartIn},
+    # GitHub Desktop
+    @{Name="GitHub Desktop"; TargetPath=$GitHubDesktop_TargetPath; SystemLnk="GitHub, Inc\"; StartIn=$GitHubDesktop_StartIn; Description="Simple collaboration from your desktop"},
+    # balenaEtcher
+    @{Name="balenaEtcher"; TargetPath="C:\Users\${aUser}\AppData\Local\Programs\balena-etcher\balenaEtcher.exe"; StartIn="C:\Users\${aUser}\AppData\Local\Programs\balena-etcher"; Description="Flash OS images to SD cards and USB drives, safely and easily."},
+    # Raspberry Pi Imager
+    @{Name="Raspberry Pi Imager"; TargetPath="C:\Program Files (x86)\Raspberry Pi Imager\rpi-imager.exe"; StartIn="C:\Program Files (x86)\Raspberry Pi Imager"},
+    # RingCentral
+    @{Name="RingCentral"; TargetPath="C:\Users\${aUser}\AppData\Local\Programs\RingCentral\RingCentral.exe"; StartIn="C:\Users\${aUser}\AppData\Local\Programs\RingCentral"; Description="RingCentral"},
+    @{Name="RingCentral Meetings"; TargetPath="C:\Users\${aUser}\AppData\Roaming\RingCentralMeetings\bin\RingCentralMeetings.exe"; SystemLnk="RingCentral Meetings\"; Description="RingCentral Meetings"},
+    @{Name="Uninstall RingCentral Meetings"; TargetPath="C:\Users\${aUser}\AppData\Roaming\RingCentralMeetings\uninstall\Installer.exe"; Arguments="/uninstall"; SystemLnk="RingCentral Meetings\"; Description="Uninstall RingCentral Meetings"}
+  #  @{Name=""; TargetPath=""; Arguments=""; SystemLnk=""; StartIn=""; Description=""; RunAsAdmin=($true|$false)}
+  )
+
+  for ($j = 0; $j -lt $userAppList.length; $j++) {
+    $app = $userAppList[$j]
+    $aName = $app.Name
+    $aTargetPath = $app.TargetPath
+    $aArguments = if ($app.Arguments) {$app.Arguments} else {""}
+    $aSystemLnk = if ($app.SystemLnk) {$app.SystemLnk} else {""}
+    $aStartIn = if ($app.StartIn) {$app.StartIn} else {""}
+    $aDescription = if ($app.Description) {$app.Description} else {""}
+    $aRunAsAdmin = if ($app.RunAsAdmin) {$app.RunAsAdmin} else {$false}
 
     $Results = Recreate-Shortcut -n $aName -tp $aTargetPath -a $sArguments -sl $aSystemLnk -si $aStartIn -d $aDescription -r $aRunAsAdmin -u $aUser
   }
