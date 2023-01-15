@@ -18,6 +18,7 @@
 # Variables
 $isWindows11 = ((Get-WMIObject win32_operatingsystem).Caption).StartsWith("Microsoft Windows 11")
 $isWindows10 = ((Get-WMIObject win32_operatingsystem).Caption).StartsWith("Microsoft Windows 10")
+$isWin10orNewer = [System.Environment]::OSVersion.Version.Major -ge 10
 
 # Functions
 
@@ -148,6 +149,11 @@ function Recreate-Shortcut {
 
 # MAIN
 
+if (-Not $isWin10orNewer) {
+  Write-Error "This script is only meant to be ran on Windows 10 and newer!"
+  exit 1
+}
+
 # System Applications
 
 $sysAppList = @(
@@ -190,7 +196,7 @@ for ($i = 0; $i -lt $sysAppList.length; $i++) {
   $aDescription = if ($app.Description) {$app.Description} else {""}
   $aRunAsAdmin = if ($app.RunAsAdmin) {$app.RunAsAdmin} else {$false}
 
-  $Result = Recreate-Shortcut -n $aName -tp $aTargetPath -a $sArguments -sl $aSystemLnk -si $aStartIn -d $aDescription -r $aRunAsAdmin
+  $Results = Recreate-Shortcut -n $aName -tp $aTargetPath -a $sArguments -sl $aSystemLnk -si $aStartIn -d $aDescription -r $aRunAsAdmin
 }
 
 # OEM System Applications (e.g. Dell)
@@ -214,7 +220,7 @@ for ($i = 0; $i -lt $oemSysAppList.length; $i++) {
   $aDescription = if ($app.Description) {$app.Description} else {""}
   $aRunAsAdmin = if ($app.RunAsAdmin) {$app.RunAsAdmin} else {$false}
 
-  $Result = Recreate-Shortcut -n $aName -tp $aTargetPath -a $sArguments -sl $aSystemLnk -si $aStartIn -d $aDescription -r $aRunAsAdmin
+  $Results = Recreate-Shortcut -n $aName -tp $aTargetPath -a $sArguments -sl $aSystemLnk -si $aStartIn -d $aDescription -r $aRunAsAdmin
 }
 
 # Third-Party System Applications (not made by Microsoft)
@@ -323,7 +329,7 @@ for ($i = 0; $i -lt $sys3rdPartyAppList.length; $i++) {
   $aDescription = if ($app.Description) {$app.Description} else {""}
   $aRunAsAdmin = if ($app.RunAsAdmin) {$app.RunAsAdmin} else {$false}
 
-  $Result = Recreate-Shortcut -n $aName -tp $aTargetPath -a $sArguments -sl $aSystemLnk -si $aStartIn -d $aDescription -r $aRunAsAdmin
+  $Results = Recreate-Shortcut -n $aName -tp $aTargetPath -a $sArguments -sl $aSystemLnk -si $aStartIn -d $aDescription -r $aRunAsAdmin
 }
 
 # User Applications (per user installed apps)
@@ -361,6 +367,6 @@ for ($i = 0; $i -lt $userAppList.length; $i++) {
   for ($j = 0; $j -lt $Users.length; $j++) {
     $aUser = $Users[$j]
 
-    $Result = Recreate-Shortcut -n $aName -tp $aTargetPath -a $sArguments -sl $aSystemLnk -si $aStartIn -d $aDescription -r $aRunAsAdmin -u $aUser
+    $Results = Recreate-Shortcut -n $aName -tp $aTargetPath -a $sArguments -sl $aSystemLnk -si $aStartIn -d $aDescription -r $aRunAsAdmin -u $aUser
   }
 }
