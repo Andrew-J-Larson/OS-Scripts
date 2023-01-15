@@ -306,7 +306,213 @@ for ($i = 0; $i -lt $oemSysAppList.length; $i++) {
 # App paths dependant on app version
 
 # Adobe
-## 
+$Aero_TargetPath = "C:\Program Files\Adobe\"
+$Aero_Name = if (Test-Path -Path $Aero_TargetPath) {(Get-ChildItem -Directory -Path $Aero_TargetPath | Where-Object {$_.Name -match '^.*Aero(?!.*\(Beta\)$)'} | Sort-Object -Descending)[0].name} else {"Aero"}
+$Aero_StartIn = $Aero_TargetPath+$Aero_Name
+$Aero_TargetPath = $Aero_StartIn+"\Aero.exe"
+$Aero_Beta_TargetPath = "C:\Program Files\Adobe\"
+$Aero_Beta_Name = if (Test-Path -Path $Aero_Beta_StartIn) {(Get-ChildItem -Directory -Path $Aero_Beta_StartIn | Where-Object {$_.Name -match '^.*Aero.*\(Beta\)'} | Sort-Object -Descending)[0].name} else {"Aero (Beta)"}
+$Aero_Beta_StartIn = $Aero_Beta_TargetPath+$Aero_Beta_Name
+$Aero_Beta_TargetPath = $Aero_Beta_StartIn+"\Aero.exe"
+
+<# $%APP_SHORT%_TargetPath = "C:\Program Files\Adobe\"
+$%APP_SHORT%_Name = if (Test-Path -Path $%APP_SHORT%_TargetPath) {(Get-ChildItem -Directory -Path $%APP_SHORT%_TargetPath | Where-Object {$_.Name -match '^.*%APP_LONG%(?!.*\(Beta\)$)'} | Sort-Object -Descending)[0].name} else {"Aero"}
+$%APP_SHORT%_StartIn = $%APP_SHORT%_TargetPath+$%APP_SHORT%_Name
+$%APP_SHORT%_TargetPath = $%APP_SHORT%_StartIn+"\%APP_LONG%.exe"
+$%APP_SHORT%_Beta_TargetPath = "C:\Program Files\Adobe\"
+$%APP_SHORT%_Beta_Name = if (Test-Path -Path $%APP_SHORT%_Beta_StartIn) {(Get-ChildItem -Directory -Path $%APP_SHORT%_Beta_StartIn | Where-Object {$_.Name -match '^.*%APP_LONG%.*\(Beta\)'} | Sort-Object -Descending)[0].name} else {"Aero (Beta)"}
+$%APP_SHORT%_Beta_StartIn = $%APP_SHORT%_Beta_TargetPath+$%APP_SHORT%_Beta_Name
+$%APP_SHORT%_Beta_TargetPath = $%APP_SHORT%_Beta_StartIn+"\%APP_LONG%.exe"
+
+$%APP_SHORT%_TargetPath = "C:\Program Files\Adobe\"
+$%APP_SHORT%_Name = if (Test-Path -Path $%APP_SHORT%_TargetPath) {(Get-ChildItem -Directory -Path $%APP_SHORT%_TargetPath | Where-Object {$_.Name -match '^.*%APP_LONG%(?!.*\(Beta\)$)'} | Sort-Object -Descending)[0].name} else {"Aero"}
+$%APP_SHORT%_StartIn = $%APP_SHORT%_TargetPath+$%APP_SHORT%_Name
+$%APP_SHORT%_TargetPath = $%APP_SHORT%_StartIn+"\%APP_LONG%.exe"
+$%APP_SHORT%_Beta_TargetPath = "C:\Program Files\Adobe\"
+$%APP_SHORT%_Beta_Name = if (Test-Path -Path $%APP_SHORT%_Beta_StartIn) {(Get-ChildItem -Directory -Path $%APP_SHORT%_Beta_StartIn | Where-Object {$_.Name -match '^.*%APP_LONG%.*\(Beta\)'} | Sort-Object -Descending)[0].name} else {"Aero (Beta)"}
+$%APP_SHORT%_Beta_StartIn = $%APP_SHORT%_Beta_TargetPath+$%APP_SHORT%_Beta_Name
+$%APP_SHORT%_Beta_TargetPath = $%APP_SHORT%_Beta_StartIn+"\%APP_LONG%.exe"
+
+$%APP_SHORT%_TargetPath = "C:\Program Files\Adobe\"
+$%APP_SHORT%_Name = if (Test-Path -Path $%APP_SHORT%_TargetPath) {(Get-ChildItem -Directory -Path $%APP_SHORT%_TargetPath | Where-Object {$_.Name -match '^.*%APP_LONG%(?!.*\(Beta\)$)'} | Sort-Object -Descending)[0].name} else {"Aero"}
+$%APP_SHORT%_StartIn = $%APP_SHORT%_TargetPath+$%APP_SHORT%_Name
+$%APP_SHORT%_TargetPath = $%APP_SHORT%_StartIn+"\%APP_LONG%.exe"
+$%APP_SHORT%_Beta_TargetPath = "C:\Program Files\Adobe\"
+$%APP_SHORT%_Beta_Name = if (Test-Path -Path $%APP_SHORT%_Beta_StartIn) {(Get-ChildItem -Directory -Path $%APP_SHORT%_Beta_StartIn | Where-Object {$_.Name -match '^.*%APP_LONG%.*\(Beta\)'} | Sort-Object -Descending)[0].name} else {"Aero (Beta)"}
+$%APP_SHORT%_Beta_StartIn = $%APP_SHORT%_Beta_TargetPath+$%APP_SHORT%_Beta_Name
+$%APP_SHORT%_Beta_TargetPath = $%APP_SHORT%_Beta_StartIn+"\%APP_LONG%.exe"
+
+$%APP_SHORT%_TargetPath = "C:\Program Files\Adobe\"
+$%APP_SHORT%_Name = if (Test-Path -Path $%APP_SHORT%_TargetPath) {(Get-ChildItem -Directory -Path $%APP_SHORT%_TargetPath | Where-Object {$_.Name -match '^.*%APP_LONG%(?!.*\(Beta\)$)'} | Sort-Object -Descending)[0].name} else {"Aero"}
+$%APP_SHORT%_StartIn = $%APP_SHORT%_TargetPath+$%APP_SHORT%_Name
+$%APP_SHORT%_TargetPath = $%APP_SHORT%_StartIn+"\%APP_LONG%.exe"
+$%APP_SHORT%_Beta_TargetPath = "C:\Program Files\Adobe\"
+$%APP_SHORT%_Beta_Name = if (Test-Path -Path $%APP_SHORT%_Beta_StartIn) {(Get-ChildItem -Directory -Path $%APP_SHORT%_Beta_StartIn | Where-Object {$_.Name -match '^.*%APP_LONG%.*\(Beta\)'} | Sort-Object -Descending)[0].name} else {"Aero (Beta)"}
+$%APP_SHORT%_Beta_StartIn = $%APP_SHORT%_Beta_TargetPath+$%APP_SHORT%_Beta_Name
+$%APP_SHORT%_Beta_TargetPath = $%APP_SHORT%_Beta_StartIn+"\%APP_LONG%.exe"
+
+$%APP_SHORT%_TargetPath = "C:\Program Files\Adobe\"
+$%APP_SHORT%_Name = if (Test-Path -Path $%APP_SHORT%_TargetPath) {(Get-ChildItem -Directory -Path $%APP_SHORT%_TargetPath | Where-Object {$_.Name -match '^.*%APP_LONG%(?!.*\(Beta\)$)'} | Sort-Object -Descending)[0].name} else {"Aero"}
+$%APP_SHORT%_StartIn = $%APP_SHORT%_TargetPath+$%APP_SHORT%_Name
+$%APP_SHORT%_TargetPath = $%APP_SHORT%_StartIn+"\%APP_LONG%.exe"
+$%APP_SHORT%_Beta_TargetPath = "C:\Program Files\Adobe\"
+$%APP_SHORT%_Beta_Name = if (Test-Path -Path $%APP_SHORT%_Beta_StartIn) {(Get-ChildItem -Directory -Path $%APP_SHORT%_Beta_StartIn | Where-Object {$_.Name -match '^.*%APP_LONG%.*\(Beta\)'} | Sort-Object -Descending)[0].name} else {"Aero (Beta)"}
+$%APP_SHORT%_Beta_StartIn = $%APP_SHORT%_Beta_TargetPath+$%APP_SHORT%_Beta_Name
+$%APP_SHORT%_Beta_TargetPath = $%APP_SHORT%_Beta_StartIn+"\%APP_LONG%.exe"
+
+$%APP_SHORT%_TargetPath = "C:\Program Files\Adobe\"
+$%APP_SHORT%_Name = if (Test-Path -Path $%APP_SHORT%_TargetPath) {(Get-ChildItem -Directory -Path $%APP_SHORT%_TargetPath | Where-Object {$_.Name -match '^.*%APP_LONG%(?!.*\(Beta\)$)'} | Sort-Object -Descending)[0].name} else {"Aero"}
+$%APP_SHORT%_StartIn = $%APP_SHORT%_TargetPath+$%APP_SHORT%_Name
+$%APP_SHORT%_TargetPath = $%APP_SHORT%_StartIn+"\%APP_LONG%.exe"
+$%APP_SHORT%_Beta_TargetPath = "C:\Program Files\Adobe\"
+$%APP_SHORT%_Beta_Name = if (Test-Path -Path $%APP_SHORT%_Beta_StartIn) {(Get-ChildItem -Directory -Path $%APP_SHORT%_Beta_StartIn | Where-Object {$_.Name -match '^.*%APP_LONG%.*\(Beta\)'} | Sort-Object -Descending)[0].name} else {"Aero (Beta)"}
+$%APP_SHORT%_Beta_StartIn = $%APP_SHORT%_Beta_TargetPath+$%APP_SHORT%_Beta_Name
+$%APP_SHORT%_Beta_TargetPath = $%APP_SHORT%_Beta_StartIn+"\%APP_LONG%.exe"
+
+$%APP_SHORT%_TargetPath = "C:\Program Files\Adobe\"
+$%APP_SHORT%_Name = if (Test-Path -Path $%APP_SHORT%_TargetPath) {(Get-ChildItem -Directory -Path $%APP_SHORT%_TargetPath | Where-Object {$_.Name -match '^.*%APP_LONG%(?!.*\(Beta\)$)'} | Sort-Object -Descending)[0].name} else {"Aero"}
+$%APP_SHORT%_StartIn = $%APP_SHORT%_TargetPath+$%APP_SHORT%_Name
+$%APP_SHORT%_TargetPath = $%APP_SHORT%_StartIn+"\%APP_LONG%.exe"
+$%APP_SHORT%_Beta_TargetPath = "C:\Program Files\Adobe\"
+$%APP_SHORT%_Beta_Name = if (Test-Path -Path $%APP_SHORT%_Beta_StartIn) {(Get-ChildItem -Directory -Path $%APP_SHORT%_Beta_StartIn | Where-Object {$_.Name -match '^.*%APP_LONG%.*\(Beta\)'} | Sort-Object -Descending)[0].name} else {"Aero (Beta)"}
+$%APP_SHORT%_Beta_StartIn = $%APP_SHORT%_Beta_TargetPath+$%APP_SHORT%_Beta_Name
+$%APP_SHORT%_Beta_TargetPath = $%APP_SHORT%_Beta_StartIn+"\%APP_LONG%.exe"
+
+$%APP_SHORT%_TargetPath = "C:\Program Files\Adobe\"
+$%APP_SHORT%_Name = if (Test-Path -Path $%APP_SHORT%_TargetPath) {(Get-ChildItem -Directory -Path $%APP_SHORT%_TargetPath | Where-Object {$_.Name -match '^.*%APP_LONG%(?!.*\(Beta\)$)'} | Sort-Object -Descending)[0].name} else {"Aero"}
+$%APP_SHORT%_StartIn = $%APP_SHORT%_TargetPath+$%APP_SHORT%_Name
+$%APP_SHORT%_TargetPath = $%APP_SHORT%_StartIn+"\%APP_LONG%.exe"
+$%APP_SHORT%_Beta_TargetPath = "C:\Program Files\Adobe\"
+$%APP_SHORT%_Beta_Name = if (Test-Path -Path $%APP_SHORT%_Beta_StartIn) {(Get-ChildItem -Directory -Path $%APP_SHORT%_Beta_StartIn | Where-Object {$_.Name -match '^.*%APP_LONG%.*\(Beta\)'} | Sort-Object -Descending)[0].name} else {"Aero (Beta)"}
+$%APP_SHORT%_Beta_StartIn = $%APP_SHORT%_Beta_TargetPath+$%APP_SHORT%_Beta_Name
+$%APP_SHORT%_Beta_TargetPath = $%APP_SHORT%_Beta_StartIn+"\%APP_LONG%.exe"
+
+$%APP_SHORT%_TargetPath = "C:\Program Files\Adobe\"
+$%APP_SHORT%_Name = if (Test-Path -Path $%APP_SHORT%_TargetPath) {(Get-ChildItem -Directory -Path $%APP_SHORT%_TargetPath | Where-Object {$_.Name -match '^.*%APP_LONG%(?!.*\(Beta\)$)'} | Sort-Object -Descending)[0].name} else {"Aero"}
+$%APP_SHORT%_StartIn = $%APP_SHORT%_TargetPath+$%APP_SHORT%_Name
+$%APP_SHORT%_TargetPath = $%APP_SHORT%_StartIn+"\%APP_LONG%.exe"
+$%APP_SHORT%_Beta_TargetPath = "C:\Program Files\Adobe\"
+$%APP_SHORT%_Beta_Name = if (Test-Path -Path $%APP_SHORT%_Beta_StartIn) {(Get-ChildItem -Directory -Path $%APP_SHORT%_Beta_StartIn | Where-Object {$_.Name -match '^.*%APP_LONG%.*\(Beta\)'} | Sort-Object -Descending)[0].name} else {"Aero (Beta)"}
+$%APP_SHORT%_Beta_StartIn = $%APP_SHORT%_Beta_TargetPath+$%APP_SHORT%_Beta_Name
+$%APP_SHORT%_Beta_TargetPath = $%APP_SHORT%_Beta_StartIn+"\%APP_LONG%.exe"
+
+$%APP_SHORT%_TargetPath = "C:\Program Files\Adobe\"
+$%APP_SHORT%_Name = if (Test-Path -Path $%APP_SHORT%_TargetPath) {(Get-ChildItem -Directory -Path $%APP_SHORT%_TargetPath | Where-Object {$_.Name -match '^.*%APP_LONG%(?!.*\(Beta\)$)'} | Sort-Object -Descending)[0].name} else {"Aero"}
+$%APP_SHORT%_StartIn = $%APP_SHORT%_TargetPath+$%APP_SHORT%_Name
+$%APP_SHORT%_TargetPath = $%APP_SHORT%_StartIn+"\%APP_LONG%.exe"
+$%APP_SHORT%_Beta_TargetPath = "C:\Program Files\Adobe\"
+$%APP_SHORT%_Beta_Name = if (Test-Path -Path $%APP_SHORT%_Beta_StartIn) {(Get-ChildItem -Directory -Path $%APP_SHORT%_Beta_StartIn | Where-Object {$_.Name -match '^.*%APP_LONG%.*\(Beta\)'} | Sort-Object -Descending)[0].name} else {"Aero (Beta)"}
+$%APP_SHORT%_Beta_StartIn = $%APP_SHORT%_Beta_TargetPath+$%APP_SHORT%_Beta_Name
+$%APP_SHORT%_Beta_TargetPath = $%APP_SHORT%_Beta_StartIn+"\%APP_LONG%.exe"
+
+$%APP_SHORT%_TargetPath = "C:\Program Files\Adobe\"
+$%APP_SHORT%_Name = if (Test-Path -Path $%APP_SHORT%_TargetPath) {(Get-ChildItem -Directory -Path $%APP_SHORT%_TargetPath | Where-Object {$_.Name -match '^.*%APP_LONG%(?!.*\(Beta\)$)'} | Sort-Object -Descending)[0].name} else {"Aero"}
+$%APP_SHORT%_StartIn = $%APP_SHORT%_TargetPath+$%APP_SHORT%_Name
+$%APP_SHORT%_TargetPath = $%APP_SHORT%_StartIn+"\%APP_LONG%.exe"
+$%APP_SHORT%_Beta_TargetPath = "C:\Program Files\Adobe\"
+$%APP_SHORT%_Beta_Name = if (Test-Path -Path $%APP_SHORT%_Beta_StartIn) {(Get-ChildItem -Directory -Path $%APP_SHORT%_Beta_StartIn | Where-Object {$_.Name -match '^.*%APP_LONG%.*\(Beta\)'} | Sort-Object -Descending)[0].name} else {"Aero (Beta)"}
+$%APP_SHORT%_Beta_StartIn = $%APP_SHORT%_Beta_TargetPath+$%APP_SHORT%_Beta_Name
+$%APP_SHORT%_Beta_TargetPath = $%APP_SHORT%_Beta_StartIn+"\%APP_LONG%.exe"
+
+$%APP_SHORT%_TargetPath = "C:\Program Files\Adobe\"
+$%APP_SHORT%_Name = if (Test-Path -Path $%APP_SHORT%_TargetPath) {(Get-ChildItem -Directory -Path $%APP_SHORT%_TargetPath | Where-Object {$_.Name -match '^.*%APP_LONG%(?!.*\(Beta\)$)'} | Sort-Object -Descending)[0].name} else {"Aero"}
+$%APP_SHORT%_StartIn = $%APP_SHORT%_TargetPath+$%APP_SHORT%_Name
+$%APP_SHORT%_TargetPath = $%APP_SHORT%_StartIn+"\%APP_LONG%.exe"
+$%APP_SHORT%_Beta_TargetPath = "C:\Program Files\Adobe\"
+$%APP_SHORT%_Beta_Name = if (Test-Path -Path $%APP_SHORT%_Beta_StartIn) {(Get-ChildItem -Directory -Path $%APP_SHORT%_Beta_StartIn | Where-Object {$_.Name -match '^.*%APP_LONG%.*\(Beta\)'} | Sort-Object -Descending)[0].name} else {"Aero (Beta)"}
+$%APP_SHORT%_Beta_StartIn = $%APP_SHORT%_Beta_TargetPath+$%APP_SHORT%_Beta_Name
+$%APP_SHORT%_Beta_TargetPath = $%APP_SHORT%_Beta_StartIn+"\%APP_LONG%.exe"
+
+$%APP_SHORT%_TargetPath = "C:\Program Files\Adobe\"
+$%APP_SHORT%_Name = if (Test-Path -Path $%APP_SHORT%_TargetPath) {(Get-ChildItem -Directory -Path $%APP_SHORT%_TargetPath | Where-Object {$_.Name -match '^.*%APP_LONG%(?!.*\(Beta\)$)'} | Sort-Object -Descending)[0].name} else {"Aero"}
+$%APP_SHORT%_StartIn = $%APP_SHORT%_TargetPath+$%APP_SHORT%_Name
+$%APP_SHORT%_TargetPath = $%APP_SHORT%_StartIn+"\%APP_LONG%.exe"
+$%APP_SHORT%_Beta_TargetPath = "C:\Program Files\Adobe\"
+$%APP_SHORT%_Beta_Name = if (Test-Path -Path $%APP_SHORT%_Beta_StartIn) {(Get-ChildItem -Directory -Path $%APP_SHORT%_Beta_StartIn | Where-Object {$_.Name -match '^.*%APP_LONG%.*\(Beta\)'} | Sort-Object -Descending)[0].name} else {"Aero (Beta)"}
+$%APP_SHORT%_Beta_StartIn = $%APP_SHORT%_Beta_TargetPath+$%APP_SHORT%_Beta_Name
+$%APP_SHORT%_Beta_TargetPath = $%APP_SHORT%_Beta_StartIn+"\%APP_LONG%.exe"
+
+$%APP_SHORT%_TargetPath = "C:\Program Files\Adobe\"
+$%APP_SHORT%_Name = if (Test-Path -Path $%APP_SHORT%_TargetPath) {(Get-ChildItem -Directory -Path $%APP_SHORT%_TargetPath | Where-Object {$_.Name -match '^.*%APP_LONG%(?!.*\(Beta\)$)'} | Sort-Object -Descending)[0].name} else {"Aero"}
+$%APP_SHORT%_StartIn = $%APP_SHORT%_TargetPath+$%APP_SHORT%_Name
+$%APP_SHORT%_TargetPath = $%APP_SHORT%_StartIn+"\%APP_LONG%.exe"
+$%APP_SHORT%_Beta_TargetPath = "C:\Program Files\Adobe\"
+$%APP_SHORT%_Beta_Name = if (Test-Path -Path $%APP_SHORT%_Beta_StartIn) {(Get-ChildItem -Directory -Path $%APP_SHORT%_Beta_StartIn | Where-Object {$_.Name -match '^.*%APP_LONG%.*\(Beta\)'} | Sort-Object -Descending)[0].name} else {"Aero (Beta)"}
+$%APP_SHORT%_Beta_StartIn = $%APP_SHORT%_Beta_TargetPath+$%APP_SHORT%_Beta_Name
+$%APP_SHORT%_Beta_TargetPath = $%APP_SHORT%_Beta_StartIn+"\%APP_LONG%.exe"
+
+$%APP_SHORT%_TargetPath = "C:\Program Files\Adobe\"
+$%APP_SHORT%_Name = if (Test-Path -Path $%APP_SHORT%_TargetPath) {(Get-ChildItem -Directory -Path $%APP_SHORT%_TargetPath | Where-Object {$_.Name -match '^.*%APP_LONG%(?!.*\(Beta\)$)'} | Sort-Object -Descending)[0].name} else {"Aero"}
+$%APP_SHORT%_StartIn = $%APP_SHORT%_TargetPath+$%APP_SHORT%_Name
+$%APP_SHORT%_TargetPath = $%APP_SHORT%_StartIn+"\%APP_LONG%.exe"
+$%APP_SHORT%_Beta_TargetPath = "C:\Program Files\Adobe\"
+$%APP_SHORT%_Beta_Name = if (Test-Path -Path $%APP_SHORT%_Beta_StartIn) {(Get-ChildItem -Directory -Path $%APP_SHORT%_Beta_StartIn | Where-Object {$_.Name -match '^.*%APP_LONG%.*\(Beta\)'} | Sort-Object -Descending)[0].name} else {"Aero (Beta)"}
+$%APP_SHORT%_Beta_StartIn = $%APP_SHORT%_Beta_TargetPath+$%APP_SHORT%_Beta_Name
+$%APP_SHORT%_Beta_TargetPath = $%APP_SHORT%_Beta_StartIn+"\%APP_LONG%.exe"
+
+$%APP_SHORT%_TargetPath = "C:\Program Files\Adobe\"
+$%APP_SHORT%_Name = if (Test-Path -Path $%APP_SHORT%_TargetPath) {(Get-ChildItem -Directory -Path $%APP_SHORT%_TargetPath | Where-Object {$_.Name -match '^.*%APP_LONG%(?!.*\(Beta\)$)'} | Sort-Object -Descending)[0].name} else {"Aero"}
+$%APP_SHORT%_StartIn = $%APP_SHORT%_TargetPath+$%APP_SHORT%_Name
+$%APP_SHORT%_TargetPath = $%APP_SHORT%_StartIn+"\%APP_LONG%.exe"
+$%APP_SHORT%_Beta_TargetPath = "C:\Program Files\Adobe\"
+$%APP_SHORT%_Beta_Name = if (Test-Path -Path $%APP_SHORT%_Beta_StartIn) {(Get-ChildItem -Directory -Path $%APP_SHORT%_Beta_StartIn | Where-Object {$_.Name -match '^.*%APP_LONG%.*\(Beta\)'} | Sort-Object -Descending)[0].name} else {"Aero (Beta)"}
+$%APP_SHORT%_Beta_StartIn = $%APP_SHORT%_Beta_TargetPath+$%APP_SHORT%_Beta_Name
+$%APP_SHORT%_Beta_TargetPath = $%APP_SHORT%_Beta_StartIn+"\%APP_LONG%.exe"
+
+$%APP_SHORT%_TargetPath = "C:\Program Files\Adobe\"
+$%APP_SHORT%_Name = if (Test-Path -Path $%APP_SHORT%_TargetPath) {(Get-ChildItem -Directory -Path $%APP_SHORT%_TargetPath | Where-Object {$_.Name -match '^.*%APP_LONG%(?!.*\(Beta\)$)'} | Sort-Object -Descending)[0].name} else {"Aero"}
+$%APP_SHORT%_StartIn = $%APP_SHORT%_TargetPath+$%APP_SHORT%_Name
+$%APP_SHORT%_TargetPath = $%APP_SHORT%_StartIn+"\%APP_LONG%.exe"
+$%APP_SHORT%_Beta_TargetPath = "C:\Program Files\Adobe\"
+$%APP_SHORT%_Beta_Name = if (Test-Path -Path $%APP_SHORT%_Beta_StartIn) {(Get-ChildItem -Directory -Path $%APP_SHORT%_Beta_StartIn | Where-Object {$_.Name -match '^.*%APP_LONG%.*\(Beta\)'} | Sort-Object -Descending)[0].name} else {"Aero (Beta)"}
+$%APP_SHORT%_Beta_StartIn = $%APP_SHORT%_Beta_TargetPath+$%APP_SHORT%_Beta_Name
+$%APP_SHORT%_Beta_TargetPath = $%APP_SHORT%_Beta_StartIn+"\%APP_LONG%.exe"
+
+$%APP_SHORT%_TargetPath = "C:\Program Files\Adobe\"
+$%APP_SHORT%_Name = if (Test-Path -Path $%APP_SHORT%_TargetPath) {(Get-ChildItem -Directory -Path $%APP_SHORT%_TargetPath | Where-Object {$_.Name -match '^.*%APP_LONG%(?!.*\(Beta\)$)'} | Sort-Object -Descending)[0].name} else {"Aero"}
+$%APP_SHORT%_StartIn = $%APP_SHORT%_TargetPath+$%APP_SHORT%_Name
+$%APP_SHORT%_TargetPath = $%APP_SHORT%_StartIn+"\%APP_LONG%.exe"
+$%APP_SHORT%_Beta_TargetPath = "C:\Program Files\Adobe\"
+$%APP_SHORT%_Beta_Name = if (Test-Path -Path $%APP_SHORT%_Beta_StartIn) {(Get-ChildItem -Directory -Path $%APP_SHORT%_Beta_StartIn | Where-Object {$_.Name -match '^.*%APP_LONG%.*\(Beta\)'} | Sort-Object -Descending)[0].name} else {"Aero (Beta)"}
+$%APP_SHORT%_Beta_StartIn = $%APP_SHORT%_Beta_TargetPath+$%APP_SHORT%_Beta_Name
+$%APP_SHORT%_Beta_TargetPath = $%APP_SHORT%_Beta_StartIn+"\%APP_LONG%.exe"
+
+$%APP_SHORT%_TargetPath = "C:\Program Files\Adobe\"
+$%APP_SHORT%_Name = if (Test-Path -Path $%APP_SHORT%_TargetPath) {(Get-ChildItem -Directory -Path $%APP_SHORT%_TargetPath | Where-Object {$_.Name -match '^.*%APP_LONG%(?!.*\(Beta\)$)'} | Sort-Object -Descending)[0].name} else {"Aero"}
+$%APP_SHORT%_StartIn = $%APP_SHORT%_TargetPath+$%APP_SHORT%_Name
+$%APP_SHORT%_TargetPath = $%APP_SHORT%_StartIn+"\%APP_LONG%.exe"
+$%APP_SHORT%_Beta_TargetPath = "C:\Program Files\Adobe\"
+$%APP_SHORT%_Beta_Name = if (Test-Path -Path $%APP_SHORT%_Beta_StartIn) {(Get-ChildItem -Directory -Path $%APP_SHORT%_Beta_StartIn | Where-Object {$_.Name -match '^.*%APP_LONG%.*\(Beta\)'} | Sort-Object -Descending)[0].name} else {"Aero (Beta)"}
+$%APP_SHORT%_Beta_StartIn = $%APP_SHORT%_Beta_TargetPath+$%APP_SHORT%_Beta_Name
+$%APP_SHORT%_Beta_TargetPath = $%APP_SHORT%_Beta_StartIn+"\%APP_LONG%.exe"
+
+$%APP_SHORT%_TargetPath = "C:\Program Files\Adobe\"
+$%APP_SHORT%_Name = if (Test-Path -Path $%APP_SHORT%_TargetPath) {(Get-ChildItem -Directory -Path $%APP_SHORT%_TargetPath | Where-Object {$_.Name -match '^.*%APP_LONG%(?!.*\(Beta\)$)'} | Sort-Object -Descending)[0].name} else {"Aero"}
+$%APP_SHORT%_StartIn = $%APP_SHORT%_TargetPath+$%APP_SHORT%_Name
+$%APP_SHORT%_TargetPath = $%APP_SHORT%_StartIn+"\%APP_LONG%.exe"
+$%APP_SHORT%_Beta_TargetPath = "C:\Program Files\Adobe\"
+$%APP_SHORT%_Beta_Name = if (Test-Path -Path $%APP_SHORT%_Beta_StartIn) {(Get-ChildItem -Directory -Path $%APP_SHORT%_Beta_StartIn | Where-Object {$_.Name -match '^.*%APP_LONG%.*\(Beta\)'} | Sort-Object -Descending)[0].name} else {"Aero (Beta)"}
+$%APP_SHORT%_Beta_StartIn = $%APP_SHORT%_Beta_TargetPath+$%APP_SHORT%_Beta_Name
+$%APP_SHORT%_Beta_TargetPath = $%APP_SHORT%_Beta_StartIn+"\%APP_LONG%.exe"
+
+$%APP_SHORT%_TargetPath = "C:\Program Files\Adobe\"
+$%APP_SHORT%_Name = if (Test-Path -Path $%APP_SHORT%_TargetPath) {(Get-ChildItem -Directory -Path $%APP_SHORT%_TargetPath | Where-Object {$_.Name -match '^.*%APP_LONG%(?!.*\(Beta\)$)'} | Sort-Object -Descending)[0].name} else {"Aero"}
+$%APP_SHORT%_StartIn = $%APP_SHORT%_TargetPath+$%APP_SHORT%_Name
+$%APP_SHORT%_TargetPath = $%APP_SHORT%_StartIn+"\%APP_LONG%.exe"
+$%APP_SHORT%_Beta_TargetPath = "C:\Program Files\Adobe\"
+$%APP_SHORT%_Beta_Name = if (Test-Path -Path $%APP_SHORT%_Beta_StartIn) {(Get-ChildItem -Directory -Path $%APP_SHORT%_Beta_StartIn | Where-Object {$_.Name -match '^.*%APP_LONG%.*\(Beta\)'} | Sort-Object -Descending)[0].name} else {"Aero (Beta)"}
+$%APP_SHORT%_Beta_StartIn = $%APP_SHORT%_Beta_TargetPath+$%APP_SHORT%_Beta_Name
+$%APP_SHORT%_Beta_TargetPath = $%APP_SHORT%_Beta_StartIn+"\%APP_LONG%.exe"
+
+$%APP_SHORT%_TargetPath = "C:\Program Files\Adobe\"
+$%APP_SHORT%_Name = if (Test-Path -Path $%APP_SHORT%_TargetPath) {(Get-ChildItem -Directory -Path $%APP_SHORT%_TargetPath | Where-Object {$_.Name -match '^.*%APP_LONG%(?!.*\(Beta\)$)'} | Sort-Object -Descending)[0].name} else {"Aero"}
+$%APP_SHORT%_StartIn = $%APP_SHORT%_TargetPath+$%APP_SHORT%_Name
+$%APP_SHORT%_TargetPath = $%APP_SHORT%_StartIn+"\%APP_LONG%.exe"
+$%APP_SHORT%_Beta_TargetPath = "C:\Program Files\Adobe\"
+$%APP_SHORT%_Beta_Name = if (Test-Path -Path $%APP_SHORT%_Beta_StartIn) {(Get-ChildItem -Directory -Path $%APP_SHORT%_Beta_StartIn | Where-Object {$_.Name -match '^.*%APP_LONG%.*\(Beta\)'} | Sort-Object -Descending)[0].name} else {"Aero (Beta)"}
+$%APP_SHORT%_Beta_StartIn = $%APP_SHORT%_Beta_TargetPath+$%APP_SHORT%_Beta_Name
+$%APP_SHORT%_Beta_TargetPath = $%APP_SHORT%_Beta_StartIn+"\%APP_LONG%.exe" #>
+
 # GIMP
 $GIMP_TargetPath = "C:\Program Files\"
 $GIMP_FindFolder = (Get-ChildItem -Directory -Path $GIMP_TargetPath | Where-Object {$_.Name -match '^GIMP'} | Sort-Object -Descending)[0].name
@@ -369,12 +575,58 @@ $sys3rdPartyAppList = @(
   @{Name="7-Zip File Manager (32-bit)"; TargetPath="C:\Program Files (x86)\7-Zip\7zFM.exe"; SystemLnk="7-Zip\"},
   @{Name="7-Zip Help"; TargetPath="C:\Program Files (x86)\7-Zip\7-zip.chm"; SystemLnk="7-Zip\"},
   # Adobe
-  @{Name="Adobe Creative Cloud"; TargetPath="C:\Program Files\Adobe\Adobe Creative Cloud\ACC\Creative Cloud.exe"},
-  @{Name="Adobe Creative Cloud (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Adobe Creative Cloud\ACC\Creative Cloud.exe"},
-  @{Name="Adobe UXP Developer Tool"; TargetPath="C:\Program Files\Adobe\Adobe UXP Developer Tool\Adobe UXP Developer Tool.exe"; StartIn="C:\Program Files\Adobe\Adobe UXP Developer Tool"},
-  @{Name="Adobe UXP Developer Tool (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Adobe UXP Developer Tool\Adobe UXP Developer Tool.exe"; StartIn="C:\Program Files (x86)\Adobe\Adobe UXP Developer Tool"},
   @{Name="Adobe Acrobat"; TargetPath="C:\Program Files\Adobe\Acrobat DC\Acrobat\Acrobat.exe"},
   @{Name="Adobe Acrobat Distiller"; TargetPath="C:\Program Files\Adobe\Acrobat DC\Acrobat\acrodist.exe"},
+  @{Name="Adobe Creative Cloud"; TargetPath="C:\Program Files\Adobe\Adobe Creative Cloud\ACC\Creative Cloud.exe"},
+  @{Name=$Aero_Name; TargetPath=$Aero_TargetPath; StartIn=$Aero_StartIn},
+  @{Name=$Aero_Beta_Name; TargetPath=$Aero_Beta_TargetPath; StartIn=$Aero_Beta_StartIn},
+<#   @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""}, #>
+  @{Name="Adobe UXP Developer Tool"; TargetPath="C:\Program Files\Adobe\Adobe UXP Developer Tool\Adobe UXP Developer Tool.exe"; StartIn="C:\Program Files\Adobe\Adobe UXP Developer Tool"},
   @{Name="Adobe Acrobat (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Acrobat DC\Acrobat\Acrobat.exe"},
   @{Name="Adobe Acrobat Distiller (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Acrobat DC\Acrobat\acrodist.exe"},
   @{Name="Adobe Acrobat Reader"; TargetPath="C:\Program Files\Adobe\Acrobat Reader DC\Reader\AcroRd32.exe"}, # old version; it's the only install on 32-bit
@@ -655,7 +907,7 @@ for ($i = 0; $i -lt $Users.length; $i++) {
   # Microsoft
   $AzureIoTExplorerPreview_TargetPath = "C:\Users\${aUser}\AppData\Local\Programs\azure-iot-explorer\Azure IoT Explorer Preview.exe"
   $AzureIoTExplorer_TargetPath = if (Test-Path -Path $AzureIoTExplorerPreview_TargetPath -PathType Leaf) {$AzureIoTExplorerPreview_TargetPath} else {"C:\Users\${aUser}\AppData\Local\Programs\azure-iot-explorer\Azure IoT Explorer.exe"}
-  $AzureIoTExplorer_Name = "Azure IoT Explorer"$(if (Test-Path -Path $AzureIoTExplorerPreview_TargetPath -PathType Leaf) {" Preview"})
+  $AzureIoTExplorer_Name = "Azure IoT Explorer"+$(if (Test-Path -Path $AzureIoTExplorerPreview_TargetPath -PathType Leaf) {" Preview"})
   # Python
   $Python_StartIn = "C:\Users\${aUser}\AppData\Local\Programs\Python\"
   $Python_FindFolder = if (Test-Path -Path $Python_StartIn) {(Get-ChildItem -Directory -Path $Python_StartIn | Where-Object {$_.Name -match '^Python[.0-9]+$'} | Sort-Object -Descending)[0].name}
