@@ -233,7 +233,7 @@ $sysAppList = @(
   @{Name=$WindowsMediaPlayerOld_Name; TargetPath="%ProgramFiles(x86)%\Windows Media Player\wmplayer.exe"; Arguments="/prefetch:1"; SystemLnk="Accessories\"; StartIn="%ProgramFiles(x86)%\Windows Media Player"}, # it's the only install on 64-bit
   @{Name="WordPad"; TargetPath="%ProgramFiles%\Windows NT\Accessories\wordpad.exe"; SystemLnk="Accessories\"; Description="Creates and edits text documents with complex formatting."},
   @{Name="Character Map"; TargetPath="%windir%\system32\charmap.exe"; SystemLnk="Accessories\System Tools\"; Description="Selects special characters and copies them to your document."}
-#  @{Name=""; TargetPath=""; Arguments=""; SystemLnk=""; StartIn=""; Description=""; RunAsAdmin=($true|$false)}
+#  @{Name=""; TargetPath=""; Arguments=""; SystemLnk=""; StartIn=""; Description=""; RunAsAdmin=($true|$false)},
 )
 
 for ($i = 0; $i -lt $sysAppList.length; $i++) {
@@ -270,7 +270,7 @@ $oemSysAppList = @(
   @{Name="SupportAssist Recovery Assistant"; TargetPath="C:\Program Files\Dell\SARemediation\postosri\osrecoveryagent.exe"; SystemLnk="Dell\SupportAssist\"},
   # NVIDIA Corporation
   @{Name="GeForce Experience"; TargetPath="C:\Program Files\NVIDIA Corporation\NVIDIA GeForce Experience\NVIDIA GeForce Experience.exe"; SystemLnk="NVIDIA Corporation\"; StartIn="C:\Program Files\NVIDIA Corporation\NVIDIA GeForce Experience"}
-#  @{Name=""; TargetPath=""; Arguments=""; SystemLnk=""; StartIn=""; Description=""; RunAsAdmin=($true|$false)}
+#  @{Name=""; TargetPath=""; Arguments=""; SystemLnk=""; StartIn=""; Description=""; RunAsAdmin=($true|$false)},
 )
 
 for ($i = 0; $i -lt $oemSysAppList.length; $i++) {
@@ -448,7 +448,7 @@ $sys3rdPartyAppList = @(
   @{Name="Winaero Website"; TargetPath="C:\Program Files\Winaero Tweaker\Winaero.url"; SystemLnk="Winaero Tweaker\"; StartIn="C:\Program Files\Winaero Tweaker"; Description="Winaero is about Windows 10 / 8 / 7 and covers all topics that will interest every Windows user."},
   # WinSCP
   @{Name="WinSCP"; TargetPath="C:\Program Files (x86)\WinSCP\WinSCP.exe"; StartIn="C:\Program Files (x86)\WinSCP"; Description="WinSCP: SFTP, FTP, WebDAV and SCP client"}
-#  @{Name=""; TargetPath=""; Arguments=""; SystemLnk=""; StartIn=""; Description=""; RunAsAdmin=($true|$false)}
+#  @{Name=""; TargetPath=""; Arguments=""; SystemLnk=""; StartIn=""; Description=""; RunAsAdmin=($true|$false)},
 )
 
 for ($i = 0; $i -lt $sys3rdPartyAppList.length; $i++) {
@@ -561,7 +561,7 @@ for ($i = 0; $i -lt $Users.length; $i++) {
     @{Name="Help (ENG)"; TargetPath="C:\Program Files (x86)\WinDirStat\windirstat.chm"; SystemLnk="WinDirStat\"; StartIn="C:\Program Files (x86)\WinDirStat"},
     @{Name="Uninstall WinDirStat"; TargetPath="C:\Program Files (x86)\WinDirStat\Uninstall.exe"; SystemLnk="WinDirStat\"; StartIn="C:\Program Files (x86)\WinDirStat"},
     @{Name="WinDirStat"; TargetPath="C:\Program Files (x86)\WinDirStat\windirstat.exe"; SystemLnk="WinDirStat\"; StartIn="C:\Program Files (x86)\WinDirStat"}
-  #  @{Name=""; TargetPath=""; Arguments=""; SystemLnk=""; StartIn=""; Description=""; RunAsAdmin=($true|$false)}
+  #  @{Name=""; TargetPath=""; Arguments=""; SystemLnk=""; StartIn=""; Description=""; RunAsAdmin=($true|$false)},
   )
 
   for ($j = 0; $j -lt $userAppList.length; $j++) {
