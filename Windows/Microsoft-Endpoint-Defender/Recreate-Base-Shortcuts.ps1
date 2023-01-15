@@ -176,36 +176,20 @@ $PowerShell_32bit_TargetPath += if ($PowerShell_32bit_Version) {"${PowerShell32b
 
 # App names dependant on OS or app version
 
-# Windows Accessories
-$WindowsMediaPlayerOld_Name = "Windows Media Player"+$(if ($isWindows11) {" Legacy"})
 # PowerShell (7 or newer)
 $PowerShell_Name = "PowerShell "+$(if ($PowerShell_Version) {$PowerShell_Version} else {$NotInstalled})+" (x64)"
 $PowerShell_32bit_Name = "PowerShell "+$(if ($PowerShell_Version) {$PowerShell_Version} else {$NotInstalled})+" (x86)"
 # PowerToys
 $PowerToys_Name = "PowerToys"+$(if (winget list -q "Microsoft.PowerToys" -e | Select-String "^PowerToys \(Preview\)") {" (Preview)"})
+# Windows Accessories
+$WindowsMediaPlayerOld_Name = "Windows Media Player"+$(if ($isWindows11) {" Legacy"})
 
 $sysAppList = @(
-  # Windows Accessories
-  @{Name="Remote Desktop Connection"; TargetPath="%windir%\system32\mstsc.exe"; SystemLnk="Accessories\"; StartIn="%windir%\system32\"; Description="Use your computer to connect to a computer that is located elsewhere and run programs or access files."},
-  @{Name="Steps Recorder"; TargetPath="%windir%\system32\psr.exe"; SystemLnk="Accessories\"; Description="Capture steps with screenshots to save or share."},
-  @{Name="Windows Fax and Scan"; TargetPath="%windir%\system32\WFS.exe"; SystemLnk="Accessories\"; Description="Send and receive faxes or scan pictures and documents."},
-  @{Name=$WindowsMediaPlayerOld_Name; TargetPath="%ProgramFiles%\Windows Media Player\wmplayer.exe"; Arguments="/prefetch:1"; SystemLnk="Accessories\"; StartIn="%ProgramFiles(x86)%\Windows Media Player"}, # it's the only install on 32-bit
-  @{Name=$WindowsMediaPlayerOld_Name; TargetPath="%ProgramFiles(x86)%\Windows Media Player\wmplayer.exe"; Arguments="/prefetch:1"; SystemLnk="Accessories\"; StartIn="%ProgramFiles(x86)%\Windows Media Player"}, # it's the only install on 64-bit
-  @{Name="WordPad"; TargetPath="%ProgramFiles%\Windows NT\Accessories\wordpad.exe"; SystemLnk="Accessories\"; Description="Creates and edits text documents with complex formatting."},
-  @{Name="Character Map"; TargetPath="%windir%\system32\charmap.exe"; SystemLnk="Accessories\System Tools\"; Description="Selects special characters and copies them to your document."},
   # Edge
   @{Name="Microsoft Edge"; TargetPath="C:\Program Files\Microsoft\Edge\Application\msedge.exe"; StartIn="C:\Program Files\Microsoft\Edge\Application"; Description="Browse the web"}, # it's the only install on 32-bit
   @{Name="Microsoft Edge"; TargetPath="C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"; StartIn="C:\Program Files (x86)\Microsoft\Edge\Application"; Description="Browse the web"}, # it's the only install on 64-bit
-  # PowerShell (7 or newer)
-  @{Name=$PowerShell_Name; TargetPath=$PowerShell_TargetPath; Arguments="-WorkingDirectory ~"; SystemLnk="PowerShell\"; Description=$PowerShell_Name},
-  @{Name=$PowerShell_32bit_Name; TargetPath=$PowerShell_32bit_TargetPath; Arguments="-WorkingDirectory ~"; SystemLnk="PowerShell\"; Description=$PowerShell_32bit_Name},
   # Intune Management Extension
   @{Name="Microsoft Intune Management Extension"; TargetPath="C:\Program Files (x86)\Microsoft Intune Management Extension\AgentExecutor.exe"; SystemLnk="Microsoft Intune Management Extension\"; Description="Microsoft Intune Management Extension"},
-  # PowerToys
-  @{Name=$PowerToys_Name; TargetPath="C:\Program Files\PowerToys\PowerToys.exe"; SystemLnk=$PowerToys_Name+'\'; StartIn="C:\Program Files\PowerToys\"; Description="PowerToys - Windows system utilities to maximize productivity"},
-  # OneDrive
-  @{Name="OneDrive"; TargetPath="C:\Program Files\Microsoft OneDrive\OneDrive.exe"; Description="Keep your most important files with you wherever you go, on any device."},
-  @{Name="OneDrive (32-bit)"; TargetPath="C:\Program Files (x86)\Microsoft OneDrive\OneDrive.exe"; Description="Keep your most important files with you wherever you go, on any device."},
   # Office
   @{Name="Access"; TargetPath="C:\Program Files\Microsoft Office\root\Office16\MSACCESS.EXE"; Description="Build a professional app quickly to manage data."},
   @{Name="Excel"; TargetPath="C:\Program Files\Microsoft Office\root\Office16\EXCEL.EXE"; Description="Easily discover, visualize, and share insights from your data."},
@@ -229,10 +213,26 @@ $sysAppList = @(
   @{Name="Office Language Preferences (32-bit)"; TargetPath="C:\Program Files (x86)\Microsoft Office\root\Office16\SETLANG.EXE"; SystemLnk="Microsoft Office Tools\"; Description="Change the language preferences for Office applications."},
   @{Name="Spreadsheet Compare (32-bit)"; TargetPath="C:\Program Files (x86)\Microsoft Office\root\Client\AppVLP.exe"; Arguments="`"C:\Program Files (x86)\Microsoft Office\Office16\DCF\SPREADSHEETCOMPARE.EXE`""; SystemLnk="Microsoft Office Tools\"; Description="Compare versions of an Excel workbook."},
   @{Name="Telemetry Log for Office (32-bit)"; TargetPath="C:\Program Files (x86)\Microsoft Office\root\Office16\msoev.exe"; SystemLnk="Microsoft Office Tools\"; Description="View critical errors, compatibility issues and workaround information for your Office solutions by using Office Telemetry Log."},
+  # OneDrive
+  @{Name="OneDrive"; TargetPath="C:\Program Files\Microsoft OneDrive\OneDrive.exe"; Description="Keep your most important files with you wherever you go, on any device."},
+  @{Name="OneDrive (32-bit)"; TargetPath="C:\Program Files (x86)\Microsoft OneDrive\OneDrive.exe"; Description="Keep your most important files with you wherever you go, on any device."},
+  # PowerShell (7 or newer)
+  @{Name=$PowerShell_Name; TargetPath=$PowerShell_TargetPath; Arguments="-WorkingDirectory ~"; SystemLnk="PowerShell\"; Description=$PowerShell_Name},
+  @{Name=$PowerShell_32bit_Name; TargetPath=$PowerShell_32bit_TargetPath; Arguments="-WorkingDirectory ~"; SystemLnk="PowerShell\"; Description=$PowerShell_32bit_Name},
+  # PowerToys
+  @{Name=$PowerToys_Name; TargetPath="C:\Program Files\PowerToys\PowerToys.exe"; SystemLnk=$PowerToys_Name+'\'; StartIn="C:\Program Files\PowerToys\"; Description="PowerToys - Windows system utilities to maximize productivity"},
   # Visual Studio
   @{Name="Visual Studio Installer"; TargetPath="C:\Program Files (x86)\Microsoft Visual Studio\Installer\setup.exe"; StartIn="C:\Program Files (x86)\Microsoft Visual Studio\Installer"},
   @{Name="Visual Studio Code"; TargetPath="C:\Program Files\Microsoft VS Code\Code.exe"; SystemLnk="Visual Studio Code\"; StartIn="C:\Program Files\Microsoft VS Code"},
-  @{Name="Visual Studio Code (32-bit)"; TargetPath="C:\Program Files (x86)\Microsoft VS Code\Code.exe"; SystemLnk="Visual Studio Code\"; StartIn="C:\Program Files\Microsoft VS Code"}
+  @{Name="Visual Studio Code (32-bit)"; TargetPath="C:\Program Files (x86)\Microsoft VS Code\Code.exe"; SystemLnk="Visual Studio Code\"; StartIn="C:\Program Files\Microsoft VS Code"},
+  # Windows Accessories
+  @{Name="Remote Desktop Connection"; TargetPath="%windir%\system32\mstsc.exe"; SystemLnk="Accessories\"; StartIn="%windir%\system32\"; Description="Use your computer to connect to a computer that is located elsewhere and run programs or access files."},
+  @{Name="Steps Recorder"; TargetPath="%windir%\system32\psr.exe"; SystemLnk="Accessories\"; Description="Capture steps with screenshots to save or share."},
+  @{Name="Windows Fax and Scan"; TargetPath="%windir%\system32\WFS.exe"; SystemLnk="Accessories\"; Description="Send and receive faxes or scan pictures and documents."},
+  @{Name=$WindowsMediaPlayerOld_Name; TargetPath="%ProgramFiles%\Windows Media Player\wmplayer.exe"; Arguments="/prefetch:1"; SystemLnk="Accessories\"; StartIn="%ProgramFiles(x86)%\Windows Media Player"}, # it's the only install on 32-bit
+  @{Name=$WindowsMediaPlayerOld_Name; TargetPath="%ProgramFiles(x86)%\Windows Media Player\wmplayer.exe"; Arguments="/prefetch:1"; SystemLnk="Accessories\"; StartIn="%ProgramFiles(x86)%\Windows Media Player"}, # it's the only install on 64-bit
+  @{Name="WordPad"; TargetPath="%ProgramFiles%\Windows NT\Accessories\wordpad.exe"; SystemLnk="Accessories\"; Description="Creates and edits text documents with complex formatting."},
+  @{Name="Character Map"; TargetPath="%windir%\system32\charmap.exe"; SystemLnk="Accessories\System Tools\"; Description="Selects special characters and copies them to your document."}
 #  @{Name=""; TargetPath=""; Arguments=""; SystemLnk=""; StartIn=""; Description=""; RunAsAdmin=($true|$false)}
 )
 
@@ -292,20 +292,19 @@ for ($i = 0; $i -lt $oemSysAppList.length; $i++) {
 
 # App paths dependant on app version
 
-# Google Drive
-$GoogleDrive_TargetPath = "C:\Program Files\Google\Drive File Stream\"
-$GoogleDrive_Version = if (Test-Path -Path $GoogleDrive_TargetPath) {(Get-ChildItem -Directory -Path $GoogleDrive_TargetPath | Where-Object {$_.Name -match '^[.0-9]+$'} | Sort-Object -Descending)[0].name}
-$GoogleDrive_TargetPath += if ($GoogleDrive_Version) {"${GoogleDrive_Version}\GoogleDriveFS.exe"} else {"${NotInstalled}\${NotInstalled}.exe"}
-# VPN By Google One
-$GoogleOneVPN_TargetPath = "C:\Program Files\Google\VPN by Google One\"
-$GoogleOneVPN_Version = if (Test-Path -Path $GoogleOneVPN_TargetPath) {(Get-ChildItem -Directory -Path $GoogleOneVPN_TargetPath | Where-Object {$_.Name -match '^[.0-9]+$'} | Sort-Object -Descending)[0].name}
-$GoogleOneVPN_TargetPath += if ($GoogleOneVPN_Version) {"${GoogleOneVPN_Version}\googleone.exe"} else {"${NotInstalled}\${NotInstalled}.exe"}
 # GIMP
 $GIMP_TargetPath = "C:\Program Files\"
 $GIMP_FindFolder = (Get-ChildItem -Directory -Path $GIMP_TargetPath | Where-Object {$_.Name -match '^GIMP'} | Sort-Object -Descending)[0].name
 $GIMP_TargetPath += if ($GIMP_FindFolder) {"${GIMP_FindFolder}\bin\"} else {"${NotInstalled}\${NotInstalled}\"}
 $GIMP_FindExe = if (Test-Path -Path $GIMP_TargetPath) {(Get-ChildItem -File -Path $GIMP_TargetPath | Where-Object {$_.Name -match '^gimp\-[.0-9]+exe$'} | Sort-Object -Descending)[0].name}
 $GIMP_TargetPath += if ($GIMP_FindExe) {$GIMP_FindExe} else {"${NotInstalled}.exe"}
+# Google
+$GoogleDrive_TargetPath = "C:\Program Files\Google\Drive File Stream\"
+$GoogleDrive_Version = if (Test-Path -Path $GoogleDrive_TargetPath) {(Get-ChildItem -Directory -Path $GoogleDrive_TargetPath | Where-Object {$_.Name -match '^[.0-9]+$'} | Sort-Object -Descending)[0].name}
+$GoogleDrive_TargetPath += if ($GoogleDrive_Version) {"${GoogleDrive_Version}\GoogleDriveFS.exe"} else {"${NotInstalled}\${NotInstalled}.exe"}
+$GoogleOneVPN_TargetPath = "C:\Program Files\Google\VPN by Google One\"
+$GoogleOneVPN_Version = if (Test-Path -Path $GoogleOneVPN_TargetPath) {(Get-ChildItem -Directory -Path $GoogleOneVPN_TargetPath | Where-Object {$_.Name -match '^[.0-9]+$'} | Sort-Object -Descending)[0].name}
+$GoogleOneVPN_TargetPath += if ($GoogleOneVPN_Version) {"${GoogleOneVPN_Version}\googleone.exe"} else {"${NotInstalled}\${NotInstalled}.exe"}
 # KeePass
 $KeePass_StartIn = "C:\Program Files\"
 $KeePass_FindFolder = (Get-ChildItem -Directory -Path $KeePass_StartIn | Where-Object {$_.Name -match '^KeePass Password Safe'} | Sort-Object -Descending)[0].name
@@ -322,37 +321,20 @@ $KeePass_Version = if ($KeePass_FileVersionRaw) {$KeePass_FileVersionRaw.Major} 
 $KeePass_Name = "KeePass ${KeePass_Version}"
 
 $sys3rdPartyAppList = @(
-  # Google
-  @{Name="Google Chrome"; TargetPath="C:\Program Files\Google\Chrome\Application\chrome.exe"; StartIn="C:\Program Files\Google\Chrome\Application"; Description="Access the Internet"},
-  @{Name="Google Chrome (32-bit)"; TargetPath="C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"; StartIn="C:\Program Files (x86)\Google\Chrome\Application"; Description="Access the Internet"},
-  @{Name="Google Drive"; TargetPath=$GoogleDrive_TargetPath; Description="Google Drive"},
-  @{Name="VPN by Google One"; TargetPath=$GoogleOneVPN_TargetPath; Description="VPN by Google One"},
-  # Mozilla
-  @{Name="Firefox"; TargetPath="C:\Program Files\Mozilla Firefox\firefox.exe"; StartIn="C:\Program Files\Mozilla Firefox"},
-  @{Name="Firefox Private Browsing"; TargetPath="C:\Program Files\Mozilla Firefox\private_browsing.exe"; StartIn="C:\Program Files\Mozilla Firefox"; Description="Firefox Private Browsing"},
-  @{Name="Firefox (32-bit)"; TargetPath="C:\Program Files (x86)\Mozilla Firefox\firefox.exe"; StartIn="C:\Program Files (x86)\Mozilla Firefox"},
-  @{Name="Firefox Private Browsing (32-bit)"; TargetPath="C:\Program Files (x86)\Mozilla Firefox\private_browsing.exe"; StartIn="C:\Program Files (x86)\Mozilla Firefox"; Description="Firefox Private Browsing"},
-  @{Name="Thunderbird"; TargetPath="C:\Program Files\Mozilla Thunderbird\thunderbird.exe"; StartIn="C:\Program Files\Mozilla Thunderbird"},
   # 7-Zip
   @{Name="7-Zip File Manager"; TargetPath="C:\Program Files\7-Zip\7zFM.exe"; SystemLnk="7-Zip\"},
   @{Name="7-Zip Help"; TargetPath="C:\Program Files\7-Zip\7-zip.chm"; SystemLnk="7-Zip\"},
   @{Name="7-Zip File Manager (32-bit)"; TargetPath="C:\Program Files (x86)\7-Zip\7zFM.exe"; SystemLnk="7-Zip\"},
   @{Name="7-Zip Help"; TargetPath="C:\Program Files (x86)\7-Zip\7-zip.chm"; SystemLnk="7-Zip\"},
-  # GIMP
-  @{Name=$GIMP_Name; TargetPath=$GIMP_TargetPath; StartIn="%USERPROFILE%"; Description=$GIMP_Name},
+  # Adobe Acrobat
+  @{Name="Adobe Acrobat"; TargetPath="C:\Program Files\Adobe\Acrobat DC\Acrobat\Acrobat.exe"},
+  @{Name="Adobe Acrobat (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Acrobat DC\Acrobat\Acrobat.exe"},
+  @{Name="Adobe Acrobat Reader (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Acrobat Reader DC\Reader\AcroRd32.exe"},
+  # Altair Monarch
+  @{Name="Altair Monarch 2021"; TargetPath="C:\Program Files\Altair Monarch 2021\DWMonarch.exe"; SystemLnk="Altair Monarch 2021\"},
+  @{Name="Altair Monarch 2020"; TargetPath="C:\Program Files\Altair Monarch 2020\DWMonarch.exe"; SystemLnk="Altair Monarch 2020\"},
   # Audacity
   @{Name="Audacity"; TargetPath="C:\Program Files\Audacity\Audacity.exe"; StartIn="C:\Program Files\Audacity"},
-  # Kdenlive
-  @{Name="Kdenlive"; TargetPath="C:\Program Files\kdenlive\bin\kdenlive.exe"; StartIn="{workingDirectory}"; Description="Libre Video Editor, by KDE community"},
-  # VideoLAN
-  @{Name="Documentation"; TargetPath="C:\Program Files\VideoLAN\VLC\Documentation.url"; SystemLnk="VideoLAN\"; StartIn="C:\Program Files\VideoLAN\VLC"},
-  @{Name="Release Notes"; TargetPath="C:\Program Files\VideoLAN\VLC\NEWS.txt"; SystemLnk="VideoLAN\"; StartIn="C:\Program Files\VideoLAN\VLC"},
-  @{Name="VideoLAN Website"; TargetPath="C:\Program Files\VideoLAN\VLC\VideoLAN Website.url"; SystemLnk="VideoLAN\"; StartIn="C:\Program Files\VideoLAN\VLC"},
-  @{Name="VLC media player - reset preferences and cache files"; TargetPath="C:\Program Files\VideoLAN\VLC\vlc.exe"; Arguments="--reset-config --reset-plugins-cache vlc://quit"; SystemLnk="VideoLAN\"; StartIn="C:\Program Files\VideoLAN\VLC"},
-  @{Name="VLC media player skinned"; TargetPath="C:\Program Files\VideoLAN\VLC\vlc.exe"; Arguments="-Iskins"; SystemLnk="VideoLAN\"; StartIn="C:\Program Files\VideoLAN\VLC"},
-  @{Name="VLC media player"; TargetPath="C:\Program Files\VideoLAN\VLC\vlc.exe"; SystemLnk="VideoLAN\"; StartIn="C:\Program Files\VideoLAN\VLC"},
-  # Notepad++
-  @{Name="Notepad++"; TargetPath="C:\Program Files\Notepad++\notepad++.exe"; StartIn="C:\Program Files\Notepad++"},
   # AutoHotkey
   @{Name="AutoHotkey Help File"; TargetPath="C:\Program Files\AutoHotkey\AutoHotkey.chm"; SystemLnk="AutoHotkey\"},
   @{Name="AutoHotkey Setup"; TargetPath="C:\Program Files\AutoHotkey\Installer.ahk"; SystemLnk="AutoHotkey\"},
@@ -367,11 +349,43 @@ $sys3rdPartyAppList = @(
   @{Name="CodeTwo Active Directory Photos"; TargetPath="C:\Program Files\CodeTwo\CodeTwo Active Directory Photos\CodeTwo Active Directory Photos.exe"; SystemLnk="CodeTwo\CodeTwo Active Directory Photos\"; Description="CodeTwo Active Directory Photos"},
   @{Name="Go to program home page"; TargetPath="C:\Program Files\CodeTwo\CodeTwo Active Directory Photos\Data\HomePage.url"; SystemLnk="CodeTwo\CodeTwo Active Directory Photos\"; Description="CodeTwo Active Directory Photos home page"},
   @{Name="User's manual"; TargetPath="C:\Program Files\CodeTwo\CodeTwo Active Directory Photos\Data\User's manual.url"; SystemLnk="CodeTwo\CodeTwo Active Directory Photos\"; Description="Go to User Guide"},
+  # Epson
+  @{Name="Epson Scan 2"; TargetPath="C:\Program Files (x86)\epson\Epson Scan 2\Core\es2launcher.exe"; SystemLnk="EPSON\Epson Scan 2\"},
+  @{Name="FAX Utility"; TargetPath="C:\Program Files (x86)\Epson Software\FAX Utility\FUFAXCNT.exe"; SystemLnk="EPSON Software\"},
+  # GIMP
+  @{Name=$GIMP_Name; TargetPath=$GIMP_TargetPath; StartIn="%USERPROFILE%"; Description=$GIMP_Name},
+  # Google
+  @{Name="Google Chrome"; TargetPath="C:\Program Files\Google\Chrome\Application\chrome.exe"; StartIn="C:\Program Files\Google\Chrome\Application"; Description="Access the Internet"},
+  @{Name="Google Chrome (32-bit)"; TargetPath="C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"; StartIn="C:\Program Files (x86)\Google\Chrome\Application"; Description="Access the Internet"},
+  @{Name="Google Drive"; TargetPath=$GoogleDrive_TargetPath; Description="Google Drive"},
+  @{Name="VPN by Google One"; TargetPath=$GoogleOneVPN_TargetPath; Description="VPN by Google One"},
+  # GoTo
+  @{Name="GoTo Resolve Desktop Console (64-bit)"; TargetPath="C:\Program Files\GoTo\GoTo Resolve Desktop Console\ra-technician-console.exe"; StartIn="C:\Program Files\GoTo\GoTo Resolve Desktop Console\"},
+  @{Name="GoTo Resolve Desktop Console (32-bit)"; TargetPath="C:\Program Files (x86)\GoTo\GoTo Resolve Desktop Console\ra-technician-console.exe"; StartIn="C:\Program Files (x86)\GoTo\GoTo Resolve Desktop Console\"},
+  # Kdenlive
+  @{Name="Kdenlive"; TargetPath="C:\Program Files\kdenlive\bin\kdenlive.exe"; StartIn="{workingDirectory}"; Description="Libre Video Editor, by KDE community"},
+  # KeePass
+  @{Name=$KeePass_Name; TargetPath=$KeePass_TargetPath; StartIn=$KeePass_StartIn} # new version 2+
+  @{Name="KeePass"; TargetPath="C:\Program Files (x86)\KeePass Password Safe\KeePass.exe"; StartIn="C:\Program Files (x86)\KeePass Password Safe"}, # old version 1.x
   # Local Administrator Password Solution
   @{Name="LAPS UI"; TargetPath="C:\Program Files\LAPS\AdmPwd.UI.exe"; SystemLnk="LAPS\"; StartIn="C:\Program Files\LAPS\"},
-  # VMware
-  @{Name="Command Prompt for vctl"; TargetPath="C:\Windows\System32\cmd.exe"; Arguments="/k set PATH=C:\Program Files (x86)\VMware\VMware Player\;%PATH% && vctl.exe -h"; SystemLnk="VMware\"; StartIn="C:\Program Files (x86)\VMware\VMware Player\bin\"},
-  @{Name="VMware Workstation 16 Player"; TargetPath="C:\Program Files (x86)\VMware\VMware Player\vmplayer.exe"; SystemLnk="VMware\"; StartIn="C:\Program Files (x86)\VMware\VMware Player\"},
+  # Mozilla
+  @{Name="Firefox"; TargetPath="C:\Program Files\Mozilla Firefox\firefox.exe"; StartIn="C:\Program Files\Mozilla Firefox"},
+  @{Name="Firefox Private Browsing"; TargetPath="C:\Program Files\Mozilla Firefox\private_browsing.exe"; StartIn="C:\Program Files\Mozilla Firefox"; Description="Firefox Private Browsing"},
+  @{Name="Firefox (32-bit)"; TargetPath="C:\Program Files (x86)\Mozilla Firefox\firefox.exe"; StartIn="C:\Program Files (x86)\Mozilla Firefox"},
+  @{Name="Firefox Private Browsing (32-bit)"; TargetPath="C:\Program Files (x86)\Mozilla Firefox\private_browsing.exe"; StartIn="C:\Program Files (x86)\Mozilla Firefox"; Description="Firefox Private Browsing"},
+  @{Name="Thunderbird"; TargetPath="C:\Program Files\Mozilla Thunderbird\thunderbird.exe"; StartIn="C:\Program Files\Mozilla Thunderbird"},
+  # Notepad++
+  @{Name="Notepad++"; TargetPath="C:\Program Files\Notepad++\notepad++.exe"; StartIn="C:\Program Files\Notepad++"},
+  # OpenVPN
+  @{Name="OpenVPN"; TargetPath="C:\Program Files\OpenVPN\bin\openvpn-gui.exe"; SystemLnk="OpenVPN\OpenVPN GUI"; StartIn="C:\Program Files\OpenVPN\bin\"},
+  @{Name="OpenVPN Manual Page"; TargetPath="C:\Program Files\OpenVPN\doc\openvpn.8.html"; SystemLnk="OpenVPN\Documentation\"; StartIn="C:\Program Files\OpenVPN\doc\"},
+  @{Name="OpenVPN Windows Notes"; TargetPath="C:\Program Files\OpenVPN\doc\INSTALL-win32.txt"; SystemLnk="OpenVPN\Documentation\"; StartIn="C:\Program Files\OpenVPN\doc\"},
+  @{Name="OpenVPN Configuration File Directory"; TargetPath="C:\Program Files\OpenVPN\config"; SystemLnk="OpenVPN\Shortcuts\"; StartIn="C:\Program Files\OpenVPN\config\"},
+  @{Name="OpenVPN Log File Directory"; TargetPath="C:\Program Files\OpenVPN\log"; SystemLnk="OpenVPN\Shortcuts\"; StartIn="C:\Program Files\OpenVPN\log\"},
+  @{Name="OpenVPN Sample Configuration Files"; TargetPath="C:\Program Files\OpenVPN\sample-config"; SystemLnk="OpenVPN\Shortcuts\"; StartIn="C:\Program Files\OpenVPN\sample-config\"},
+  @{Name="Add a new TAP-Windows6 virtual network adapter"; TargetPath="C:\Program Files\OpenVPN\bin\tapctl.exe"; Arguments="create --hwid root\tap0901"; SystemLnk="OpenVPN\Utilities\"; StartIn="C:\Program Files\OpenVPN\bin\"},
+  @{Name="Add a new Wintun virtual network adapter"; TargetPath="C:\Program Files\OpenVPN\bin\tapctl.exe"; Arguments="create --hwid wintun"; SystemLnk="OpenVPN\Utilities\"; StartIn="C:\Program Files\OpenVPN\bin\"},
   # Oracle
   @{Name="License (English)"; TargetPath="C:\Program Files\Oracle\VirtualBox\License_en_US.rtf"; SystemLnk="Oracle VM VirtualBox\"; StartIn="C:\Program Files\Oracle\VirtualBox\"; Description="License"},
   @{Name="Oracle VM VirtualBox"; TargetPath="C:\Program Files\Oracle\VirtualBox\VirtualBox.exe"; SystemLnk="Oracle VM VirtualBox\"; StartIn="C:\Program Files\Oracle\VirtualBox\"; Description="Oracle VM VirtualBox"},
@@ -382,51 +396,37 @@ $sys3rdPartyAppList = @(
   @{Name="OSFMount on the Web"; TargetPath="C:\Program Files\OSFMount\OSFMount.url"; SystemLnk="OSFMount\"; StartIn="C:\Program Files\OSFMount"},
   @{Name="OSFMount"; TargetPath="C:\Program Files\OSFMount\OSFMount.exe"; SystemLnk="OSFMount\"; StartIn="C:\Program Files\OSFMount"},
   @{Name="Uninstall OSFMount"; TargetPath="C:\Program Files\OSFMount\unins000.exe"; SystemLnk="OSFMount\"; StartIn="C:\Program Files\OSFMount"},
-  # Win32DiskImager
-  @{Name="Uninstall Win32DiskImager"; TargetPath="C:\Program Files (x86)\ImageWriter\unins000.exe"; SystemLnk="Image Writer\"; StartIn="C:\Program Files (x86)\ImageWriter"},
-  @{Name="Win32DiskImager"; TargetPath="C:\Program Files (x86)\ImageWriter\Win32DiskImager.exe"; SystemLnk="Image Writer\"; StartIn="C:\Program Files (x86)\ImageWriter"},
   # RealVNC
   @{Name="VNC Server"; TargetPath="C:\Program Files\RealVNC\VNC Server\vncguihelper.exe"; Arguments="vncserver.exe -_fromGui -start -showstatus"; SystemLnk="RealVNC\"; StartIn="C:\Program Files\RealVNC\VNC Server\"},
   @{Name="VNC Viewer"; TargetPath="C:\Program Files\RealVNC\VNC Viewer\vncviewer.exe"; SystemLnk="RealVNC\"; StartIn="C:\Program Files\RealVNC\VNC Viewer\"},
-  # WinSCP
-  @{Name="WinSCP"; TargetPath="C:\Program Files (x86)\WinSCP\WinSCP.exe"; StartIn="C:\Program Files (x86)\WinSCP"; Description="WinSCP: SFTP, FTP, WebDAV and SCP client"},
+  # Samsung
+  @{Name="Samsung DeX"; TargetPath="C:\Program Files (x86)\Samsung\Samsung DeX\SamsungDeX.exe"; StartIn="C:\Program Files (x86)\Samsung\Samsung DeX\"},
+  # SonicWall Global VPN Client
+  @{Name="Global VPN Client"; TargetPath="C:\Program Files\SonicWALL\Global VPN Client\SWGVC.exe"; StartIn="C:\Program Files\SonicWall\Global VPN Client\"; Description="Launch the Global VPN Client"},
+  # SoundSwitch
+  @{Name="SoundSwitch"; TargetPath="C:\Program Files\SoundSwitch\SoundSwitch.exe"; SystemLnk="SoundSwitch\"; StartIn="C:\Program Files\SoundSwitch"},
+  @{Name="Uninstall SoundSwitch"; TargetPath="C:\Program Files\SoundSwitch\unins000.exe"; SystemLnk="SoundSwitch\"; StartIn="C:\Program Files\SoundSwitch"},
+  # USB Redirector TS Edition
+  @{Name="USB Redirector TS Edition - Workstation"; TargetPath="C:\Program Files\USB Redirector TS Edition - Workstation\usbredirectortsw.exe"; SystemLnk="USB Redirector TS Edition - Workstation\"},
+  # VideoLAN
+  @{Name="Documentation"; TargetPath="C:\Program Files\VideoLAN\VLC\Documentation.url"; SystemLnk="VideoLAN\"; StartIn="C:\Program Files\VideoLAN\VLC"},
+  @{Name="Release Notes"; TargetPath="C:\Program Files\VideoLAN\VLC\NEWS.txt"; SystemLnk="VideoLAN\"; StartIn="C:\Program Files\VideoLAN\VLC"},
+  @{Name="VideoLAN Website"; TargetPath="C:\Program Files\VideoLAN\VLC\VideoLAN Website.url"; SystemLnk="VideoLAN\"; StartIn="C:\Program Files\VideoLAN\VLC"},
+  @{Name="VLC media player - reset preferences and cache files"; TargetPath="C:\Program Files\VideoLAN\VLC\vlc.exe"; Arguments="--reset-config --reset-plugins-cache vlc://quit"; SystemLnk="VideoLAN\"; StartIn="C:\Program Files\VideoLAN\VLC"},
+  @{Name="VLC media player skinned"; TargetPath="C:\Program Files\VideoLAN\VLC\vlc.exe"; Arguments="-Iskins"; SystemLnk="VideoLAN\"; StartIn="C:\Program Files\VideoLAN\VLC"},
+  @{Name="VLC media player"; TargetPath="C:\Program Files\VideoLAN\VLC\vlc.exe"; SystemLnk="VideoLAN\"; StartIn="C:\Program Files\VideoLAN\VLC"},
+  # VMware
+  @{Name="Command Prompt for vctl"; TargetPath="C:\Windows\System32\cmd.exe"; Arguments="/k set PATH=C:\Program Files (x86)\VMware\VMware Player\;%PATH% && vctl.exe -h"; SystemLnk="VMware\"; StartIn="C:\Program Files (x86)\VMware\VMware Player\bin\"},
+  @{Name="VMware Workstation 16 Player"; TargetPath="C:\Program Files (x86)\VMware\VMware Player\vmplayer.exe"; SystemLnk="VMware\"; StartIn="C:\Program Files (x86)\VMware\VMware Player\"},
+  # Win32DiskImager
+  @{Name="Uninstall Win32DiskImager"; TargetPath="C:\Program Files (x86)\ImageWriter\unins000.exe"; SystemLnk="Image Writer\"; StartIn="C:\Program Files (x86)\ImageWriter"},
+  @{Name="Win32DiskImager"; TargetPath="C:\Program Files (x86)\ImageWriter\Win32DiskImager.exe"; SystemLnk="Image Writer\"; StartIn="C:\Program Files (x86)\ImageWriter"},
   # Winaero
   @{Name="EULA"; TargetPath="C:\Program Files\Winaero Tweaker\Winaero EULA.txt"; SystemLnk="Winaero Tweaker\"; StartIn="C:\Program Files\Winaero Tweaker"; Description="Read the license agreement"},
   @{Name="Winaero Tweaker"; TargetPath="C:\Program Files\Winaero Tweaker\WinaeroTweaker.exe"; SystemLnk="Winaero Tweaker\"; StartIn="C:\Program Files\Winaero Tweaker"},
   @{Name="Winaero Website"; TargetPath="C:\Program Files\Winaero Tweaker\Winaero.url"; SystemLnk="Winaero Tweaker\"; StartIn="C:\Program Files\Winaero Tweaker"; Description="Winaero is about Windows 10 / 8 / 7 and covers all topics that will interest every Windows user."},
-  # SoundSwitch
-  @{Name="SoundSwitch"; TargetPath="C:\Program Files\SoundSwitch\SoundSwitch.exe"; SystemLnk="SoundSwitch\"; StartIn="C:\Program Files\SoundSwitch"},
-  @{Name="Uninstall SoundSwitch"; TargetPath="C:\Program Files\SoundSwitch\unins000.exe"; SystemLnk="SoundSwitch\"; StartIn="C:\Program Files\SoundSwitch"},
-  # KeePass
-  @{Name=$KeePass_Name; TargetPath=$KeePass_TargetPath; StartIn=$KeePass_StartIn} # new version 2+
-  @{Name="KeePass"; TargetPath="C:\Program Files (x86)\KeePass Password Safe\KeePass.exe"; StartIn="C:\Program Files (x86)\KeePass Password Safe"}, # old version 1.x
-  # OpenVPN
-  @{Name="OpenVPN"; TargetPath="C:\Program Files\OpenVPN\bin\openvpn-gui.exe"; SystemLnk="OpenVPN\OpenVPN GUI"; StartIn="C:\Program Files\OpenVPN\bin\"},
-  @{Name="OpenVPN Manual Page"; TargetPath="C:\Program Files\OpenVPN\doc\openvpn.8.html"; SystemLnk="OpenVPN\Documentation\"; StartIn="C:\Program Files\OpenVPN\doc\"},
-  @{Name="OpenVPN Windows Notes"; TargetPath="C:\Program Files\OpenVPN\doc\INSTALL-win32.txt"; SystemLnk="OpenVPN\Documentation\"; StartIn="C:\Program Files\OpenVPN\doc\"},
-  @{Name="OpenVPN Configuration File Directory"; TargetPath="C:\Program Files\OpenVPN\config"; SystemLnk="OpenVPN\Shortcuts\"; StartIn="C:\Program Files\OpenVPN\config\"},
-  @{Name="OpenVPN Log File Directory"; TargetPath="C:\Program Files\OpenVPN\log"; SystemLnk="OpenVPN\Shortcuts\"; StartIn="C:\Program Files\OpenVPN\log\"},
-  @{Name="OpenVPN Sample Configuration Files"; TargetPath="C:\Program Files\OpenVPN\sample-config"; SystemLnk="OpenVPN\Shortcuts\"; StartIn="C:\Program Files\OpenVPN\sample-config\"},
-  @{Name="Add a new TAP-Windows6 virtual network adapter"; TargetPath="C:\Program Files\OpenVPN\bin\tapctl.exe"; Arguments="create --hwid root\tap0901"; SystemLnk="OpenVPN\Utilities\"; StartIn="C:\Program Files\OpenVPN\bin\"},
-  @{Name="Add a new Wintun virtual network adapter"; TargetPath="C:\Program Files\OpenVPN\bin\tapctl.exe"; Arguments="create --hwid wintun"; SystemLnk="OpenVPN\Utilities\"; StartIn="C:\Program Files\OpenVPN\bin\"},
-  # SonicWall Global VPN Client
-  @{Name="Global VPN Client"; TargetPath="C:\Program Files\SonicWALL\Global VPN Client\SWGVC.exe"; StartIn="C:\Program Files\SonicWall\Global VPN Client\"; Description="Launch the Global VPN Client"},
-  # GoTo
-  @{Name="GoTo Resolve Desktop Console (64-bit)"; TargetPath="C:\Program Files\GoTo\GoTo Resolve Desktop Console\ra-technician-console.exe"; StartIn="C:\Program Files\GoTo\GoTo Resolve Desktop Console\"},
-  @{Name="GoTo Resolve Desktop Console (32-bit)"; TargetPath="C:\Program Files (x86)\GoTo\GoTo Resolve Desktop Console\ra-technician-console.exe"; StartIn="C:\Program Files (x86)\GoTo\GoTo Resolve Desktop Console\"},
-  # Adobe Acrobat
-  @{Name="Adobe Acrobat"; TargetPath="C:\Program Files\Adobe\Acrobat DC\Acrobat\Acrobat.exe"},
-  @{Name="Adobe Acrobat (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Acrobat DC\Acrobat\Acrobat.exe"},
-  @{Name="Adobe Acrobat Reader (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Acrobat Reader DC\Reader\AcroRd32.exe"},
-  # Samsung
-  @{Name="Samsung DeX"; TargetPath="C:\Program Files (x86)\Samsung\Samsung DeX\SamsungDeX.exe"; StartIn="C:\Program Files (x86)\Samsung\Samsung DeX\"},
-  # Epson
-  @{Name="Epson Scan 2"; TargetPath="C:\Program Files (x86)\epson\Epson Scan 2\Core\es2launcher.exe"; SystemLnk="EPSON\Epson Scan 2\"},
-  @{Name="FAX Utility"; TargetPath="C:\Program Files (x86)\Epson Software\FAX Utility\FUFAXCNT.exe"; SystemLnk="EPSON Software\"},
-  # Altair Monarch
-  @{Name="Altair Monarch 2020"; TargetPath="C:\Program Files\Altair Monarch 2020\DWMonarch.exe"; SystemLnk="Altair Monarch 2020\"},
-  # USB Redirector TS Edition
-  @{Name="USB Redirector TS Edition - Workstation"; TargetPath="C:\Program Files\USB Redirector TS Edition - Workstation\usbredirectortsw.exe"; SystemLnk="USB Redirector TS Edition - Workstation\"}
+  # WinSCP
+  @{Name="WinSCP"; TargetPath="C:\Program Files (x86)\WinSCP\WinSCP.exe"; StartIn="C:\Program Files (x86)\WinSCP"; Description="WinSCP: SFTP, FTP, WebDAV and SCP client"}
 #  @{Name=""; TargetPath=""; Arguments=""; SystemLnk=""; StartIn=""; Description=""; RunAsAdmin=($true|$false)}
 )
 
@@ -474,7 +474,12 @@ for ($i = 0; $i -lt $Users.length; $i++) {
   $OnePassword_TargetPath = "C:\Users\${aUser}\AppData\Local\1Password\app\"
   $OnePassword_Version = if (Test-Path -Path $OnePassword_TargetPath) {(Get-ChildItem -Directory -Path $OnePassword_TargetPath | Where-Object {$_.Name -match '^[.0-9]+$'} | Sort-Object -Descending)[0].name}
   $OnePassword_TargetPath += if ($OnePassword_Version) {"${OnePassword_Version}\1Password.exe"} else {"${NotInstalled}\${NotInstalled}.exe"}
-  # GitHub Desktop
+  # Discord
+  $Discord_StartIn = "C:\Users\${aUser}\AppData\Local\Discord\"
+  $Discord_TargetPath = $Discord_StartIn+"Update.exe"
+  $Discord_Version = if (Test-Path -Path $Discord_StartIn) {(Get-ChildItem -Directory -Path $Discord_StartIn | Where-Object {$_.Name -match '^app\-[.0-9]+$'} | Sort-Object -Descending)[0].name}
+  $Discord_StartIn += if ($Discord_Version) {"${Discord_Version}"} else {$NotInstalled}
+  # GitHub
   $GitHubDesktop_StartIn = "C:\Users\${aUser}\AppData\Local\GitHubDesktop\"
   $GitHubDesktop_TargetPath = $GitHubDesktop_StartIn+"GitHubDesktop.exe"
   $GitHubDesktop_Version = if (Test-Path -Path $GitHubDesktop_StartIn) {(Get-ChildItem -Directory -Path $GitHubDesktop_StartIn | Where-Object {$_.Name -match '^app\-[.0-9]+$'} | Sort-Object -Descending)[0].name}
@@ -496,50 +501,45 @@ for ($i = 0; $i -lt $Users.length; $i++) {
   $PythonIDLE_Name = "IDLE (Python ${Python_Version} ${Python_Arch}-bit)"
   $Python_Name = "Python ${Python_Version} (${Python_Arch}-bit)"
   $PythonModuleDocs_Name = "Python ${Python_Version} Module Docs (${Python_Arch}-bit)"
-  # Discord
-  $Discord_StartIn = "C:\Users\${aUser}\AppData\Local\Discord\"
-  $Discord_TargetPath = $Discord_StartIn+"Update.exe"
-  $Discord_Version = if (Test-Path -Path $Discord_StartIn) {(Get-ChildItem -Directory -Path $Discord_StartIn | Where-Object {$_.Name -match '^app\-[.0-9]+$'} | Sort-Object -Descending)[0].name}
-  $Discord_StartIn += if ($Discord_Version) {"${Discord_Version}"} else {$NotInstalled}
 
   $userAppList = @( # all instances of "${aUser}" get's replaced with the username
+    # 1Password
+    @{Name="1Password"; TargetPath=$OnePassword_TargetPath; Description="1Password"},
+    # balenaEtcher
+    @{Name="balenaEtcher"; TargetPath="C:\Users\${aUser}\AppData\Local\Programs\balena-etcher\balenaEtcher.exe"; StartIn="C:\Users\${aUser}\AppData\Local\Programs\balena-etcher"; Description="Flash OS images to SD cards and USB drives, safely and easily."},
+    # Blender
+    @{Name="Blender"; TargetPath=$Blender_TargetPath; SystemLnk="blender\"; StartIn=$Blender_StartIn},
+    # Discord
+    @{Name="Discord"; TargetPath=$Discord_TargetPath; Arguments="--processStart Discord.exe"; SystemLnk="Discord Inc\"; StartIn=$Discord_StartIn; Description="Discord - https://discord.com"},
+    # GitHub
+    @{Name="GitHub Desktop"; TargetPath=$GitHubDesktop_TargetPath; SystemLnk="GitHub, Inc\"; StartIn=$GitHubDesktop_StartIn; Description="Simple collaboration from your desktop"},
+    # Google
+    @{Name="Google Chrome"; TargetPath="C:\Users\${aUser}\AppData\Local\Google\Chrome\Application\chrome.exe"; StartIn="C:\Users\${aUser}\AppData\Local\Google\Chrome\Application"; Description="Access the Internet"},
+    # Inkscape
+    @{Name="Inkscape"; TargetPath="C:\Program Files\Inkscape\bin\inkscape.exe"; SystemLnk="Inkscape\"; StartIn="C:\Program Files\Inkscape\bin\"},
+    @{Name="Inkview"; TargetPath="C:\Program Files\Inkscape\bin\inkview.exe"; SystemLnk="Inkscape\"; StartIn="C:\Program Files\Inkscape\bin\"},
     # Microsoft
     @{Name="Visual Studio Code"; TargetPath="C:\Users\${aUser}\AppData\Local\Programs\Microsoft VS Code\Code.exe"; SystemLnk="Visual Studio Code\"; StartIn="C:\Users\${aUser}\AppData\Local\Programs\Microsoft VS Code"},
     @{Name="OneDrive"; TargetPath="C:\Users\${aUser}\AppData\Local\Microsoft\OneDrive\OneDrive.exe"; Description="Keep your most important files with you wherever you go, on any device."},
     @{Name=$MicrosoftTeams_Name; TargetPath="C:\Users\${aUser}\AppData\Local\Microsoft\Teams\Update.exe"; Arguments="--processStart `"Teams.exe`""; StartIn="C:\Users\${aUser}\AppData\Local\Microsoft\Teams"},
-    # Google
-    @{Name="Google Chrome"; TargetPath="C:\Users\${aUser}\AppData\Local\Google\Chrome\Application\chrome.exe"; StartIn="C:\Users\${aUser}\AppData\Local\Google\Chrome\Application"; Description="Access the Internet"},
     # Mozilla
     @{Name="Firefox"; TargetPath="C:\Users\${aUser}\AppData\Local\Mozilla Firefox\firefox.exe"; StartIn="C:\Users\${aUser}\AppData\Local\Mozilla Firefox"},
     # NVIDIA Corporation
     @{Name="NVIDIA GeForce NOW"; TargetPath="C:\Users\${aUser}\AppData\Local\NVIDIA Corporation\GeForceNOW\CEF\GeForceNOW.exe"; StartIn="C:\Users\${aUser}\AppData\Local\NVIDIA Corporation\GeForceNOW\CEF"},
-    # 1Password
-    @{Name="1Password"; TargetPath=$OnePassword_TargetPath; Description="1Password"},
-    # Blender
-    @{Name="Blender"; TargetPath=$Blender_TargetPath; SystemLnk="blender\"; StartIn=$Blender_StartIn},
-    # Inkscape
-    @{Name="Inkscape"; TargetPath="C:\Program Files\Inkscape\bin\inkscape.exe"; SystemLnk="Inkscape\"; StartIn="C:\Program Files\Inkscape\bin\"},
-    @{Name="Inkview"; TargetPath="C:\Program Files\Inkscape\bin\inkview.exe"; SystemLnk="Inkscape\"; StartIn="C:\Program Files\Inkscape\bin\"},
-    # GitHub Desktop
-    @{Name="GitHub Desktop"; TargetPath=$GitHubDesktop_TargetPath; SystemLnk="GitHub, Inc\"; StartIn=$GitHubDesktop_StartIn; Description="Simple collaboration from your desktop"},
     # Python
     @{Name=$PythonIDLE_Name; TargetPath=$PythonIDLE_TargetPath; SystemLnk=$Python_SystemLnk; StartIn=$Python_StartIn; Description=$PythonIDLE_Description},
     @{Name=$Python_Name; TargetPath=$Python_TargetPath; SystemLnk=$Python_SystemLnk; StartIn=$Python_StartIn; Description=$Python_Description},
     @{Name=$PythonModuleDocs_Name; TargetPath=$Python_TargetPath; Arguments="-m pydoc -b"; SystemLnk=$Python_SystemLnk; StartIn=$Python_StartIn; Description=$PythonModuleDocs_Description},
-    # WinDirStat
-    @{Name="Help (ENG)"; TargetPath="C:\Program Files (x86)\WinDirStat\windirstat.chm"; SystemLnk="WinDirStat\"; StartIn="C:\Program Files (x86)\WinDirStat"},
-    @{Name="Uninstall WinDirStat"; TargetPath="C:\Program Files (x86)\WinDirStat\Uninstall.exe"; SystemLnk="WinDirStat\"; StartIn="C:\Program Files (x86)\WinDirStat"},
-    @{Name="WinDirStat"; TargetPath="C:\Program Files (x86)\WinDirStat\windirstat.exe"; SystemLnk="WinDirStat\"; StartIn="C:\Program Files (x86)\WinDirStat"},
-    # balenaEtcher
-    @{Name="balenaEtcher"; TargetPath="C:\Users\${aUser}\AppData\Local\Programs\balena-etcher\balenaEtcher.exe"; StartIn="C:\Users\${aUser}\AppData\Local\Programs\balena-etcher"; Description="Flash OS images to SD cards and USB drives, safely and easily."},
     # Raspberry Pi Imager
     @{Name="Raspberry Pi Imager"; TargetPath="C:\Program Files (x86)\Raspberry Pi Imager\rpi-imager.exe"; StartIn="C:\Program Files (x86)\Raspberry Pi Imager"},
-    # Discord
-    @{Name="Discord"; TargetPath=$Discord_TargetPath; Arguments="--processStart Discord.exe"; SystemLnk="Discord Inc\"; StartIn=$Discord_StartIn; Description="Discord - https://discord.com"},
     # RingCentral
     @{Name="RingCentral"; TargetPath="C:\Users\${aUser}\AppData\Local\Programs\RingCentral\RingCentral.exe"; StartIn="C:\Users\${aUser}\AppData\Local\Programs\RingCentral"; Description="RingCentral"},
     @{Name="RingCentral Meetings"; TargetPath="C:\Users\${aUser}\AppData\Roaming\RingCentralMeetings\bin\RingCentralMeetings.exe"; SystemLnk="RingCentral Meetings\"; Description="RingCentral Meetings"},
-    @{Name="Uninstall RingCentral Meetings"; TargetPath="C:\Users\${aUser}\AppData\Roaming\RingCentralMeetings\uninstall\Installer.exe"; Arguments="/uninstall"; SystemLnk="RingCentral Meetings\"; Description="Uninstall RingCentral Meetings"}
+    @{Name="Uninstall RingCentral Meetings"; TargetPath="C:\Users\${aUser}\AppData\Roaming\RingCentralMeetings\uninstall\Installer.exe"; Arguments="/uninstall"; SystemLnk="RingCentral Meetings\"; Description="Uninstall RingCentral Meetings"},
+    # WinDirStat
+    @{Name="Help (ENG)"; TargetPath="C:\Program Files (x86)\WinDirStat\windirstat.chm"; SystemLnk="WinDirStat\"; StartIn="C:\Program Files (x86)\WinDirStat"},
+    @{Name="Uninstall WinDirStat"; TargetPath="C:\Program Files (x86)\WinDirStat\Uninstall.exe"; SystemLnk="WinDirStat\"; StartIn="C:\Program Files (x86)\WinDirStat"},
+    @{Name="WinDirStat"; TargetPath="C:\Program Files (x86)\WinDirStat\windirstat.exe"; SystemLnk="WinDirStat\"; StartIn="C:\Program Files (x86)\WinDirStat"}
   #  @{Name=""; TargetPath=""; Arguments=""; SystemLnk=""; StartIn=""; Description=""; RunAsAdmin=($true|$false)}
   )
 
