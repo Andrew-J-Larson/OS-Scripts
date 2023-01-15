@@ -333,6 +333,12 @@ $sys3rdPartyAppList = @(
   # Altair Monarch
   @{Name="Altair Monarch 2021"; TargetPath="C:\Program Files\Altair Monarch 2021\DWMonarch.exe"; SystemLnk="Altair Monarch 2021\"},
   @{Name="Altair Monarch 2020"; TargetPath="C:\Program Files\Altair Monarch 2020\DWMonarch.exe"; SystemLnk="Altair Monarch 2020\"},
+  # AmbiBox
+  @{Name="AmbiBox Web Site"; TargetPath="C:\Program Files (x86)\AmbiBox\www.ambibox.ru.url"; SystemLnk="AmbiBox\"; StartIn="C:\Program Files (x86)\AmbiBox"},
+  @{Name="AmbiBox"; TargetPath="C:\Program Files (x86)\AmbiBox\AmbiBox.exe"; SystemLnk="AmbiBox\"; StartIn="C:\Program Files (x86)\AmbiBox"},
+  @{Name="Android AmbiBox Remote App"; TargetPath="C:\Program Files (x86)\AmbiBox\Android AmbiBox Remote App"; SystemLnk="AmbiBox\"; StartIn="C:\Program Files (x86)\AmbiBox"},
+  @{Name="MediaPortal Extension"; TargetPath="C:\Program Files (x86)\AmbiBox\MediaPortal Extension"; SystemLnk="AmbiBox\"; StartIn="C:\Program Files (x86)\AmbiBox"},
+  @{Name="Uninstall AmbiBox"; TargetPath="C:\Program Files (x86)\AmbiBox\unins000.exe"; SystemLnk="AmbiBox\"; StartIn="C:\Program Files (x86)\AmbiBox"},
   # Audacity
   @{Name="Audacity"; TargetPath="C:\Program Files\Audacity\Audacity.exe"; StartIn="C:\Program Files\Audacity"},
   # AutoHotkey
@@ -422,6 +428,12 @@ $sys3rdPartyAppList = @(
   @{Name="VLC media player - reset preferences and cache files"; TargetPath="C:\Program Files\VideoLAN\VLC\vlc.exe"; Arguments="--reset-config --reset-plugins-cache vlc://quit"; SystemLnk="VideoLAN\"; StartIn="C:\Program Files\VideoLAN\VLC"},
   @{Name="VLC media player skinned"; TargetPath="C:\Program Files\VideoLAN\VLC\vlc.exe"; Arguments="-Iskins"; SystemLnk="VideoLAN\"; StartIn="C:\Program Files\VideoLAN\VLC"},
   @{Name="VLC media player"; TargetPath="C:\Program Files\VideoLAN\VLC\vlc.exe"; SystemLnk="VideoLAN\"; StartIn="C:\Program Files\VideoLAN\VLC"},
+  @{Name="Documentation"; TargetPath="C:\Program Files x86\VideoLAN\VLC\Documentation.url"; SystemLnk="VideoLAN\"; StartIn="C:\Program Files x86\VideoLAN\VLC"},
+  @{Name="Release Notes"; TargetPath="C:\Program Files x86\VideoLAN\VLC\NEWS.txt"; SystemLnk="VideoLAN\"; StartIn="C:\Program Files x86\VideoLAN\VLC"},
+  @{Name="VideoLAN Website"; TargetPath="C:\Program Files x86\VideoLAN\VLC\VideoLAN Website.url"; SystemLnk="VideoLAN\"; StartIn="C:\Program Files x86\VideoLAN\VLC"},
+  @{Name="VLC media player - reset preferences and cache files (32-bit)"; TargetPath="C:\Program Files x86\VideoLAN\VLC\vlc.exe"; Arguments="--reset-config --reset-plugins-cache vlc://quit"; SystemLnk="VideoLAN\"; StartIn="C:\Program Files x86\VideoLAN\VLC"},
+  @{Name="VLC media player skinned (32-bit)"; TargetPath="C:\Program Files x86\VideoLAN\VLC\vlc.exe"; Arguments="-Iskins"; SystemLnk="VideoLAN\"; StartIn="C:\Program Files x86\VideoLAN\VLC"},
+  @{Name="VLC media player (32-bit)"; TargetPath="C:\Program Files x86\VideoLAN\VLC\vlc.exe"; SystemLnk="VideoLAN\"; StartIn="C:\Program Files x86\VideoLAN\VLC"},
   # VMware
   @{Name="Command Prompt for vctl"; TargetPath="C:\Windows\System32\cmd.exe"; Arguments="/k set PATH=C:\Program Files (x86)\VMware\VMware Player\;%PATH% && vctl.exe -h"; SystemLnk="VMware\"; StartIn="C:\Program Files (x86)\VMware\VMware Player\bin\"},
   @{Name="VMware Workstation 16 Player"; TargetPath="C:\Program Files (x86)\VMware\VMware Player\vmplayer.exe"; SystemLnk="VMware\"; StartIn="C:\Program Files (x86)\VMware\VMware Player\"},
