@@ -18,11 +18,13 @@
 
 
 # Constants
+
 Set-Variable NotInstalled -Option Constant -Value "NOT-INSTALLED"
 
 
 
 # Variables
+
 $isWindows11 = ((Get-WMIObject win32_operatingsystem).Caption).StartsWith("Microsoft Windows 11")
 $isWindows10 = ((Get-WMIObject win32_operatingsystem).Caption).StartsWith("Microsoft Windows 10")
 $isWin10orNewer = [System.Environment]::OSVersion.Version.Major -ge 10
@@ -444,12 +446,29 @@ for ($i = 0; $i -lt $Users.length; $i++) {
   $GitHubDesktop_StartIn = "C:\Users\${aUser}\AppData\Local\GitHubDesktop\"
   $GitHubDesktop_TargetPath = $GitHubDesktop_StartIn+"GitHubDesktop.exe"
   $GitHubDesktop_Version = (Get-ChildItem -Directory -Path $GitHubDesktop_StartIn | Where-Object {$_.Name -match '^app\-[.0-9]+$'} | Sort-Object -Descending)[0].name
-  $GitHubDesktop_StartIn += if ($GitHubDesktop_Version) {"${GitHubDesktop_Version}"} else {"${NotInstalled}"}
+  $GitHubDesktop_StartIn += if ($GitHubDesktop_Version) {"${GitHubDesktop_Version}"} else {$NotInstalled}
+  # Python
+  $Python_StartIn = "C:\Users\${aUser}\AppData\Local\Programs\Python\"
+  $Python_FindFolder = (Get-ChildItem -Directory -Path $Python_StartIn | Where-Object {$_.Name -match '^Python[.0-9]+$'} | Sort-Object -Descending)[0].name
+  $Python_StartIn += if ($Python_FindFolder) {"${Python_FindFolder}\"} else {"${NotInstalled}\"}
+  $PythonIDLE_TargetPath = $Python_StartIn+$(if ($Python_FindFolder) {"Lib\idlelib\idle.pyw"} else {"${NotInstalled}\${NotInstalled}\${NotInstalled}.pyw"})
+  $Python_TargetPath = $Python_StartIn+$(if ($Python_FindFolder) {"python.exe"} else {"${NotInstalled}.exe"})
+  $Python_FileVersionRaw = if (Test-Path -Path $Python_TargetPath -PathType Leaf) {(Get-Item $Python_TargetPath).VersionInfo.FileVersionRaw}
+  $Python_Version = if ($Python_Item) {[string]($Python_FileVersionRaw.Major)+'.'+[string]($Python_FileVersionRaw.Minor)} else {$NotInstalled}
+  $PythonIDLE_Description = "Launches IDLE, the interactive environment for Python ${Python_Version}."
+  $Python_Description = "Launches the Python ${Python_Version} interpreter."
+  $PythonModuleDocs_Description = "Start the Python ${Python_Version} documentation server."
+  $Python_SystemLnk = "Python ${Python_Version}\"
+  $Python_Info = if (Test-Path -Path $Python_TargetPath -PathType Leaf) {(& "${Python_TargetPath}" -VV)}
+  $Python_Arch = if ($Python_Info) {if ($Python_Info | Select-String "\[[^\[\]]+32 bit[^\[\]]+\]") {32} elseif ($Python_Info | Select-String "\[[^\[\]]+64 bit[^\[\]]+\]") {64} else {"unknown"}} else {$NotInstalled}
+  $PythonIDLE_Name = "IDLE (Python ${Python_Version} ${Python_Arch}-bit)"
+  $Python_Name = "Python ${Python_Version} (${Python_Arch}-bit)"
+  $PythonModuleDocs_Name = "Python ${Python_Version} Module Docs (${Python_Arch}-bit)"
   # Discord
   $Discord_StartIn = "C:\Users\${aUser}\AppData\Local\Discord\"
   $Discord_TargetPath = $Discord_StartIn+"Update.exe"
   $Discord_Version = (Get-ChildItem -Directory -Path $Discord_StartIn | Where-Object {$_.Name -match '^app\-[.0-9]+$'} | Sort-Object -Descending)[0].name
-  $Discord_StartIn += if ($Discord_Version) {"${Discord_Version}"} else {"${NotInstalled}"}
+  $Discord_StartIn += if ($Discord_Version) {"${Discord_Version}"} else {$NotInstalled}
 
   $userAppList = @( # all instances of "${aUser}" get's replaced with the username
     # Microsoft
@@ -471,6 +490,10 @@ for ($i = 0; $i -lt $Users.length; $i++) {
     @{Name="Inkview"; TargetPath="C:\Program Files\Inkscape\bin\inkview.exe"; SystemLnk="Inkscape\"; StartIn="C:\Program Files\Inkscape\bin\"},
     # GitHub Desktop
     @{Name="GitHub Desktop"; TargetPath=$GitHubDesktop_TargetPath; SystemLnk="GitHub, Inc\"; StartIn=$GitHubDesktop_StartIn; Description="Simple collaboration from your desktop"},
+    # Python
+    @{Name=$PythonIDLE_Name; TargetPath=$PythonIDLE_TargetPath; SystemLnk=$Python_SystemLnk; StartIn=$Python_StartIn; Description=$PythonIDLE_Description},
+    @{Name=$Python_Name; TargetPath=$Python_TargetPath; SystemLnk=$Python_SystemLnk; StartIn=$Python_StartIn; Description=$Python_Description},
+    @{Name=$PythonModuleDocs_Name; TargetPath=$Python_TargetPath; Arguments="-m pydoc -b"; SystemLnk=$Python_SystemLnk; StartIn=$Python_StartIn; Description=$PythonModuleDocs_Description},
     # WinDirStat
     @{Name="Help (ENG)"; TargetPath="C:\Program Files (x86)\WinDirStat\windirstat.chm"; SystemLnk="WinDirStat\"; StartIn="C:\Program Files (x86)\WinDirStat"},
     @{Name="Uninstall WinDirStat"; TargetPath="C:\Program Files (x86)\WinDirStat\Uninstall.exe"; SystemLnk="WinDirStat\"; StartIn="C:\Program Files (x86)\WinDirStat"},
