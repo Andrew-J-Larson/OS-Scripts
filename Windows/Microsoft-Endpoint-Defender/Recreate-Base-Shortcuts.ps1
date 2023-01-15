@@ -178,7 +178,7 @@ $PowerShell_32bit_TargetPath += if ($PowerShell_32bit_Version) {"${PowerShell32b
 
 # PowerShell (7 or newer)
 $PowerShell_Name = "PowerShell "+$(if ($PowerShell_Version) {$PowerShell_Version} else {$NotInstalled})+" (x64)"
-$PowerShell_32bit_Name = "PowerShell "+$(if ($PowerShell_Version) {$PowerShell_Version} else {$NotInstalled})+" (x86)"
+$PowerShell_32bit_Name = "PowerShell "+$(if ($PowerShell_32bit_Version) {$PowerShell_32bit_Version} else {$NotInstalled})+" (x86)"
 # PowerToys
 $PowerToys_Name = "PowerToys"+$(if (winget list -q "Microsoft.PowerToys" -e | Select-String "^PowerToys \(Preview\)") {" (Preview)"})
 # Windows Accessories
@@ -189,7 +189,8 @@ $sysAppList = @(
   @{Name="Microsoft Edge"; TargetPath="C:\Program Files\Microsoft\Edge\Application\msedge.exe"; StartIn="C:\Program Files\Microsoft\Edge\Application"; Description="Browse the web"}, # it's the only install on 32-bit
   @{Name="Microsoft Edge"; TargetPath="C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"; StartIn="C:\Program Files (x86)\Microsoft\Edge\Application"; Description="Browse the web"}, # it's the only install on 64-bit
   # Intune Management Extension
-  @{Name="Microsoft Intune Management Extension"; TargetPath="C:\Program Files (x86)\Microsoft Intune Management Extension\AgentExecutor.exe"; SystemLnk="Microsoft Intune Management Extension\"; Description="Microsoft Intune Management Extension"},
+  @{Name="Microsoft Intune Management Extension"; TargetPath="C:\Program Files\Microsoft Intune Management Extension\AgentExecutor.exe"; SystemLnk="Microsoft Intune Management Extension\"; Description="Microsoft Intune Management Extension"}, # it's the only install on 32-bit
+  @{Name="Microsoft Intune Management Extension"; TargetPath="C:\Program Files (x86)\Microsoft Intune Management Extension\AgentExecutor.exe"; SystemLnk="Microsoft Intune Management Extension\"; Description="Microsoft Intune Management Extension"}, # it's the only install on 64-bit
   # Office
   @{Name="Access"; TargetPath="C:\Program Files\Microsoft Office\root\Office16\MSACCESS.EXE"; Description="Build a professional app quickly to manage data."},
   @{Name="Excel"; TargetPath="C:\Program Files\Microsoft Office\root\Office16\EXCEL.EXE"; Description="Easily discover, visualize, and share insights from your data."},
@@ -222,7 +223,8 @@ $sysAppList = @(
   # PowerToys
   @{Name=$PowerToys_Name; TargetPath="C:\Program Files\PowerToys\PowerToys.exe"; SystemLnk=$PowerToys_Name+'\'; StartIn="C:\Program Files\PowerToys\"; Description="PowerToys - Windows system utilities to maximize productivity"},
   # Visual Studio
-  @{Name="Visual Studio Installer"; TargetPath="C:\Program Files (x86)\Microsoft Visual Studio\Installer\setup.exe"; StartIn="C:\Program Files (x86)\Microsoft Visual Studio\Installer"},
+  @{Name="Visual Studio Installer"; TargetPath="C:\Program Files\Microsoft Visual Studio\Installer\setup.exe"; StartIn="C:\Program Files\Microsoft Visual Studio\Installer"}, # it's the only install on 32-bit
+  @{Name="Visual Studio Installer"; TargetPath="C:\Program Files (x86)\Microsoft Visual Studio\Installer\setup.exe"; StartIn="C:\Program Files (x86)\Microsoft Visual Studio\Installer"}, # it's the only install on 64-bit
   @{Name="Visual Studio Code"; TargetPath="C:\Program Files\Microsoft VS Code\Code.exe"; SystemLnk="Visual Studio Code\"; StartIn="C:\Program Files\Microsoft VS Code"},
   @{Name="Visual Studio Code (32-bit)"; TargetPath="C:\Program Files (x86)\Microsoft VS Code\Code.exe"; SystemLnk="Visual Studio Code\"; StartIn="C:\Program Files\Microsoft VS Code"},
   # Windows Accessories
@@ -266,8 +268,10 @@ for ($i = 0; $i -lt $sysAppList.length; $i++) {
 
 $oemSysAppList = @(
   # Dell
-  @{Name="Dell OS Recovery Tool"; TargetPath="C:\Program Files (x86)\Dell\OS Recovery Tool\DellOSRecoveryTool.exe"; SystemLnk="Dell\"; StartIn="C:\Program Files (x86)\Dell\OS Recovery Tool\"},
+  @{Name="Dell OS Recovery Tool"; TargetPath="C:\Program Files\Dell\OS Recovery Tool\DellOSRecoveryTool.exe"; SystemLnk="Dell\"; StartIn="C:\Program Files\Dell\OS Recovery Tool\"}, # it's the only install on 32-bit
+  @{Name="Dell OS Recovery Tool"; TargetPath="C:\Program Files (x86)\Dell\OS Recovery Tool\DellOSRecoveryTool.exe"; SystemLnk="Dell\"; StartIn="C:\Program Files (x86)\Dell\OS Recovery Tool\"}, # it's the only install on 64-bit
   @{Name="SupportAssist Recovery Assistant"; TargetPath="C:\Program Files\Dell\SARemediation\postosri\osrecoveryagent.exe"; SystemLnk="Dell\SupportAssist\"},
+  @{Name="SupportAssist Recovery Assistant (32-bit)"; TargetPath="C:\Program Files (x86)\Dell\SARemediation\postosri\osrecoveryagent.exe"; SystemLnk="Dell\SupportAssist\"},
   # NVIDIA Corporation
   @{Name="GeForce Experience"; TargetPath="C:\Program Files\NVIDIA Corporation\NVIDIA GeForce Experience\NVIDIA GeForce Experience.exe"; SystemLnk="NVIDIA Corporation\"; StartIn="C:\Program Files\NVIDIA Corporation\NVIDIA GeForce Experience"}
 #  @{Name=""; TargetPath=""; Arguments=""; SystemLnk=""; StartIn=""; Description=""; RunAsAdmin=($true|$false)},
@@ -298,6 +302,11 @@ $GIMP_FindFolder = (Get-ChildItem -Directory -Path $GIMP_TargetPath | Where-Obje
 $GIMP_TargetPath += if ($GIMP_FindFolder) {"${GIMP_FindFolder}\bin\"} else {"${NotInstalled}\${NotInstalled}\"}
 $GIMP_FindExe = if (Test-Path -Path $GIMP_TargetPath) {(Get-ChildItem -File -Path $GIMP_TargetPath | Where-Object {$_.Name -match '^gimp\-[.0-9]+exe$'} | Sort-Object -Descending)[0].name}
 $GIMP_TargetPath += if ($GIMP_FindExe) {$GIMP_FindExe} else {"${NotInstalled}.exe"}
+$GIMP_32bit_TargetPath = "C:\Program Files (x86)\"
+$GIMP_32bit_FindFolder = (Get-ChildItem -Directory -Path $GIMP_32bit_TargetPath | Where-Object {$_.Name -match '^GIMP'} | Sort-Object -Descending)[0].name
+$GIMP_32bit_TargetPath += if ($GIMP_32bit_FindFolder) {"${GIMP_32bit_FindFolder}\bin\"} else {"${NotInstalled}\${NotInstalled}\"}
+$GIMP_32bit_FindExe = if (Test-Path -Path $GIMP_32bit_TargetPath) {(Get-ChildItem -File -Path $GIMP_32bit_TargetPath | Where-Object {$_.Name -match '^gimp\-[.0-9]+exe$'} | Sort-Object -Descending)[0].name}
+$GIMP_32bit_TargetPath += if ($GIMP_32bit_FindExe) {$GIMP_32bit_FindExe} else {"${NotInstalled}.exe"}
 # Google
 $GoogleDrive_TargetPath = "C:\Program Files\Google\Drive File Stream\"
 $GoogleDrive_Version = if (Test-Path -Path $GoogleDrive_TargetPath) {(Get-ChildItem -Directory -Path $GoogleDrive_TargetPath | Where-Object {$_.Name -match '^[.0-9]+$'} | Sort-Object -Descending)[0].name}
@@ -309,16 +318,38 @@ $GoogleOneVPN_TargetPath += if ($GoogleOneVPN_Version) {"${GoogleOneVPN_Version}
 $KeePass_StartIn = "C:\Program Files\"
 $KeePass_FindFolder = (Get-ChildItem -Directory -Path $KeePass_StartIn | Where-Object {$_.Name -match '^KeePass Password Safe'} | Sort-Object -Descending)[0].name
 $KeePass_TargetPath = if ($KeePass_FindFolder) {"${KeePass_FindFolder}\KeePass.exe"} else {"${NotInstalled}\${NotInstalled}.exe"}
+$KeePass_32bit_StartIn = "C:\Program Files (x86)\"
+$KeePass_32bit_FindFolder = (Get-ChildItem -Directory -Path $KeePass_32bit_StartIn | Where-Object {$_.Name -match '^KeePass Password Safe'} | Sort-Object -Descending)[0].name
+$KeePass_32bit_TargetPath = if ($KeePass_32bit_FindFolder) {"${KeePass_FindFolder}\KeePass.exe"} else {"${NotInstalled}\${NotInstalled}.exe"}
+# VMware
+$VMwareWorkstationPlayer_TargetPath = "C:\Program Files\VMware\VMware Player\vmplayer.exe"
+$CommandPromptforvctl_Path = if (Test-Path -Path $VMwareWorkstationPlayer_TargetPath -PathType Leaf) {"C:\Windows\System32\cmd.exe"} else {"C:\Program Files\${NotInstalled}\${NotInstalled}\${NotInstalled}.exe"}
+$VMwareWorkstationPlayer_32bit_TargetPath = "C:\Program Files (x86)\VMware\VMware Player\vmplayer.exe"
+$CommandPromptforvctl_32bit_Path = if (Test-Path -Path $VMwareWorkstationPlayer_32bit_TargetPath -PathType Leaf) {"C:\Windows\System32\cmd.exe"} else {"C:\Program Files (x86)\${NotInstalled}\${NotInstalled}\${NotInstalled}.exe"}
 
 # App names dependant on OS or app version
 
 # GIMP
-$GIMP_Version = ([string](winget list -q "GIMP.GIMP" -e | Select-String "^GIMP")).split(' ')[3]
+$GIMP_FileVersionRaw = if (Test-Path -Path $GIMP_TargetPath -PathType Leaf) {(Get-Item $GIMP_TargetPath).VersionInfo.FileVersionRaw}
+$GIMP_Version = if ($GIMP_FileVersionRaw) {(Get-Item $GIMP_TargetPath).VersionInfo.ProductVersion} else {$NotInstalled}
 $GIMP_Name = "GIMP "+$(if ($GIMP_Version) {$GIMP_Version} else {$NotInstalled})
+$GIMP_32bit_FileVersionRaw = if (Test-Path -Path $GIMP_32bit_TargetPath -PathType Leaf) {(Get-Item $GIMP_32bit_TargetPath).VersionInfo.FileVersionRaw}
+$GIMP_32bit_Version = if ($GIMP_32bit_FileVersionRaw) {(Get-Item $GIMP_32bit_TargetPath).VersionInfo.ProductVersion} else {$NotInstalled}
+$GIMP_32bit_Name = "GIMP "+$(if ($GIMP_32bit_Version) {$GIMP_32bit_Version} else {$NotInstalled})
 # KeePass
 $KeePass_FileVersionRaw = if (Test-Path -Path $KeePass_TargetPath -PathType Leaf) {(Get-Item $KeePass_TargetPath).VersionInfo.FileVersionRaw}
 $KeePass_Version = if ($KeePass_FileVersionRaw) {$KeePass_FileVersionRaw.Major} else {$NotInstalled}
 $KeePass_Name = "KeePass ${KeePass_Version}"
+$KeePass_32bit_FileVersionRaw = if (Test-Path -Path $KeePass_32bit_TargetPath -PathType Leaf) {(Get-Item $KeePass_32bit_TargetPath).VersionInfo.FileVersionRaw}
+$KeePass_32bit_Version = if ($KeePass_32bit_FileVersionRaw) {$KeePass_32bit_FileVersionRaw.Major} else {$NotInstalled}
+$KeePass_32bit_Name = "KeePass ${KeePass_Version}"
+# VMware
+$VMwareWorkstationPlayer_FileVersionRaw = if (Test-Path -Path $VMwareWorkstationPlayer_TargetPath -PathType Leaf) {(Get-Item $VMwareWorkstationPlayer_TargetPath).VersionInfo.FileVersionRaw}
+$VMwareWorkstationPlayer_Version = if ($VMwareWorkstationPlayer_FileVersionRaw) {(Get-Item $file).VersionInfo.FileVersionRaw.Major} else {$NotInstalled}
+$VMwareWorkstationPlayer_Name = "VMware Workstation "+$(if ($VMwareWorkstationPlayer_Version) {$VMwareWorkstationPlayer_Version} else {$NotInstalled})+" Player"
+$VMwareWorkstationPlayer_32bit_FileVersionRaw = if (Test-Path -Path $VMwareWorkstationPlayer_32bit_TargetPath -PathType Leaf) {(Get-Item $VMwareWorkstationPlayer_32bit_TargetPath).VersionInfo.FileVersionRaw}
+$VMwareWorkstationPlayer_32bit_Version = if ($VMwareWorkstationPlayer_32bit_FileVersionRaw) {(Get-Item $VMwareWorkstationPlayer_32bit_FileVersionRaw).VersionInfo.FileVersionRaw.Major} else {$NotInstalled}
+$VMwareWorkstationPlayer_32bit_Name = "VMware Workstation "+$(if ($VMwareWorkstationPlayer_32bit_Version) {$VMwareWorkstationPlayer_32bit_Version} else {$NotInstalled})+" Player"
 
 $sys3rdPartyAppList = @(
   # 7-Zip
@@ -329,18 +360,27 @@ $sys3rdPartyAppList = @(
   # Adobe Acrobat
   @{Name="Adobe Acrobat"; TargetPath="C:\Program Files\Adobe\Acrobat DC\Acrobat\Acrobat.exe"},
   @{Name="Adobe Acrobat (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Acrobat DC\Acrobat\Acrobat.exe"},
-  @{Name="Adobe Acrobat Reader (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Acrobat Reader DC\Reader\AcroRd32.exe"},
+  @{Name="Adobe Acrobat Reader"; TargetPath="C:\Program Files\Adobe\Acrobat Reader DC\Reader\AcroRd32.exe"}, # it's the only install on 32-bit
+  @{Name="Adobe Acrobat Reader (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Acrobat Reader DC\Reader\AcroRd32.exe"}, # it's the only install on 64-bit
   # Altair Monarch
   @{Name="Altair Monarch 2021"; TargetPath="C:\Program Files\Altair Monarch 2021\DWMonarch.exe"; SystemLnk="Altair Monarch 2021\"},
+  @{Name="Altair Monarch 2021 (32-bit)"; TargetPath="C:\Program Files (x86)\Altair Monarch 2021\DWMonarch.exe"; SystemLnk="Altair Monarch 2021\"},
   @{Name="Altair Monarch 2020"; TargetPath="C:\Program Files\Altair Monarch 2020\DWMonarch.exe"; SystemLnk="Altair Monarch 2020\"},
+  @{Name="Altair Monarch 2020 (32-bit)"; TargetPath="C:\Program Files (x86)\Altair Monarch 2020\DWMonarch.exe"; SystemLnk="Altair Monarch 2020\"},
   # AmbiBox
-  @{Name="AmbiBox Web Site"; TargetPath="C:\Program Files (x86)\AmbiBox\www.ambibox.ru.url"; SystemLnk="AmbiBox\"; StartIn="C:\Program Files (x86)\AmbiBox"},
-  @{Name="AmbiBox"; TargetPath="C:\Program Files (x86)\AmbiBox\AmbiBox.exe"; SystemLnk="AmbiBox\"; StartIn="C:\Program Files (x86)\AmbiBox"},
-  @{Name="Android AmbiBox Remote App"; TargetPath="C:\Program Files (x86)\AmbiBox\Android AmbiBox Remote App"; SystemLnk="AmbiBox\"; StartIn="C:\Program Files (x86)\AmbiBox"},
-  @{Name="MediaPortal Extension"; TargetPath="C:\Program Files (x86)\AmbiBox\MediaPortal Extension"; SystemLnk="AmbiBox\"; StartIn="C:\Program Files (x86)\AmbiBox"},
-  @{Name="Uninstall AmbiBox"; TargetPath="C:\Program Files (x86)\AmbiBox\unins000.exe"; SystemLnk="AmbiBox\"; StartIn="C:\Program Files (x86)\AmbiBox"},
+  @{Name="AmbiBox Web Site"; TargetPath="C:\Program Files\AmbiBox\www.ambibox.ru.url"; SystemLnk="AmbiBox\"; StartIn="C:\Program Files\AmbiBox"}, # it's the only install on 32-bit
+  @{Name="AmbiBox"; TargetPath="C:\Program Files\AmbiBox\AmbiBox.exe"; SystemLnk="AmbiBox\"; StartIn="C:\Program Files\AmbiBox"}, # it's the only install on 32-bit
+  @{Name="Android AmbiBox Remote App"; TargetPath="C:\Program Files\AmbiBox\Android AmbiBox Remote App"; SystemLnk="AmbiBox\"; StartIn="C:\Program Files\AmbiBox"}, # it's the only install on 32-bit
+  @{Name="MediaPortal Extension"; TargetPath="C:\Program Files\AmbiBox\MediaPortal Extension"; SystemLnk="AmbiBox\"; StartIn="C:\Program Files\AmbiBox"}, # it's the only install on 32-bit
+  @{Name="Uninstall AmbiBox"; TargetPath="C:\Program Files\AmbiBox\unins000.exe"; SystemLnk="AmbiBox\"; StartIn="C:\Program Files\AmbiBox"}, # it's the only install on 32-bit
+  @{Name="AmbiBox Web Site"; TargetPath="C:\Program Files (x86)\AmbiBox\www.ambibox.ru.url"; SystemLnk="AmbiBox\"; StartIn="C:\Program Files (x86)\AmbiBox"}, # it's the only install on 64-bit
+  @{Name="AmbiBox"; TargetPath="C:\Program Files (x86)\AmbiBox\AmbiBox.exe"; SystemLnk="AmbiBox\"; StartIn="C:\Program Files (x86)\AmbiBox"}, # it's the only install on 64-bit
+  @{Name="Android AmbiBox Remote App"; TargetPath="C:\Program Files (x86)\AmbiBox\Android AmbiBox Remote App"; SystemLnk="AmbiBox\"; StartIn="C:\Program Files (x86)\AmbiBox"}, # it's the only install on 64-bit
+  @{Name="MediaPortal Extension"; TargetPath="C:\Program Files (x86)\AmbiBox\MediaPortal Extension"; SystemLnk="AmbiBox\"; StartIn="C:\Program Files (x86)\AmbiBox"}, # it's the only install on 64-bit
+  @{Name="Uninstall AmbiBox"; TargetPath="C:\Program Files (x86)\AmbiBox\unins000.exe"; SystemLnk="AmbiBox\"; StartIn="C:\Program Files (x86)\AmbiBox"}, # it's the only install on 64-bit
   # Audacity
   @{Name="Audacity"; TargetPath="C:\Program Files\Audacity\Audacity.exe"; StartIn="C:\Program Files\Audacity"},
+  @{Name="Audacity (32-bit)"; TargetPath="C:\Program Files (x86)\Audacity\Audacity.exe"; StartIn="C:\Program Files (x86)\Audacity"},
   # AutoHotkey
   @{Name="AutoHotkey Help File"; TargetPath="C:\Program Files\AutoHotkey\AutoHotkey.chm"; SystemLnk="AutoHotkey\"},
   @{Name="AutoHotkey Setup"; TargetPath="C:\Program Files\AutoHotkey\Installer.ahk"; SystemLnk="AutoHotkey\"},
@@ -348,24 +388,41 @@ $sys3rdPartyAppList = @(
   @{Name="Convert .ahk to .exe"; TargetPath="C:\Program Files\AutoHotkey\Compiler\Ahk2Exe.exe"; SystemLnk="AutoHotkey\"},
   @{Name="Website"; TargetPath="C:\Program Files\AutoHotkey\AutoHotkey Website.url"; SystemLnk="AutoHotkey\"},
   @{Name="Window Spy"; TargetPath="C:\Program Files\AutoHotkey\WindowSpy.ahk"; SystemLnk="AutoHotkey\"},
+  @{Name="AutoHotkey Help File"; TargetPath="C:\Program Files (x86)\AutoHotkey\AutoHotkey.chm"; SystemLnk="AutoHotkey\"},
+  @{Name="AutoHotkey Setup"; TargetPath="C:\Program Files (x86)\AutoHotkey\Installer.ahk"; SystemLnk="AutoHotkey\"},
+  @{Name="AutoHotkey (32-bit)"; TargetPath="C:\Program Files (x86)\AutoHotkey\AutoHotkey.exe"; SystemLnk="AutoHotkey\"},
+  @{Name="Convert .ahk to .exe (32-bit)"; TargetPath="C:\Program Files (x86)\AutoHotkey\Compiler\Ahk2Exe.exe"; SystemLnk="AutoHotkey\"},
+  @{Name="Website"; TargetPath="C:\Program Files (x86)\AutoHotkey\AutoHotkey Website.url"; SystemLnk="AutoHotkey\"},
+  @{Name="Window Spy"; TargetPath="C:\Program Files (x86)\AutoHotkey\WindowSpy.ahk"; SystemLnk="AutoHotkey\"},
   # Bulk Crap Uninstaller
   @{Name="BCUninstaller"; TargetPath="C:\Program Files\BCUninstaller\BCUninstaller.exe"; SystemLnk="BCUninstaller\"; StartIn="C:\Program Files\BCUninstaller"},
   @{Name="Uninstall BCUninstaller"; TargetPath="C:\Program Files\BCUninstaller\unins000.exe"; SystemLnk="BCUninstaller\"; StartIn="C:\Program Files\BCUninstaller"},
+  @{Name="BCUninstaller (32-bit)"; TargetPath="C:\Program Files (x86)\BCUninstaller\BCUninstaller.exe"; SystemLnk="BCUninstaller\"; StartIn="C:\Program Files (x86)\BCUninstaller"},
+  @{Name="Uninstall BCUninstaller (32-bit)"; TargetPath="C:\Program Files (x86)\BCUninstaller\unins000.exe"; SystemLnk="BCUninstaller\"; StartIn="C:\Program Files (x86)\BCUninstaller"},
   # Bytello
-  @{Name="Bytello Share"; TargetPath="C:\Program Files (x86)\Bytello Share\Bytello Share.exe"; SystemLnk="Bytello Share\"; StartIn="C:\Program Files (x86)\Bytello Share"},
+  @{Name="Bytello Share"; TargetPath="C:\Program Files\Bytello Share\Bytello Share.exe"; SystemLnk="Bytello Share\"; StartIn="C:\Program Files\Bytello Share"}, # it's the only install on 32-bit
+  @{Name="Bytello Share"; TargetPath="C:\Program Files (x86)\Bytello Share\Bytello Share.exe"; SystemLnk="Bytello Share\"; StartIn="C:\Program Files (x86)\Bytello Share"}, # it's the only install on 64-bit
   # Citrix Workspace
-  @{Name="Citrix Workspace"; TargetPath="C:\Program Files (x86)\Citrix\ICA Client\SelfServicePlugin\SelfService.exe"; Arguments="-showAppPicker"; StartIn="C:\Program Files (x86)\Citrix\ICA Client\SelfServicePlugin\"; Description="Select applications you want to use on your computer"},
+  @{Name="Citrix Workspace"; TargetPath="C:\Program Files\Citrix\ICA Client\SelfServicePlugin\SelfService.exe"; Arguments="-showAppPicker"; StartIn="C:\Program Files\Citrix\ICA Client\SelfServicePlugin\"; Description="Select applications you want to use on your computer"}, # it's the only install on 32-bit
+  @{Name="Citrix Workspace"; TargetPath="C:\Program Files (x86)\Citrix\ICA Client\SelfServicePlugin\SelfService.exe"; Arguments="-showAppPicker"; StartIn="C:\Program Files (x86)\Citrix\ICA Client\SelfServicePlugin\"; Description="Select applications you want to use on your computer"}, # it's the only install on 64-bit
   # CodeTwo Active Directory Photos
   @{Name="CodeTwo Active Directory Photos"; TargetPath="C:\Program Files\CodeTwo\CodeTwo Active Directory Photos\CodeTwo Active Directory Photos.exe"; SystemLnk="CodeTwo\CodeTwo Active Directory Photos\"; Description="CodeTwo Active Directory Photos"},
   @{Name="Go to program home page"; TargetPath="C:\Program Files\CodeTwo\CodeTwo Active Directory Photos\Data\HomePage.url"; SystemLnk="CodeTwo\CodeTwo Active Directory Photos\"; Description="CodeTwo Active Directory Photos home page"},
   @{Name="User's manual"; TargetPath="C:\Program Files\CodeTwo\CodeTwo Active Directory Photos\Data\User's manual.url"; SystemLnk="CodeTwo\CodeTwo Active Directory Photos\"; Description="Go to User Guide"},
+  @{Name="CodeTwo Active Directory Photos (32-bit)"; TargetPath="C:\Program Files (x86)\CodeTwo\CodeTwo Active Directory Photos\CodeTwo Active Directory Photos.exe"; SystemLnk="CodeTwo\CodeTwo Active Directory Photos\"; Description="CodeTwo Active Directory Photos"},
+  @{Name="Go to program home page"; TargetPath="C:\Program Files (x86)\CodeTwo\CodeTwo Active Directory Photos\Data\HomePage.url"; SystemLnk="CodeTwo\CodeTwo Active Directory Photos\"; Description="CodeTwo Active Directory Photos home page"},
+  @{Name="User's manual"; TargetPath="C:\Program Files (x86)\CodeTwo\CodeTwo Active Directory Photos\Data\User's manual.url"; SystemLnk="CodeTwo\CodeTwo Active Directory Photos\"; Description="Go to User Guide"},
   # Docker
   @{Name="Docker Desktop"; TargetPath="C:\Program Files\Docker\Docker\Docker Desktop.exe"; SystemLnk="C:\ProgramData\Microsoft\Windows\Start Menu\"; Description="Docker Desktop"},
+  @{Name="Docker Desktop (32-bit)"; TargetPath="C:\Program Files (x86)\Docker\Docker\Docker Desktop.exe"; SystemLnk="C:\ProgramData\Microsoft\Windows\Start Menu\"; Description="Docker Desktop"},
   # Epson
-  @{Name="Epson Scan 2"; TargetPath="C:\Program Files (x86)\epson\Epson Scan 2\Core\es2launcher.exe"; SystemLnk="EPSON\Epson Scan 2\"},
-  @{Name="FAX Utility"; TargetPath="C:\Program Files (x86)\Epson Software\FAX Utility\FUFAXCNT.exe"; SystemLnk="EPSON Software\"},
+  @{Name="Epson Scan 2"; TargetPath="C:\Program Files\epson\Epson Scan 2\Core\es2launcher.exe"; SystemLnk="EPSON\Epson Scan 2\"}, # it's the only install on 32-bit
+  @{Name="FAX Utility"; TargetPath="C:\Program Files\Epson Software\FAX Utility\FUFAXCNT.exe"; SystemLnk="EPSON Software\"}, # it's the only install on 32-bit
+  @{Name="Epson Scan 2"; TargetPath="C:\Program Files (x86)\epson\Epson Scan 2\Core\es2launcher.exe"; SystemLnk="EPSON\Epson Scan 2\"}, # it's the only install on 64-bit
+  @{Name="FAX Utility"; TargetPath="C:\Program Files (x86)\Epson Software\FAX Utility\FUFAXCNT.exe"; SystemLnk="EPSON Software\"}, # it's the only install on 64-bit
   # GIMP
   @{Name=$GIMP_Name; TargetPath=$GIMP_TargetPath; StartIn="%USERPROFILE%"; Description=$GIMP_Name},
+  @{Name=$GIMP_32bit_Name; TargetPath=$GIMP_32bit_TargetPath; StartIn="%USERPROFILE%"; Description=$GIMP_32bit_Name},
   # Google
   @{Name="Google Chrome"; TargetPath="C:\Program Files\Google\Chrome\Application\chrome.exe"; StartIn="C:\Program Files\Google\Chrome\Application"; Description="Access the Internet"},
   @{Name="Google Chrome (32-bit)"; TargetPath="C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"; StartIn="C:\Program Files (x86)\Google\Chrome\Application"; Description="Access the Internet"},
@@ -375,25 +432,34 @@ $sys3rdPartyAppList = @(
   @{Name="GoTo Resolve Desktop Console (64-bit)"; TargetPath="C:\Program Files\GoTo\GoTo Resolve Desktop Console\ra-technician-console.exe"; StartIn="C:\Program Files\GoTo\GoTo Resolve Desktop Console\"},
   @{Name="GoTo Resolve Desktop Console (32-bit)"; TargetPath="C:\Program Files (x86)\GoTo\GoTo Resolve Desktop Console\ra-technician-console.exe"; StartIn="C:\Program Files (x86)\GoTo\GoTo Resolve Desktop Console\"},
   # KC Softwares
-  @{Name="SUMo"; TargetPath="C:\Program Files (x86)\KC Softwares\SUMo\SUMo.exe"; SystemLnk="KC Softwares\SUMo\"; StartIn="C:\Program Files (x86)\KC Softwares\SUMo"},
-  @{Name="Uninstall SUMo"; TargetPath="C:\Program Files (x86)\KC Softwares\SUMo\unins000.exe"; SystemLnk="KC Softwares\SUMo\"; StartIn="C:\Program Files (x86)\KC Softwares\SUMo"},
+  @{Name="SUMo"; TargetPath="C:\Program Files\KC Softwares\SUMo\SUMo.exe"; SystemLnk="KC Softwares\SUMo\"; StartIn="C:\Program Files\KC Softwares\SUMo"}, # it's the only install on 32-bit
+  @{Name="Uninstall SUMo"; TargetPath="C:\Program Files\KC Softwares\SUMo\unins000.exe"; SystemLnk="KC Softwares\SUMo\"; StartIn="C:\Program Files\KC Softwares\SUMo"}, # it's the only install on 32-bit
+  @{Name="SUMo"; TargetPath="C:\Program Files (x86)\KC Softwares\SUMo\SUMo.exe"; SystemLnk="KC Softwares\SUMo\"; StartIn="C:\Program Files (x86)\KC Softwares\SUMo"}, # it's the only install on 64-bit
+  @{Name="Uninstall SUMo"; TargetPath="C:\Program Files (x86)\KC Softwares\SUMo\unins000.exe"; SystemLnk="KC Softwares\SUMo\"; StartIn="C:\Program Files (x86)\KC Softwares\SUMo"}, # it's the only install on 64-bit
   # Kdenlive
   @{Name="Kdenlive"; TargetPath="C:\Program Files\kdenlive\bin\kdenlive.exe"; StartIn="{workingDirectory}"; Description="Libre Video Editor, by KDE community"},
+  @{Name="Kdenlive (32-bit)"; TargetPath="C:\Program Files (x86)\kdenlive\bin\kdenlive.exe"; StartIn="{workingDirectory}"; Description="Libre Video Editor, by KDE community"},
   # KeePass
   @{Name=$KeePass_Name; TargetPath=$KeePass_TargetPath; StartIn=$KeePass_StartIn}, # new version 2+
-  @{Name="KeePass"; TargetPath="C:\Program Files (x86)\KeePass Password Safe\KeePass.exe"; StartIn="C:\Program Files (x86)\KeePass Password Safe"}, # old version 1.x
+  @{Name=$KeePass_32bit_Name; TargetPath=$KeePass_32bit_TargetPath; StartIn=$KeePass_32bit_StartIn}, # new version 2+
+  @{Name="KeePass"; TargetPath="C:\Program Files\KeePass Password Safe\KeePass.exe"; StartIn="C:\Program Files\KeePass Password Safe"}, # old version 1.x; it's the only install on 32-bit
+  @{Name="KeePass"; TargetPath="C:\Program Files (x86)\KeePass Password Safe\KeePass.exe"; StartIn="C:\Program Files (x86)\KeePass Password Safe"}, # old version 1.x; it's the only install on 64-bit
   # Ledger Live
   @{Name="Ledger Live"; TargetPath="C:\Program Files\Ledger Live\Ledger Live.exe"; StartIn="C:\Program Files\Ledger Live"; Description="Ledger Live - Desktop"},
+  @{Name="Ledger Live (32-bit)"; TargetPath="C:\Program Files (x86)\Ledger Live\Ledger Live.exe"; StartIn="C:\Program Files (x86)\Ledger Live"; Description="Ledger Live - Desktop"},
   # Local Administrator Password Solution
   @{Name="LAPS UI"; TargetPath="C:\Program Files\LAPS\AdmPwd.UI.exe"; SystemLnk="LAPS\"; StartIn="C:\Program Files\LAPS\"},
+  @{Name="LAPS UI (32-bit)"; TargetPath="C:\Program Files (x86)\LAPS\AdmPwd.UI.exe"; SystemLnk="LAPS\"; StartIn="C:\Program Files (x86)\LAPS\"},
   # Mozilla
   @{Name="Firefox"; TargetPath="C:\Program Files\Mozilla Firefox\firefox.exe"; StartIn="C:\Program Files\Mozilla Firefox"},
   @{Name="Firefox Private Browsing"; TargetPath="C:\Program Files\Mozilla Firefox\private_browsing.exe"; StartIn="C:\Program Files\Mozilla Firefox"; Description="Firefox Private Browsing"},
   @{Name="Firefox (32-bit)"; TargetPath="C:\Program Files (x86)\Mozilla Firefox\firefox.exe"; StartIn="C:\Program Files (x86)\Mozilla Firefox"},
   @{Name="Firefox Private Browsing (32-bit)"; TargetPath="C:\Program Files (x86)\Mozilla Firefox\private_browsing.exe"; StartIn="C:\Program Files (x86)\Mozilla Firefox"; Description="Firefox Private Browsing"},
   @{Name="Thunderbird"; TargetPath="C:\Program Files\Mozilla Thunderbird\thunderbird.exe"; StartIn="C:\Program Files\Mozilla Thunderbird"},
+  @{Name="Thunderbird (32-bit)"; TargetPath="C:\Program Files (x86)\Mozilla Thunderbird\thunderbird.exe"; StartIn="C:\Program Files (x86)\Mozilla Thunderbird"},
   # Notepad++
   @{Name="Notepad++"; TargetPath="C:\Program Files\Notepad++\notepad++.exe"; StartIn="C:\Program Files\Notepad++"},
+  @{Name="Notepad++ (32-bit)"; TargetPath="C:\Program Files (x86)\Notepad++\notepad++.exe"; StartIn="C:\Program Files (x86)\Notepad++"},
   # OpenVPN
   @{Name="OpenVPN"; TargetPath="C:\Program Files\OpenVPN\bin\openvpn-gui.exe"; SystemLnk="OpenVPN\OpenVPN GUI"; StartIn="C:\Program Files\OpenVPN\bin\"},
   @{Name="OpenVPN Manual Page"; TargetPath="C:\Program Files\OpenVPN\doc\openvpn.8.html"; SystemLnk="OpenVPN\Documentation\"; StartIn="C:\Program Files\OpenVPN\doc\"},
@@ -403,30 +469,54 @@ $sys3rdPartyAppList = @(
   @{Name="OpenVPN Sample Configuration Files"; TargetPath="C:\Program Files\OpenVPN\sample-config"; SystemLnk="OpenVPN\Shortcuts\"; StartIn="C:\Program Files\OpenVPN\sample-config\"},
   @{Name="Add a new TAP-Windows6 virtual network adapter"; TargetPath="C:\Program Files\OpenVPN\bin\tapctl.exe"; Arguments="create --hwid root\tap0901"; SystemLnk="OpenVPN\Utilities\"; StartIn="C:\Program Files\OpenVPN\bin\"},
   @{Name="Add a new Wintun virtual network adapter"; TargetPath="C:\Program Files\OpenVPN\bin\tapctl.exe"; Arguments="create --hwid wintun"; SystemLnk="OpenVPN\Utilities\"; StartIn="C:\Program Files\OpenVPN\bin\"},
+  @{Name="OpenVPN (32-bit)"; TargetPath="C:\Program Files (x86)\OpenVPN\bin\openvpn-gui.exe"; SystemLnk="OpenVPN\OpenVPN GUI"; StartIn="C:\Program Files (x86)\OpenVPN\bin\"},
+  @{Name="OpenVPN Manual Page"; TargetPath="C:\Program Files (x86)\OpenVPN\doc\openvpn.8.html"; SystemLnk="OpenVPN\Documentation\"; StartIn="C:\Program Files (x86)\OpenVPN\doc\"},
+  @{Name="OpenVPN Windows Notes"; TargetPath="C:\Program Files (x86)\OpenVPN\doc\INSTALL-win32.txt"; SystemLnk="OpenVPN\Documentation\"; StartIn="C:\Program Files (x86)\OpenVPN\doc\"},
+  @{Name="OpenVPN Configuration File Directory"; TargetPath="C:\Program Files (x86)\OpenVPN\config"; SystemLnk="OpenVPN\Shortcuts\"; StartIn="C:\Program Files (x86)\OpenVPN\config\"},
+  @{Name="OpenVPN Log File Directory"; TargetPath="C:\Program Files (x86)\OpenVPN\log"; SystemLnk="OpenVPN\Shortcuts\"; StartIn="C:\Program Files (x86)\OpenVPN\log\"},
+  @{Name="OpenVPN Sample Configuration Files"; TargetPath="C:\Program Files (x86)\OpenVPN\sample-config"; SystemLnk="OpenVPN\Shortcuts\"; StartIn="C:\Program Files (x86)\OpenVPN\sample-config\"},
+  @{Name="Add a new TAP-Windows6 virtual network adapter (32-bit)"; TargetPath="C:\Program Files (x86)\OpenVPN\bin\tapctl.exe"; Arguments="create --hwid root\tap0901"; SystemLnk="OpenVPN\Utilities\"; StartIn="C:\Program Files (x86)\OpenVPN\bin\"},
+  @{Name="Add a new Wintun virtual network adapter (32-bit)"; TargetPath="C:\Program Files (x86)\OpenVPN\bin\tapctl.exe"; Arguments="create --hwid wintun"; SystemLnk="OpenVPN\Utilities\"; StartIn="C:\Program Files (x86)\OpenVPN\bin\"},
   # Oracle
   @{Name="License (English)"; TargetPath="C:\Program Files\Oracle\VirtualBox\License_en_US.rtf"; SystemLnk="Oracle VM VirtualBox\"; StartIn="C:\Program Files\Oracle\VirtualBox\"; Description="License"},
   @{Name="Oracle VM VirtualBox"; TargetPath="C:\Program Files\Oracle\VirtualBox\VirtualBox.exe"; SystemLnk="Oracle VM VirtualBox\"; StartIn="C:\Program Files\Oracle\VirtualBox\"; Description="Oracle VM VirtualBox"},
   @{Name="User manual (CHM, English)"; TargetPath="C:\Program Files\Oracle\VirtualBox\VirtualBox.chm"; SystemLnk="Oracle VM VirtualBox\"; Description="User manual"},
   @{Name="User manual (PDF, English)"; TargetPath="C:\Program Files\Oracle\VirtualBox\doc\UserManual.pdf"; SystemLnk="Oracle VM VirtualBox\"; Description="User manual"},
+  @{Name="License (English)"; TargetPath="C:\Program Files (x86)\Oracle\VirtualBox\License_en_US.rtf"; SystemLnk="Oracle VM VirtualBox\"; StartIn="C:\Program Files (x86)\Oracle\VirtualBox\"; Description="License"},
+  @{Name="Oracle VM VirtualBox (32-bit)"; TargetPath="C:\Program Files (x86)\Oracle\VirtualBox\VirtualBox.exe"; SystemLnk="Oracle VM VirtualBox\"; StartIn="C:\Program Files (x86)\Oracle\VirtualBox\"; Description="Oracle VM VirtualBox"},
+  @{Name="User manual (CHM, English)"; TargetPath="C:\Program Files (x86)\Oracle\VirtualBox\VirtualBox.chm"; SystemLnk="Oracle VM VirtualBox\"; Description="User manual"},
+  @{Name="User manual (PDF, English)"; TargetPath="C:\Program Files (x86)\Oracle\VirtualBox\doc\UserManual.pdf"; SystemLnk="Oracle VM VirtualBox\"; Description="User manual"},
   # OSFMount
   @{Name="OSFMount Documentation"; TargetPath="C:\Program Files\OSFMount\osfmount_Help.exe"; SystemLnk="OSFMount\"; StartIn="C:\Program Files\OSFMount"},
   @{Name="OSFMount on the Web"; TargetPath="C:\Program Files\OSFMount\OSFMount.url"; SystemLnk="OSFMount\"; StartIn="C:\Program Files\OSFMount"},
   @{Name="OSFMount"; TargetPath="C:\Program Files\OSFMount\OSFMount.exe"; SystemLnk="OSFMount\"; StartIn="C:\Program Files\OSFMount"},
   @{Name="Uninstall OSFMount"; TargetPath="C:\Program Files\OSFMount\unins000.exe"; SystemLnk="OSFMount\"; StartIn="C:\Program Files\OSFMount"},
+  @{Name="OSFMount Documentation (32-bit)"; TargetPath="C:\Program Files (x86)\OSFMount\osfmount_Help.exe"; SystemLnk="OSFMount\"; StartIn="C:\Program Files (x86)\OSFMount"},
+  @{Name="OSFMount on the Web"; TargetPath="C:\Program Files (x86)\OSFMount\OSFMount.url"; SystemLnk="OSFMount\"; StartIn="C:\Program Files (x86)\OSFMount"},
+  @{Name="OSFMount (32-bit)"; TargetPath="C:\Program Files (x86)\OSFMount\OSFMount.exe"; SystemLnk="OSFMount\"; StartIn="C:\Program Files (x86)\OSFMount"},
+  @{Name="Uninstall OSFMount (32-bit)"; TargetPath="C:\Program Files (x86)\OSFMount\unins000.exe"; SystemLnk="OSFMount\"; StartIn="C:\Program Files (x86)\OSFMount"},
   # paint.net
   @{Name="paint.net"; TargetPath="C:\Program Files\paint.net\paintdotnet.exe"; StartIn="C:\Program Files\paint.net"; Description="Create, edit, scan, and print images and photographs."},
+  @{Name="paint.net (32-bit)"; TargetPath="C:\Program Files (x86)\paint.net\paintdotnet.exe"; StartIn="C:\Program Files (x86)\paint.net"; Description="Create, edit, scan, and print images and photographs."},
   # RealVNC
   @{Name="VNC Server"; TargetPath="C:\Program Files\RealVNC\VNC Server\vncguihelper.exe"; Arguments="vncserver.exe -_fromGui -start -showstatus"; SystemLnk="RealVNC\"; StartIn="C:\Program Files\RealVNC\VNC Server\"},
+  @{Name="VNC Server (32-bit)"; TargetPath="C:\Program Files (x86)\RealVNC\VNC Server\vncguihelper.exe"; Arguments="vncserver.exe -_fromGui -start -showstatus"; SystemLnk="RealVNC\"; StartIn="C:\Program Files (x86)\RealVNC\VNC Server\"},
   @{Name="VNC Viewer"; TargetPath="C:\Program Files\RealVNC\VNC Viewer\vncviewer.exe"; SystemLnk="RealVNC\"; StartIn="C:\Program Files\RealVNC\VNC Viewer\"},
+  @{Name="VNC Viewer (32-bit)"; TargetPath="C:\Program Files (x86)\RealVNC\VNC Viewer\vncviewer.exe"; SystemLnk="RealVNC\"; StartIn="C:\Program Files (x86)\RealVNC\VNC Viewer\"},
   # Samsung
-  @{Name="Samsung DeX"; TargetPath="C:\Program Files (x86)\Samsung\Samsung DeX\SamsungDeX.exe"; StartIn="C:\Program Files (x86)\Samsung\Samsung DeX\"},
+  @{Name="Samsung DeX"; TargetPath="C:\Program Files\Samsung\Samsung DeX\SamsungDeX.exe"; StartIn="C:\Program Files\Samsung\Samsung DeX\"}, # it's the only install on 32-bit
+  @{Name="Samsung DeX"; TargetPath="C:\Program Files (x86)\Samsung\Samsung DeX\SamsungDeX.exe"; StartIn="C:\Program Files (x86)\Samsung\Samsung DeX\"}, # it's the only install on 64-bit
   # SonicWall Global VPN Client
   @{Name="Global VPN Client"; TargetPath="C:\Program Files\SonicWALL\Global VPN Client\SWGVC.exe"; StartIn="C:\Program Files\SonicWall\Global VPN Client\"; Description="Launch the Global VPN Client"},
+  @{Name="Global VPN Client (32-bit)"; TargetPath="C:\Program Files (x86)\SonicWALL\Global VPN Client\SWGVC.exe"; StartIn="C:\Program Files (x86)\SonicWall\Global VPN Client\"; Description="Launch the Global VPN Client"},
   # SoundSwitch
   @{Name="SoundSwitch"; TargetPath="C:\Program Files\SoundSwitch\SoundSwitch.exe"; SystemLnk="SoundSwitch\"; StartIn="C:\Program Files\SoundSwitch"},
+  @{Name="SoundSwitch (32-bit)"; TargetPath="C:\Program Files (x86)\SoundSwitch\SoundSwitch.exe"; SystemLnk="SoundSwitch\"; StartIn="C:\Program Files (x86)\SoundSwitch"},
   @{Name="Uninstall SoundSwitch"; TargetPath="C:\Program Files\SoundSwitch\unins000.exe"; SystemLnk="SoundSwitch\"; StartIn="C:\Program Files\SoundSwitch"},
+  @{Name="Uninstall SoundSwitch (32-bit)"; TargetPath="C:\Program Files (x86)\SoundSwitch\unins000.exe"; SystemLnk="SoundSwitch\"; StartIn="C:\Program Files (x86)\SoundSwitch"},
   # USB Redirector TS Edition
   @{Name="USB Redirector TS Edition - Workstation"; TargetPath="C:\Program Files\USB Redirector TS Edition - Workstation\usbredirectortsw.exe"; SystemLnk="USB Redirector TS Edition - Workstation\"},
+  @{Name="USB Redirector TS Edition - Workstation (32-bit)"; TargetPath="C:\Program Files (x86)\USB Redirector TS Edition - Workstation\usbredirectortsw.exe"; SystemLnk="USB Redirector TS Edition - Workstation\"},
   # VideoLAN
   @{Name="Documentation"; TargetPath="C:\Program Files\VideoLAN\VLC\Documentation.url"; SystemLnk="VideoLAN\"; StartIn="C:\Program Files\VideoLAN\VLC"},
   @{Name="Release Notes"; TargetPath="C:\Program Files\VideoLAN\VLC\NEWS.txt"; SystemLnk="VideoLAN\"; StartIn="C:\Program Files\VideoLAN\VLC"},
@@ -441,17 +531,25 @@ $sys3rdPartyAppList = @(
   @{Name="VLC media player skinned (32-bit)"; TargetPath="C:\Program Files x86\VideoLAN\VLC\vlc.exe"; Arguments="-Iskins"; SystemLnk="VideoLAN\"; StartIn="C:\Program Files x86\VideoLAN\VLC"},
   @{Name="VLC media player (32-bit)"; TargetPath="C:\Program Files x86\VideoLAN\VLC\vlc.exe"; SystemLnk="VideoLAN\"; StartIn="C:\Program Files x86\VideoLAN\VLC"},
   # VMware
-  @{Name="Command Prompt for vctl"; TargetPath="C:\Windows\System32\cmd.exe"; Arguments="/k set PATH=C:\Program Files (x86)\VMware\VMware Player\;%PATH% && vctl.exe -h"; SystemLnk="VMware\"; StartIn="C:\Program Files (x86)\VMware\VMware Player\bin\"},
-  @{Name="VMware Workstation 16 Player"; TargetPath="C:\Program Files (x86)\VMware\VMware Player\vmplayer.exe"; SystemLnk="VMware\"; StartIn="C:\Program Files (x86)\VMware\VMware Player\"},
+  @{Name="Command Prompt for vctl"; TargetPath=$CommandPromptforvctl_Path; Arguments="/k set PATH=C:\Program Files\VMware\VMware Player\;%PATH% && vctl.exe -h"; SystemLnk="VMware\"; StartIn="C:\Program Files\VMware\VMware Player\bin\"}, # it's the only install on 32-bit
+  @{Name=$VMwareWorkstationPlayer_Name; TargetPath=$VMwareWorkstationPlayer_TargetPath; SystemLnk="VMware\"; StartIn="C:\Program Files\VMware\VMware Player\"}, # it's the only install on 32-bit
+  @{Name="Command Prompt for vctl"; TargetPath=$CommandPromptforvctl_32bit_Path; Arguments="/k set PATH=C:\Program Files (x86)\VMware\VMware Player\;%PATH% && vctl.exe -h"; SystemLnk="VMware\"; StartIn="C:\Program Files (x86)\VMware\VMware Player\bin\"}, # it's the only install on 64-bit
+  @{Name=$VMwareWorkstationPlayer_32bit_Name; TargetPath=$VMwareWorkstationPlayer_32bit_TargetPath; SystemLnk="VMware\"; StartIn="C:\Program Files (x86)\VMware\VMware Player\"}, # it's the only install on 64-bit
   # Win32DiskImager
-  @{Name="Uninstall Win32DiskImager"; TargetPath="C:\Program Files (x86)\ImageWriter\unins000.exe"; SystemLnk="Image Writer\"; StartIn="C:\Program Files (x86)\ImageWriter"},
-  @{Name="Win32DiskImager"; TargetPath="C:\Program Files (x86)\ImageWriter\Win32DiskImager.exe"; SystemLnk="Image Writer\"; StartIn="C:\Program Files (x86)\ImageWriter"},
+  @{Name="Uninstall Win32DiskImager"; TargetPath="C:\Program Files\ImageWriter\unins000.exe"; SystemLnk="Image Writer\"; StartIn="C:\Program Files\ImageWriter"}, # it's the only install on 32-bit
+  @{Name="Uninstall Win32DiskImager"; TargetPath="C:\Program Files (x86)\ImageWriter\unins000.exe"; SystemLnk="Image Writer\"; StartIn="C:\Program Files (x86)\ImageWriter"}, # it's the only install on 64-bit
+  @{Name="Win32DiskImager"; TargetPath="C:\Program Files\ImageWriter\Win32DiskImager.exe"; SystemLnk="Image Writer\"; StartIn="C:\Program Files\ImageWriter"}, # it's the only install on 32-bit
+  @{Name="Win32DiskImager"; TargetPath="C:\Program Files (x86)\ImageWriter\Win32DiskImager.exe"; SystemLnk="Image Writer\"; StartIn="C:\Program Files (x86)\ImageWriter"}, # it's the only install on 64-bit
   # Winaero
   @{Name="EULA"; TargetPath="C:\Program Files\Winaero Tweaker\Winaero EULA.txt"; SystemLnk="Winaero Tweaker\"; StartIn="C:\Program Files\Winaero Tweaker"; Description="Read the license agreement"},
   @{Name="Winaero Tweaker"; TargetPath="C:\Program Files\Winaero Tweaker\WinaeroTweaker.exe"; SystemLnk="Winaero Tweaker\"; StartIn="C:\Program Files\Winaero Tweaker"},
   @{Name="Winaero Website"; TargetPath="C:\Program Files\Winaero Tweaker\Winaero.url"; SystemLnk="Winaero Tweaker\"; StartIn="C:\Program Files\Winaero Tweaker"; Description="Winaero is about Windows 10 / 8 / 7 and covers all topics that will interest every Windows user."},
+  @{Name="EULA"; TargetPath="C:\Program Files (x86)\Winaero Tweaker\Winaero EULA.txt"; SystemLnk="Winaero Tweaker\"; StartIn="C:\Program Files (x86)\Winaero Tweaker"; Description="Read the license agreement"},
+  @{Name="Winaero Tweaker (32-bit)"; TargetPath="C:\Program Files (x86)\Winaero Tweaker\WinaeroTweaker.exe"; SystemLnk="Winaero Tweaker\"; StartIn="C:\Program Files (x86)\Winaero Tweaker"},
+  @{Name="Winaero Website"; TargetPath="C:\Program Files (x86)\Winaero Tweaker\Winaero.url"; SystemLnk="Winaero Tweaker\"; StartIn="C:\Program Files (x86)\Winaero Tweaker"; Description="Winaero is about Windows 10 / 8 / 7 and covers all topics that will interest every Windows user."},
   # WinSCP
-  @{Name="WinSCP"; TargetPath="C:\Program Files (x86)\WinSCP\WinSCP.exe"; StartIn="C:\Program Files (x86)\WinSCP"; Description="WinSCP: SFTP, FTP, WebDAV and SCP client"}
+  @{Name="WinSCP"; TargetPath="C:\Program Files\WinSCP\WinSCP.exe"; StartIn="C:\Program Files\WinSCP"; Description="WinSCP: SFTP, FTP, WebDAV and SCP client"}, # it's the only install on 32-bit
+  @{Name="WinSCP"; TargetPath="C:\Program Files (x86)\WinSCP\WinSCP.exe"; StartIn="C:\Program Files (x86)\WinSCP"; Description="WinSCP: SFTP, FTP, WebDAV and SCP client"} # it's the only install on 64-bit
 #  @{Name=""; TargetPath=""; Arguments=""; SystemLnk=""; StartIn=""; Description=""; RunAsAdmin=($true|$false)},
 )
 
@@ -497,18 +595,18 @@ for ($i = 0; $i -lt $Users.length; $i++) {
 
   # 1Password
   $OnePassword_TargetPath = "C:\Users\${aUser}\AppData\Local\1Password\app\"
-  $OnePassword_Version = if (Test-Path -Path $OnePassword_TargetPath) {(Get-ChildItem -Directory -Path $OnePassword_TargetPath | Where-Object {$_.Name -match '^[.0-9]+$'} | Sort-Object -Descending)[0].name}
-  $OnePassword_TargetPath += if ($OnePassword_Version) {"${OnePassword_Version}\1Password.exe"} else {"${NotInstalled}\${NotInstalled}.exe"}
+  $OnePassword_FindFolder = if (Test-Path -Path $OnePassword_TargetPath) {(Get-ChildItem -Directory -Path $OnePassword_TargetPath | Where-Object {$_.Name -match '^[.0-9]+$'} | Sort-Object -Descending)[0].name}
+  $OnePassword_TargetPath += if ($OnePassword_FindFolder) {"${OnePassword_FindFolder}\1Password.exe"} else {"${NotInstalled}\${NotInstalled}.exe"}
   # Discord
   $Discord_StartIn = "C:\Users\${aUser}\AppData\Local\Discord\"
   $Discord_TargetPath = $Discord_StartIn+"Update.exe"
-  $Discord_Version = if (Test-Path -Path $Discord_StartIn) {(Get-ChildItem -Directory -Path $Discord_StartIn | Where-Object {$_.Name -match '^app\-[.0-9]+$'} | Sort-Object -Descending)[0].name}
-  $Discord_StartIn += if ($Discord_Version) {"${Discord_Version}"} else {$NotInstalled}
+  $Discord_FindFolder = if (Test-Path -Path $Discord_StartIn) {(Get-ChildItem -Directory -Path $Discord_StartIn | Where-Object {$_.Name -match '^app\-[.0-9]+$'} | Sort-Object -Descending)[0].name}
+  $Discord_StartIn += if ($Discord_FindFolder) {"${Discord_FindFolder}"} else {$NotInstalled}
   # GitHub
   $GitHubDesktop_StartIn = "C:\Users\${aUser}\AppData\Local\GitHubDesktop\"
   $GitHubDesktop_TargetPath = $GitHubDesktop_StartIn+"GitHubDesktop.exe"
-  $GitHubDesktop_Version = if (Test-Path -Path $GitHubDesktop_StartIn) {(Get-ChildItem -Directory -Path $GitHubDesktop_StartIn | Where-Object {$_.Name -match '^app\-[.0-9]+$'} | Sort-Object -Descending)[0].name}
-  $GitHubDesktop_StartIn += if ($GitHubDesktop_Version) {"${GitHubDesktop_Version}"} else {$NotInstalled}
+  $GitHubDesktop_FindFolder = if (Test-Path -Path $GitHubDesktop_StartIn) {(Get-ChildItem -Directory -Path $GitHubDesktop_StartIn | Where-Object {$_.Name -match '^app\-[.0-9]+$'} | Sort-Object -Descending)[0].name}
+  $GitHubDesktop_StartIn += if ($GitHubDesktop_FindFolder) {"${GitHubDesktop_FindFolder}"} else {$NotInstalled}
   # Python
   $Python_StartIn = "C:\Users\${aUser}\AppData\Local\Programs\Python\"
   $Python_FindFolder = if (Test-Path -Path $Python_StartIn) {(Get-ChildItem -Directory -Path $Python_StartIn | Where-Object {$_.Name -match '^Python[.0-9]+$'} | Sort-Object -Descending)[0].name}
