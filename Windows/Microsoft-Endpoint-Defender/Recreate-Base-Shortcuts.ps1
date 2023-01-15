@@ -383,6 +383,7 @@ $sys3rdPartyAppList = @(
   # Adobe Acrobat
   @{Name="Adobe Acrobat (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Acrobat DC\Acrobat\Acrobat.exe"},
   @{Name="Adobe Acrobat"; TargetPath="C:\Program Files\Adobe\Acrobat DC\Acrobat\Acrobat.exe"},
+  @{Name="Adobe Acrobat Reader (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Acrobat Reader DC\Reader\AcroRd32.exe"},
   # Samsung
   @{Name="Samsung DeX"; TargetPath="C:\Program Files (x86)\Samsung\Samsung DeX\SamsungDeX.exe"; StartIn="C:\Program Files (x86)\Samsung\Samsung DeX\"},
   # Epson
