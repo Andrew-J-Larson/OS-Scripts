@@ -97,7 +97,7 @@ function Recreate-Shortcut {
 
       return $result
     } else {
-      Write-Error "Failed to create shortcut, with target at: ${sTarget}"
+      Write-Error "Failed to create shortcut, with target at: ${sTargetPath}"
       return $false
     }
   } elseif (-Not ($sName -Or $sTargetPath)) {
@@ -110,7 +110,7 @@ function Recreate-Shortcut {
       return $false
     }
   } else {
-    Write-Error "Target invalid! Doesn't exist or is spelled wrong: ${sTarget}"
+    Write-Error "Target invalid! Doesn't exist or is spelled wrong: ${sTargetPath}"
     return $false
   }
 }
