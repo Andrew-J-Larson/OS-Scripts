@@ -173,6 +173,8 @@ $PowerShell_TargetPath += if ($PowerShell_Version) {"${PowerShell_Version}\pwsh.
 $PowerShell_32bit_TargetPath = "C:\Program Files (x86)\PowerShell\"
 $PowerShell_32bit_Version = if (Test-Path -Path $PowerShell_32bit_TargetPath) {(Get-ChildItem -Directory -Path $PowerShell_32bit_TargetPath | Where-Object {$_.Name -match '^[0-9]+$'} | Sort-Object -Descending)[0].name}
 $PowerShell_32bit_TargetPath += if ($PowerShell_32bit_Version) {"${PowerShell32bit_Version}\pwsh.exe"} else {"${NotInstalled}\${NotInstalled}.exe"}
+# PowerToys
+$PowerToys_TargetPath = "C:\Program Files\PowerToys\PowerToys.exe"
 
 # App names dependant on OS or app version
 
@@ -180,7 +182,8 @@ $PowerShell_32bit_TargetPath += if ($PowerShell_32bit_Version) {"${PowerShell32b
 $PowerShell_Name = "PowerShell "+$(if ($PowerShell_Version) {$PowerShell_Version} else {$NotInstalled})+" (x64)"
 $PowerShell_32bit_Name = "PowerShell "+$(if ($PowerShell_32bit_Version) {$PowerShell_32bit_Version} else {$NotInstalled})+" (x86)"
 # PowerToys
-$PowerToys_Name = "PowerToys"+$(if (winget list -q "Microsoft.PowerToys" -e | Select-String "^PowerToys \(Preview\)") {" (Preview)"})
+$PowerToys_isPreview = if (Test-Path -Path $PowerToys_TargetPath -PathType Leaf) {(Get-Item $PowerToys_TargetPath).VersionInfo.FileVersionRaw.Major -eq 0}
+$PowerToys_Name = "PowerToys"+$(if ($PowerToys_isPreview) {" (Preview)"})
 # Windows Accessories
 $WindowsMediaPlayerOld_Name = "Windows Media Player"+$(if ($isWindows11) {" Legacy"})
 
@@ -221,7 +224,7 @@ $sysAppList = @(
   @{Name=$PowerShell_Name; TargetPath=$PowerShell_TargetPath; Arguments="-WorkingDirectory ~"; SystemLnk="PowerShell\"; Description=$PowerShell_Name},
   @{Name=$PowerShell_32bit_Name; TargetPath=$PowerShell_32bit_TargetPath; Arguments="-WorkingDirectory ~"; SystemLnk="PowerShell\"; Description=$PowerShell_32bit_Name},
   # PowerToys
-  @{Name=$PowerToys_Name; TargetPath="C:\Program Files\PowerToys\PowerToys.exe"; SystemLnk=$PowerToys_Name+'\'; StartIn="C:\Program Files\PowerToys\"; Description="PowerToys - Windows system utilities to maximize productivity"},
+  @{Name=$PowerToys_Name; TargetPath=$PowerToys_TargetPath; SystemLnk=$PowerToys_Name+'\'; StartIn="C:\Program Files\PowerToys\"; Description="PowerToys - Windows system utilities to maximize productivity"},
   # Visual Studio
   @{Name="Visual Studio Installer"; TargetPath="C:\Program Files\Microsoft Visual Studio\Installer\setup.exe"; StartIn="C:\Program Files\Microsoft Visual Studio\Installer"}, # it's the only install on 32-bit
   @{Name="Visual Studio Installer"; TargetPath="C:\Program Files (x86)\Microsoft Visual Studio\Installer\setup.exe"; StartIn="C:\Program Files (x86)\Microsoft Visual Studio\Installer"}, # it's the only install on 64-bit
@@ -330,11 +333,11 @@ $CommandPromptforvctl_32bit_Path = if (Test-Path -Path $VMwareWorkstationPlayer_
 # App names dependant on OS or app version
 
 # GIMP
-$GIMP_FileVersionRaw = if (Test-Path -Path $GIMP_TargetPath -PathType Leaf) {(Get-Item $GIMP_TargetPath).VersionInfo.FileVersionRaw}
-$GIMP_Version = if ($GIMP_FileVersionRaw) {(Get-Item $GIMP_TargetPath).VersionInfo.ProductVersion} else {$NotInstalled}
+$GIMP_ProductVersion = if (Test-Path -Path $GIMP_TargetPath -PathType Leaf) {(Get-Item $GIMP_TargetPath).VersionInfo.ProductVersion}
+$GIMP_Version = if ($GIMP_ProductVersion) {$GIMP_ProductVersion} else {$NotInstalled}
 $GIMP_Name = "GIMP "+$(if ($GIMP_Version) {$GIMP_Version} else {$NotInstalled})
-$GIMP_32bit_FileVersionRaw = if (Test-Path -Path $GIMP_32bit_TargetPath -PathType Leaf) {(Get-Item $GIMP_32bit_TargetPath).VersionInfo.FileVersionRaw}
-$GIMP_32bit_Version = if ($GIMP_32bit_FileVersionRaw) {(Get-Item $GIMP_32bit_TargetPath).VersionInfo.ProductVersion} else {$NotInstalled}
+$GIMP_32bit_ProductVersion = if (Test-Path -Path $GIMP_32bit_TargetPath -PathType Leaf) {(Get-Item $GIMP_32bit_TargetPath).VersionInfo.ProductVersion}
+$GIMP_32bit_Version = if ($GIMP_32bit_ProductVersion) {$GIMP_32bit_ProductVersion} else {$NotInstalled}
 $GIMP_32bit_Name = "GIMP "+$(if ($GIMP_32bit_Version) {$GIMP_32bit_Version} else {$NotInstalled})
 # KeePass
 $KeePass_FileVersionRaw = if (Test-Path -Path $KeePass_TargetPath -PathType Leaf) {(Get-Item $KeePass_TargetPath).VersionInfo.FileVersionRaw}
