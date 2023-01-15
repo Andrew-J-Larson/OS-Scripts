@@ -301,6 +301,8 @@ for ($i = 0; $i -lt $oemSysAppList.length; $i++) {
 
 # App paths dependant on app version
 
+# Adobe
+## 
 # GIMP
 $GIMP_TargetPath = "C:\Program Files\"
 $GIMP_FindFolder = (Get-ChildItem -Directory -Path $GIMP_TargetPath | Where-Object {$_.Name -match '^GIMP'} | Sort-Object -Descending)[0].name
@@ -365,6 +367,8 @@ $sys3rdPartyAppList = @(
   # Adobe
   @{Name="Adobe Creative Cloud"; TargetPath="C:\Program Files\Adobe\Adobe Creative Cloud\ACC\Creative Cloud.exe"},
   @{Name="Adobe Creative Cloud (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Adobe Creative Cloud\ACC\Creative Cloud.exe"},
+  @{Name="Adobe UXP Developer Tool"; TargetPath="C:\Program Files\Adobe\Adobe UXP Developer Tool\Adobe UXP Developer Tool.exe"; StartIn="C:\Program Files\Adobe\Adobe UXP Developer Tool"},
+  @{Name="Adobe UXP Developer Tool (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Adobe UXP Developer Tool\Adobe UXP Developer Tool.exe"; StartIn="C:\Program Files (x86)\Adobe\Adobe UXP Developer Tool"},
   @{Name="Adobe Acrobat"; TargetPath="C:\Program Files\Adobe\Acrobat DC\Acrobat\Acrobat.exe"},
   @{Name="Adobe Acrobat (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Acrobat DC\Acrobat\Acrobat.exe"},
   @{Name="Adobe Acrobat Reader"; TargetPath="C:\Program Files\Adobe\Acrobat Reader DC\Reader\AcroRd32.exe"}, # it's the only install on 32-bit
