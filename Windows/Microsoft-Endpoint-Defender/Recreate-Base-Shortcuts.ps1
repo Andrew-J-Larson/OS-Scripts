@@ -156,6 +156,9 @@ if (-Not $isWin10orNewer) {
 
 # System Applications
 
+# Names dependant on OS or app version
+$PowerToysName = "PowerToys"+$(if (winget list -q "Microsoft.PowerToys" -e | Select-String "^PowerToys \(Preview\)") {" (Preview)"})
+
 $sysAppList = @(
   # Edge
   @{Name="Microsoft Edge"; TargetPath="C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"; StartIn="C:\Program Files (x86)\Microsoft\Edge\Application"; Description="Browse the web"}, # it's the only install on 64-bit
@@ -166,7 +169,7 @@ $sysAppList = @(
   # Intune Management Extension
   @{Name="Microsoft Intune Management Extension"; TargetPath="C:\Program Files (x86)\Microsoft Intune Management Extension\AgentExecutor.exe"; SystemLnk="Microsoft Intune Management Extension\"; Description="Microsoft Intune Management Extension"},
   # PowerToys
-  @{Name="PowerToys"+$(if (winget list -q "Microsoft.PowerToys" -e | Select-String "^PowerToys \(Preview\)") {" (Preview)"}); TargetPath="C:\Program Files\PowerToys\PowerToys.exe"; SystemLnk="PowerToys"+$(if (winget list -q "Microsoft.PowerToys" -e | Select-String "^PowerToys \(Preview\)") {" (Preview)"})+'\'; StartIn="C:\Program Files\PowerToys\"; Description="PowerToys - Windows system utilities to maximize productivity"},
+  @{Name=$PowerToysName; TargetPath="C:\Program Files\PowerToys\PowerToys.exe"; SystemLnk=$PowerToysName+'\'; StartIn="C:\Program Files\PowerToys\"; Description="PowerToys - Windows system utilities to maximize productivity"},
   # OneDrive
   @{Name="OneDrive"; TargetPath="C:\Program Files\Microsoft OneDrive\OneDrive.exe"; Description="Keep your most important files with you wherever you go, on any device."},
   # Office Apps
@@ -225,6 +228,9 @@ for ($i = 0; $i -lt $oemSysAppList.length; $i++) {
 }
 
 # Third-Party System Applications (not made by Microsoft)
+
+# Names dependant on OS or app version
+#$AppName = ...
 
 $sys3rdPartyAppList = @(
   # Google
@@ -339,11 +345,14 @@ for ($i = 0; $i -lt $sys3rdPartyAppList.length; $i++) {
 
 # User Applications (per user installed apps)
 
+# Names dependant on OS or app version
+$MicrosoftTeamsName = "Microsoft Teams"+$(if ($isWindows11) {" (work or school)"})
+
 $userAppList = @( # all instances of "%username%" get's replaced with the username
   # Microsoft
   @{Name="Visual Studio Code"; TargetPath="C:\Users\%username%\AppData\Local\Programs\Microsoft VS Code\Code.exe"; SystemLnk="Visual Studio Code\"; StartIn="C:\Users\%username%\AppData\Local\Programs\Microsoft VS Code"},
   @{Name="OneDrive"; TargetPath="C:\Users\%username%\AppData\Local\Microsoft\OneDrive\OneDrive.exe"; Description="Keep your most important files with you wherever you go, on any device."},
-  @{Name="Microsoft Teams"+$(if ($isWindows11) {" (work or school)"}); TargetPath="C:\Users\%username%\AppData\Local\Microsoft\Teams\Update.exe"; Arguments="--processStart `"Teams.exe`""; StartIn="C:\Users\%username%\AppData\Local\Microsoft\Teams"},
+  @{Name=$MicrosoftTeamsName; TargetPath="C:\Users\%username%\AppData\Local\Microsoft\Teams\Update.exe"; Arguments="--processStart `"Teams.exe`""; StartIn="C:\Users\%username%\AppData\Local\Microsoft\Teams"},
   # Google
   @{Name="Google Chrome"; TargetPath="C:\Users\%username%\AppData\Local\Google\Chrome\Application\chrome.exe"; StartIn="C:\Users\%username%\AppData\Local\Google\Chrome\Application"; Description="Access the Internet"},
   # Mozilla
