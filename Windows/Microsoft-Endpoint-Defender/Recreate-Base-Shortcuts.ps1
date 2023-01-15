@@ -170,7 +170,7 @@ if (-Not $isWin10orNewer) {
 # PowerToys
 $PowerToys_Name = "PowerToys"+$(if (winget list -q "Microsoft.PowerToys" -e | Select-String "^PowerToys \(Preview\)") {" (Preview)"})
 
-# System app paths dependant on app version
+# App paths dependant on app version
 
 ## App Name
 #$App_TargetPath = ...
@@ -228,7 +228,7 @@ for ($i = 0; $i -lt $sysAppList.length; $i++) {
 ## App Name
 #$App_Name = ...
 
-# System app paths dependant on app version
+# App paths dependant on app version
 
 ## App Name
 #$App_TargetPath = ...
@@ -265,7 +265,7 @@ for ($i = 0; $i -lt $oemSysAppList.length; $i++) {
 $GIMP_Version = ([string](winget list -q "GIMP.GIMP" -e | Select-String "^GIMP")).split(' ')[3]
 $GIMP_Name = "GIMP "+$(if ($GIMP_Version) {$GIMP_Version} else {$NotInstalled})
 
-# System app paths dependant on app version
+# App paths dependant on app version
 
 # Google Drive
 $GoogleDrive_TargetPath = "C:\Program Files\Google\Drive File Stream\"
@@ -430,6 +430,12 @@ for ($i = 0; $i -lt $Users.length; $i++) {
   $GitHubDesktop_Version = (Get-ChildItem -Directory -Path $GitHubDesktop_StartIn | Where-Object {$_.Name -match '^app\-[.0-9]+$'} | Sort-Object -Descending)[0].name
   $GitHubDesktop_StartIn += if ($GitHubDesktop_Version) {"${GitHubDesktop_Version}"} else {"${NotInstalled}"}
 
+  # Discord
+  $Discord_StartIn = "C:\Users\${aUser}\AppData\Local\Discord\"
+  $Discord_TargetPath = $Discord_StartIn+"Update.exe"
+  $Discord_Version = (Get-ChildItem -Directory -Path $Discord_StartIn | Where-Object {$_.Name -match '^app\-[.0-9]+$'} | Sort-Object -Descending)[0].name
+  $Discord_StartIn += if ($Discord_Version) {"${Discord_Version}"} else {"${NotInstalled}"}
+
   $userAppList = @( # all instances of "${aUser}" get's replaced with the username
     # Microsoft
     @{Name="Visual Studio Code"; TargetPath="C:\Users\${aUser}\AppData\Local\Programs\Microsoft VS Code\Code.exe"; SystemLnk="Visual Studio Code\"; StartIn="C:\Users\${aUser}\AppData\Local\Programs\Microsoft VS Code"},
@@ -449,6 +455,8 @@ for ($i = 0; $i -lt $Users.length; $i++) {
     @{Name="balenaEtcher"; TargetPath="C:\Users\${aUser}\AppData\Local\Programs\balena-etcher\balenaEtcher.exe"; StartIn="C:\Users\${aUser}\AppData\Local\Programs\balena-etcher"; Description="Flash OS images to SD cards and USB drives, safely and easily."},
     # Raspberry Pi Imager
     @{Name="Raspberry Pi Imager"; TargetPath="C:\Program Files (x86)\Raspberry Pi Imager\rpi-imager.exe"; StartIn="C:\Program Files (x86)\Raspberry Pi Imager"},
+    # Discord
+    @{Name="Discord"; TargetPath=$Discord_TargetPath; Arguments="--processStart Discord.exe"; SystemLnk="Discord Inc\"; StartIn=$Discord_StartIn; Description="Discord - https://discord.com"},
     # RingCentral
     @{Name="RingCentral"; TargetPath="C:\Users\${aUser}\AppData\Local\Programs\RingCentral\RingCentral.exe"; StartIn="C:\Users\${aUser}\AppData\Local\Programs\RingCentral"; Description="RingCentral"},
     @{Name="RingCentral Meetings"; TargetPath="C:\Users\${aUser}\AppData\Roaming\RingCentralMeetings\bin\RingCentralMeetings.exe"; SystemLnk="RingCentral Meetings\"; Description="RingCentral Meetings"},
