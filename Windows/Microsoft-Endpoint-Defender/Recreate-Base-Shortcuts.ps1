@@ -351,6 +351,8 @@ $sys3rdPartyAppList = @(
   # Bulk Crap Uninstaller
   @{Name="BCUninstaller"; TargetPath="C:\Program Files\BCUninstaller\BCUninstaller.exe"; SystemLnk="BCUninstaller\"; StartIn="C:\Program Files\BCUninstaller"},
   @{Name="Uninstall BCUninstaller"; TargetPath="C:\Program Files\BCUninstaller\unins000.exe"; SystemLnk="BCUninstaller\"; StartIn="C:\Program Files\BCUninstaller"},
+  # Citrix Workspace
+  @{Name="Citrix Workspace"; TargetPath="C:\Program Files (x86)\Citrix\ICA Client\SelfServicePlugin\SelfService.exe"; Arguments="-showAppPicker"; StartIn="C:\Program Files (x86)\Citrix\ICA Client\SelfServicePlugin\"; Description="Select applications you want to use on your computer"},
   # CodeTwo Active Directory Photos
   @{Name="CodeTwo Active Directory Photos"; TargetPath="C:\Program Files\CodeTwo\CodeTwo Active Directory Photos\CodeTwo Active Directory Photos.exe"; SystemLnk="CodeTwo\CodeTwo Active Directory Photos\"; Description="CodeTwo Active Directory Photos"},
   @{Name="Go to program home page"; TargetPath="C:\Program Files\CodeTwo\CodeTwo Active Directory Photos\Data\HomePage.url"; SystemLnk="CodeTwo\CodeTwo Active Directory Photos\"; Description="CodeTwo Active Directory Photos home page"},
@@ -379,7 +381,7 @@ $sys3rdPartyAppList = @(
   @{Name=$KeePass_Name; TargetPath=$KeePass_TargetPath; StartIn=$KeePass_StartIn}, # new version 2+
   @{Name="KeePass"; TargetPath="C:\Program Files (x86)\KeePass Password Safe\KeePass.exe"; StartIn="C:\Program Files (x86)\KeePass Password Safe"}, # old version 1.x
   # Ledger Live
-  @{Name="Ledger Live"; TargetPath="C:\Program Files\Ledger Live\Ledger Live.exe"; StartIn="C:\Program Files\Ledger Live"; Description="Ledger Live - Desktop"}
+  @{Name="Ledger Live"; TargetPath="C:\Program Files\Ledger Live\Ledger Live.exe"; StartIn="C:\Program Files\Ledger Live"; Description="Ledger Live - Desktop"},
   # Local Administrator Password Solution
   @{Name="LAPS UI"; TargetPath="C:\Program Files\LAPS\AdmPwd.UI.exe"; SystemLnk="LAPS\"; StartIn="C:\Program Files\LAPS\"},
   # Mozilla
