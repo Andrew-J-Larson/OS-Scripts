@@ -70,10 +70,8 @@ function Recreate-Shortcut {
   Set-Variable ProgramShortcutsPath -Option Constant -Value "C:\ProgramData\Microsoft\Windows\Start Menu\Programs"
   Set-Variable UserProgramShortcutsPath -Option Constant -Value "C:\Users\${sUser}\AppData\Roaming\Microsoft\Windows\Start Menu\Programs"
 
-  # only create shortcut if name and target given, and target exists
+  # validate name and target path
   if ($sName -And $sTargetPath -And (Test-Path $sTargetPath -PathType leaf)) {
-    $WScriptObj = New-Object -ComObject WScript.Shell
-
     # if shortcut path not given, create one at default location with $sName
     if (-Not ($sSystemLnk)) {$sSystemLnk = $sName}
     # if doesn't have $ProgramShortcutsPath or $UserProgramShortcutsPath (and not start with drive letter), it'll assume a path for it
@@ -84,39 +82,38 @@ function Recreate-Shortcut {
     if ($sSystemLnk.EndsWith('\')) {$sSystemLnk = $sSystemLnk+$sName}
     # if doesn't end with .lnk, add it
     if (-Not ($sSystemLnk -match '.*\.lnk$')) {$sSystemLnk = $sSystemLnk+'.lnk'}
-    $newLNK = $WscriptObj.CreateShortcut($sSystemLnk)
 
-    $newLNK.TargetPath = $sTargetPath
+    # only create shortcut if it doesn't already exist
+    if (Test-Path $sTargetPath -PathType leaf) {
+      $resultMsg += "A shortcut already exists at:`n${sSystemLnk}"
+      $result = $false
+    } else {
+      $WScriptObj = New-Object -ComObject WScript.Shell
+      $newLNK = $WscriptObj.CreateShortcut($sSystemLnk)
 
-    if ($sArguments) {
-      $newLNK.Arguments =  $sArguments
+      $newLNK.TargetPath = $sTargetPath
+      if ($sArguments) {$newLNK.Arguments =  $sArguments}
+      if ($sStartIn) {$newLNK.WorkingDirectory = $sStartIn}
+      if ($sDescription) {$newLNK.Description = $sDescription}
+
+      $newLNK.Save()
+      $result = $?
+      [Runtime.InteropServices.Marshal]::ReleaseComObject($Shell) | Out-Null
+
+      if ($result) {
+        $resultMsg += "Created shortcut at:`n${sSystemLnk}"
+
+        # set to run as admin if needed
+        if ($sRunAsAdmin) {
+          $bytes = [System.IO.File]::ReadAllBytes($sSystemLnk)
+          $bytes[0x15] = $bytes[0x15] -bor 0x20 #set byte 21 (0x15) bit 6 (0x20) ON
+          [System.IO.File]::WriteAllBytes($sSystemLnk, $bytes)
+          $result = $?
+          if ($result) {$resultMsg += "Shortcut set to Run as Admin, at: ${sSystemLnk}"}
+          else {$errorMsg += "Failed to set shortcut to Run as Admin, at: ${sSystemLnk}"}
+        }
+      } else {$errorMsg += "Failed to create shortcut, with target at: ${sTargetPath}"}
     }
-
-    if ($sStartIn) {
-      $newLNK.WorkingDirectory = $sStartIn
-    }
-
-    if ($sDescription) {
-      $newLNK.Description = $sDescription
-    }
-
-    $newLNK.Save()
-    $result = $?
-    [Runtime.InteropServices.Marshal]::ReleaseComObject($Shell) | Out-Null
-
-    if ($result) {
-      $resultMsg += "Created shortcut at:`n${sSystemLnk}"
-
-      # set to run as admin if needed
-      if ($sRunAsAdmin) {
-        $bytes = [System.IO.File]::ReadAllBytes($sSystemLnk)
-        $bytes[0x15] = $bytes[0x15] -bor 0x20 #set byte 21 (0x15) bit 6 (0x20) ON
-        [System.IO.File]::WriteAllBytes($sSystemLnk, $bytes)
-        $result = $?
-        if ($result) {$resultMsg += "Shortcut set to Run as Admin, at: ${sSystemLnk}"}
-        else {$errorMsg += "Failed to set shortcut to Run as Admin, at: ${sSystemLnk}"}
-      }
-    } else {$errorMsg += "Failed to create shortcut, with target at: ${sTargetPath}"}
   } elseif (-Not ($sName -Or $sTargetPath)) {
     if (-Not $sName) {
       $errorMsg += "Error! Name is missing!"
@@ -171,10 +168,10 @@ if (-Not $isWin10orNewer) {
 
 # Powershell (7 or newer)
 $PowerShell_32bit_TargetPath = "C:\Program Files (x86)\PowerShell\"
-$PowerShell_32bit_Version = (Get-ChildItem -Directory -Path $PowerShell_TargetPath | Where-Object {$_.Name -match '^[0-9]+$'} | Sort-Object -Descending)[0].name
+$PowerShell_32bit_Version = if (Test-Path -Path $PowerShell_32bit_TargetPath) {(Get-ChildItem -Directory -Path $PowerShell_32bit_TargetPath | Where-Object {$_.Name -match '^[0-9]+$'} | Sort-Object -Descending)[0].name}
 $PowerShell_32bit_TargetPath += if ($PowerShell_32bit_Version) {"${PowerShell32bit_Version}\pwsh.exe"} else {"${NotInstalled}\${NotInstalled}.exe"}
 $PowerShell_TargetPath = "C:\Program Files\PowerShell\"
-$PowerShell_Version = (Get-ChildItem -Directory -Path $PowerShell_TargetPath | Where-Object {$_.Name -match '^[0-9]+$'} | Sort-Object -Descending)[0].name
+$PowerShell_Version = if (Test-Path -Path $PowerShell_TargetPath) {(Get-ChildItem -Directory -Path $PowerShell_TargetPath | Where-Object {$_.Name -match '^[0-9]+$'} | Sort-Object -Descending)[0].name}
 $PowerShell_TargetPath += if ($PowerShell_Version) {"${PowerShell_Version}\pwsh.exe"} else {"${NotInstalled}\${NotInstalled}.exe"}
 
 # App names dependant on OS or app version
@@ -274,17 +271,17 @@ for ($i = 0; $i -lt $oemSysAppList.length; $i++) {
 
 # Google Drive
 $GoogleDrive_TargetPath = "C:\Program Files\Google\Drive File Stream\"
-$GoogleDrive_Version = (Get-ChildItem -Directory -Path $GoogleDrive_TargetPath | Where-Object {$_.Name -match '^[.0-9]+$'} | Sort-Object -Descending)[0].name
+$GoogleDrive_Version = if (Test-Path -Path $GoogleDrive_TargetPath) {(Get-ChildItem -Directory -Path $GoogleDrive_TargetPath | Where-Object {$_.Name -match '^[.0-9]+$'} | Sort-Object -Descending)[0].name}
 $GoogleDrive_TargetPath += if ($GoogleDrive_Version) {"${GoogleDrive_Version}\GoogleDriveFS.exe"} else {"${NotInstalled}\${NotInstalled}.exe"}
 # VPN By Google One
 $GoogleOneVPN_TargetPath = "C:\Program Files\Google\VPN by Google One\"
-$GoogleOneVPN_Version = (Get-ChildItem -Directory -Path $GoogleOneVPN_TargetPath | Where-Object {$_.Name -match '^[.0-9]+$'} | Sort-Object -Descending)[0].name
+$GoogleOneVPN_Version = if (Test-Path -Path $GoogleOneVPN_TargetPath) {(Get-ChildItem -Directory -Path $GoogleOneVPN_TargetPath | Where-Object {$_.Name -match '^[.0-9]+$'} | Sort-Object -Descending)[0].name}
 $GoogleOneVPN_TargetPath += if ($GoogleOneVPN_Version) {"${GoogleOneVPN_Version}\googleone.exe"} else {"${NotInstalled}\${NotInstalled}.exe"}
 # GIMP
 $GIMP_TargetPath = "C:\Program Files\"
-$GIMP_FindFolder = (Get-ChildItem -Directory -Path $GIMP_TargetPath | Where-Object {$_.Name -match '^GIMP'} | Sort-Object -Descending)[0].name
+$GIMP_FindFolder = if (Test-Path -Path $GIMP_TargetPath) {(Get-ChildItem -Directory -Path $GIMP_TargetPath | Where-Object {$_.Name -match '^GIMP'} | Sort-Object -Descending)[0].name}
 $GIMP_TargetPath += if ($GIMP_FindFolder) {"${GIMP_FindFolder}\bin\"} else {"${NotInstalled}\${NotInstalled}\"}
-$GIMP_FindExe = (Get-ChildItem -File -Path $GIMP_TargetPath | Where-Object {$_.Name -match '^gimp\-[.0-9]+exe$'} | Sort-Object -Descending)[0].name
+$GIMP_FindExe = if (Test-Path -Path $GIMP_TargetPath) {(Get-ChildItem -File -Path $GIMP_TargetPath | Where-Object {$_.Name -match '^gimp\-[.0-9]+exe$'} | Sort-Object -Descending)[0].name}
 $GIMP_TargetPath += if ($GIMP_FindExe) {$GIMP_FindExe} else {"${NotInstalled}.exe"}
 
 # App names dependant on OS or app version
@@ -417,13 +414,13 @@ for ($i = 0; $i -lt $sys3rdPartyAppList.length; $i++) {
 
 # get all users 
 $Users = (Get-ChildItem "C:\Users\" | % { $_.name })
-if ($Users[0].length -eq 1) {$Users = @("$Users")} # if only one user, array needs to be recreated
+if ($Users -And ($Users[0].length -eq 1)) {$Users = @("$Users")} # if only one user, array needs to be recreated
 
 # System app paths dependant on app version
 
 # Blender
 $Blender_TargetPath = "C:\Program Files\Blender Foundation\"
-$Blender_FindFolder = (Get-ChildItem -Directory -Path $Blender_TargetPath | Where-Object {$_.Name -match '^Blender'} | Sort-Object -Descending)[0].name
+$Blender_FindFolder = if (Test-Path -Path $Blender_TargetPath) {(Get-ChildItem -Directory -Path $Blender_TargetPath | Where-Object {$_.Name -match '^Blender'} | Sort-Object -Descending)[0].name}
 $Blender_StartIn = $Blender_TargetPath+$(if ($Blender_FindFolder) {"${Blender_FindFolder}\"} else {"${NotInstalled}\"})
 $Blender_TargetPath = $Blender_StartIn+$(if ($Blender_FindFolder) {"blender-launcher.exe"} else {"${NotInstalled}.exe"})
 
@@ -440,16 +437,16 @@ for ($i = 0; $i -lt $Users.length; $i++) {
 
   # 1Password
   $OnePassword_TargetPath = "C:\Users\${aUser}\AppData\Local\1Password\app\"
-  $OnePassword_Version = (Get-ChildItem -Directory -Path $OnePassword_TargetPath | Where-Object {$_.Name -match '^[.0-9]+$'} | Sort-Object -Descending)[0].name
+  $OnePassword_Version = if (Test-Path -Path $OnePassword_TargetPath) {(Get-ChildItem -Directory -Path $OnePassword_TargetPath | Where-Object {$_.Name -match '^[.0-9]+$'} | Sort-Object -Descending)[0].name}
   $OnePassword_TargetPath += if ($OnePassword_Version) {"${OnePassword_Version}\1Password.exe"} else {"${NotInstalled}\${NotInstalled}.exe"}
   # GitHub Desktop
   $GitHubDesktop_StartIn = "C:\Users\${aUser}\AppData\Local\GitHubDesktop\"
   $GitHubDesktop_TargetPath = $GitHubDesktop_StartIn+"GitHubDesktop.exe"
-  $GitHubDesktop_Version = (Get-ChildItem -Directory -Path $GitHubDesktop_StartIn | Where-Object {$_.Name -match '^app\-[.0-9]+$'} | Sort-Object -Descending)[0].name
+  $GitHubDesktop_Version = if (Test-Path -Path $GitHubDesktop_StartIn) {(Get-ChildItem -Directory -Path $GitHubDesktop_StartIn | Where-Object {$_.Name -match '^app\-[.0-9]+$'} | Sort-Object -Descending)[0].name}
   $GitHubDesktop_StartIn += if ($GitHubDesktop_Version) {"${GitHubDesktop_Version}"} else {$NotInstalled}
   # Python
   $Python_StartIn = "C:\Users\${aUser}\AppData\Local\Programs\Python\"
-  $Python_FindFolder = (Get-ChildItem -Directory -Path $Python_StartIn | Where-Object {$_.Name -match '^Python[.0-9]+$'} | Sort-Object -Descending)[0].name
+  $Python_FindFolder = if (Test-Path -Path $Python_StartIn) {(Get-ChildItem -Directory -Path $Python_StartIn | Where-Object {$_.Name -match '^Python[.0-9]+$'} | Sort-Object -Descending)[0].name}
   $Python_StartIn += if ($Python_FindFolder) {"${Python_FindFolder}\"} else {"${NotInstalled}\"}
   $PythonIDLE_TargetPath = $Python_StartIn+$(if ($Python_FindFolder) {"Lib\idlelib\idle.pyw"} else {"${NotInstalled}\${NotInstalled}\${NotInstalled}.pyw"})
   $Python_TargetPath = $Python_StartIn+$(if ($Python_FindFolder) {"python.exe"} else {"${NotInstalled}.exe"})
@@ -467,7 +464,7 @@ for ($i = 0; $i -lt $Users.length; $i++) {
   # Discord
   $Discord_StartIn = "C:\Users\${aUser}\AppData\Local\Discord\"
   $Discord_TargetPath = $Discord_StartIn+"Update.exe"
-  $Discord_Version = (Get-ChildItem -Directory -Path $Discord_StartIn | Where-Object {$_.Name -match '^app\-[.0-9]+$'} | Sort-Object -Descending)[0].name
+  $Discord_Version = if (Test-Path -Path $Discord_StartIn) {(Get-ChildItem -Directory -Path $Discord_StartIn | Where-Object {$_.Name -match '^app\-[.0-9]+$'} | Sort-Object -Descending)[0].name}
   $Discord_StartIn += if ($Discord_Version) {"${Discord_Version}"} else {$NotInstalled}
 
   $userAppList = @( # all instances of "${aUser}" get's replaced with the username
