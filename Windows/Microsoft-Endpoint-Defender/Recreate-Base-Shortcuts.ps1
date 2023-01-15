@@ -15,6 +15,9 @@
        RunAsAdmin="[true or false, if needed]"
    } #>
 
+# Constants
+Set-Variable NotInstalled -Option Constant -Value "dummy-not-installed"
+
 # Variables
 $isWindows11 = ((Get-WMIObject win32_operatingsystem).Caption).StartsWith("Microsoft Windows 11")
 $isWindows10 = ((Get-WMIObject win32_operatingsystem).Caption).StartsWith("Microsoft Windows 10")
@@ -157,7 +160,14 @@ if (-Not $isWin10orNewer) {
 # System Applications
 
 # Names dependant on OS or app version
-$PowerToysName = "PowerToys"+$(if (winget list -q "Microsoft.PowerToys" -e | Select-String "^PowerToys \(Preview\)") {" (Preview)"})
+
+# PowerToys
+$PowerToys_Name = "PowerToys"+$(if (winget list -q "Microsoft.PowerToys" -e | Select-String "^PowerToys \(Preview\)") {" (Preview)"})
+
+# TargetPaths dependant on app version
+
+## App Name
+#$App_TargetPath = ...
 
 $sysAppList = @(
   # Edge
@@ -169,7 +179,7 @@ $sysAppList = @(
   # Intune Management Extension
   @{Name="Microsoft Intune Management Extension"; TargetPath="C:\Program Files (x86)\Microsoft Intune Management Extension\AgentExecutor.exe"; SystemLnk="Microsoft Intune Management Extension\"; Description="Microsoft Intune Management Extension"},
   # PowerToys
-  @{Name=$PowerToysName; TargetPath="C:\Program Files\PowerToys\PowerToys.exe"; SystemLnk=$PowerToysName+'\'; StartIn="C:\Program Files\PowerToys\"; Description="PowerToys - Windows system utilities to maximize productivity"},
+  @{Name=$PowerToys_Name; TargetPath="C:\Program Files\PowerToys\PowerToys.exe"; SystemLnk=$PowerToys_Name+'\'; StartIn="C:\Program Files\PowerToys\"; Description="PowerToys - Windows system utilities to maximize productivity"},
   # OneDrive
   @{Name="OneDrive"; TargetPath="C:\Program Files\Microsoft OneDrive\OneDrive.exe"; Description="Keep your most important files with you wherever you go, on any device."},
   # Office Apps
@@ -205,6 +215,16 @@ for ($i = 0; $i -lt $sysAppList.length; $i++) {
 
 # OEM System Applications (e.g. Dell)
 
+# Names dependant on OS or app version
+
+## App Name
+#$App_Name = ...
+
+# TargetPaths dependant on app version
+
+## App Name
+#$App_TargetPath = ...
+
 $oemSysAppList = @(
   # Dell
   @{Name="Dell OS Recovery Tool"; TargetPath="C:\Program Files (x86)\Dell\OS Recovery Tool\DellOSRecoveryTool.exe"; SystemLnk="Dell\"; StartIn="C:\Program Files (x86)\Dell\OS Recovery Tool\"},
@@ -230,12 +250,34 @@ for ($i = 0; $i -lt $oemSysAppList.length; $i++) {
 # Third-Party System Applications (not made by Microsoft)
 
 # Names dependant on OS or app version
-#$AppName = ...
+
+# GIMP
+$GIMP_Version = ([string](winget list -q "GIMP.GIMP" -e | Select-String "^GIMP")).split(' ')[3]
+$GIMP_Name = "GIMP ${GIMP_Version}"
+
+# TargetPaths dependant on app version
+
+# Google Drive
+$GoogleDrive_TargetPath = "C:\Program Files\Google\Drive File Stream\"
+$GoogleDrive_Version = (Get-ChildItem -Directory -Path $GoogleDrive_TargetPath | Where-Object {$_.Name -match '^[.0-9]+$'} | Sort-Object -Descending)[0].name
+$GoogleDrive_TargetPath += if ($GoogleDrive_Version) {"${GoogleDrive_Version}\GoogleDriveFS.exe"} else {"${NotInstalled}.exe"}
+# VPN By Google One
+$GoogleOneVPN_TargetPath = "C:\Program Files\Google\VPN by Google One\"
+$GoogleOneVPN_Version = (Get-ChildItem -Directory -Path $GoogleOneVPN_TargetPath | Where-Object {$_.Name -match '^[.0-9]+$'} | Sort-Object -Descending)[0].name
+$GoogleOneVPN_TargetPath += if ($GoogleOneVPN_Version) {"${GoogleOneVPN_Version}\googleone.exe"} else {"${NotInstalled}.exe"}
+# GIMP
+$GIMP_TargetPath = "C:\Program Files\"
+$GIMP_FindFolder = (Get-ChildItem -Directory -Path $GIMP_TargetPath | Where-Object {$_.Name -match '^GIMP'} | Sort-Object -Descending)[0].name
+$GIMP_TargetPath += if ($GIMP_FindFolder) {"${GIMP_FindFolder}\bin\"} else {"${NotInstalled}\"}
+$GIMP_FindExe = (Get-ChildItem -File -Path $GIMP_TargetPath | Where-Object {$_.Name -match '^gimp\-[.0-9]+exe$'} | Sort-Object -Descending)[0].name
+$GIMP_TargetPath += if ($GIMP_FindExe) {$GIMP_FindExe} else {"${NotInstalled}.exe"}
 
 $sys3rdPartyAppList = @(
   # Google
   @{Name="Google Chrome (32-bit)"; TargetPath="C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"; StartIn="C:\Program Files (x86)\Google\Chrome\Application"; Description="Access the Internet"},
   @{Name="Google Chrome"; TargetPath="C:\Program Files\Google\Chrome\Application\chrome.exe"; StartIn="C:\Program Files\Google\Chrome\Application"; Description="Access the Internet"},
+  @{Name="Google Drive"; TargetPath=$GoogleDrive_TargetPath; Description="Google Drive"},
+  @{Name="VPN by Google One"; TargetPath=$GoogleOneVPN_TargetPath; Description="VPN by Google One"},
   # Mozilla
   @{Name="Firefox (32-bit)"; TargetPath="C:\Program Files (x86)\Mozilla Firefox\firefox.exe"; StartIn="C:\Program Files (x86)\Mozilla Firefox"},
   @{Name="Firefox Private Browsing (32-bit)"; TargetPath="C:\Program Files (x86)\Mozilla Firefox\private_browsing.exe"; StartIn="C:\Program Files (x86)\Mozilla Firefox"; Description="Firefox Private Browsing"},
@@ -247,6 +289,8 @@ $sys3rdPartyAppList = @(
   @{Name="7-Zip File Manager"; TargetPath="C:\Program Files\7-Zip\7zFM.exe"; SystemLnk="7-Zip\"},
   @{Name="7-Zip Help"; TargetPath="C:\Program Files (x86)\7-Zip\7-zip.chm"; SystemLnk="7-Zip\"},
   @{Name="7-Zip Help"; TargetPath="C:\Program Files\7-Zip\7-zip.chm"; SystemLnk="7-Zip\"},
+  # GIMP
+  @{Name=$GIMP_Name; TargetPath=$GIMP_TargetPath; StartIn="%USERPROFILE%"; Description=$GIMP_Name},
   # Audacity
   @{Name="Audacity"; TargetPath="C:\Program Files\Audacity\Audacity.exe"; StartIn="C:\Program Files\Audacity"},
   # Kdenlive
@@ -346,13 +390,20 @@ for ($i = 0; $i -lt $sys3rdPartyAppList.length; $i++) {
 # User Applications (per user installed apps)
 
 # Names dependant on OS or app version
-$MicrosoftTeamsName = "Microsoft Teams"+$(if ($isWindows11) {" (work or school)"})
+
+# Microsoft Teams
+$MicrosoftTeams_Name = "Microsoft Teams"+$(if ($isWindows11) {" (work or school)"})
+
+# TargetPaths dependant on app version
+
+## App Name
+#$App_TargetPath = ...
 
 $userAppList = @( # all instances of "%username%" get's replaced with the username
   # Microsoft
   @{Name="Visual Studio Code"; TargetPath="C:\Users\%username%\AppData\Local\Programs\Microsoft VS Code\Code.exe"; SystemLnk="Visual Studio Code\"; StartIn="C:\Users\%username%\AppData\Local\Programs\Microsoft VS Code"},
   @{Name="OneDrive"; TargetPath="C:\Users\%username%\AppData\Local\Microsoft\OneDrive\OneDrive.exe"; Description="Keep your most important files with you wherever you go, on any device."},
-  @{Name=$MicrosoftTeamsName; TargetPath="C:\Users\%username%\AppData\Local\Microsoft\Teams\Update.exe"; Arguments="--processStart `"Teams.exe`""; StartIn="C:\Users\%username%\AppData\Local\Microsoft\Teams"},
+  @{Name=$MicrosoftTeams_Name; TargetPath="C:\Users\%username%\AppData\Local\Microsoft\Teams\Update.exe"; Arguments="--processStart `"Teams.exe`""; StartIn="C:\Users\%username%\AppData\Local\Microsoft\Teams"},
   # Google
   @{Name="Google Chrome"; TargetPath="C:\Users\%username%\AppData\Local\Google\Chrome\Application\chrome.exe"; StartIn="C:\Users\%username%\AppData\Local\Google\Chrome\Application"; Description="Access the Internet"},
   # Mozilla
