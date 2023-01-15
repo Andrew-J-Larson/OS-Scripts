@@ -619,6 +619,10 @@ for ($i = 0; $i -lt $Users.length; $i++) {
   $GitHubDesktop_TargetPath = $GitHubDesktop_StartIn+"GitHubDesktop.exe"
   $GitHubDesktop_FindFolder = if (Test-Path -Path $GitHubDesktop_StartIn) {(Get-ChildItem -Directory -Path $GitHubDesktop_StartIn | Where-Object {$_.Name -match '^app\-[.0-9]+$'} | Sort-Object -Descending)[0].name}
   $GitHubDesktop_StartIn += if ($GitHubDesktop_FindFolder) {"${GitHubDesktop_FindFolder}"} else {$NotInstalled}
+  # Microsoft
+  $AzureIoTExplorerPreview_TargetPath = "C:\Users\${aUser}\AppData\Local\Programs\azure-iot-explorer\Azure IoT Explorer Preview.exe"
+  $AzureIoTExplorer_TargetPath = if (Test-Path -Path $AzureIoTExplorerPreview_TargetPath -PathType Leaf) {$AzureIoTExplorerPreview_TargetPath} else {"C:\Users\${aUser}\AppData\Local\Programs\azure-iot-explorer\Azure IoT Explorer.exe"}
+  $AzureIoTExplorer_Name = "Azure IoT Explorer"$(if (Test-Path -Path $AzureIoTExplorerPreview_TargetPath -PathType Leaf) {" Preview"})
   # Python
   $Python_StartIn = "C:\Users\${aUser}\AppData\Local\Programs\Python\"
   $Python_FindFolder = if (Test-Path -Path $Python_StartIn) {(Get-ChildItem -Directory -Path $Python_StartIn | Where-Object {$_.Name -match '^Python[.0-9]+$'} | Sort-Object -Descending)[0].name}
@@ -636,6 +640,8 @@ for ($i = 0; $i -lt $Users.length; $i++) {
   $PythonIDLE_Name = "IDLE (Python ${Python_Version} ${Python_Arch}-bit)"
   $Python_Name = "Python ${Python_Version} (${Python_Arch}-bit)"
   $PythonModuleDocs_Name = "Python ${Python_Version} Module Docs (${Python_Arch}-bit)"
+  
+  # User app names dependant on OS or app version
 
   $userAppList = @( # all instances of "${aUser}" get's replaced with the username
     # 1Password
@@ -658,6 +664,7 @@ for ($i = 0; $i -lt $Users.length; $i++) {
     @{Name="Inkview (32-bit)"; TargetPath="C:\Program Files (x86)\Inkscape\bin\inkview.exe"; SystemLnk="Inkscape\"; StartIn="C:\Program Files (x86)\Inkscape\bin\"},
     # Microsoft
     @{Name="Azure Data Studio"; TargetPath="C:\Users\${aUser}\AppData\Local\Programs\Azure Data Studio\azuredatastudio.exe"; SystemLnk="Azure Data Studio\"; StartIn="C:\Users\${aUser}\AppData\Local\Programs\Azure Data Studio"},
+    @{Name=$AzureIoTExplorer_Name; TargetPath=$AzureIoTExplorer_TargetPath; StartIn="C:\Users\${aUser}\AppData\Local\Programs\azure-iot-explorer\"},
     @{Name="Visual Studio Code"; TargetPath="C:\Users\${aUser}\AppData\Local\Programs\Microsoft VS Code\Code.exe"; SystemLnk="Visual Studio Code\"; StartIn="C:\Users\${aUser}\AppData\Local\Programs\Microsoft VS Code"},
     @{Name="OneDrive"; TargetPath="C:\Users\${aUser}\AppData\Local\Microsoft\OneDrive\OneDrive.exe"; Description="Keep your most important files with you wherever you go, on any device."},
     @{Name=$MicrosoftTeams_Name; TargetPath="C:\Users\${aUser}\AppData\Local\Microsoft\Teams\Update.exe"; Arguments="--processStart `"Teams.exe`""; StartIn="C:\Users\${aUser}\AppData\Local\Microsoft\Teams"},
