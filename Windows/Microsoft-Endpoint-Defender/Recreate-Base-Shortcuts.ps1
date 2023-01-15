@@ -302,16 +302,24 @@ $GoogleOneVPN_Version = if (Test-Path -Path $GoogleOneVPN_TargetPath) {(Get-Chil
 $GoogleOneVPN_TargetPath += if ($GoogleOneVPN_Version) {"${GoogleOneVPN_Version}\googleone.exe"} else {"${NotInstalled}\${NotInstalled}.exe"}
 # GIMP
 $GIMP_TargetPath = "C:\Program Files\"
-$GIMP_FindFolder = if (Test-Path -Path $GIMP_TargetPath) {(Get-ChildItem -Directory -Path $GIMP_TargetPath | Where-Object {$_.Name -match '^GIMP'} | Sort-Object -Descending)[0].name}
+$GIMP_FindFolder = (Get-ChildItem -Directory -Path $GIMP_TargetPath | Where-Object {$_.Name -match '^GIMP'} | Sort-Object -Descending)[0].name
 $GIMP_TargetPath += if ($GIMP_FindFolder) {"${GIMP_FindFolder}\bin\"} else {"${NotInstalled}\${NotInstalled}\"}
 $GIMP_FindExe = if (Test-Path -Path $GIMP_TargetPath) {(Get-ChildItem -File -Path $GIMP_TargetPath | Where-Object {$_.Name -match '^gimp\-[.0-9]+exe$'} | Sort-Object -Descending)[0].name}
 $GIMP_TargetPath += if ($GIMP_FindExe) {$GIMP_FindExe} else {"${NotInstalled}.exe"}
+# KeePass
+$KeePass_StartIn = "C:\Program Files\"
+$KeePass_FindFolder = (Get-ChildItem -Directory -Path $KeePass_StartIn | Where-Object {$_.Name -match '^KeePass Password Safe'} | Sort-Object -Descending)[0].name
+$KeePass_TargetPath = if ($KeePass_FindFolder) {"${KeePass_FindFolder}\KeePass.exe"} else {"${NotInstalled}\${NotInstalled}.exe"}
 
 # App names dependant on OS or app version
 
 # GIMP
 $GIMP_Version = ([string](winget list -q "GIMP.GIMP" -e | Select-String "^GIMP")).split(' ')[3]
 $GIMP_Name = "GIMP "+$(if ($GIMP_Version) {$GIMP_Version} else {$NotInstalled})
+# KeePass
+$KeePass_FileVersionRaw = if (Test-Path -Path $KeePass_TargetPath -PathType Leaf) {(Get-Item $KeePass_TargetPath).VersionInfo.FileVersionRaw}
+$KeePass_Version = if ($KeePass_FileVersionRaw) {$KeePass_FileVersionRaw.Major} else {$NotInstalled}
+$KeePass_Name = "KeePass ${KeePass_Version}"
 
 $sys3rdPartyAppList = @(
   # Google
@@ -390,7 +398,8 @@ $sys3rdPartyAppList = @(
   @{Name="SoundSwitch"; TargetPath="C:\Program Files\SoundSwitch\SoundSwitch.exe"; SystemLnk="SoundSwitch\"; StartIn="C:\Program Files\SoundSwitch"},
   @{Name="Uninstall SoundSwitch"; TargetPath="C:\Program Files\SoundSwitch\unins000.exe"; SystemLnk="SoundSwitch\"; StartIn="C:\Program Files\SoundSwitch"},
   # KeePass
-  @{Name="KeePass"; TargetPath="C:\Program Files (x86)\KeePass Password Safe\KeePass.exe"; StartIn="C:\Program Files (x86)\KeePass Password Safe"},
+  @{Name=$KeePass_Name; TargetPath=$KeePass_TargetPath; StartIn=$KeePass_StartIn} # new version 2+
+  @{Name="KeePass"; TargetPath="C:\Program Files (x86)\KeePass Password Safe\KeePass.exe"; StartIn="C:\Program Files (x86)\KeePass Password Safe"}, # old version 1.x
   # OpenVPN
   @{Name="OpenVPN"; TargetPath="C:\Program Files\OpenVPN\bin\openvpn-gui.exe"; SystemLnk="OpenVPN\OpenVPN GUI"; StartIn="C:\Program Files\OpenVPN\bin\"},
   @{Name="OpenVPN Manual Page"; TargetPath="C:\Program Files\OpenVPN\doc\openvpn.8.html"; SystemLnk="OpenVPN\Documentation\"; StartIn="C:\Program Files\OpenVPN\doc\"},
@@ -477,7 +486,7 @@ for ($i = 0; $i -lt $Users.length; $i++) {
   $PythonIDLE_TargetPath = $Python_StartIn+$(if ($Python_FindFolder) {"Lib\idlelib\idle.pyw"} else {"${NotInstalled}\${NotInstalled}\${NotInstalled}.pyw"})
   $Python_TargetPath = $Python_StartIn+$(if ($Python_FindFolder) {"python.exe"} else {"${NotInstalled}.exe"})
   $Python_FileVersionRaw = if (Test-Path -Path $Python_TargetPath -PathType Leaf) {(Get-Item $Python_TargetPath).VersionInfo.FileVersionRaw}
-  $Python_Version = if ($Python_Item) {[string]($Python_FileVersionRaw.Major)+'.'+[string]($Python_FileVersionRaw.Minor)} else {$NotInstalled}
+  $Python_Version = if ($Python_FileVersionRaw) {[string]($Python_FileVersionRaw.Major)+'.'+[string]($Python_FileVersionRaw.Minor)} else {$NotInstalled}
   $PythonIDLE_Description = "Launches IDLE, the interactive environment for Python ${Python_Version}."
   $Python_Description = "Launches the Python ${Python_Version} interpreter."
   $PythonModuleDocs_Description = "Start the Python ${Python_Version} documentation server."
