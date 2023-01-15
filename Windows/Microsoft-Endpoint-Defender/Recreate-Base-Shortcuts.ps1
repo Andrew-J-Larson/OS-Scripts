@@ -165,30 +165,38 @@ if (-Not $isWin10orNewer) {
 
 # System Applications
 
-# App names dependant on OS or app version
-
-# PowerToys
-$PowerToys_Name = "PowerToys"+$(if (winget list -q "Microsoft.PowerToys" -e | Select-String "^PowerToys \(Preview\)") {" (Preview)"})
-
 # App paths dependant on app version
 
-## App Name
-#$App_TargetPath = ...
+# Powershell (7 or newer)
+$PowerShell_32bit_TargetPath = "C:\Program Files (x86)\PowerShell\"
+$PowerShell_32bit_Version = (Get-ChildItem -Directory -Path $PowerShell_TargetPath | Where-Object {$_.Name -match '^[0-9]+$'} | Sort-Object -Descending)[0].name
+$PowerShell_32bit_TargetPath += if ($PowerShell_32bit_Version) {"${PowerShell32bit_Version}\pwsh.exe"} else {"${NotInstalled}\${NotInstalled}.exe"}
+$PowerShell_TargetPath = "C:\Program Files\PowerShell\"
+$PowerShell_Version = (Get-ChildItem -Directory -Path $PowerShell_TargetPath | Where-Object {$_.Name -match '^[0-9]+$'} | Sort-Object -Descending)[0].name
+$PowerShell_TargetPath += if ($PowerShell_Version) {"${PowerShell_Version}\pwsh.exe"} else {"${NotInstalled}\${NotInstalled}.exe"}
+
+# App names dependant on OS or app version
+
+# PowerShell (7 or newer)
+$PowerShell_32bit_Name = "PowerShell "+$(if ($PowerShell_Version) {$PowerShell_Version} else {$NotInstalled})+" (x86)"
+$PowerShell_Name = "PowerShell "+$(if ($PowerShell_Version) {$PowerShell_Version} else {$NotInstalled})+" (x64)"
+# PowerToys
+$PowerToys_Name = "PowerToys"+$(if (winget list -q "Microsoft.PowerToys" -e | Select-String "^PowerToys \(Preview\)") {" (Preview)"})
 
 $sysAppList = @(
   # Edge
   @{Name="Microsoft Edge"; TargetPath="C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"; StartIn="C:\Program Files (x86)\Microsoft\Edge\Application"; Description="Browse the web"}, # it's the only install on 64-bit
   @{Name="Microsoft Edge"; TargetPath="C:\Program Files\Microsoft\Edge\Application\msedge.exe"; StartIn="C:\Program Files\Microsoft\Edge\Application"; Description="Browse the web"}, # it's the only install on 32-bit
-  # PowerShell 7
-  @{Name="PowerShell 7 (x86)"; TargetPath="C:\Program Files (x86)\PowerShell\7\pwsh.exe"; Arguments="-WorkingDirectory ~"; SystemLnk="PowerShell\"; Description="PowerShell 7 (x86)"},
-  @{Name="PowerShell 7 (x64)"; TargetPath="C:\Program Files\PowerShell\7\pwsh.exe"; Arguments="-WorkingDirectory ~"; SystemLnk="PowerShell\"; Description="PowerShell 7 (x64)"},
+  # PowerShell (7 or newer)
+  @{Name=$PowerShell_32bit_Name; TargetPath=$PowerShell_32bit_TargetPath; Arguments="-WorkingDirectory ~"; SystemLnk="PowerShell\"; Description=$PowerShell_32bit_Name},
+  @{Name=$PowerShell_Name; TargetPath=$PowerShell_TargetPath; Arguments="-WorkingDirectory ~"; SystemLnk="PowerShell\"; Description=$PowerShell_Name},
   # Intune Management Extension
   @{Name="Microsoft Intune Management Extension"; TargetPath="C:\Program Files (x86)\Microsoft Intune Management Extension\AgentExecutor.exe"; SystemLnk="Microsoft Intune Management Extension\"; Description="Microsoft Intune Management Extension"},
   # PowerToys
   @{Name=$PowerToys_Name; TargetPath="C:\Program Files\PowerToys\PowerToys.exe"; SystemLnk=$PowerToys_Name+'\'; StartIn="C:\Program Files\PowerToys\"; Description="PowerToys - Windows system utilities to maximize productivity"},
   # OneDrive
   @{Name="OneDrive"; TargetPath="C:\Program Files\Microsoft OneDrive\OneDrive.exe"; Description="Keep your most important files with you wherever you go, on any device."},
-  # Office Apps
+  # Office
   @{Name="Access"; TargetPath="C:\Program Files\Microsoft Office\root\Office16\MSACCESS.EXE"; Description="Build a professional app quickly to manage data."},
   @{Name="Excel"; TargetPath="C:\Program Files\Microsoft Office\root\Office16\EXCEL.EXE"; Description="Easily discover, visualize, and share insights from your data."},
   @{Name="OneNote"; TargetPath="C:\Program Files\Microsoft Office\root\Office16\ONENOTE.EXE"; Description="Take notes and have them when you need them."},
@@ -198,7 +206,7 @@ $sysAppList = @(
   @{Name="Word"; TargetPath="C:\Program Files\Microsoft Office\root\Office16\WINWORD.EXE"; Description="Create beautiful documents, easily work with others, and enjoy the read."},
   @{Name="Database Compare"; TargetPath="C:\Program Files\Microsoft Office\root\Client\AppVLP.exe"; Arguments="`"C:\Program Files (x86)\Microsoft Office\Office16\DCF\DATABASECOMPARE.EXE`""; SystemLnk="Microsoft Office Tools\"; Description="Compare versions of an Access database."},
   @{Name="Office Language Preferences"; TargetPath="C:\Program Files\Microsoft Office\root\Office16\SETLANG.EXE"; SystemLnk="Microsoft Office Tools\"; Description="Change the language preferences for Office applications."},
-  @{Name="Spreadsheet Compare"; TargetPath="C:\Program Files\Microsoft Office\root\Client\AppVLP.exe" ; Arguments="`"C:\Program Files (x86)\Microsoft Office\Office16\DCF\SPREADSHEETCOMPARE.EXE`""; SystemLnk="Microsoft Office Tools\"; Description="Compare versions of an Excel workbook."},
+  @{Name="Spreadsheet Compare"; TargetPath="C:\Program Files\Microsoft Office\root\Client\AppVLP.exe"; Arguments="`"C:\Program Files (x86)\Microsoft Office\Office16\DCF\SPREADSHEETCOMPARE.EXE`""; SystemLnk="Microsoft Office Tools\"; Description="Compare versions of an Excel workbook."},
   @{Name="Telemetry Log for Office"; TargetPath="C:\Program Files\Microsoft Office\root\Office16\msoev.exe"; SystemLnk="Microsoft Office Tools\"; Description="View critical errors, compatibility issues and workaround information for your Office solutions by using Office Telemetry Log."},
   # Visual Studio
   @{Name="Visual Studio Installer"; TargetPath="C:\Program Files (x86)\Microsoft Visual Studio\Installer\setup.exe"; StartIn="C:\Program Files (x86)\Microsoft Visual Studio\Installer"},
@@ -223,15 +231,16 @@ for ($i = 0; $i -lt $sysAppList.length; $i++) {
 
 # OEM System Applications (e.g. Dell)
 
-# App names dependant on OS or app version
-
-## App Name
-#$App_Name = ...
-
 # App paths dependant on app version
 
 ## App Name
 #$App_TargetPath = ...
+#$App_StartIn = ...
+
+# App names dependant on OS or app version
+
+## App Name
+#$App_Name = ...
 
 $oemSysAppList = @(
   # Dell
@@ -259,12 +268,6 @@ for ($i = 0; $i -lt $oemSysAppList.length; $i++) {
 
 # Third-Party System Applications (not made by Microsoft)
 
-# App names dependant on OS or app version
-
-# GIMP
-$GIMP_Version = ([string](winget list -q "GIMP.GIMP" -e | Select-String "^GIMP")).split(' ')[3]
-$GIMP_Name = "GIMP "+$(if ($GIMP_Version) {$GIMP_Version} else {$NotInstalled})
-
 # App paths dependant on app version
 
 # Google Drive
@@ -281,6 +284,12 @@ $GIMP_FindFolder = (Get-ChildItem -Directory -Path $GIMP_TargetPath | Where-Obje
 $GIMP_TargetPath += if ($GIMP_FindFolder) {"${GIMP_FindFolder}\bin\"} else {"${NotInstalled}\${NotInstalled}\"}
 $GIMP_FindExe = (Get-ChildItem -File -Path $GIMP_TargetPath | Where-Object {$_.Name -match '^gimp\-[.0-9]+exe$'} | Sort-Object -Descending)[0].name
 $GIMP_TargetPath += if ($GIMP_FindExe) {$GIMP_FindExe} else {"${NotInstalled}.exe"}
+
+# App names dependant on OS or app version
+
+# GIMP
+$GIMP_Version = ([string](winget list -q "GIMP.GIMP" -e | Select-String "^GIMP")).split(' ')[3]
+$GIMP_Name = "GIMP "+$(if ($GIMP_Version) {$GIMP_Version} else {$NotInstalled})
 
 $sys3rdPartyAppList = @(
   # Google
@@ -401,10 +410,9 @@ for ($i = 0; $i -lt $sys3rdPartyAppList.length; $i++) {
 
 # User Applications (per user installed apps)
 
-# App names dependant on OS or app version
-
-# Microsoft Teams
-$MicrosoftTeams_Name = "Microsoft Teams"+$(if ($isWindows11) {" (work or school)"})
+# get all users 
+$Users = (Get-ChildItem "C:\Users\" | % { $_.name })
+if ($Users[0].length -eq 1) {$Users = @("$Users")} # if only one user, array needs to be recreated
 
 # System app paths dependant on app version
 
@@ -414,9 +422,10 @@ $Blender_FindFolder = (Get-ChildItem -Directory -Path $Blender_TargetPath | Wher
 $Blender_StartIn = $Blender_TargetPath+$(if ($Blender_FindFolder) {"${Blender_FindFolder}\"} else {"${NotInstalled}\"})
 $Blender_TargetPath = $Blender_StartIn+$(if ($Blender_FindFolder) {"blender-launcher.exe"} else {"${NotInstalled}.exe"})
 
-# get all users 
-$Users = (Get-ChildItem "C:\Users\" | % { $_.name })
-if ($Users[0].length -eq 1) {$Users = @("$Users")} # if only one user, array needs to be recreated
+# App names dependant on OS or app version
+
+# Microsoft Teams
+$MicrosoftTeams_Name = "Microsoft Teams"+$(if ($isWindows11) {" (work or school)"})
 
 for ($i = 0; $i -lt $Users.length; $i++) {
   # get user
@@ -424,12 +433,15 @@ for ($i = 0; $i -lt $Users.length; $i++) {
 
   # User app paths dependant on app version
 
+  # 1Password
+  $OnePassword_TargetPath = "C:\Users\${aUser}\AppData\Local\1Password\app\"
+  $OnePassword_Version = (Get-ChildItem -Directory -Path $OnePassword_TargetPath | Where-Object {$_.Name -match '^[.0-9]+$'} | Sort-Object -Descending)[0].name
+  $OnePassword_TargetPath += if ($OnePassword_Version) {"${OnePassword_Version}\1Password.exe"} else {"${NotInstalled}\${NotInstalled}.exe"}
   # GitHub Desktop
   $GitHubDesktop_StartIn = "C:\Users\${aUser}\AppData\Local\GitHubDesktop\"
   $GitHubDesktop_TargetPath = $GitHubDesktop_StartIn+"GitHubDesktop.exe"
   $GitHubDesktop_Version = (Get-ChildItem -Directory -Path $GitHubDesktop_StartIn | Where-Object {$_.Name -match '^app\-[.0-9]+$'} | Sort-Object -Descending)[0].name
   $GitHubDesktop_StartIn += if ($GitHubDesktop_Version) {"${GitHubDesktop_Version}"} else {"${NotInstalled}"}
-
   # Discord
   $Discord_StartIn = "C:\Users\${aUser}\AppData\Local\Discord\"
   $Discord_TargetPath = $Discord_StartIn+"Update.exe"
@@ -447,8 +459,13 @@ for ($i = 0; $i -lt $Users.length; $i++) {
     @{Name="Firefox"; TargetPath="C:\Users\${aUser}\AppData\Local\Mozilla Firefox\firefox.exe"; StartIn="C:\Users\${aUser}\AppData\Local\Mozilla Firefox"},
     # NVIDIA Corporation
     @{Name="NVIDIA GeForce NOW"; TargetPath="C:\Users\${aUser}\AppData\Local\NVIDIA Corporation\GeForceNOW\CEF\GeForceNOW.exe"; StartIn="C:\Users\${aUser}\AppData\Local\NVIDIA Corporation\GeForceNOW\CEF"},
+    # 1Password
+    @{Name="1Password"; TargetPath=$OnePassword_TargetPath; Description="1Password"},
     # Blender
     @{Name="Blender"; TargetPath=$Blender_TargetPath; SystemLnk="blender\"; StartIn=$Blender_StartIn},
+    # Inkscape
+    @{Name="Inkscape"; TargetPath="C:\Program Files\Inkscape\bin\inkscape.exe"; SystemLnk="Inkscape\"; StartIn="C:\Program Files\Inkscape\bin\"},
+    @{Name="Inkview"; TargetPath="C:\Program Files\Inkscape\bin\inkview.exe"; SystemLnk="Inkscape\"; StartIn="C:\Program Files\Inkscape\bin\"},
     # GitHub Desktop
     @{Name="GitHub Desktop"; TargetPath=$GitHubDesktop_TargetPath; SystemLnk="GitHub, Inc\"; StartIn=$GitHubDesktop_StartIn; Description="Simple collaboration from your desktop"},
     # balenaEtcher
