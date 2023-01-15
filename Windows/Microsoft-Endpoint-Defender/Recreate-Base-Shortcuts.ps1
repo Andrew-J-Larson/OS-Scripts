@@ -16,7 +16,7 @@
    } #>
 
 # Constants
-Set-Variable NotInstalled -Option Constant -Value "dummy-not-installed"
+Set-Variable NotInstalled -Option Constant -Value "NOT-INSTALLED"
 
 # Variables
 $isWindows11 = ((Get-WMIObject win32_operatingsystem).Caption).StartsWith("Microsoft Windows 11")
@@ -253,7 +253,7 @@ for ($i = 0; $i -lt $oemSysAppList.length; $i++) {
 
 # GIMP
 $GIMP_Version = ([string](winget list -q "GIMP.GIMP" -e | Select-String "^GIMP")).split(' ')[3]
-$GIMP_Name = "GIMP ${GIMP_Version}"
+$GIMP_Name = "GIMP "+$(if ($GIMP_Version) {$GIMP_Version} else {$NotInstalled})
 
 # TargetPaths dependant on app version
 
