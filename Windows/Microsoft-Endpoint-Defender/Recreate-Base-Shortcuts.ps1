@@ -351,6 +351,8 @@ $sys3rdPartyAppList = @(
   # Bulk Crap Uninstaller
   @{Name="BCUninstaller"; TargetPath="C:\Program Files\BCUninstaller\BCUninstaller.exe"; SystemLnk="BCUninstaller\"; StartIn="C:\Program Files\BCUninstaller"},
   @{Name="Uninstall BCUninstaller"; TargetPath="C:\Program Files\BCUninstaller\unins000.exe"; SystemLnk="BCUninstaller\"; StartIn="C:\Program Files\BCUninstaller"},
+  # Bytello
+  @{Name="Bytello Share"; TargetPath="C:\Program Files (x86)\Bytello Share\Bytello Share.exe"; SystemLnk="Bytello Share\"; StartIn="C:\Program Files (x86)\Bytello Share"},
   # Citrix Workspace
   @{Name="Citrix Workspace"; TargetPath="C:\Program Files (x86)\Citrix\ICA Client\SelfServicePlugin\SelfService.exe"; Arguments="-showAppPicker"; StartIn="C:\Program Files (x86)\Citrix\ICA Client\SelfServicePlugin\"; Description="Select applications you want to use on your computer"},
   # CodeTwo Active Directory Photos
