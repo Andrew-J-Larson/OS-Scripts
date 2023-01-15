@@ -349,6 +349,8 @@ $sys3rdPartyAppList = @(
   @{Name="CodeTwo Active Directory Photos"; TargetPath="C:\Program Files\CodeTwo\CodeTwo Active Directory Photos\CodeTwo Active Directory Photos.exe"; SystemLnk="CodeTwo\CodeTwo Active Directory Photos\"; Description="CodeTwo Active Directory Photos"},
   @{Name="Go to program home page"; TargetPath="C:\Program Files\CodeTwo\CodeTwo Active Directory Photos\Data\HomePage.url"; SystemLnk="CodeTwo\CodeTwo Active Directory Photos\"; Description="CodeTwo Active Directory Photos home page"},
   @{Name="User's manual"; TargetPath="C:\Program Files\CodeTwo\CodeTwo Active Directory Photos\Data\User's manual.url"; SystemLnk="CodeTwo\CodeTwo Active Directory Photos\"; Description="Go to User Guide"},
+  # Docker
+  @{Name="Docker Desktop"; TargetPath="C:\Program Files\Docker\Docker\Docker Desktop.exe"; SystemLnk="C:\ProgramData\Microsoft\Windows\Start Menu\"; Description="Docker Desktop"},
   # Epson
   @{Name="Epson Scan 2"; TargetPath="C:\Program Files (x86)\epson\Epson Scan 2\Core\es2launcher.exe"; SystemLnk="EPSON\Epson Scan 2\"},
   @{Name="FAX Utility"; TargetPath="C:\Program Files (x86)\Epson Software\FAX Utility\FUFAXCNT.exe"; SystemLnk="EPSON Software\"},
@@ -362,11 +364,16 @@ $sys3rdPartyAppList = @(
   # GoTo
   @{Name="GoTo Resolve Desktop Console (64-bit)"; TargetPath="C:\Program Files\GoTo\GoTo Resolve Desktop Console\ra-technician-console.exe"; StartIn="C:\Program Files\GoTo\GoTo Resolve Desktop Console\"},
   @{Name="GoTo Resolve Desktop Console (32-bit)"; TargetPath="C:\Program Files (x86)\GoTo\GoTo Resolve Desktop Console\ra-technician-console.exe"; StartIn="C:\Program Files (x86)\GoTo\GoTo Resolve Desktop Console\"},
+  # KC Softwares
+  @{Name="SUMo"; TargetPath="C:\Program Files (x86)\KC Softwares\SUMo\SUMo.exe"; SystemLnk="KC Softwares\SUMo\"; StartIn="C:\Program Files (x86)\KC Softwares\SUMo"},
+  @{Name="Uninstall SUMo"; TargetPath="C:\Program Files (x86)\KC Softwares\SUMo\unins000.exe"; SystemLnk="KC Softwares\SUMo\"; StartIn="C:\Program Files (x86)\KC Softwares\SUMo"},
   # Kdenlive
   @{Name="Kdenlive"; TargetPath="C:\Program Files\kdenlive\bin\kdenlive.exe"; StartIn="{workingDirectory}"; Description="Libre Video Editor, by KDE community"},
   # KeePass
-  @{Name=$KeePass_Name; TargetPath=$KeePass_TargetPath; StartIn=$KeePass_StartIn} # new version 2+
+  @{Name=$KeePass_Name; TargetPath=$KeePass_TargetPath; StartIn=$KeePass_StartIn}, # new version 2+
   @{Name="KeePass"; TargetPath="C:\Program Files (x86)\KeePass Password Safe\KeePass.exe"; StartIn="C:\Program Files (x86)\KeePass Password Safe"}, # old version 1.x
+  # Ledger Live
+  @{Name="Ledger Live"; TargetPath="C:\Program Files\Ledger Live\Ledger Live.exe"; StartIn="C:\Program Files\Ledger Live"; Description="Ledger Live - Desktop"}
   # Local Administrator Password Solution
   @{Name="LAPS UI"; TargetPath="C:\Program Files\LAPS\AdmPwd.UI.exe"; SystemLnk="LAPS\"; StartIn="C:\Program Files\LAPS\"},
   # Mozilla
