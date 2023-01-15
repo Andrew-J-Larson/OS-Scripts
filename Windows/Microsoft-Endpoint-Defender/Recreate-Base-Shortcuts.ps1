@@ -636,6 +636,7 @@ for ($i = 0; $i -lt $Users.length; $i++) {
     @{Name="balenaEtcher"; TargetPath="C:\Users\${aUser}\AppData\Local\Programs\balena-etcher\balenaEtcher.exe"; StartIn="C:\Users\${aUser}\AppData\Local\Programs\balena-etcher"; Description="Flash OS images to SD cards and USB drives, safely and easily."},
     # Blender
     @{Name="Blender"; TargetPath=$Blender_TargetPath; SystemLnk="blender\"; StartIn=$Blender_StartIn},
+    @{Name="Blender"; TargetPath=$Blender_32bit_TargetPath; SystemLnk="blender\"; StartIn=$Blender_32bit_StartIn},
     # Discord
     @{Name="Discord"; TargetPath=$Discord_TargetPath; Arguments="--processStart Discord.exe"; SystemLnk="Discord Inc\"; StartIn=$Discord_StartIn; Description="Discord - https://discord.com"},
     # GitHub
@@ -644,7 +645,9 @@ for ($i = 0; $i -lt $Users.length; $i++) {
     @{Name="Google Chrome"; TargetPath="C:\Users\${aUser}\AppData\Local\Google\Chrome\Application\chrome.exe"; StartIn="C:\Users\${aUser}\AppData\Local\Google\Chrome\Application"; Description="Access the Internet"},
     # Inkscape
     @{Name="Inkscape"; TargetPath="C:\Program Files\Inkscape\bin\inkscape.exe"; SystemLnk="Inkscape\"; StartIn="C:\Program Files\Inkscape\bin\"},
+    @{Name="Inkscape (32-bit)"; TargetPath="C:\Program Files (x86)\Inkscape\bin\inkscape.exe"; SystemLnk="Inkscape\"; StartIn="C:\Program Files (x86)\Inkscape\bin\"},
     @{Name="Inkview"; TargetPath="C:\Program Files\Inkscape\bin\inkview.exe"; SystemLnk="Inkscape\"; StartIn="C:\Program Files\Inkscape\bin\"},
+    @{Name="Inkview (32-bit)"; TargetPath="C:\Program Files (x86)\Inkscape\bin\inkview.exe"; SystemLnk="Inkscape\"; StartIn="C:\Program Files (x86)\Inkscape\bin\"},
     # Microsoft
     @{Name="Visual Studio Code"; TargetPath="C:\Users\${aUser}\AppData\Local\Programs\Microsoft VS Code\Code.exe"; SystemLnk="Visual Studio Code\"; StartIn="C:\Users\${aUser}\AppData\Local\Programs\Microsoft VS Code"},
     @{Name="OneDrive"; TargetPath="C:\Users\${aUser}\AppData\Local\Microsoft\OneDrive\OneDrive.exe"; Description="Keep your most important files with you wherever you go, on any device."},
@@ -658,15 +661,19 @@ for ($i = 0; $i -lt $Users.length; $i++) {
     @{Name=$Python_Name; TargetPath=$Python_TargetPath; SystemLnk=$Python_SystemLnk; StartIn=$Python_StartIn; Description=$Python_Description},
     @{Name=$PythonModuleDocs_Name; TargetPath=$Python_TargetPath; Arguments="-m pydoc -b"; SystemLnk=$Python_SystemLnk; StartIn=$Python_StartIn; Description=$PythonModuleDocs_Description},
     # Raspberry Pi Imager
-    @{Name="Raspberry Pi Imager"; TargetPath="C:\Program Files (x86)\Raspberry Pi Imager\rpi-imager.exe"; StartIn="C:\Program Files (x86)\Raspberry Pi Imager"},
+    @{Name="Raspberry Pi Imager"; TargetPath="C:\Program Files\Raspberry Pi Imager\rpi-imager.exe"; StartIn="C:\Program Files\Raspberry Pi Imager"}, # it's the only install on 32-bit
+    @{Name="Raspberry Pi Imager"; TargetPath="C:\Program Files (x86)\Raspberry Pi Imager\rpi-imager.exe"; StartIn="C:\Program Files (x86)\Raspberry Pi Imager"}, # it's the only install on 64-bit
     # RingCentral
     @{Name="RingCentral"; TargetPath="C:\Users\${aUser}\AppData\Local\Programs\RingCentral\RingCentral.exe"; StartIn="C:\Users\${aUser}\AppData\Local\Programs\RingCentral"; Description="RingCentral"},
     @{Name="RingCentral Meetings"; TargetPath="C:\Users\${aUser}\AppData\Roaming\RingCentralMeetings\bin\RingCentralMeetings.exe"; SystemLnk="RingCentral Meetings\"; Description="RingCentral Meetings"},
     @{Name="Uninstall RingCentral Meetings"; TargetPath="C:\Users\${aUser}\AppData\Roaming\RingCentralMeetings\uninstall\Installer.exe"; Arguments="/uninstall"; SystemLnk="RingCentral Meetings\"; Description="Uninstall RingCentral Meetings"},
     # WinDirStat
-    @{Name="Help (ENG)"; TargetPath="C:\Program Files (x86)\WinDirStat\windirstat.chm"; SystemLnk="WinDirStat\"; StartIn="C:\Program Files (x86)\WinDirStat"},
-    @{Name="Uninstall WinDirStat"; TargetPath="C:\Program Files (x86)\WinDirStat\Uninstall.exe"; SystemLnk="WinDirStat\"; StartIn="C:\Program Files (x86)\WinDirStat"},
-    @{Name="WinDirStat"; TargetPath="C:\Program Files (x86)\WinDirStat\windirstat.exe"; SystemLnk="WinDirStat\"; StartIn="C:\Program Files (x86)\WinDirStat"}
+    @{Name="Help (ENG)"; TargetPath="C:\Program Files\WinDirStat\windirstat.chm"; SystemLnk="WinDirStat\"; StartIn="C:\Program Files\WinDirStat"}, # it's the only install on 32-bit
+    @{Name="Uninstall WinDirStat"; TargetPath="C:\Program Files\WinDirStat\Uninstall.exe"; SystemLnk="WinDirStat\"; StartIn="C:\Program Files\WinDirStat"}, # it's the only install on 32-bit
+    @{Name="WinDirStat"; TargetPath="C:\Program Files\WinDirStat\windirstat.exe"; SystemLnk="WinDirStat\"; StartIn="C:\Program Files\WinDirStat"}, # it's the only install on 32-bit
+    @{Name="Help (ENG)"; TargetPath="C:\Program Files (x86)\WinDirStat\windirstat.chm"; SystemLnk="WinDirStat\"; StartIn="C:\Program Files (x86)\WinDirStat"}, # it's the only install on 64-bit
+    @{Name="Uninstall WinDirStat"; TargetPath="C:\Program Files (x86)\WinDirStat\Uninstall.exe"; SystemLnk="WinDirStat\"; StartIn="C:\Program Files (x86)\WinDirStat"}, # it's the only install on 64-bit
+    @{Name="WinDirStat"; TargetPath="C:\Program Files (x86)\WinDirStat\windirstat.exe"; SystemLnk="WinDirStat\"; StartIn="C:\Program Files (x86)\WinDirStat"} # it's the only install on 64-bit
   #  @{Name=""; TargetPath=""; Arguments=""; SystemLnk=""; StartIn=""; Description=""; RunAsAdmin=($true|$false)},
   )
 
