@@ -70,11 +70,18 @@ function Recreate-Shortcut {
     if (-Not ($sSystemLnk -match '.*\.lnk$')) {$sSystemLnk = $sSystemLnk+'.lnk'}
     $newLNK = $WscriptObj.CreateShortcut($sSystemLnk)
 
-    $newLNK.TargetPath = if ($sUser) {$sTargetPath.replace("%username%", $aUser)} else {$sTargetPath}
+    if ($sUser) {$sTargetPath = $sTargetPath.replace("%username%", $aUser)}
+    $newLNK.TargetPath = $sTargetPath
 
-    if ($sArguments) {$newLNK.Arguments = if ($sUser) {$sArguments.replace("%username%", $aUser)} else {$sArguments}}
+    if ($sArguments) {
+      if ($sUser) {$sArguments = $sArguments.replace("%username%", $aUser)}
+      $newLNK.Arguments =  $sArguments
+    }
 
-    if ($sStartIn) {$newLNK.WorkingDirectory = if ($sUser) {$sStartIn.replace("%username%", $aUser)} else {$sStartIn}}
+    if ($sStartIn) {
+      if ($sUser) {$sStartIn = $sStartIn.replace("%username%", $aUser)}
+      $newLNK.WorkingDirectory = $sStartIn
+    }
 
     if ($sDescription) {$newLNK.Description = $sDescription}
 
