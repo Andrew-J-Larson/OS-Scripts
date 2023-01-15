@@ -606,11 +606,13 @@ if ($Users -And ($Users[0].length -eq 1)) {$Users = @("$Users")} # if only one u
 
 # Adobe
 $AdobeDigitalEditions_TargetPath = "C:\Program Files\Adobe\"
-$AdobeDigitalEditions_FindFolder = if (Test-Path -Path $AdobeDigitalEditions_TargetPath) {(Get-ChildItem -Directory -Path $AdobeDigitalEditions_TargetPath | Where-Object {$_.Name -match '^Adobe Digital Editions'} | Sort-Object -Descending)[0].name}
-$AdobeDigitalEditions_TargetPath += if ("${AdobeDigitalEditions_FindFolder}\DigitalEditions.exe") {$AdobeDigitalEditions_FindFolder} else {"${NotInstalled}\${NotInstalled}.exe"}
+$AdobeDigitalEditions_FindFolders = if (Test-Path -Path $AdobeDigitalEditions_TargetPath) {(Get-ChildItem -Directory -Path $AdobeDigitalEditions_TargetPath | Where-Object {$_.Name -match '^Adobe Digital Editions'} | Sort-Object -Descending)}
+$AdobeDigitalEditions_FindFolder = if ($AdobeDigitalEditions_FindFolders.length -ge 1) {$AdobeDigitalEditions_FindFolders[0].name} else {$NotInstalled}
+$AdobeDigitalEditions_TargetPath += "${AdobeDigitalEditions_FindFolder}\DigitalEditions.exe"
 $AdobeDigitalEditions_32bit_TargetPath = "C:\Program Files (x86)\Adobe\"
-$AdobeDigitalEditions_32bit_FindFolder = if (Test-Path -Path $AdobeDigitalEditions_32bit_TargetPath) {(Get-ChildItem -Directory -Path $AdobeDigitalEditions_32bit_TargetPath | Where-Object {$_.Name -match '^Adobe Digital Editions'} | Sort-Object -Descending)[0].name}
-$AdobeDigitalEditions_32bit_TargetPath += if ("${AdobeDigitalEditions_32bit_FindFolder}\DigitalEditions.exe") {$AdobeDigitalEditions_32bit_FindFolder} else {"${NotInstalled}\${NotInstalled}.exe"}
+$AdobeDigitalEditions_32bit_FindFolders = if (Test-Path -Path $AdobeDigitalEditions_32bit_TargetPath) {(Get-ChildItem -Directory -Path $AdobeDigitalEditions_32bit_TargetPath | Where-Object {$_.Name -match '^Adobe Digital Editions'} | Sort-Object -Descending)}
+$AdobeDigitalEditions_32bit_FindFolder = if ($AdobeDigitalEditions_32bit_FindFolders.length -ge 1) {$AdobeDigitalEditions_32bit_FindFolders[0].name} else {$NotInstalled}
+$AdobeDigitalEditions_32bit_TargetPath += "${AdobeDigitalEditions_32bit_FindFolder}\DigitalEditions.exe"
 # Blender
 $Blender_TargetPath = "C:\Program Files\Blender Foundation\"
 $Blender_FindFolder = if (Test-Path -Path $Blender_TargetPath) {(Get-ChildItem -Directory -Path $Blender_TargetPath | Where-Object {$_.Name -match '^Blender'} | Sort-Object -Descending)[0].name}
