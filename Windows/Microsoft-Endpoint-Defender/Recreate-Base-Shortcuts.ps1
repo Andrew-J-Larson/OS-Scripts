@@ -51,9 +51,7 @@ function Recreate-Shortcut {
   )
 
   Set-Variable ProgramShortcutsPath -Option Constant -Value "C:\ProgramData\Microsoft\Windows\Start Menu\Programs"
-  Set-Variable UserProgramShortcutsPath -Option Constant -Value "C:\Users\%username%\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\"
-
-  
+  Set-Variable UserProgramShortcutsPath -Option Constant -Value "C:\Users\%username%\AppData\Roaming\Microsoft\Windows\Start Menu\Programs"
 
   # only create shortcut if name and target given, and target exists
   if ($sName -And $sTargetPath -And (Test-Path $sTargetPath -PathType leaf)) {
