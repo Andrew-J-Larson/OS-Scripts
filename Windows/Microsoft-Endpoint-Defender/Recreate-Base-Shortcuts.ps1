@@ -411,6 +411,8 @@ $sys3rdPartyAppList = @(
   @{Name="OSFMount on the Web"; TargetPath="C:\Program Files\OSFMount\OSFMount.url"; SystemLnk="OSFMount\"; StartIn="C:\Program Files\OSFMount"},
   @{Name="OSFMount"; TargetPath="C:\Program Files\OSFMount\OSFMount.exe"; SystemLnk="OSFMount\"; StartIn="C:\Program Files\OSFMount"},
   @{Name="Uninstall OSFMount"; TargetPath="C:\Program Files\OSFMount\unins000.exe"; SystemLnk="OSFMount\"; StartIn="C:\Program Files\OSFMount"},
+  # paint.net
+  @{Name="paint.net"; TargetPath="C:\Program Files\paint.net\paintdotnet.exe"; StartIn="C:\Program Files\paint.net"; Description="Create, edit, scan, and print images and photographs."},
   # RealVNC
   @{Name="VNC Server"; TargetPath="C:\Program Files\RealVNC\VNC Server\vncguihelper.exe"; Arguments="vncserver.exe -_fromGui -start -showstatus"; SystemLnk="RealVNC\"; StartIn="C:\Program Files\RealVNC\VNC Server\"},
   @{Name="VNC Viewer"; TargetPath="C:\Program Files\RealVNC\VNC Viewer\vncviewer.exe"; SystemLnk="RealVNC\"; StartIn="C:\Program Files\RealVNC\VNC Viewer\"},
