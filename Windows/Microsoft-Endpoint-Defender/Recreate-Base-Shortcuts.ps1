@@ -44,11 +44,16 @@ function Recreate-Shortcut {
     [string]$sDescription, # Optional (some shortcuts have comments for tooltips)
     
     [Alias("runasadmin", "r")]
-    [switch]$sRunAsAdmin, # Optional (if the shortcut should be ran as admin)
+    [bool]$sRunAsAdmin, # Optional (if the shortcut should be ran as admin)
 
     [Alias("user", "u")]
     [string]$sUser # Optional (username of the user to install shortcut to)
   )
+
+  $result = $true
+  $resultMsg = @()
+  $warnMsg = @()
+  $errorMsg = @()
 
   Set-Variable ProgramShortcutsPath -Option Constant -Value "C:\ProgramData\Microsoft\Windows\Start Menu\Programs"
   Set-Variable UserProgramShortcutsPath -Option Constant -Value "C:\Users\%username%\AppData\Roaming\Microsoft\Windows\Start Menu\Programs"
@@ -83,14 +88,16 @@ function Recreate-Shortcut {
       $newLNK.WorkingDirectory = $sStartIn
     }
 
-    if ($sDescription) {$newLNK.Description = $sDescription}
+    if ($sDescription) {
+      $newLNK.Description = $sDescription
+    }
 
     $newLNK.Save()
     $result = $?
     [Runtime.InteropServices.Marshal]::ReleaseComObject($Shell) | Out-Null
 
     if ($result) {
-      Write-Host "Created shortcut at: ${sSystemLnk}"
+      $resultMsg += "Created shortcut at:`n${sSystemLnk}"
 
       # set to run as admin if needed
       if ($sRunAsAdmin) {
@@ -98,28 +105,45 @@ function Recreate-Shortcut {
         $bytes[0x15] = $bytes[0x15] -bor 0x20 #set byte 21 (0x15) bit 6 (0x20) ON
         [System.IO.File]::WriteAllBytes($sSystemLnk, $bytes)
         $result = $?
-        if ($result) {Write-Host "Shortcut set to Run as Admin, at: ${sSystemLnk}"}
-        else {Write-Error "Failed to set shortcut to Run as Admin, at: ${sSystemLnk}"}
+        if ($result) {$resultMsg += "Shortcut set to Run as Admin, at: ${sSystemLnk}"}
+        else {$errorMsg += "Failed to set shortcut to Run as Admin, at: ${sSystemLnk}"}
       }
-
-      return $result
-    } else {
-      Write-Error "Failed to create shortcut, with target at: ${sTargetPath}"
-      return $false
-    }
+    } else {$errorMsg += "Failed to create shortcut, with target at: ${sTargetPath}"}
   } elseif (-Not ($sName -Or $sTargetPath)) {
     if (-Not $sName) {
-      Write-Error "Error! Name is missing!"
-      return $false
+      $errorMsg += "Error! Name is missing!"
     }
     if (-Not $sTargetPath) {
-      Write-Error "Error! Target is missing!"
-      return $false
+      $errorMsg += "Error! Target is missing!"
     }
+
+    $result = $false
   } else {
-    Write-Error "Target invalid! Doesn't exist or is spelled wrong: ${sTargetPath}"
-    return $false
+    $warnMsg += "Target invalid! Doesn't exist or is spelled wrong:`n${sTargetPath}"
+
+    $result = $false
   }
+
+  if ($result) {Write-Host -ForegroundColor Green $sName}
+  else {Write-Host -ForegroundColor Red $sName}
+
+  if ($resultMsg.length -gt 0) {
+    for ($msgNum = 0; $msgNum -lt $resultMsg.length; $msgNum++) {
+      Write-Host $resultMsg[$msgNum]
+    }
+  } elseif ($errortMsg.length -gt 0) {
+    for ($msgNum = 0; $msgNum -lt $errorMsg.length; $msgNum++) {
+      Write-Error $errorMsg[$msgNum]
+    }
+  }
+  if ($warnMsg.length -gt 0) {
+    for ($msgNum = 0; $msgNum -lt $warnMsg.length; $msgNum++) {
+      Write-Warning $warnMsg[$msgNum]
+    }
+  }
+  Write-Host ""
+
+  return $result
 }
 
 # MAIN
