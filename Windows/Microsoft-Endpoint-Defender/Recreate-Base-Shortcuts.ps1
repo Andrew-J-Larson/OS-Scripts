@@ -160,7 +160,7 @@ $sysAppList = @(
   # Intune Management Extension
   @{Name="Microsoft Intune Management Extension"; TargetPath="C:\Program Files (x86)\Microsoft Intune Management Extension\AgentExecutor.exe"; SystemLnk="Microsoft Intune Management Extension\"; Description="Microsoft Intune Management Extension"},
   # PowerToys
-  @{Name=if (winget list -q "Microsoft.PowerToys" -e | Select-String "^PowerToys \(Preview\)") {"PowerToys (Preview)"} else {"PowerToys"}; TargetPath="C:\Program Files\PowerToys\PowerToys.exe"; SystemLnk=if (winget list -q "Microsoft.PowerToys" -e | Select-String "^PowerToys \(Preview\)") {"PowerToys (Preview)\"} else {"PowerToys\"}; StartIn="C:\Program Files\PowerToys\"; Description="PowerToys - Windows system utilities to maximize productivity"},
+  @{Name="PowerToys"+$(if (winget list -q "Microsoft.PowerToys" -e | Select-String "^PowerToys \(Preview\)") {" (Preview)"}); TargetPath="C:\Program Files\PowerToys\PowerToys.exe"; SystemLnk="PowerToys"+$(if (winget list -q "Microsoft.PowerToys" -e | Select-String "^PowerToys \(Preview\)") {" (Preview)"})+'\'; StartIn="C:\Program Files\PowerToys\"; Description="PowerToys - Windows system utilities to maximize productivity"},
   # OneDrive
   @{Name="OneDrive"; TargetPath="C:\Program Files\Microsoft OneDrive\OneDrive.exe"; Description="Keep your most important files with you wherever you go, on any device."},
   # Office Apps
@@ -332,7 +332,7 @@ $userAppList = @( # all instances of "%username%" get's replaced with the userna
   # Microsoft
   @{Name="Visual Studio Code"; TargetPath="C:\Users\%username%\AppData\Local\Programs\Microsoft VS Code\Code.exe"; SystemLnk="Visual Studio Code\"; StartIn="C:\Users\%username%\AppData\Local\Programs\Microsoft VS Code"},
   @{Name="OneDrive"; TargetPath="C:\Users\%username%\AppData\Local\Microsoft\OneDrive\OneDrive.exe"; Description="Keep your most important files with you wherever you go, on any device."},
-  @{Name=if ($isWindows11) {"Microsoft Teams (work or school)"} else {"Microsoft Teams"}; TargetPath="C:\Users\%username%\AppData\Local\Microsoft\Teams\Update.exe"; Arguments="--processStart `"Teams.exe`""; StartIn="C:\Users\%username%\AppData\Local\Microsoft\Teams"},
+  @{Name="Microsoft Teams"+$(if ($isWindows11) {" (work or school)"}); TargetPath="C:\Users\%username%\AppData\Local\Microsoft\Teams\Update.exe"; Arguments="--processStart `"Teams.exe`""; StartIn="C:\Users\%username%\AppData\Local\Microsoft\Teams"},
   # Google
   @{Name="Google Chrome"; TargetPath="C:\Users\%username%\AppData\Local\Google\Chrome\Application\chrome.exe"; StartIn="C:\Users\%username%\AppData\Local\Google\Chrome\Application"; Description="Access the Internet"},
   # Mozilla
