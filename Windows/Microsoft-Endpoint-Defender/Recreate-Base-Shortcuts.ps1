@@ -374,9 +374,13 @@ $sys3rdPartyAppList = @(
   @{Name="Adobe UXP Developer Tool"; TargetPath="C:\Program Files\Adobe\Adobe UXP Developer Tool\Adobe UXP Developer Tool.exe"; StartIn="C:\Program Files\Adobe\Adobe UXP Developer Tool"},
   @{Name="Adobe UXP Developer Tool (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Adobe UXP Developer Tool\Adobe UXP Developer Tool.exe"; StartIn="C:\Program Files (x86)\Adobe\Adobe UXP Developer Tool"},
   @{Name="Adobe Acrobat"; TargetPath="C:\Program Files\Adobe\Acrobat DC\Acrobat\Acrobat.exe"},
+  @{Name="Adobe Acrobat Distiller"; TargetPath="C:\Program Files\Adobe\Acrobat DC\Acrobat\acrodist.exe"},
   @{Name="Adobe Acrobat (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Acrobat DC\Acrobat\Acrobat.exe"},
+  @{Name="Adobe Acrobat Distiller (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Acrobat DC\Acrobat\acrodist.exe"},
   @{Name="Adobe Acrobat Reader"; TargetPath="C:\Program Files\Adobe\Acrobat Reader DC\Reader\AcroRd32.exe"}, # it's the only install on 32-bit
-  @{Name="Adobe Acrobat Reader (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Acrobat Reader DC\Reader\AcroRd32.exe"}, # it's the only install on 64-bit
+  @{Name="Adobe Acrobat Distiller"; TargetPath="C:\Program Files\Adobe\Acrobat Reader DC\Reader\acrodist.exe"}, # it's the only install on 32-bit
+  @{Name="Adobe Acrobat Reader"; TargetPath="C:\Program Files (x86)\Adobe\Acrobat Reader DC\Reader\AcroRd32.exe"}, # it's the only install on 64-bit
+  @{Name="Adobe Acrobat Distiller"; TargetPath="C:\Program Files (x86)\Adobe\Acrobat Reader DC\Reader\acrodist.exe"}, # it's the only install on 64-bit
   # Altair Monarch
   @{Name="Altair Monarch 2021"; TargetPath="C:\Program Files\Altair Monarch 2021\DWMonarch.exe"; SystemLnk="Altair Monarch 2021\"},
   @{Name="Altair Monarch 2021 (32-bit)"; TargetPath="C:\Program Files (x86)\Altair Monarch 2021\DWMonarch.exe"; SystemLnk="Altair Monarch 2021\"},
