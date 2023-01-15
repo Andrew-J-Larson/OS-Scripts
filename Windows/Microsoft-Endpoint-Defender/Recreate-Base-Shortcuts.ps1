@@ -418,6 +418,9 @@ $sys3rdPartyAppList = @(
   # Docker
   @{Name="Docker Desktop"; TargetPath="C:\Program Files\Docker\Docker\Docker Desktop.exe"; SystemLnk="C:\ProgramData\Microsoft\Windows\Start Menu\"; Description="Docker Desktop"},
   @{Name="Docker Desktop (32-bit)"; TargetPath="C:\Program Files (x86)\Docker\Docker\Docker Desktop.exe"; SystemLnk="C:\ProgramData\Microsoft\Windows\Start Menu\"; Description="Docker Desktop"},
+  # draw.io
+  @{Name="draw.io"; TargetPath="C:\Program Files\draw.io\draw.io.exe"; StartIn="C:\Program Files\draw.io"; Description="draw.io desktop"},
+  @{Name="draw.io (32-bit)"; TargetPath="C:\Program Files (x86)\draw.io\draw.io.exe"; StartIn="C:\Program Files (x86)\draw.io"; Description="draw.io desktop"},
   # Epson
   @{Name="Epson Scan 2"; TargetPath="C:\Program Files\epson\Epson Scan 2\Core\es2launcher.exe"; SystemLnk="EPSON\Epson Scan 2\"}, # it's the only install on 32-bit
   @{Name="FAX Utility"; TargetPath="C:\Program Files\Epson Software\FAX Utility\FUFAXCNT.exe"; SystemLnk="EPSON Software\"}, # it's the only install on 32-bit
