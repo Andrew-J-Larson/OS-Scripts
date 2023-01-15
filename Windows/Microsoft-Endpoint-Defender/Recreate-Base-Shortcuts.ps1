@@ -362,7 +362,9 @@ $sys3rdPartyAppList = @(
   @{Name="7-Zip Help"; TargetPath="C:\Program Files\7-Zip\7-zip.chm"; SystemLnk="7-Zip\"},
   @{Name="7-Zip File Manager (32-bit)"; TargetPath="C:\Program Files (x86)\7-Zip\7zFM.exe"; SystemLnk="7-Zip\"},
   @{Name="7-Zip Help"; TargetPath="C:\Program Files (x86)\7-Zip\7-zip.chm"; SystemLnk="7-Zip\"},
-  # Adobe Acrobat
+  # Adobe
+  @{Name="Adobe Creative Cloud"; TargetPath="C:\Program Files\Adobe\Adobe Creative Cloud\ACC\Creative Cloud.exe"},
+  @{Name="Adobe Creative Cloud (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Adobe Creative Cloud\ACC\Creative Cloud.exe"},
   @{Name="Adobe Acrobat"; TargetPath="C:\Program Files\Adobe\Acrobat DC\Acrobat\Acrobat.exe"},
   @{Name="Adobe Acrobat (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Acrobat DC\Acrobat\Acrobat.exe"},
   @{Name="Adobe Acrobat Reader"; TargetPath="C:\Program Files\Adobe\Acrobat Reader DC\Reader\AcroRd32.exe"}, # it's the only install on 32-bit
@@ -584,6 +586,13 @@ if ($Users -And ($Users[0].length -eq 1)) {$Users = @("$Users")} # if only one u
 
 # System app paths dependant on app version
 
+# Adobe
+$AdobeDigitalEditions_TargetPath = "C:\Program Files\Adobe\"
+$AdobeDigitalEditions_FindFolder = if (Test-Path -Path $AdobeDigitalEditions_TargetPath) {(Get-ChildItem -Directory -Path $AdobeDigitalEditions_TargetPath | Where-Object {$_.Name -match '^Adobe Digital Editions'} | Sort-Object -Descending)[0].name}
+$AdobeDigitalEditions_TargetPath += if ("${AdobeDigitalEditions_FindFolder}\DigitalEditions.exe") {$AdobeDigitalEditions_FindFolder} else {"${NotInstalled}\${NotInstalled}.exe"}
+$AdobeDigitalEditions_32bit_TargetPath = "C:\Program Files (x86)\Adobe\"
+$AdobeDigitalEditions_32bit_FindFolder = if (Test-Path -Path $AdobeDigitalEditions_32bit_TargetPath) {(Get-ChildItem -Directory -Path $AdobeDigitalEditions_32bit_TargetPath | Where-Object {$_.Name -match '^Adobe Digital Editions'} | Sort-Object -Descending)[0].name}
+$AdobeDigitalEditions_32bit_TargetPath += if ("${AdobeDigitalEditions_32bit_FindFolder}\DigitalEditions.exe") {$AdobeDigitalEditions_32bit_FindFolder} else {"${NotInstalled}\${NotInstalled}.exe"}
 # Blender
 $Blender_TargetPath = "C:\Program Files\Blender Foundation\"
 $Blender_FindFolder = if (Test-Path -Path $Blender_TargetPath) {(Get-ChildItem -Directory -Path $Blender_TargetPath | Where-Object {$_.Name -match '^Blender'} | Sort-Object -Descending)[0].name}
@@ -593,6 +602,16 @@ $Blender_32bit_TargetPath = "C:\Program Files (x86)\Blender Foundation\"
 $Blender_32bit_FindFolder = if (Test-Path -Path $Blender_32bit_TargetPath) {(Get-ChildItem -Directory -Path $Blender_32bit_TargetPath | Where-Object {$_.Name -match '^Blender'} | Sort-Object -Descending)[0].name}
 $Blender_32bit_StartIn = $Blender_32bit_TargetPath+$(if ($Blender_32bit_FindFolder) {"${Blender_32bit_FindFolder}\"} else {"${NotInstalled}\"})
 $Blender_32bit_TargetPath = $Blender_32bit_StartIn+$(if ($Blender_32bit_FindFolder) {"blender-launcher.exe"} else {"${NotInstalled}.exe"})
+
+# System app names dependant on OS or app version
+
+# Adobe
+$AdobeDigitalEditions_FileVersionRaw = if (Test-Path -Path $AdobeDigitalEditions_TargetPath -PathType Leaf) {(Get-Item $AdobeDigitalEditions_TargetPath).VersionInfo.FileVersionRaw}
+$AdobeDigitalEditions_Version = if ($AdobeDigitalEditions_FileVersionRaw) {[string]($AdobeDigitalEditions_FileVersionRaw.Major)+'.'+[string]($AdobeDigitalEditions_FileVersionRaw.Minor)} else {$NotInstalled}
+$AdobeDigitalEditions_Name = "Adobe Digital Editions ${AdobeDigitalEditions_Version}"
+$AdobeDigitalEditions_32bit_FileVersionRaw = if (Test-Path -Path $AdobeDigitalEditions_32bit_TargetPath -PathType Leaf) {(Get-Item $AdobeDigitalEditions_32bit_TargetPath).VersionInfo.FileVersionRaw}
+$AdobeDigitalEditions_32bit_Version = if ($AdobeDigitalEditions_32bit_FileVersionRaw) {[string]($AdobeDigitalEditions_32bit_FileVersionRaw.Major)+'.'+[string]($AdobeDigitalEditions_32bit_FileVersionRaw.Minor)} else {$NotInstalled}
+$AdobeDigitalEditions_32bit_Name = "Adobe Digital Editions ${AdobeDigitalEditions_32bit_Name}"
 
 # App names dependant on OS or app version
 
@@ -609,6 +628,8 @@ for ($i = 0; $i -lt $Users.length; $i++) {
   $OnePassword_TargetPath = "C:\Users\${aUser}\AppData\Local\1Password\app\"
   $OnePassword_FindFolder = if (Test-Path -Path $OnePassword_TargetPath) {(Get-ChildItem -Directory -Path $OnePassword_TargetPath | Where-Object {$_.Name -match '^[.0-9]+$'} | Sort-Object -Descending)[0].name}
   $OnePassword_TargetPath += if ($OnePassword_FindFolder) {"${OnePassword_FindFolder}\1Password.exe"} else {"${NotInstalled}\${NotInstalled}.exe"}
+  # Adobe
+  $AdobeDigitalEditions_StartIn = "C:\Users\${aUser}\AppData\Local\Temp"
   # Discord
   $Discord_StartIn = "C:\Users\${aUser}\AppData\Local\Discord\"
   $Discord_TargetPath = $Discord_StartIn+"Update.exe"
@@ -646,6 +667,9 @@ for ($i = 0; $i -lt $Users.length; $i++) {
   $userAppList = @( # all instances of "${aUser}" get's replaced with the username
     # 1Password
     @{Name="1Password"; TargetPath=$OnePassword_TargetPath; Description="1Password"},
+    # Adobe
+    @{Name=$AdobeDigitalEditions_Name; TargetPath=$AdobeDigitalEditions_TargetPath; StartIn=$AdobeDigitalEditions_StartIn},
+    @{Name=$AdobeDigitalEditions_32bit_Name; TargetPath=$AdobeDigitalEditions_32bit_TargetPath; StartIn=$AdobeDigitalEditions_StartIn},
     # balenaEtcher
     @{Name="balenaEtcher"; TargetPath="C:\Users\${aUser}\AppData\Local\Programs\balena-etcher\balenaEtcher.exe"; StartIn="C:\Users\${aUser}\AppData\Local\Programs\balena-etcher"; Description="Flash OS images to SD cards and USB drives, safely and easily."},
     # Blender
