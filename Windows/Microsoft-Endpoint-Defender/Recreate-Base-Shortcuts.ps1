@@ -164,7 +164,7 @@ if (-Not $isWin10orNewer) {
 # PowerToys
 $PowerToys_Name = "PowerToys"+$(if (winget list -q "Microsoft.PowerToys" -e | Select-String "^PowerToys \(Preview\)") {" (Preview)"})
 
-# TargetPaths dependant on app version
+# Paths dependant on app version
 
 ## App Name
 #$App_TargetPath = ...
@@ -220,7 +220,7 @@ for ($i = 0; $i -lt $sysAppList.length; $i++) {
 ## App Name
 #$App_Name = ...
 
-# TargetPaths dependant on app version
+# Paths dependant on app version
 
 ## App Name
 #$App_TargetPath = ...
@@ -255,7 +255,7 @@ for ($i = 0; $i -lt $oemSysAppList.length; $i++) {
 $GIMP_Version = ([string](winget list -q "GIMP.GIMP" -e | Select-String "^GIMP")).split(' ')[3]
 $GIMP_Name = "GIMP "+$(if ($GIMP_Version) {$GIMP_Version} else {$NotInstalled})
 
-# TargetPaths dependant on app version
+# Paths dependant on app version
 
 # Google Drive
 $GoogleDrive_TargetPath = "C:\Program Files\Google\Drive File Stream\"
@@ -394,10 +394,13 @@ for ($i = 0; $i -lt $sys3rdPartyAppList.length; $i++) {
 # Microsoft Teams
 $MicrosoftTeams_Name = "Microsoft Teams"+$(if ($isWindows11) {" (work or school)"})
 
-# TargetPaths dependant on app version
+# Paths dependant on app version
 
-## App Name
-#$App_TargetPath = ...
+# Blender
+$Blender_TargetPath = "C:\Program Files\Blender Foundation\"
+$Blender_FindFolder = (Get-ChildItem -Directory -Path $Blender_TargetPath | Where-Object {$_.Name -match '^Blender'} | Sort-Object -Descending)[0].name
+$Blender_StartIn = $Blender_TargetPath+$(if ($Blender_FindFolder) {"${Blender_FindFolder}\"} else {"${NotInstalled}\"})
+$Blender_TargetPath = $Blender_StartIn+$(if ($Blender_FindFolder) {"blender-launcher.exe"} else {"${NotInstalled}.exe"})
 
 $userAppList = @( # all instances of "%username%" get's replaced with the username
   # Microsoft
@@ -410,6 +413,8 @@ $userAppList = @( # all instances of "%username%" get's replaced with the userna
   @{Name="Firefox"; TargetPath="C:\Users\%username%\AppData\Local\Mozilla Firefox\firefox.exe"; StartIn="C:\Users\%username%\AppData\Local\Mozilla Firefox"},
   # NVIDIA Corporation
   @{Name="NVIDIA GeForce NOW"; TargetPath="C:\Users\%username%\AppData\Local\NVIDIA Corporation\GeForceNOW\CEF\GeForceNOW.exe"; StartIn="C:\Users\%username%\AppData\Local\NVIDIA Corporation\GeForceNOW\CEF"},
+  # Blender ... C:\Users\Andrew\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\blender\Blender.lnk
+  @{Name="Blender"; TargetPath=$Blender_TargetPath; SystemLnk="blender\"; StartIn=$Blender_StartIn},
   # balenaEtcher
   @{Name="balenaEtcher"; TargetPath="C:\Users\%username%\AppData\Local\Programs\balena-etcher\balenaEtcher.exe"; StartIn="C:\Users\%username%\AppData\Local\Programs\balena-etcher"; Description="Flash OS images to SD cards and USB drives, safely and easily."},
   # Raspberry Pi Imager
