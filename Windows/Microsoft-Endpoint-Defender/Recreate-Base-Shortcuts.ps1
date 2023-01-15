@@ -540,8 +540,8 @@ $sys3rdPartyAppList = @(
   @{Name=$VMwareWorkstationPlayer_32bit_Name; TargetPath=$VMwareWorkstationPlayer_32bit_TargetPath; SystemLnk="VMware\"; StartIn="C:\Program Files (x86)\VMware\VMware Player\"}, # it's the only install on 64-bit
   # Win32DiskImager
   @{Name="Uninstall Win32DiskImager"; TargetPath="C:\Program Files\ImageWriter\unins000.exe"; SystemLnk="Image Writer\"; StartIn="C:\Program Files\ImageWriter"}, # it's the only install on 32-bit
-  @{Name="Uninstall Win32DiskImager"; TargetPath="C:\Program Files (x86)\ImageWriter\unins000.exe"; SystemLnk="Image Writer\"; StartIn="C:\Program Files (x86)\ImageWriter"}, # it's the only install on 64-bit
   @{Name="Win32DiskImager"; TargetPath="C:\Program Files\ImageWriter\Win32DiskImager.exe"; SystemLnk="Image Writer\"; StartIn="C:\Program Files\ImageWriter"}, # it's the only install on 32-bit
+  @{Name="Uninstall Win32DiskImager"; TargetPath="C:\Program Files (x86)\ImageWriter\unins000.exe"; SystemLnk="Image Writer\"; StartIn="C:\Program Files (x86)\ImageWriter"}, # it's the only install on 64-bit
   @{Name="Win32DiskImager"; TargetPath="C:\Program Files (x86)\ImageWriter\Win32DiskImager.exe"; SystemLnk="Image Writer\"; StartIn="C:\Program Files (x86)\ImageWriter"}, # it's the only install on 64-bit
   # Winaero
   @{Name="EULA"; TargetPath="C:\Program Files\Winaero Tweaker\Winaero EULA.txt"; SystemLnk="Winaero Tweaker\"; StartIn="C:\Program Files\Winaero Tweaker"; Description="Read the license agreement"},
