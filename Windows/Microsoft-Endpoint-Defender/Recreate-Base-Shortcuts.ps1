@@ -320,7 +320,7 @@ $KeePass_FindFolder = (Get-ChildItem -Directory -Path $KeePass_StartIn | Where-O
 $KeePass_TargetPath = if ($KeePass_FindFolder) {"${KeePass_FindFolder}\KeePass.exe"} else {"${NotInstalled}\${NotInstalled}.exe"}
 $KeePass_32bit_StartIn = "C:\Program Files (x86)\"
 $KeePass_32bit_FindFolder = (Get-ChildItem -Directory -Path $KeePass_32bit_StartIn | Where-Object {$_.Name -match '^KeePass Password Safe'} | Sort-Object -Descending)[0].name
-$KeePass_32bit_TargetPath = if ($KeePass_32bit_FindFolder) {"${KeePass_FindFolder}\KeePass.exe"} else {"${NotInstalled}\${NotInstalled}.exe"}
+$KeePass_32bit_TargetPath = if ($KeePass_32bit_FindFolder) {"${KeePass_32bit_FindFolder}\KeePass.exe"} else {"${NotInstalled}\${NotInstalled}.exe"}
 # VMware
 $VMwareWorkstationPlayer_TargetPath = "C:\Program Files\VMware\VMware Player\vmplayer.exe"
 $CommandPromptforvctl_Path = if (Test-Path -Path $VMwareWorkstationPlayer_TargetPath -PathType Leaf) {"C:\Windows\System32\cmd.exe"} else {"C:\Program Files\${NotInstalled}\${NotInstalled}\${NotInstalled}.exe"}
@@ -581,6 +581,10 @@ $Blender_TargetPath = "C:\Program Files\Blender Foundation\"
 $Blender_FindFolder = if (Test-Path -Path $Blender_TargetPath) {(Get-ChildItem -Directory -Path $Blender_TargetPath | Where-Object {$_.Name -match '^Blender'} | Sort-Object -Descending)[0].name}
 $Blender_StartIn = $Blender_TargetPath+$(if ($Blender_FindFolder) {"${Blender_FindFolder}\"} else {"${NotInstalled}\"})
 $Blender_TargetPath = $Blender_StartIn+$(if ($Blender_FindFolder) {"blender-launcher.exe"} else {"${NotInstalled}.exe"})
+$Blender_32bit_TargetPath = "C:\Program Files (x86)\Blender Foundation\"
+$Blender_32bit_FindFolder = if (Test-Path -Path $Blender_32bit_TargetPath) {(Get-ChildItem -Directory -Path $Blender_32bit_TargetPath | Where-Object {$_.Name -match '^Blender'} | Sort-Object -Descending)[0].name}
+$Blender_32bit_StartIn = $Blender_32bit_TargetPath+$(if ($Blender_32bit_FindFolder) {"${Blender_32bit_FindFolder}\"} else {"${NotInstalled}\"})
+$Blender_32bit_TargetPath = $Blender_32bit_StartIn+$(if ($Blender_32bit_FindFolder) {"blender-launcher.exe"} else {"${NotInstalled}.exe"})
 
 # App names dependant on OS or app version
 
