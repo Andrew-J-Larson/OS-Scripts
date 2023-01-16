@@ -643,6 +643,30 @@ $MediaEncoder_Beta_TargetPath = $MediaEncoder_Beta_StartIn+"\Adobe Media Encoder
 $MediaEncoder_Beta_TargetPathAlt = $MediaEncoder_Beta_StartInAlt+"\Adobe Media Encoder (Beta).exe"
 $MediaEncoder_Beta_TargetPathAlt2 = $MediaEncoder_Beta_StartInAlt2+"\Adobe Media Encoder (Beta).exe"
 $MediaEncoder_Beta_TargetPath = if (Test-Path -Path $MediaEncoder_Beta_TargetPathExeAlt -PathType leaf) {$MediaEncoder_Beta_TargetPathExeAlt} elseif (Test-Path -Path $MediaEncoder_Beta_TargetPathAltExeAlt -PathType leaf) {$MediaEncoder_Beta_TargetPathAltExeAlt} elseif (Test-Path -Path $MediaEncoder_Beta_TargetPathAlt2ExeAlt -PathType leaf) {$MediaEncoder_Beta_TargetPathAlt2ExeAlt} elseif (Test-Path -Path $MediaEncoder_Beta_TargetPath -PathType leaf) {$MediaEncoder_Beta_TargetPath} elseif (Test-Path -Path $MediaEncoder_Beta_TargetPathAlt -PathType leaf) {$MediaEncoder_Beta_TargetPathAlt} else {$MediaEncoder_Beta_TargetPathAlt2}
+# Adobe Photoshop
+$Photoshop_TargetPath = "C:\Program Files\Adobe\"
+$Photoshop_Name = if (Test-Path -Path $Photoshop_TargetPath) {Get-ChildItem -Directory -Path $Photoshop_TargetPath | Where-Object { $_.Name -match '^.*Photoshop(?!.*\(Beta\)$)' } | Sort-Object -Descending}
+$Photoshop_Name = if ($Photoshop_Name.length -ge 1) {$Photoshop_Name[0].name} else {"Adobe Photoshop"}
+$Photoshop_StartIn = $Photoshop_TargetPath+$Photoshop_Name
+$Photoshop_StartInAlt = $Photoshop_StartIn+"\Support Files"
+$Photoshop_StartInAlt2 = $Photoshop_StartInAlt+"\Contents\Windows"
+$Photoshop_TargetPath = $Photoshop_StartIn+"\Photoshop.exe"
+$Photoshop_TargetPathAlt = $Photoshop_StartInAlt+"\Photoshop.exe"
+$Photoshop_TargetPathAlt2 = $Photoshop_StartInAlt2+"\Photoshop.exe"
+$Photoshop_TargetPath = if (Test-Path -Path $Photoshop_TargetPath -PathType leaf) {$Photoshop_TargetPath} elseif (Test-Path -Path $Photoshop_TargetPathAlt -PathType leaf) {$Photoshop_TargetPathAlt} else {$Photoshop_TargetPathAlt2}
+$Photoshop_Beta_TargetPath = "C:\Program Files\Adobe\"
+$Photoshop_Beta_Name = if (Test-Path -Path $Photoshop_Beta_TargetPath) {Get-ChildItem -Directory -Path $Photoshop_Beta_TargetPath | Where-Object { $_.Name -match '^.*Photoshop.*\(Beta\)$' } | Sort-Object -Descending}
+$Photoshop_Beta_Name = if ($Photoshop_Beta_Name.length -ge 1) {$Photoshop_Beta_Name[0].name} else {"Adobe Photoshop (Beta)"}
+$Photoshop_Beta_StartIn = $Photoshop_Beta_TargetPath+$Photoshop_Beta_Name
+$Photoshop_Beta_StartInAlt = $Photoshop_Beta_StartIn+"\Support Files"
+$Photoshop_Beta_StartInAlt2 = $Photoshop_Beta_StartInAlt+"\Contents\Windows"
+$Photoshop_Beta_TargetPathExeAlt = $Photoshop_Beta_StartIn+"\Photoshop.exe"
+$Photoshop_Beta_TargetPathAltExeAlt = $Photoshop_Beta_StartInAlt+"\Photoshop.exe"
+$Photoshop_Beta_TargetPathAlt2ExeAlt = $Photoshop_Beta_StartInAlt2+"\Photoshop.exe"
+$Photoshop_Beta_TargetPath = $Photoshop_Beta_StartIn+"\Photoshop (Beta).exe"
+$Photoshop_Beta_TargetPathAlt = $Photoshop_Beta_StartInAlt+"\Photoshop (Beta).exe"
+$Photoshop_Beta_TargetPathAlt2 = $Photoshop_Beta_StartInAlt2+"\Photoshop (Beta).exe"
+$Photoshop_Beta_TargetPath = if (Test-Path -Path $Photoshop_Beta_TargetPathExeAlt -PathType leaf) {$Photoshop_Beta_TargetPathExeAlt} elseif (Test-Path -Path $Photoshop_Beta_TargetPathAltExeAlt -PathType leaf) {$Photoshop_Beta_TargetPathAltExeAlt} elseif (Test-Path -Path $Photoshop_Beta_TargetPathAlt2ExeAlt -PathType leaf) {$Photoshop_Beta_TargetPathAlt2ExeAlt} elseif (Test-Path -Path $Photoshop_Beta_TargetPath -PathType leaf) {$Photoshop_Beta_TargetPath} elseif (Test-Path -Path $Photoshop_Beta_TargetPathAlt -PathType leaf) {$Photoshop_Beta_TargetPathAlt} else {$Photoshop_Beta_TargetPathAlt2}
 # GIMP
 $GIMP_TargetPath = "C:\Program Files\"
 $GIMP_FindFolder = Get-ChildItem -Directory -Path $GIMP_TargetPath | Where-Object {$_.Name -match '^GIMP'} | Sort-Object -Descending
@@ -760,6 +784,8 @@ $sys3rdPartyAppList = @(
   @{Name=$LightroomClassic_Beta_Name; TargetPath=$LightroomClassic_Beta_TargetPath; StartIn=$LightroomClassic_Beta_StartIn},
   @{Name=$MediaEncoder_Name; TargetPath=$MediaEncoder_TargetPath; StartIn=$MediaEncoder_StartIn},
   @{Name=$MediaEncoder_Beta_Name; TargetPath=$MediaEncoder_Beta_TargetPath; StartIn=$MediaEncoder_Beta_StartIn},
+  @{Name=$Photoshop_Name; TargetPath=$Photoshop_TargetPath; StartIn=$Photoshop_StartIn},
+  @{Name=$Photoshop_Beta_Name; TargetPath=$Photoshop_Beta_TargetPath; StartIn=$Photoshop_Beta_StartIn},
   @{Name="Adobe UXP Developer Tool"; TargetPath="C:\Program Files\Adobe\Adobe UXP Developer Tool\Adobe UXP Developer Tool.exe"; StartIn="C:\Program Files\Adobe\Adobe UXP Developer Tool"},
   @{Name="Adobe Acrobat (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Acrobat DC\Acrobat\Acrobat.exe"},
   @{Name="Adobe Acrobat Distiller (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Acrobat DC\Acrobat\acrodist.exe"},
