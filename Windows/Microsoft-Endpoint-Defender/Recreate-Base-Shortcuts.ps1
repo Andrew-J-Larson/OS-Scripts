@@ -523,6 +523,30 @@ $Illustrator_Beta_TargetPath = $Illustrator_Beta_StartIn+"\Illustrator (Beta).ex
 $Illustrator_Beta_TargetPathAlt = $Illustrator_Beta_StartInAlt+"\Illustrator (Beta).exe"
 $Illustrator_Beta_TargetPathAlt2 = $Illustrator_Beta_StartInAlt2+"\Illustrator (Beta).exe"
 $Illustrator_Beta_TargetPath = if (Test-Path -Path $Illustrator_Beta_TargetPathExeAlt -PathType leaf) {$Illustrator_Beta_TargetPathExeAlt} elseif (Test-Path -Path $Illustrator_Beta_TargetPathAltExeAlt -PathType leaf) {$Illustrator_Beta_TargetPathAltExeAlt} elseif (Test-Path -Path $Illustrator_Beta_TargetPathAlt2ExeAlt -PathType leaf) {$Illustrator_Beta_TargetPathAlt2ExeAlt} elseif (Test-Path -Path $Illustrator_Beta_TargetPath -PathType leaf) {$Illustrator_Beta_TargetPath} elseif (Test-Path -Path $Illustrator_Beta_TargetPathAlt -PathType leaf) {$Illustrator_Beta_TargetPathAlt} else {$Illustrator_Beta_TargetPathAlt2}
+# Adobe InCopy
+$InCopy_TargetPath = "C:\Program Files\Adobe\"
+$InCopy_Name = if (Test-Path -Path $InCopy_TargetPath) {Get-ChildItem -Directory -Path $InCopy_TargetPath | Where-Object { $_.Name -match '^.*InCopy(?!.*\(Beta\)$)' } | Sort-Object -Descending}
+$InCopy_Name = if ($InCopy_Name.length -ge 1) {$InCopy_Name[0].name} else {"Adobe InCopy"}
+$InCopy_StartIn = $InCopy_TargetPath+$InCopy_Name
+$InCopy_StartInAlt = $InCopy_StartIn+"\Support Files"
+$InCopy_StartInAlt2 = $InCopy_StartInAlt+"\Contents\Windows"
+$InCopy_TargetPath = $InCopy_StartIn+"\InCopy.exe"
+$InCopy_TargetPathAlt = $InCopy_StartInAlt+"\InCopy.exe"
+$InCopy_TargetPathAlt2 = $InCopy_StartInAlt2+"\InCopy.exe"
+$InCopy_TargetPath = if (Test-Path -Path $InCopy_TargetPath -PathType leaf) {$InCopy_TargetPath} elseif (Test-Path -Path $InCopy_TargetPathAlt -PathType leaf) {$InCopy_TargetPathAlt} else {$InCopy_TargetPathAlt2}
+$InCopy_Beta_TargetPath = "C:\Program Files\Adobe\"
+$InCopy_Beta_Name = if (Test-Path -Path $InCopy_Beta_TargetPath) {Get-ChildItem -Directory -Path $InCopy_Beta_TargetPath | Where-Object { $_.Name -match '^.*InCopy.*\(Beta\)' } | Sort-Object -Descending}
+$InCopy_Beta_Name = if ($InCopy_Beta_Name.length -ge 1) {$InCopy_Beta_Name[0].name} else {"Adobe InCopy (Beta)"}
+$InCopy_Beta_StartIn = $InCopy_Beta_TargetPath+$InCopy_Beta_Name
+$InCopy_Beta_StartInAlt = $InCopy_Beta_StartIn+"\Support Files"
+$InCopy_Beta_StartInAlt2 = $InCopy_Beta_StartInAlt+"\Contents\Windows"
+$InCopy_Beta_TargetPathExeAlt = $InCopy_Beta_StartIn+"\InCopy.exe"
+$InCopy_Beta_TargetPathAltExeAlt = $InCopy_Beta_StartInAlt+"\InCopy.exe"
+$InCopy_Beta_TargetPathAlt2ExeAlt = $InCopy_Beta_StartInAlt2+"\InCopy.exe"
+$InCopy_Beta_TargetPath = $InCopy_Beta_StartIn+"\InCopy (Beta).exe"
+$InCopy_Beta_TargetPathAlt = $InCopy_Beta_StartInAlt+"\InCopy (Beta).exe"
+$InCopy_Beta_TargetPathAlt2 = $InCopy_Beta_StartInAlt2+"\InCopy (Beta).exe"
+$InCopy_Beta_TargetPath = if (Test-Path -Path $InCopy_Beta_TargetPathExeAlt -PathType leaf) {$InCopy_Beta_TargetPathExeAlt} elseif (Test-Path -Path $InCopy_Beta_TargetPathAltExeAlt -PathType leaf) {$InCopy_Beta_TargetPathAltExeAlt} elseif (Test-Path -Path $InCopy_Beta_TargetPathAlt2ExeAlt -PathType leaf) {$InCopy_Beta_TargetPathAlt2ExeAlt} elseif (Test-Path -Path $InCopy_Beta_TargetPath -PathType leaf) {$InCopy_Beta_TargetPath} elseif (Test-Path -Path $InCopy_Beta_TargetPathAlt -PathType leaf) {$InCopy_Beta_TargetPathAlt} else {$InCopy_Beta_TargetPathAlt2}
 # GIMP
 $GIMP_TargetPath = "C:\Program Files\"
 $GIMP_FindFolder = Get-ChildItem -Directory -Path $GIMP_TargetPath | Where-Object {$_.Name -match '^GIMP'} | Sort-Object -Descending
@@ -630,6 +654,8 @@ $sys3rdPartyAppList = @(
   @{Name=$Dreamweaver_Beta_Name; TargetPath=$Dreamweaver_Beta_TargetPath; StartIn=$Dreamweaver_Beta_StartIn},
   @{Name=$Illustrator_Name; TargetPath=$Illustrator_TargetPath; StartIn=$Illustrator_StartIn},
   @{Name=$Illustrator_Beta_Name; TargetPath=$Illustrator_Beta_TargetPath; StartIn=$Illustrator_Beta_StartIn},
+  @{Name=$InCopy_Name; TargetPath=$InCopy_TargetPath; StartIn=$InCopy_StartIn},
+  @{Name=$InCopy_Beta_Name; TargetPath=$InCopy_Beta_TargetPath; StartIn=$InCopy_Beta_StartIn},
   @{Name="Adobe UXP Developer Tool"; TargetPath="C:\Program Files\Adobe\Adobe UXP Developer Tool\Adobe UXP Developer Tool.exe"; StartIn="C:\Program Files\Adobe\Adobe UXP Developer Tool"},
   @{Name="Adobe Acrobat (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Acrobat DC\Acrobat\Acrobat.exe"},
   @{Name="Adobe Acrobat Distiller (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Acrobat DC\Acrobat\acrodist.exe"},
