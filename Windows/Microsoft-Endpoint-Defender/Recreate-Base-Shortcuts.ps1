@@ -691,6 +691,30 @@ $PremierePro_Beta_TargetPath = $PremierePro_Beta_StartIn+"\Adobe Premiere Pro (B
 $PremierePro_Beta_TargetPathAlt = $PremierePro_Beta_StartInAlt+"\Adobe Premiere Pro (Beta).exe"
 $PremierePro_Beta_TargetPathAlt2 = $PremierePro_Beta_StartInAlt2+"\Adobe Premiere Pro (Beta).exe"
 $PremierePro_Beta_TargetPath = if (Test-Path -Path $PremierePro_Beta_TargetPathExeAlt -PathType leaf) {$PremierePro_Beta_TargetPathExeAlt} elseif (Test-Path -Path $PremierePro_Beta_TargetPathAltExeAlt -PathType leaf) {$PremierePro_Beta_TargetPathAltExeAlt} elseif (Test-Path -Path $PremierePro_Beta_TargetPathAlt2ExeAlt -PathType leaf) {$PremierePro_Beta_TargetPathAlt2ExeAlt} elseif (Test-Path -Path $PremierePro_Beta_TargetPath -PathType leaf) {$PremierePro_Beta_TargetPath} elseif (Test-Path -Path $PremierePro_Beta_TargetPathAlt -PathType leaf) {$PremierePro_Beta_TargetPathAlt} else {$PremierePro_Beta_TargetPathAlt2}
+# Adobe Premiere Rush
+$PremiereRush_TargetPath = "C:\Program Files\Adobe\"
+$PremiereRush_Name = if (Test-Path -Path $PremiereRush_TargetPath) {Get-ChildItem -Directory -Path $PremiereRush_TargetPath | Where-Object { $_.Name -match '^.*Premiere Rush(?!.*\(Beta\)$)' } | Sort-Object -Descending}
+$PremiereRush_Name = if ($PremiereRush_Name.length -ge 1) {$PremiereRush_Name[0].name} else {"Adobe Premiere Rush"}
+$PremiereRush_StartIn = $PremiereRush_TargetPath+$PremiereRush_Name
+$PremiereRush_StartInAlt = $PremiereRush_StartIn+"\Support Files"
+$PremiereRush_StartInAlt2 = $PremiereRush_StartInAlt+"\Contents\Windows"
+$PremiereRush_TargetPath = $PremiereRush_StartIn+"\Adobe Premiere Rush.exe"
+$PremiereRush_TargetPathAlt = $PremiereRush_StartInAlt+"\Adobe Premiere Rush.exe"
+$PremiereRush_TargetPathAlt2 = $PremiereRush_StartInAlt2+"\Adobe Premiere Rush.exe"
+$PremiereRush_TargetPath = if (Test-Path -Path $PremiereRush_TargetPath -PathType leaf) {$PremiereRush_TargetPath} elseif (Test-Path -Path $PremiereRush_TargetPathAlt -PathType leaf) {$PremiereRush_TargetPathAlt} else {$PremiereRush_TargetPathAlt2}
+$PremiereRush_Beta_TargetPath = "C:\Program Files\Adobe\"
+$PremiereRush_Beta_Name = if (Test-Path -Path $PremiereRush_Beta_TargetPath) {Get-ChildItem -Directory -Path $PremiereRush_Beta_TargetPath | Where-Object { $_.Name -match '^.*Premiere Rush.*\(Beta\)$' } | Sort-Object -Descending}
+$PremiereRush_Beta_Name = if ($PremiereRush_Beta_Name.length -ge 1) {$PremiereRush_Beta_Name[0].name} else {"Adobe Premiere Rush (Beta)"}
+$PremiereRush_Beta_StartIn = $PremiereRush_Beta_TargetPath+$PremiereRush_Beta_Name
+$PremiereRush_Beta_StartInAlt = $PremiereRush_Beta_StartIn+"\Support Files"
+$PremiereRush_Beta_StartInAlt2 = $PremiereRush_Beta_StartInAlt+"\Contents\Windows"
+$PremiereRush_Beta_TargetPathExeAlt = $PremiereRush_Beta_StartIn+"\Adobe Premiere Rush.exe"
+$PremiereRush_Beta_TargetPathAltExeAlt = $PremiereRush_Beta_StartInAlt+"\Adobe Premiere Rush.exe"
+$PremiereRush_Beta_TargetPathAlt2ExeAlt = $PremiereRush_Beta_StartInAlt2+"\Adobe Premiere Rush.exe"
+$PremiereRush_Beta_TargetPath = $PremiereRush_Beta_StartIn+"\Adobe Premiere Rush (Beta).exe"
+$PremiereRush_Beta_TargetPathAlt = $PremiereRush_Beta_StartInAlt+"\Adobe Premiere Rush (Beta).exe"
+$PremiereRush_Beta_TargetPathAlt2 = $PremiereRush_Beta_StartInAlt2+"\Adobe Premiere Rush (Beta).exe"
+$PremiereRush_Beta_TargetPath = if (Test-Path -Path $PremiereRush_Beta_TargetPathExeAlt -PathType leaf) {$PremiereRush_Beta_TargetPathExeAlt} elseif (Test-Path -Path $PremiereRush_Beta_TargetPathAltExeAlt -PathType leaf) {$PremiereRush_Beta_TargetPathAltExeAlt} elseif (Test-Path -Path $PremiereRush_Beta_TargetPathAlt2ExeAlt -PathType leaf) {$PremiereRush_Beta_TargetPathAlt2ExeAlt} elseif (Test-Path -Path $PremiereRush_Beta_TargetPath -PathType leaf) {$PremiereRush_Beta_TargetPath} elseif (Test-Path -Path $PremiereRush_Beta_TargetPathAlt -PathType leaf) {$PremiereRush_Beta_TargetPathAlt} else {$PremiereRush_Beta_TargetPathAlt2}
 # GIMP
 $GIMP_TargetPath = "C:\Program Files\"
 $GIMP_FindFolder = Get-ChildItem -Directory -Path $GIMP_TargetPath | Where-Object {$_.Name -match '^GIMP'} | Sort-Object -Descending
@@ -812,6 +836,8 @@ $sys3rdPartyAppList = @(
   @{Name=$Photoshop_Beta_Name; TargetPath=$Photoshop_Beta_TargetPath; StartIn=$Photoshop_Beta_StartIn},
   @{Name=$PremierePro_Name; TargetPath=$PremierePro_TargetPath; StartIn=$PremierePro_StartIn},
   @{Name=$PremierePro_Beta_Name; TargetPath=$PremierePro_Beta_TargetPath; StartIn=$PremierePro_Beta_StartIn},
+  @{Name=$PremiereRush_Name; TargetPath=$PremiereRush_TargetPath; StartIn=$PremiereRush_StartIn},
+  @{Name=$PremiereRush_Beta_Name; TargetPath=$PremiereRush_Beta_TargetPath; StartIn=$PremiereRush_Beta_StartIn},
   @{Name="Adobe UXP Developer Tool"; TargetPath="C:\Program Files\Adobe\Adobe UXP Developer Tool\Adobe UXP Developer Tool.exe"; StartIn="C:\Program Files\Adobe\Adobe UXP Developer Tool"},
   @{Name="Adobe Acrobat (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Acrobat DC\Acrobat\Acrobat.exe"},
   @{Name="Adobe Acrobat Distiller (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Acrobat DC\Acrobat\acrodist.exe"},
