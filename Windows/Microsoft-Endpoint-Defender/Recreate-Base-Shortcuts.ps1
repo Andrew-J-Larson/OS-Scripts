@@ -312,7 +312,7 @@ $Aero_Name = if ($Aero_Name.length -ge 1) {$Aero_Name[0].name} else {"Aero"}
 $Aero_StartIn = $Aero_TargetPath+$Aero_Name
 $Aero_TargetPath = $Aero_StartIn+"\Aero.exe"
 $Aero_Beta_TargetPath = "C:\Program Files\Adobe\"
-$Aero_Beta_Name = if (Test-Path -Path $Aero_Beta_StartIn) {Get-ChildItem -Directory -Path $Aero_Beta_StartIn | Where-Object { $_.Name -match '^.*Aero.*\(Beta\)' } | Sort-Object -Descending}
+$Aero_Beta_Name = if (Test-Path -Path $Aero_Beta_TargetPath) {Get-ChildItem -Directory -Path $Aero_Beta_TargetPath | Where-Object { $_.Name -match '^.*Aero.*\(Beta\)' } | Sort-Object -Descending}
 $Aero_Beta_Name = if ($Aero_Beta_Name.length -ge 1) {$Aero_Beta_Name[0].name} else {"Aero (Beta)"}
 $Aero_Beta_StartIn = $Aero_Beta_TargetPath+$Aero_Beta_Name
 $Aero_Beta_TargetPath = $Aero_Beta_StartIn+"\Aero.exe"
@@ -344,6 +344,16 @@ $KeePass_TargetPath = "${KeePass_FindFolder}\KeePass.exe"
 $KeePass_32bit_StartIn = "C:\Program Files (x86)\"
 $KeePass_32bit_FindFolder = Get-ChildItem -Directory -Path $KeePass_32bit_StartIn | Where-Object {$_.Name -match '^KeePass Password Safe'} | Sort-Object -Descending
 $KeePass_32bit_TargetPath = if ($KeePass_32bit_FindFolder) {"${KeePass_32bit_FindFolder}\KeePass.exe"} else {"${NotInstalled}\${NotInstalled}.exe"}
+# Maxon
+$MaxonCinema4D_StartIn = "C:\Program Files\"
+$MaxonCinema4D_FindFolder = Get-ChildItem -Directory -Path $MaxonCinema4D_StartIn | Where-Object {$_.Name -match '^Maxon Cinema 4D'} | Sort-Object -Descending
+$MaxonCinema4D_FindFolder = if ($MaxonCinema4D_FindFolder.length -ge 1) {$MaxonCinema4D_FindFolder[0].name} else {$null}
+$MaxonCinema4D_Version = if ($MaxonCinema4D_FindFolder) {($MaxonCinema4D_FindFolder | Select-String -pattern "\d\d\d\d$" -All).Matches[-1].Value}
+$MaxonCinema4D_StartIn += if ($MaxonCinema4D_FindFolder) {$MaxonCinema4D_FindFolder} else {$NotInstalled}
+$MaxonCinema4D_Commandline_TargetPath = $MaxonCinema4D_StartIn+"\Commandline.exe"
+$MaxonCinema4D_TargetPath = $MaxonCinema4D_StartIn+"\Cinema 4D.exe"
+$MaxonCinema4D_TeamRenderClient_TargetPath = $MaxonCinema4D_StartIn+"\Cinema 4D Team Render Client.exe"
+$MaxonCinema4D_TeamRenderServer_TargetPath = $MaxonCinema4D_StartIn+"\Cinema 4D Team Render Server.exe"
 # VMware
 $VMwareWorkstationPlayer_TargetPath = "C:\Program Files\VMware\VMware Player\vmplayer.exe"
 $CommandPromptforvctl_Path = if (Test-Path -Path $VMwareWorkstationPlayer_TargetPath -PathType Leaf) {"C:\Windows\System32\cmd.exe"} else {"C:\Program Files\${NotInstalled}\${NotInstalled}\${NotInstalled}.exe"}
@@ -366,6 +376,11 @@ $KeePass_Name = "KeePass ${KeePass_Version}"
 $KeePass_32bit_FileVersionRaw = if (Test-Path -Path $KeePass_32bit_TargetPath -PathType Leaf) {(Get-Item $KeePass_32bit_TargetPath).VersionInfo.FileVersionRaw}
 $KeePass_32bit_Version = if ($KeePass_32bit_FileVersionRaw) {$KeePass_32bit_FileVersionRaw.Major} else {$NotInstalled}
 $KeePass_32bit_Name = "KeePass ${KeePass_Version}"
+# Maxon
+$MaxonCinema4D_Commandline_Name = "Commandline"+$(if ($MaxonCinema4D_Version) {" ${MaxonCinema4D_Version}"})
+$MaxonCinema4D_Name = "Maxon Cinema 4D"+$(if ($MaxonCinema4D_Version) {" ${MaxonCinema4D_Version}"})
+$MaxonCinema4D_TeamRenderClient_Name = "Team Render Client"+$(if ($MaxonCinema4D_Version) {" ${MaxonCinema4D_Version}"})
+$MaxonCinema4D_TeamRenderServer_Name = "Team Render Server"+$(if ($MaxonCinema4D_Version) {" ${MaxonCinema4D_Version}"})
 # VMware
 $VMwareWorkstationPlayer_FileVersionRaw = if (Test-Path -Path $VMwareWorkstationPlayer_TargetPath -PathType Leaf) {(Get-Item $VMwareWorkstationPlayer_TargetPath).VersionInfo.FileVersionRaw}
 $VMwareWorkstationPlayer_Version = if ($VMwareWorkstationPlayer_FileVersionRaw) {$VMwareWorkstationPlayer_FileVersionRaw.VersionInfo.FileVersionRaw.Major} else {$NotInstalled}
@@ -483,6 +498,11 @@ $sys3rdPartyAppList = @(
   # Local Administrator Password Solution
   @{Name="LAPS UI"; TargetPath="C:\Program Files\LAPS\AdmPwd.UI.exe"; SystemLnk="LAPS\"; StartIn="C:\Program Files\LAPS\"},
   @{Name="LAPS UI (32-bit)"; TargetPath="C:\Program Files (x86)\LAPS\AdmPwd.UI.exe"; SystemLnk="LAPS\"; StartIn="C:\Program Files (x86)\LAPS\"},
+  # Maxon
+  @{Name=$MaxonCinema4D_Commandline_Name; TargetPath=$MaxonCinema4D_Commandline_TargetPath; SystemLnk="${MaxonCinema4D_Name}\"; StartIn=$MaxonCinema4D_StartIn; Description="Commandline"},
+  @{Name=$MaxonCinema4D_Name; TargetPath=$MaxonCinema4D_TargetPath; SystemLnk="${MaxonCinema4D_Name}\"; StartIn=$MaxonCinema4D_StartIn; Description="Maxon Cinema 4D"},
+  @{Name=$MaxonCinema4D_TeamRenderClient_Name; TargetPath=$MaxonCinema4D_TeamRenderClient_TargetPath; SystemLnk="${MaxonCinema4D_Name}\"; StartIn=$MaxonCinema4D_StartIn; Description="Team Render Client"},
+  @{Name=$MaxonCinema4D_TeamRenderServer_Name; TargetPath=$MaxonCinema4D_TeamRenderServer_TargetPath; SystemLnk="${MaxonCinema4D_Name}\"; StartIn=$MaxonCinema4D_StartIn; Description="Team Render Server"},
   # Mozilla
   @{Name="Firefox"; TargetPath="C:\Program Files\Mozilla Firefox\firefox.exe"; StartIn="C:\Program Files\Mozilla Firefox"},
   @{Name="Firefox Private Browsing"; TargetPath="C:\Program Files\Mozilla Firefox\private_browsing.exe"; StartIn="C:\Program Files\Mozilla Firefox"; Description="Firefox Private Browsing"},
