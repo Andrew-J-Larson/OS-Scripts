@@ -499,10 +499,10 @@ $sys3rdPartyAppList = @(
   @{Name="LAPS UI"; TargetPath="C:\Program Files\LAPS\AdmPwd.UI.exe"; SystemLnk="LAPS\"; StartIn="C:\Program Files\LAPS\"},
   @{Name="LAPS UI (32-bit)"; TargetPath="C:\Program Files (x86)\LAPS\AdmPwd.UI.exe"; SystemLnk="LAPS\"; StartIn="C:\Program Files (x86)\LAPS\"},
   # Maxon
-  @{Name=$MaxonCinema4D_Commandline_Name; TargetPath=$MaxonCinema4D_Commandline_TargetPath; SystemLnk="${MaxonCinema4D_Name}\"; StartIn=$MaxonCinema4D_StartIn; Description="Commandline"},
-  @{Name=$MaxonCinema4D_Name; TargetPath=$MaxonCinema4D_TargetPath; SystemLnk="${MaxonCinema4D_Name}\"; StartIn=$MaxonCinema4D_StartIn; Description="Maxon Cinema 4D"},
-  @{Name=$MaxonCinema4D_TeamRenderClient_Name; TargetPath=$MaxonCinema4D_TeamRenderClient_TargetPath; SystemLnk="${MaxonCinema4D_Name}\"; StartIn=$MaxonCinema4D_StartIn; Description="Team Render Client"},
-  @{Name=$MaxonCinema4D_TeamRenderServer_Name; TargetPath=$MaxonCinema4D_TeamRenderServer_TargetPath; SystemLnk="${MaxonCinema4D_Name}\"; StartIn=$MaxonCinema4D_StartIn; Description="Team Render Server"},
+  @{Name=$MaxonCinema4D_Commandline_Name; TargetPath=$MaxonCinema4D_Commandline_TargetPath; SystemLnk="Maxon\${MaxonCinema4D_Name}\"; StartIn=$MaxonCinema4D_StartIn; Description="Commandline"},
+  @{Name=$MaxonCinema4D_Name; TargetPath=$MaxonCinema4D_TargetPath; SystemLnk="Maxon\${MaxonCinema4D_Name}\"; StartIn=$MaxonCinema4D_StartIn; Description="Maxon Cinema 4D"},
+  @{Name=$MaxonCinema4D_TeamRenderClient_Name; TargetPath=$MaxonCinema4D_TeamRenderClient_TargetPath; SystemLnk="Maxon\${MaxonCinema4D_Name}\"; StartIn=$MaxonCinema4D_StartIn; Description="Team Render Client"},
+  @{Name=$MaxonCinema4D_TeamRenderServer_Name; TargetPath=$MaxonCinema4D_TeamRenderServer_TargetPath; SystemLnk="Maxon\${MaxonCinema4D_Name}\"; StartIn=$MaxonCinema4D_StartIn; Description="Team Render Server"},
   # Mozilla
   @{Name="Firefox"; TargetPath="C:\Program Files\Mozilla Firefox\firefox.exe"; StartIn="C:\Program Files\Mozilla Firefox"},
   @{Name="Firefox Private Browsing"; TargetPath="C:\Program Files\Mozilla Firefox\private_browsing.exe"; StartIn="C:\Program Files\Mozilla Firefox"; Description="Firefox Private Browsing"},
