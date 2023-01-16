@@ -354,8 +354,8 @@ for ($i = 0; $i -lt $oemSysAppList.length; $i++) {
 # Egnyte Desktop App
 $EgnyteDesktopAppUninstallGUID = $UninstallList | Where-Object { $_.Name -match "Egnyte Desktop App" }
 $EgnyteDesktopAppUninstallGUID = if ($EgnyteDesktopAppUninstallGUID.length -ge 1) { $EgnyteDesktopAppUninstallGUID[0].GUID } else { $null }
-$EgnyteDesktopAppUninstall_Arguments = if (EgnyteDesktopAppUninstallGUID) { "/x ${EgnyteDesktopAppUninstallGUID}" } else { "" }
-$EgnyteDesktopAppUninstall_TargetPath = if (EgnyteDesktopAppUninstallGUID) { "C:\Windows\System32\msiexec.exe" } else { "C:\${NotInstalled}\${NotInstalled}\${NotInstalled}.exe" }
+$EgnyteDesktopAppUninstall_Arguments = if ($EgnyteDesktopAppUninstallGUID) { "/x ${EgnyteDesktopAppUninstallGUID}" } else { "" }
+$EgnyteDesktopAppUninstall_TargetPath = if ($EgnyteDesktopAppUninstallGUID) { "C:\Windows\System32\msiexec.exe" } else { "C:\${NotInstalled}\${NotInstalled}\${NotInstalled}.exe" }
 
 # App paths dependant on app version
 
