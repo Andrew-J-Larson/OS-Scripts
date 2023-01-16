@@ -168,11 +168,13 @@ if (-Not $isWin10orNewer) {
 
 # Powershell (7 or newer)
 $PowerShell_TargetPath = "C:\Program Files\PowerShell\"
-$PowerShell_Version = if (Test-Path -Path $PowerShell_TargetPath) {(Get-ChildItem -Directory -Path $PowerShell_TargetPath | Where-Object {$_.Name -match '^[0-9]+$'} | Sort-Object -Descending)[0].name}
-$PowerShell_TargetPath += if ($PowerShell_Version) {"${PowerShell_Version}\pwsh.exe"} else {"${NotInstalled}\${NotInstalled}.exe"}
+$PowerShell_Version = if (Test-Path -Path $PowerShell_TargetPath) {Get-ChildItem -Directory -Path $PowerShell_TargetPath | Where-Object {$_.Name -match '^[0-9]+$'} | Sort-Object -Descending}
+$PowerShell_Version = if ($PowerShell_Version.length -ge 1) {$PowerShell_Version[0].name} else {$NotInstalled}
+$PowerShell_TargetPath += "${PowerShell_Version}\pwsh.exe"
 $PowerShell_32bit_TargetPath = "C:\Program Files (x86)\PowerShell\"
-$PowerShell_32bit_Version = if (Test-Path -Path $PowerShell_32bit_TargetPath) {(Get-ChildItem -Directory -Path $PowerShell_32bit_TargetPath | Where-Object {$_.Name -match '^[0-9]+$'} | Sort-Object -Descending)[0].name}
-$PowerShell_32bit_TargetPath += if ($PowerShell_32bit_Version) {"${PowerShell32bit_Version}\pwsh.exe"} else {"${NotInstalled}\${NotInstalled}.exe"}
+$PowerShell_32bit_Version = if (Test-Path -Path $PowerShell_32bit_TargetPath) {Get-ChildItem -Directory -Path $PowerShell_32bit_TargetPath | Where-Object {$_.Name -match '^[0-9]+$'} | Sort-Object -Descending}
+$PowerShell_32bit_Version = if ($PowerShell_32bit_Version.length -ge 1) {$PowerShell_32bit_Version[0].name} else {$NotInstalled}
+$PowerShell_32bit_TargetPath += "${PowerShell32bit_Version}\pwsh.exe"
 # PowerToys
 $PowerToys_TargetPath = "C:\Program Files\PowerToys\PowerToys.exe"
 
@@ -319,23 +321,27 @@ $Aero_Beta_TargetPath = $Aero_Beta_StartIn+"\Aero.exe"
 # GIMP
 $GIMP_TargetPath = "C:\Program Files\"
 $GIMP_FindFolder = Get-ChildItem -Directory -Path $GIMP_TargetPath | Where-Object {$_.Name -match '^GIMP'} | Sort-Object -Descending
-$GIMP_FindFolder = if ($GIMP_FindFolder.length -ge 1) {$GIMP_FindFolder[0].name}
-$GIMP_TargetPath += if ($GIMP_FindFolder) {"${GIMP_FindFolder}\bin\"} else {"${NotInstalled}\${NotInstalled}\"}
-$GIMP_FindExe = if (Test-Path -Path $GIMP_TargetPath) {(Get-ChildItem -File -Path $GIMP_TargetPath | Where-Object {$_.Name -match '^gimp\-[.0-9]+exe$'} | Sort-Object -Descending)[0].name}
-$GIMP_TargetPath += if ($GIMP_FindExe) {$GIMP_FindExe} else {"${NotInstalled}.exe"}
+$GIMP_FindFolder = if ($GIMP_FindFolder.length -ge 1) {$GIMP_FindFolder[0].name} else {$NotInstalled}
+$GIMP_TargetPath += "${GIMP_FindFolder}\bin\"
+$GIMP_FindExe = if (Test-Path -Path $GIMP_TargetPath) {Get-ChildItem -File -Path $GIMP_TargetPath | Where-Object {$_.Name -match '^gimp\-[.0-9]+exe$'} | Sort-Object -Descending}
+$GIMP_FindExe = if ($GIMP_FindExe.length -ge 1) {$GIMP_FindExe[0].name} else {"${NotInstalled}.exe"}
+$GIMP_TargetPath += $GIMP_FindExe
 $GIMP_32bit_TargetPath = "C:\Program Files (x86)\"
 $GIMP_32bit_FindFolder = Get-ChildItem -Directory -Path $GIMP_32bit_TargetPath | Where-Object {$_.Name -match '^GIMP'} | Sort-Object -Descending
-$GIMP_32bit_FindFolder = if ($GIMP_32bit_FindFolder.length -ge 1) {$GIMP_32bit_FindFolder[0].name}
-$GIMP_32bit_TargetPath += if ($GIMP_32bit_FindFolder) {"${GIMP_32bit_FindFolder}\bin\"} else {"${NotInstalled}\${NotInstalled}\"}
-$GIMP_32bit_FindExe = if (Test-Path -Path $GIMP_32bit_TargetPath) {(Get-ChildItem -File -Path $GIMP_32bit_TargetPath | Where-Object {$_.Name -match '^gimp\-[.0-9]+exe$'} | Sort-Object -Descending)[0].name}
-$GIMP_32bit_TargetPath += if ($GIMP_32bit_FindExe) {$GIMP_32bit_FindExe} else {"${NotInstalled}.exe"}
+$GIMP_32bit_FindFolder = if ($GIMP_32bit_FindFolder.length -ge 1) {$GIMP_32bit_FindFolder[0].name} else {$NotInstalled}
+$GIMP_32bit_TargetPath += "${GIMP_32bit_FindFolder}\bin\"
+$GIMP_32bit_FindExe = if (Test-Path -Path $GIMP_32bit_TargetPath) {Get-ChildItem -File -Path $GIMP_32bit_TargetPath | Where-Object {$_.Name -match '^gimp\-[.0-9]+exe$'} | Sort-Object -Descending}
+$GIMP_32bit_FindExe = if ($GIMP_32bit_FindExe.length -ge 1) {$GIMP_32bit_FindExe[0].name} else {"${NotInstalled}.exe"}
+$GIMP_32bit_TargetPath += $GIMP_32bit_FindExe
 # Google
 $GoogleDrive_TargetPath = "C:\Program Files\Google\Drive File Stream\"
-$GoogleDrive_Version = if (Test-Path -Path $GoogleDrive_TargetPath) {(Get-ChildItem -Directory -Path $GoogleDrive_TargetPath | Where-Object {$_.Name -match '^[.0-9]+$'} | Sort-Object -Descending)[0].name}
-$GoogleDrive_TargetPath += if ($GoogleDrive_Version) {"${GoogleDrive_Version}\GoogleDriveFS.exe"} else {"${NotInstalled}\${NotInstalled}.exe"}
+$GoogleDrive_Version = if (Test-Path -Path $GoogleDrive_TargetPath) {Get-ChildItem -Directory -Path $GoogleDrive_TargetPath | Where-Object {$_.Name -match '^[.0-9]+$'} | Sort-Object -Descending}
+$GoogleDrive_Version = if ($GoogleDrive_Version.length -ge 1) {$GoogleDrive_Version[0].name} else {$NotInstalled}
+$GoogleDrive_TargetPath += "${GoogleDrive_Version}\GoogleDriveFS.exe"
 $GoogleOneVPN_TargetPath = "C:\Program Files\Google\VPN by Google One\"
-$GoogleOneVPN_Version = if (Test-Path -Path $GoogleOneVPN_TargetPath) {(Get-ChildItem -Directory -Path $GoogleOneVPN_TargetPath | Where-Object {$_.Name -match '^[.0-9]+$'} | Sort-Object -Descending)[0].name}
-$GoogleOneVPN_TargetPath += if ($GoogleOneVPN_Version) {"${GoogleOneVPN_Version}\googleone.exe"} else {"${NotInstalled}\${NotInstalled}.exe"}
+$GoogleOneVPN_Version = if (Test-Path -Path $GoogleOneVPN_TargetPath) {Get-ChildItem -Directory -Path $GoogleOneVPN_TargetPath | Where-Object {$_.Name -match '^[.0-9]+$'} | Sort-Object -Descending}
+$GoogleOneVPN_Version = if ($GoogleOneVPN_Version.length -ge 1) {$GoogleOneVPN_Version[0].name} else {$NotInstalled}
+$GoogleOneVPN_TargetPath += "${GoogleOneVPN_Version}\googleone.exe"
 # KeePass
 $KeePass_StartIn = "C:\Program Files\"
 $KeePass_FindFolder = Get-ChildItem -Directory -Path $KeePass_StartIn | Where-Object {$_.Name -match '^KeePass Password Safe'} | Sort-Object -Descending
@@ -343,13 +349,15 @@ if ($KeePass_FindFolder.length -ge 1) {$KeePass_FindFolder[0].name} else {$NotIn
 $KeePass_TargetPath = "${KeePass_FindFolder}\KeePass.exe"
 $KeePass_32bit_StartIn = "C:\Program Files (x86)\"
 $KeePass_32bit_FindFolder = Get-ChildItem -Directory -Path $KeePass_32bit_StartIn | Where-Object {$_.Name -match '^KeePass Password Safe'} | Sort-Object -Descending
-$KeePass_32bit_TargetPath = if ($KeePass_32bit_FindFolder) {"${KeePass_32bit_FindFolder}\KeePass.exe"} else {"${NotInstalled}\${NotInstalled}.exe"}
+$KeePass_32bit_FindFolder = if ($KeePass_32bit_FindFolder.length -ge 1) {$KeePass_32bit_FindFolder[0].name} else {$NotInstalled}
+$KeePass_32bit_TargetPath = "${KeePass_32bit_FindFolder}\KeePass.exe"
 # Maxon
 $MaxonCinema4D_StartIn = "C:\Program Files\"
 $MaxonCinema4D_FindFolder = Get-ChildItem -Directory -Path $MaxonCinema4D_StartIn | Where-Object {$_.Name -match '^Maxon Cinema 4D'} | Sort-Object -Descending
-$MaxonCinema4D_FindFolder = if ($MaxonCinema4D_FindFolder.length -ge 1) {$MaxonCinema4D_FindFolder[0].name} else {$null}
-$MaxonCinema4D_Version = if ($MaxonCinema4D_FindFolder) {($MaxonCinema4D_FindFolder | Select-String -pattern "\d\d\d\d$" -All).Matches[-1].Value}
-$MaxonCinema4D_StartIn += if ($MaxonCinema4D_FindFolder) {$MaxonCinema4D_FindFolder} else {$NotInstalled}
+$MaxonCinema4D_FindFolder = if ($MaxonCinema4D_FindFolder.length -ge 1) {$MaxonCinema4D_FindFolder[0].name} else {$NotInstalled}
+$MaxonCinema4D_Version = $MaxonCinema4D_FindFolder | Select-String -pattern "\d\d\d\d$" -All
+$MaxonCinema4D_Version = if ($MaxonCinema4D_Version.length -ge 1) {$MaxonCinema4D_Version.Matches[-1].value} else {$NotInstalled}
+$MaxonCinema4D_StartIn += $MaxonCinema4D_FindFolder
 $MaxonCinema4D_Commandline_TargetPath = $MaxonCinema4D_StartIn+"\Commandline.exe"
 $MaxonCinema4D_TargetPath = $MaxonCinema4D_StartIn+"\Cinema 4D.exe"
 $MaxonCinema4D_TeamRenderClient_TargetPath = $MaxonCinema4D_StartIn+"\Cinema 4D Team Render Client.exe"
@@ -365,10 +373,10 @@ $CommandPromptforvctl_32bit_Path = if (Test-Path -Path $VMwareWorkstationPlayer_
 # GIMP
 $GIMP_ProductVersion = if (Test-Path -Path $GIMP_TargetPath -PathType Leaf) {(Get-Item $GIMP_TargetPath).VersionInfo.ProductVersion}
 $GIMP_Version = if ($GIMP_ProductVersion) {$GIMP_ProductVersion} else {$NotInstalled}
-$GIMP_Name = "GIMP "+$(if ($GIMP_Version) {$GIMP_Version} else {$NotInstalled})
+$GIMP_Name = "GIMP ${GIMP_Version}"
 $GIMP_32bit_ProductVersion = if (Test-Path -Path $GIMP_32bit_TargetPath -PathType Leaf) {(Get-Item $GIMP_32bit_TargetPath).VersionInfo.ProductVersion}
 $GIMP_32bit_Version = if ($GIMP_32bit_ProductVersion) {$GIMP_32bit_ProductVersion} else {$NotInstalled}
-$GIMP_32bit_Name = "GIMP "+$(if ($GIMP_32bit_Version) {$GIMP_32bit_Version} else {$NotInstalled})
+$GIMP_32bit_Name = "GIMP ${GIMP_32bit_Version}"
 # KeePass
 $KeePass_FileVersionRaw = if (Test-Path -Path $KeePass_TargetPath -PathType Leaf) {(Get-Item $KeePass_TargetPath).VersionInfo.FileVersionRaw}
 $KeePass_Version = if ($KeePass_FileVersionRaw) {$KeePass_FileVersionRaw.Major} else {$NotInstalled}
@@ -384,10 +392,10 @@ $MaxonCinema4D_TeamRenderServer_Name = "Team Render Server"+$(if ($MaxonCinema4D
 # VMware
 $VMwareWorkstationPlayer_FileVersionRaw = if (Test-Path -Path $VMwareWorkstationPlayer_TargetPath -PathType Leaf) {(Get-Item $VMwareWorkstationPlayer_TargetPath).VersionInfo.FileVersionRaw}
 $VMwareWorkstationPlayer_Version = if ($VMwareWorkstationPlayer_FileVersionRaw) {$VMwareWorkstationPlayer_FileVersionRaw.VersionInfo.FileVersionRaw.Major} else {$NotInstalled}
-$VMwareWorkstationPlayer_Name = "VMware Workstation "+$(if ($VMwareWorkstationPlayer_Version) {$VMwareWorkstationPlayer_Version} else {$NotInstalled})+" Player"
+$VMwareWorkstationPlayer_Name = "VMware Workstation ${VMwareWorkstationPlayer_Version} Player"
 $VMwareWorkstationPlayer_32bit_FileVersionRaw = if (Test-Path -Path $VMwareWorkstationPlayer_32bit_TargetPath -PathType Leaf) {(Get-Item $VMwareWorkstationPlayer_32bit_TargetPath).VersionInfo.FileVersionRaw}
 $VMwareWorkstationPlayer_32bit_Version = if ($VMwareWorkstationPlayer_32bit_FileVersionRaw) {$VMwareWorkstationPlayer_32bit_FileVersionRaw.VersionInfo.FileVersionRaw.Major} else {$NotInstalled}
-$VMwareWorkstationPlayer_32bit_Name = "VMware Workstation "+$(if ($VMwareWorkstationPlayer_32bit_Version) {$VMwareWorkstationPlayer_32bit_Version} else {$NotInstalled})+" Player"
+$VMwareWorkstationPlayer_32bit_Name = "VMware Workstation ${VMwareWorkstationPlayer_32bit_Version} Player"
 
 $sys3rdPartyAppList = @(
   # 7-Zip
@@ -640,13 +648,15 @@ $AdobeDigitalEditions_32bit_FindFolder = if ($AdobeDigitalEditions_32bit_FindFol
 $AdobeDigitalEditions_32bit_TargetPath += "${AdobeDigitalEditions_32bit_FindFolder}\DigitalEditions.exe"
 # Blender
 $Blender_TargetPath = "C:\Program Files\Blender Foundation\"
-$Blender_FindFolder = if (Test-Path -Path $Blender_TargetPath) {(Get-ChildItem -Directory -Path $Blender_TargetPath | Where-Object {$_.Name -match '^Blender'} | Sort-Object -Descending)[0].name}
-$Blender_StartIn = $Blender_TargetPath+$(if ($Blender_FindFolder) {"${Blender_FindFolder}\"} else {"${NotInstalled}\"})
-$Blender_TargetPath = $Blender_StartIn+$(if ($Blender_FindFolder) {"blender-launcher.exe"} else {"${NotInstalled}.exe"})
+$Blender_FindFolder = if (Test-Path -Path $Blender_TargetPath) {Get-ChildItem -Directory -Path $Blender_TargetPath | Where-Object {$_.Name -match '^Blender'} | Sort-Object -Descending}
+$Blender_FindFolder = if ($Blender_FindFolder.length -ge 1) {$Blender_FindFolder[0].name} else {$NotInstalled}
+$Blender_StartIn = $Blender_TargetPath+"${Blender_FindFolder}\"
+$Blender_TargetPath = $Blender_StartIn+"blender-launcher.exe"
 $Blender_32bit_TargetPath = "C:\Program Files (x86)\Blender Foundation\"
-$Blender_32bit_FindFolder = if (Test-Path -Path $Blender_32bit_TargetPath) {(Get-ChildItem -Directory -Path $Blender_32bit_TargetPath | Where-Object {$_.Name -match '^Blender'} | Sort-Object -Descending)[0].name}
-$Blender_32bit_StartIn = $Blender_32bit_TargetPath+$(if ($Blender_32bit_FindFolder) {"${Blender_32bit_FindFolder}\"} else {"${NotInstalled}\"})
-$Blender_32bit_TargetPath = $Blender_32bit_StartIn+$(if ($Blender_32bit_FindFolder) {"blender-launcher.exe"} else {"${NotInstalled}.exe"})
+$Blender_32bit_FindFolder = if (Test-Path -Path $Blender_32bit_TargetPath) {Get-ChildItem -Directory -Path $Blender_32bit_TargetPath | Where-Object {$_.Name -match '^Blender'} | Sort-Object -Descending}
+$Blender_32bit_FindFolder = if ($Blender_32bit_FindFolder.length -ge 1) {$Blender_32bit_FindFolder[0].name} else {$NotInstalled}
+$Blender_32bit_StartIn = $Blender_32bit_TargetPath+"${Blender_32bit_FindFolder}\"
+$Blender_32bit_TargetPath = $Blender_32bit_StartIn+"blender-launcher.exe"
 
 # System app names dependant on OS or app version
 
@@ -671,30 +681,34 @@ for ($i = 0; $i -lt $Users.length; $i++) {
 
   # 1Password
   $OnePassword_TargetPath = "C:\Users\${aUser}\AppData\Local\1Password\app\"
-  $OnePassword_FindFolder = if (Test-Path -Path $OnePassword_TargetPath) {(Get-ChildItem -Directory -Path $OnePassword_TargetPath | Where-Object {$_.Name -match '^[.0-9]+$'} | Sort-Object -Descending)[0].name}
-  $OnePassword_TargetPath += if ($OnePassword_FindFolder) {"${OnePassword_FindFolder}\1Password.exe"} else {"${NotInstalled}\${NotInstalled}.exe"}
+  $OnePassword_FindFolder = if (Test-Path -Path $OnePassword_TargetPath) {Get-ChildItem -Directory -Path $OnePassword_TargetPath | Where-Object {$_.Name -match '^[.0-9]+$'} | Sort-Object -Descending}
+  $OnePassword_FindFolder = if ($OnePassword_FindFolder.length -ge 1) {$OnePassword_FindFolder[0].name} else {$NotInstalled}
+  $OnePassword_TargetPath += "${OnePassword_FindFolder}\1Password.exe"
   # Adobe
   $AdobeDigitalEditions_StartIn = "C:\Users\${aUser}\AppData\Local\Temp"
   # Discord
   $Discord_StartIn = "C:\Users\${aUser}\AppData\Local\Discord\"
   $Discord_TargetPath = $Discord_StartIn+"Update.exe"
-  $Discord_FindFolder = if (Test-Path -Path $Discord_StartIn) {(Get-ChildItem -Directory -Path $Discord_StartIn | Where-Object {$_.Name -match '^app\-[.0-9]+$'} | Sort-Object -Descending)[0].name}
-  $Discord_StartIn += if ($Discord_FindFolder) {"${Discord_FindFolder}"} else {$NotInstalled}
+  $Discord_FindFolder = if (Test-Path -Path $Discord_StartIn) {Get-ChildItem -Directory -Path $Discord_StartIn | Where-Object {$_.Name -match '^app\-[.0-9]+$'} | Sort-Object -Descending}
+  $Discord_FindFolder = if ($Discord_FindFolder.length -ge 1) {$Discord_FindFolder[0].name} else {$NotInstalled}
+  $Discord_StartIn += $Discord_FindFolder
   # GitHub
   $GitHubDesktop_StartIn = "C:\Users\${aUser}\AppData\Local\GitHubDesktop\"
   $GitHubDesktop_TargetPath = $GitHubDesktop_StartIn+"GitHubDesktop.exe"
-  $GitHubDesktop_FindFolder = if (Test-Path -Path $GitHubDesktop_StartIn) {(Get-ChildItem -Directory -Path $GitHubDesktop_StartIn | Where-Object {$_.Name -match '^app\-[.0-9]+$'} | Sort-Object -Descending)[0].name}
-  $GitHubDesktop_StartIn += if ($GitHubDesktop_FindFolder) {"${GitHubDesktop_FindFolder}"} else {$NotInstalled}
+  $GitHubDesktop_FindFolder = if (Test-Path -Path $GitHubDesktop_StartIn) {Get-ChildItem -Directory -Path $GitHubDesktop_StartIn | Where-Object {$_.Name -match '^app\-[.0-9]+$'} | Sort-Object -Descending}
+  $GitHubDesktop_FindFolder = if ($GitHubDesktop_FindFolder.length -ge 1) {$GitHubDesktop_FindFolder[0].name} else {$NotInstalled}
+  $GitHubDesktop_StartIn += $GitHubDesktop_FindFolder
   # Microsoft
   $AzureIoTExplorerPreview_TargetPath = "C:\Users\${aUser}\AppData\Local\Programs\azure-iot-explorer\Azure IoT Explorer Preview.exe"
   $AzureIoTExplorer_TargetPath = if (Test-Path -Path $AzureIoTExplorerPreview_TargetPath -PathType Leaf) {$AzureIoTExplorerPreview_TargetPath} else {"C:\Users\${aUser}\AppData\Local\Programs\azure-iot-explorer\Azure IoT Explorer.exe"}
   $AzureIoTExplorer_Name = "Azure IoT Explorer"+$(if (Test-Path -Path $AzureIoTExplorerPreview_TargetPath -PathType Leaf) {" Preview"})
   # Python
   $Python_StartIn = "C:\Users\${aUser}\AppData\Local\Programs\Python\"
-  $Python_FindFolder = if (Test-Path -Path $Python_StartIn) {(Get-ChildItem -Directory -Path $Python_StartIn | Where-Object {$_.Name -match '^Python[.0-9]+$'} | Sort-Object -Descending)[0].name}
-  $Python_StartIn += if ($Python_FindFolder) {"${Python_FindFolder}\"} else {"${NotInstalled}\"}
-  $PythonIDLE_TargetPath = $Python_StartIn+$(if ($Python_FindFolder) {"Lib\idlelib\idle.pyw"} else {"${NotInstalled}\${NotInstalled}\${NotInstalled}.pyw"})
-  $Python_TargetPath = $Python_StartIn+$(if ($Python_FindFolder) {"python.exe"} else {"${NotInstalled}.exe"})
+  $Python_FindFolder = if (Test-Path -Path $Python_StartIn) {Get-ChildItem -Directory -Path $Python_StartIn | Where-Object {$_.Name -match '^Python[.0-9]+$'} | Sort-Object -Descending}
+  $Python_FindFolder = if ($Python_FindFolder.length -ge 1) {$Python_FindFolder[0].name} else {$NotInstalled}
+  $Python_StartIn += "${Python_FindFolder}\"
+  $PythonIDLE_TargetPath = $Python_StartIn+"Lib\idlelib\idle.pyw"
+  $Python_TargetPath = $Python_StartIn+"python.exe"
   $Python_FileVersionRaw = if (Test-Path -Path $Python_TargetPath -PathType Leaf) {(Get-Item $Python_TargetPath).VersionInfo.FileVersionRaw}
   $Python_Version = if ($Python_FileVersionRaw) {[string]($Python_FileVersionRaw.Major)+'.'+[string]($Python_FileVersionRaw.Minor)} else {$NotInstalled}
   $PythonIDLE_Description = "Launches IDLE, the interactive environment for Python ${Python_Version}."
