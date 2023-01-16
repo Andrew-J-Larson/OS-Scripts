@@ -409,6 +409,23 @@ $CharacterAnimator_Beta_StartInAlt = $CharacterAnimator_Beta_StartIn+"\Support F
 $CharacterAnimator_Beta_TargetPath = $CharacterAnimator_Beta_StartIn+"\Adobe Character Animator (Beta).exe"
 $CharacterAnimator_Beta_TargetPathAlt = $CharacterAnimator_Beta_StartInAlt+"\Adobe Character Animator (Beta).exe"
 $CharacterAnimator_Beta_TargetPath = if (Test-Path -Path $CharacterAnimator_Beta_TargetPath -PathType leaf) {$CharacterAnimator_Beta_TargetPath} elseif (Test-Path -Path $CharacterAnimator_Beta_TargetPathAlt -PathType leaf) {$CharacterAnimator_Beta_TargetPathAlt} else {$CharacterAnimator_Beta_StartIn+"\Adobe Character Animator.exe"}
+# Adobe Dimension
+$Dimension_TargetPath = "C:\Program Files\Adobe\"
+$Dimension_Name = if (Test-Path -Path $Dimension_TargetPath) {Get-ChildItem -Directory -Path $Dimension_TargetPath | Where-Object { $_.Name -match '^.*Dimension(?!.*\(Beta\)$)' } | Sort-Object -Descending}
+$Dimension_Name = if ($Dimension_Name.length -ge 1) {$Dimension_Name[0].name} else {"Dimension"}
+$Dimension_StartIn = $Dimension_TargetPath+$Dimension_Name
+$Dimension_StartInAlt = $Dimension_StartIn+"\Support Files"
+$Dimension_TargetPath = $Dimension_StartIn+"\Dimension.exe"
+$Dimension_TargetPathAlt = $Dimension_StartInAlt+"\Dimension.exe"
+$Dimension_TargetPath = if (Test-Path -Path $Dimension_TargetPath -PathType leaf) {$Dimension_TargetPath} else {$Dimension_TargetPathAlt}
+$Dimension_Beta_TargetPath = "C:\Program Files\Adobe\"
+$Dimension_Beta_Name = if (Test-Path -Path $Dimension_Beta_TargetPath) {Get-ChildItem -Directory -Path $Dimension_Beta_TargetPath | Where-Object { $_.Name -match '^.*Dimension.*\(Beta\)' } | Sort-Object -Descending}
+$Dimension_Beta_Name = if ($Dimension_Beta_Name.length -ge 1) {$Dimension_Beta_Name[0].name} else {"Dimension (Beta)"}
+$Dimension_Beta_StartIn = $Dimension_Beta_TargetPath+$Dimension_Beta_Name
+$Dimension_Beta_StartInAlt = $Dimension_Beta_StartIn+"\Support Files"
+$Dimension_Beta_TargetPath = $Dimension_Beta_StartIn+"\Dimension (Beta).exe"
+$Dimension_Beta_TargetPathAlt = $Dimension_Beta_StartInAlt+"\Dimension (Beta).exe"
+$Dimension_Beta_TargetPath = if (Test-Path -Path $Dimension_Beta_TargetPath -PathType leaf) {$Dimension_Beta_TargetPath} elseif (Test-Path -Path $Dimension_Beta_TargetPathAlt -PathType leaf) {$Dimension_Beta_TargetPathAlt} else {$Dimension_Beta_StartIn+"\Dimension.exe"}
 # GIMP
 $GIMP_TargetPath = "C:\Program Files\"
 $GIMP_FindFolder = Get-ChildItem -Directory -Path $GIMP_TargetPath | Where-Object {$_.Name -match '^GIMP'} | Sort-Object -Descending
@@ -510,6 +527,8 @@ $sys3rdPartyAppList = @(
   @{Name=$Bridge_Beta_Name; TargetPath=$Bridge_Beta_TargetPath; StartIn=$Bridge_Beta_StartIn},
   @{Name=$CharacterAnimator_Name; TargetPath=$CharacterAnimator_TargetPath; StartIn=$CharacterAnimator_StartIn},
   @{Name=$CharacterAnimator_Beta_Name; TargetPath=$CharacterAnimator_Beta_TargetPath; StartIn=$CharacterAnimator_Beta_StartIn},
+  @{Name=$Dimension_Name; TargetPath=$Dimension_TargetPath; StartIn=$Dimension_StartIn},
+  @{Name=$Dimension_Beta_Name; TargetPath=$Dimension_Beta_TargetPath; StartIn=$Dimension_Beta_StartIn},
   @{Name="Adobe UXP Developer Tool"; TargetPath="C:\Program Files\Adobe\Adobe UXP Developer Tool\Adobe UXP Developer Tool.exe"; StartIn="C:\Program Files\Adobe\Adobe UXP Developer Tool"},
   @{Name="Adobe Acrobat (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Acrobat DC\Acrobat\Acrobat.exe"},
   @{Name="Adobe Acrobat Distiller (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Acrobat DC\Acrobat\acrodist.exe"},
