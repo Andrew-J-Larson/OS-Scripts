@@ -13,7 +13,8 @@
        Arguments="[any arguments that an app starts with here]";
        SystemLnk="[path to lnk or name of app here]";
        StartIn="[start in path, if needed, here]";
-       Description="[comment, that shows up in tooltip, here]"
+       Description="[comment, that shows up in tooltip, here]";
+       IconLocation="[path to ico|exe|ico w/ index]";
        RunAsAdmin="[true or false, if needed]"
    } #>
 
@@ -63,6 +64,9 @@ function New-Shortcut {
 
     [Alias("description", "d")]
     [string]$sDescription, # Optional (some shortcuts have comments for tooltips)
+
+    [Alias("iconlocation", "il")]
+    [string]$sIconLocation, # Optional (some shortcuts have a custom icon)
     
     [Alias("runasadmin", "r")]
     [bool]$sRunAsAdmin, # Optional (if the shortcut should be ran as admin)
@@ -105,6 +109,7 @@ function New-Shortcut {
       if ($sArguments) { $newLNK.Arguments = $sArguments }
       if ($sStartIn) { $newLNK.WorkingDirectory = $sStartIn }
       if ($sDescription) { $newLNK.Description = $sDescription }
+      if ($sIconLocation) { $newLNK.IconLocation = $sIconLocation }
 
       $newLNK.Save()
       $result = $?
@@ -285,7 +290,7 @@ $sysAppList = @(
   @{Name = $WindowsMediaPlayerOld_Name; TargetPath = "%ProgramFiles(x86)%\Windows Media Player\wmplayer.exe"; Arguments = "/prefetch:1"; SystemLnk = "Accessories\"; StartIn = "%ProgramFiles(x86)%\Windows Media Player" }, # it's the only install on 64-bit
   @{Name = "WordPad"; TargetPath = "%ProgramFiles%\Windows NT\Accessories\wordpad.exe"; SystemLnk = "Accessories\"; Description = "Creates and edits text documents with complex formatting." },
   @{Name = "Character Map"; TargetPath = "%windir%\system32\charmap.exe"; SystemLnk = "Accessories\System Tools\"; Description = "Selects special characters and copies them to your document." }
-  #  @{Name=""; TargetPath=""; Arguments=""; SystemLnk=""; StartIn=""; Description=""; RunAsAdmin=($true|$false)},
+  #@{ Name=""; TargetPath=""; Arguments=""; SystemLnk=""; StartIn=""; Description=""; IconLocation=""; RunAsAdmin=($true -Or $false) },
 )
 
 for ($i = 0; $i -lt $sysAppList.length; $i++) {
@@ -296,9 +301,10 @@ for ($i = 0; $i -lt $sysAppList.length; $i++) {
   $aSystemLnk = if ($app.SystemLnk) { $app.SystemLnk } else { "" }
   $aStartIn = if ($app.StartIn) { $app.StartIn } else { "" }
   $aDescription = if ($app.Description) { $app.Description } else { "" }
+  $aIconLocation = if ($app.IconLocation) { $app.IconLocation } else { "" }
   $aRunAsAdmin = if ($app.RunAsAdmin) { $app.RunAsAdmin } else { $false }
 
-  $ScriptResults = New-Shortcut -n $aName -tp $aTargetPath -a $aArguments -sl $aSystemLnk -si $aStartIn -d $aDescription -r $aRunAsAdmin
+  $ScriptResults = New-Shortcut -n $aName -tp $aTargetPath -a $aArguments -sl $aSystemLnk -si $aStartIn -d $aDescription -il $aIconLocation -r $aRunAsAdmin
 }
 
 
@@ -329,7 +335,7 @@ $oemSysAppList = @(
   @{Name = "SupportAssist Recovery Assistant (32-bit)"; TargetPath = "C:\Program Files (x86)\Dell\SARemediation\postosri\osrecoveryagent.exe"; SystemLnk = "Dell\SupportAssist\" },
   # NVIDIA Corporation
   @{Name = "GeForce Experience"; TargetPath = "C:\Program Files\NVIDIA Corporation\NVIDIA GeForce Experience\NVIDIA GeForce Experience.exe"; SystemLnk = "NVIDIA Corporation\"; StartIn = "C:\Program Files\NVIDIA Corporation\NVIDIA GeForce Experience" }
-  #  @{Name=""; TargetPath=""; Arguments=""; SystemLnk=""; StartIn=""; Description=""; RunAsAdmin=($true|$false)},
+  #@{ Name=""; TargetPath=""; Arguments=""; SystemLnk=""; StartIn=""; Description=""; IconLocation=""; RunAsAdmin=($true -Or $false) },
 )
 
 for ($i = 0; $i -lt $oemSysAppList.length; $i++) {
@@ -340,9 +346,10 @@ for ($i = 0; $i -lt $oemSysAppList.length; $i++) {
   $aSystemLnk = if ($app.SystemLnk) { $app.SystemLnk } else { "" }
   $aStartIn = if ($app.StartIn) { $app.StartIn } else { "" }
   $aDescription = if ($app.Description) { $app.Description } else { "" }
+  $aIconLocation = if ($app.IconLocation) { $app.IconLocation } else { "" }
   $aRunAsAdmin = if ($app.RunAsAdmin) { $app.RunAsAdmin } else { $false }
 
-  $ScriptResults = New-Shortcut -n $aName -tp $aTargetPath -a $aArguments -sl $aSystemLnk -si $aStartIn -d $aDescription -r $aRunAsAdmin
+  $ScriptResults = New-Shortcut -n $aName -tp $aTargetPath -a $aArguments -sl $aSystemLnk -si $aStartIn -d $aDescription -il $aIconLocation -r $aRunAsAdmin
 }
 
 
@@ -1229,7 +1236,7 @@ $sys3rdPartyAppList = @(
   # WinSCP
   @{Name = "WinSCP"; TargetPath = "C:\Program Files\WinSCP\WinSCP.exe"; StartIn = "C:\Program Files\WinSCP"; Description = "WinSCP: SFTP, FTP, WebDAV and SCP client" }, # it's the only install on 32-bit
   @{Name = "WinSCP"; TargetPath = "C:\Program Files (x86)\WinSCP\WinSCP.exe"; StartIn = "C:\Program Files (x86)\WinSCP"; Description = "WinSCP: SFTP, FTP, WebDAV and SCP client" } # it's the only install on 64-bit
-  #  @{Name=""; TargetPath=""; Arguments=""; SystemLnk=""; StartIn=""; Description=""; RunAsAdmin=($true|$false)},
+  #@{ Name=""; TargetPath=""; Arguments=""; SystemLnk=""; StartIn=""; Description=""; IconLocation=""; RunAsAdmin=($true -Or $false) },
 )
 
 for ($i = 0; $i -lt $sys3rdPartyAppList.length; $i++) {
@@ -1240,9 +1247,10 @@ for ($i = 0; $i -lt $sys3rdPartyAppList.length; $i++) {
   $aSystemLnk = if ($app.SystemLnk) { $app.SystemLnk } else { "" }
   $aStartIn = if ($app.StartIn) { $app.StartIn } else { "" }
   $aDescription = if ($app.Description) { $app.Description } else { "" }
+  $aIconLocation = if ($app.IconLocation) { $app.IconLocation } else { "" }
   $aRunAsAdmin = if ($app.RunAsAdmin) { $app.RunAsAdmin } else { $false }
 
-  $ScriptResults = New-Shortcut -n $aName -tp $aTargetPath -a $aArguments -sl $aSystemLnk -si $aStartIn -d $aDescription -r $aRunAsAdmin
+  $ScriptResults = New-Shortcut -n $aName -tp $aTargetPath -a $aArguments -sl $aSystemLnk -si $aStartIn -d $aDescription -il $aIconLocation -r $aRunAsAdmin
 }
 
 
@@ -1396,7 +1404,7 @@ for ($i = 0; $i -lt $Users.length; $i++) {
     @{Name = "Help (ENG)"; TargetPath = "C:\Program Files (x86)\WinDirStat\windirstat.chm"; SystemLnk = "WinDirStat\"; StartIn = "C:\Program Files (x86)\WinDirStat" }, # it's the only install on 64-bit
     @{Name = "Uninstall WinDirStat"; TargetPath = "C:\Program Files (x86)\WinDirStat\Uninstall.exe"; SystemLnk = "WinDirStat\"; StartIn = "C:\Program Files (x86)\WinDirStat" }, # it's the only install on 64-bit
     @{Name = "WinDirStat"; TargetPath = "C:\Program Files (x86)\WinDirStat\windirstat.exe"; SystemLnk = "WinDirStat\"; StartIn = "C:\Program Files (x86)\WinDirStat" } # it's the only install on 64-bit
-    #  @{Name=""; TargetPath=""; Arguments=""; SystemLnk=""; StartIn=""; Description=""; RunAsAdmin=($true|$false)},
+    #@{ Name=""; TargetPath=""; Arguments=""; SystemLnk=""; StartIn=""; Description=""; IconLocation=""; RunAsAdmin=($true -Or $false) },
   )
 
   for ($j = 0; $j -lt $userAppList.length; $j++) {
@@ -1407,9 +1415,10 @@ for ($i = 0; $i -lt $Users.length; $i++) {
     $aSystemLnk = if ($app.SystemLnk) { $app.SystemLnk } else { "" }
     $aStartIn = if ($app.StartIn) { $app.StartIn } else { "" }
     $aDescription = if ($app.Description) { $app.Description } else { "" }
+    $aIconLocation = if ($app.IconLocation) { $app.IconLocation } else { "" }
     $aRunAsAdmin = if ($app.RunAsAdmin) { $app.RunAsAdmin } else { $false }
 
-    $ScriptResults = New-Shortcut -n $aName -tp $aTargetPath -a $aArguments -sl $aSystemLnk -si $aStartIn -d $aDescription -r $aRunAsAdmin -u $aUser
+    $ScriptResults = New-Shortcut -n $aName -tp $aTargetPath -a $aArguments -sl $aSystemLnk -si $aStartIn -d $aDescription -il $aIconLocation -r $aRunAsAdmin -u $aUser
   }
 }
 
