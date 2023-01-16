@@ -155,7 +155,7 @@ function New-Shortcut {
       Write-Host $resultMsg[$msgNum]
     }
   }
-  elseif ($errortMsg.length -gt 0) {
+  elseif ($errorMsg.length -gt 0) {
     for ($msgNum = 0; $msgNum -lt $errorMsg.length; $msgNum++) {
       Write-Error $errorMsg[$msgNum]
     }
