@@ -324,10 +324,13 @@ $Aero_Beta_Name = if ($Aero_Beta_Name.length -ge 1) {$Aero_Beta_Name[0].name} el
 $Aero_Beta_StartIn = $Aero_Beta_TargetPath+$Aero_Beta_Name
 $Aero_Beta_StartInAlt = $Aero_Beta_StartIn+"\Support Files"
 $Aero_Beta_StartInAlt2 = $Aero_Beta_StartInAlt+"\Contents\Windows"
+$Aero_Beta_TargetPathExeAlt = $Aero_Beta_StartIn+"\Aero.exe"
+$Aero_Beta_TargetPathAltExeAlt = $Aero_Beta_StartInAlt+"\Aero.exe"
+$Aero_Beta_TargetPathAlt2ExeAlt = $Aero_Beta_StartInAlt2+"\Aero.exe"
 $Aero_Beta_TargetPath = $Aero_Beta_StartIn+"\Aero (Beta).exe"
 $Aero_Beta_TargetPathAlt = $Aero_Beta_StartInAlt+"\Aero (Beta).exe"
 $Aero_Beta_TargetPathAlt2 = $Aero_Beta_StartInAlt2+"\Aero (Beta).exe"
-$Aero_Beta_TargetPath = if (Test-Path -Path $Aero_Beta_TargetPath -PathType leaf) {$Aero_Beta_TargetPath} elseif (Test-Path -Path $Aero_Beta_TargetPathAlt -PathType leaf) {$Aero_Beta_TargetPathAlt} else {$Aero_Beta_TargetPathAlt2}
+$Aero_Beta_TargetPath = if (Test-Path -Path $Aero_Beta_TargetPathExeAlt -PathType leaf) {$Aero_Beta_TargetPathExeAlt} elseif (Test-Path -Path $Aero_Beta_TargetPathAltExeAlt -PathType leaf) {$Aero_Beta_TargetPathAltExeAlt} elseif (Test-Path -Path $Aero_Beta_TargetPathAlt2ExeAlt -PathType leaf) {$Aero_Beta_TargetPathAlt2ExeAlt} elseif (Test-Path -Path $Aero_Beta_TargetPath -PathType leaf) {$Aero_Beta_TargetPath} elseif (Test-Path -Path $Aero_Beta_TargetPathAlt -PathType leaf) {$Aero_Beta_TargetPathAlt} else {$Aero_Beta_TargetPathAlt2}
 # Adobe After Effects
 $AfterEffects_TargetPath = "C:\Program Files\Adobe\"
 $AfterEffects_Name = if (Test-Path -Path $AfterEffects_TargetPath) {Get-ChildItem -Directory -Path $AfterEffects_TargetPath | Where-Object { $_.Name -match '^.*After Effects(?!.*\(Beta\)$)' } | Sort-Object -Descending}
@@ -345,10 +348,13 @@ $AfterEffects_Beta_Name = if ($AfterEffects_Beta_Name.length -ge 1) {$AfterEffec
 $AfterEffects_Beta_StartIn = $AfterEffects_Beta_TargetPath+$AfterEffects_Beta_Name
 $AfterEffects_Beta_StartInAlt = $AfterEffects_Beta_StartIn+"\Support Files"
 $AfterEffects_Beta_StartInAlt2 = $AfterEffects_Beta_StartInAlt+"\Contents\Windows"
+$AfterEffects_Beta_TargetPathExeAlt = $AfterEffects_Beta_StartIn+"\AfterFX.exe"
+$AfterEffects_Beta_TargetPathAltExeAlt = $AfterEffects_Beta_StartInAlt+"\AfterFX.exe"
+$AfterEffects_Beta_TargetPathAlt2ExeAlt = $AfterEffects_Beta_StartInAlt2+"\AfterFX.exe"
 $AfterEffects_Beta_TargetPath = $AfterEffects_Beta_StartIn+"\AfterFX (Beta).exe"
 $AfterEffects_Beta_TargetPathAlt = $AfterEffects_Beta_StartInAlt+"\AfterFX (Beta).exe"
 $AfterEffects_Beta_TargetPathAlt2 = $AfterEffects_Beta_StartInAlt2+"\AfterFX (Beta).exe"
-$AfterEffects_Beta_TargetPath = if (Test-Path -Path $AfterEffects_Beta_TargetPath -PathType leaf) {$AfterEffects_Beta_TargetPath} elseif (Test-Path -Path $AfterEffects_Beta_TargetPathAlt -PathType leaf) {$AfterEffects_Beta_TargetPathAlt} else {$AfterEffects_Beta_TargetPathAlt2}
+$AfterEffects_Beta_TargetPath = if (Test-Path -Path $AfterEffects_Beta_TargetPathExeAlt -PathType leaf) {$AfterEffects_Beta_TargetPathExeAlt} elseif (Test-Path -Path $AfterEffects_Beta_TargetPathAltExeAlt -PathType leaf) {$AfterEffects_Beta_TargetPathAltExeAlt} elseif (Test-Path -Path $AfterEffects_Beta_TargetPathAlt2ExeAlt -PathType leaf) {$AfterEffects_Beta_TargetPathAlt2ExeAlt} elseif (Test-Path -Path $AfterEffects_Beta_TargetPath -PathType leaf) {$AfterEffects_Beta_TargetPath} elseif (Test-Path -Path $AfterEffects_Beta_TargetPathAlt -PathType leaf) {$AfterEffects_Beta_TargetPathAlt} else {$AfterEffects_Beta_TargetPathAlt2}
 # Adobe Animate
 $Animate_TargetPath = "C:\Program Files\Adobe\"
 $Animate_Name = if (Test-Path -Path $Animate_TargetPath) {Get-ChildItem -Directory -Path $Animate_TargetPath | Where-Object { $_.Name -match '^.*Animate(?!.*\(Beta\)$)' } | Sort-Object -Descending}
@@ -366,10 +372,13 @@ $Animate_Beta_Name = if ($Animate_Beta_Name.length -ge 1) {$Animate_Beta_Name[0]
 $Animate_Beta_StartIn = $Animate_Beta_TargetPath+$Animate_Beta_Name
 $Animate_Beta_StartInAlt = $Animate_Beta_StartIn+"\Support Files"
 $Animate_Beta_StartInAlt2 = $Animate_Beta_StartInAlt+"\Contents\Windows"
+$Animate_Beta_TargetPathExeAlt = $Animate_Beta_StartIn+"\Animate.exe"
+$Animate_Beta_TargetPathAltExeAlt = $Animate_Beta_StartInAlt+"\Animate.exe"
+$Animate_Beta_TargetPathAlt2ExeAlt = $Animate_Beta_StartInAlt2+"\Animate.exe"
 $Animate_Beta_TargetPath = $Animate_Beta_StartIn+"\Animate (Beta).exe"
 $Animate_Beta_TargetPathAlt = $Animate_Beta_StartInAlt+"\Animate (Beta).exe"
 $Animate_Beta_TargetPathAlt2 = $Animate_Beta_StartInAlt2+"\Animate (Beta).exe"
-$Animate_Beta_TargetPath = if (Test-Path -Path $Animate_Beta_TargetPath -PathType leaf) {$Animate_Beta_TargetPath} elseif (Test-Path -Path $Animate_Beta_TargetPathAlt -PathType leaf) {$Animate_Beta_TargetPathAlt} else {$Animate_Beta_TargetPathAlt2}
+$Animate_Beta_TargetPath = if (Test-Path -Path $Animate_Beta_TargetPathExeAlt -PathType leaf) {$Animate_Beta_TargetPathExeAlt} elseif (Test-Path -Path $Animate_Beta_TargetPathAltExeAlt -PathType leaf) {$Animate_Beta_TargetPathAltExeAlt} elseif (Test-Path -Path $Animate_Beta_TargetPathAlt2ExeAlt -PathType leaf) {$Animate_Beta_TargetPathAlt2ExeAlt} elseif (Test-Path -Path $Animate_Beta_TargetPath -PathType leaf) {$Animate_Beta_TargetPath} elseif (Test-Path -Path $Animate_Beta_TargetPathAlt -PathType leaf) {$Animate_Beta_TargetPathAlt} else {$Animate_Beta_TargetPathAlt2}
 # Adobe Audition
 $Audition_TargetPath = "C:\Program Files\Adobe\"
 $Audition_Name = if (Test-Path -Path $Audition_TargetPath) {Get-ChildItem -Directory -Path $Audition_TargetPath | Where-Object { $_.Name -match '^.*Audition(?!.*\(Beta\)$)' } | Sort-Object -Descending}
@@ -387,10 +396,13 @@ $Audition_Beta_Name = if ($Audition_Beta_Name.length -ge 1) {$Audition_Beta_Name
 $Audition_Beta_StartIn = $Audition_Beta_TargetPath+$Audition_Beta_Name
 $Audition_Beta_StartInAlt = $Audition_Beta_StartIn+"\Support Files"
 $Audition_Beta_StartInAlt2 = $Audition_Beta_StartInAlt+"\Contents\Windows"
+$Audition_Beta_TargetPathExeAlt = $Audition_Beta_StartIn+"\Adobe Audition.exe"
+$Audition_Beta_TargetPathAltExeAlt = $Audition_Beta_StartInAlt+"\Adobe Audition.exe"
+$Audition_Beta_TargetPathAlt2ExeAlt = $Audition_Beta_StartInAlt2+"\Adobe Audition.exe"
 $Audition_Beta_TargetPath = $Audition_Beta_StartIn+"\Adobe Audition (Beta).exe"
 $Audition_Beta_TargetPathAlt = $Audition_Beta_StartInAlt+"\Adobe Audition (Beta).exe"
 $Audition_Beta_TargetPathAlt2 = $Audition_Beta_StartInAlt2+"\Adobe Audition (Beta).exe"
-$Audition_Beta_TargetPath = if (Test-Path -Path $Audition_Beta_TargetPath -PathType leaf) {$Audition_Beta_TargetPath} elseif (Test-Path -Path $Audition_Beta_TargetPathAlt -PathType leaf) {$Audition_Beta_TargetPathAlt} else {$Audition_Beta_TargetPathAlt2}
+$Audition_Beta_TargetPath = if (Test-Path -Path $Audition_Beta_TargetPathExeAlt -PathType leaf) {$Audition_Beta_TargetPathExeAlt} elseif (Test-Path -Path $Audition_Beta_TargetPathAltExeAlt -PathType leaf) {$Audition_Beta_TargetPathAltExeAlt} elseif (Test-Path -Path $Audition_Beta_TargetPathAlt2ExeAlt -PathType leaf) {$Audition_Beta_TargetPathAlt2ExeAlt} elseif (Test-Path -Path $Audition_Beta_TargetPath -PathType leaf) {$Audition_Beta_TargetPath} elseif (Test-Path -Path $Audition_Beta_TargetPathAlt -PathType leaf) {$Audition_Beta_TargetPathAlt} else {$Audition_Beta_TargetPathAlt2}
 # Adobe Bridge
 $Bridge_TargetPath = "C:\Program Files\Adobe\"
 $Bridge_Name = if (Test-Path -Path $Bridge_TargetPath) {Get-ChildItem -Directory -Path $Bridge_TargetPath | Where-Object { $_.Name -match '^.*Bridge(?!.*\(Beta\)$)' } | Sort-Object -Descending}
@@ -408,10 +420,13 @@ $Bridge_Beta_Name = if ($Bridge_Beta_Name.length -ge 1) {$Bridge_Beta_Name[0].na
 $Bridge_Beta_StartIn = $Bridge_Beta_TargetPath+$Bridge_Beta_Name
 $Bridge_Beta_StartInAlt = $Bridge_Beta_StartIn+"\Support Files"
 $Bridge_Beta_StartInAlt2 = $Bridge_Beta_StartInAlt+"\Contents\Windows"
+$Bridge_Beta_TargetPathExeAlt = $Bridge_Beta_StartIn+"\Adobe Bridge.exe"
+$Bridge_Beta_TargetPathAltExeAlt = $Bridge_Beta_StartInAlt+"\Adobe Bridge.exe"
+$Bridge_Beta_TargetPathAlt2ExeAlt = $Bridge_Beta_StartInAlt2+"\Adobe Bridge.exe"
 $Bridge_Beta_TargetPath = $Bridge_Beta_StartIn+"\Adobe Bridge (Beta).exe"
 $Bridge_Beta_TargetPathAlt = $Bridge_Beta_StartInAlt+"\Adobe Bridge (Beta).exe"
 $Bridge_Beta_TargetPathAlt2 = $Bridge_Beta_StartInAlt2+"\Adobe Bridge (Beta).exe"
-$Bridge_Beta_TargetPath = if (Test-Path -Path $Bridge_Beta_TargetPath -PathType leaf) {$Bridge_Beta_TargetPath} elseif (Test-Path -Path $Bridge_Beta_TargetPathAlt -PathType leaf) {$Bridge_Beta_TargetPathAlt} else {$Bridge_Beta_TargetPathAlt2}
+$Bridge_Beta_TargetPath = if (Test-Path -Path $Bridge_Beta_TargetPathExeAlt -PathType leaf) {$Bridge_Beta_TargetPathExeAlt} elseif (Test-Path -Path $Bridge_Beta_TargetPathAltExeAlt -PathType leaf) {$Bridge_Beta_TargetPathAltExeAlt} elseif (Test-Path -Path $Bridge_Beta_TargetPathAlt2ExeAlt -PathType leaf) {$Bridge_Beta_TargetPathAlt2ExeAlt} elseif (Test-Path -Path $Bridge_Beta_TargetPath -PathType leaf) {$Bridge_Beta_TargetPath} elseif (Test-Path -Path $Bridge_Beta_TargetPathAlt -PathType leaf) {$Bridge_Beta_TargetPathAlt} else {$Bridge_Beta_TargetPathAlt2}
 # Adobe Character Animator
 $CharacterAnimator_TargetPath = "C:\Program Files\Adobe\"
 $CharacterAnimator_Name = if (Test-Path -Path $CharacterAnimator_TargetPath) {Get-ChildItem -Directory -Path $CharacterAnimator_TargetPath | Where-Object { $_.Name -match '^.*Character Animator(?!.*\(Beta\)$)' } | Sort-Object -Descending}
@@ -429,10 +444,13 @@ $CharacterAnimator_Beta_Name = if ($CharacterAnimator_Beta_Name.length -ge 1) {$
 $CharacterAnimator_Beta_StartIn = $CharacterAnimator_Beta_TargetPath+$CharacterAnimator_Beta_Name
 $CharacterAnimator_Beta_StartInAlt = $CharacterAnimator_Beta_StartIn+"\Support Files"
 $CharacterAnimator_Beta_StartInAlt2 = $CharacterAnimator_Beta_StartInAlt+"\Contents\Windows"
+$CharacterAnimator_Beta_TargetPathExeAlt = $CharacterAnimator_Beta_StartIn+"\Adobe Character Animator.exe"
+$CharacterAnimator_Beta_TargetPathAltExeAlt = $CharacterAnimator_Beta_StartInAlt+"\Adobe Character Animator.exe"
+$CharacterAnimator_Beta_TargetPathAlt2ExeAlt = $CharacterAnimator_Beta_StartInAlt2+"\Adobe Character Animator.exe"
 $CharacterAnimator_Beta_TargetPath = $CharacterAnimator_Beta_StartIn+"\Adobe Character Animator (Beta).exe"
 $CharacterAnimator_Beta_TargetPathAlt = $CharacterAnimator_Beta_StartInAlt+"\Adobe Character Animator (Beta).exe"
 $CharacterAnimator_Beta_TargetPathAlt2 = $CharacterAnimator_Beta_StartInAlt2+"\Adobe Character Animator (Beta).exe"
-$CharacterAnimator_Beta_TargetPath = if (Test-Path -Path $CharacterAnimator_Beta_TargetPath -PathType leaf) {$CharacterAnimator_Beta_TargetPath} elseif (Test-Path -Path $CharacterAnimator_Beta_TargetPathAlt -PathType leaf) {$CharacterAnimator_Beta_TargetPathAlt} else {$CharacterAnimator_Beta_TargetPathAlt2}
+$CharacterAnimator_Beta_TargetPath = if (Test-Path -Path $CharacterAnimator_Beta_TargetPathExeAlt -PathType leaf) {$CharacterAnimator_Beta_TargetPathExeAlt} elseif (Test-Path -Path $CharacterAnimator_Beta_TargetPathAltExeAlt -PathType leaf) {$CharacterAnimator_Beta_TargetPathAltExeAlt} elseif (Test-Path -Path $CharacterAnimator_Beta_TargetPathAlt2ExeAlt -PathType leaf) {$CharacterAnimator_Beta_TargetPathAlt2ExeAlt} elseif (Test-Path -Path $CharacterAnimator_Beta_TargetPath -PathType leaf) {$CharacterAnimator_Beta_TargetPath} elseif (Test-Path -Path $CharacterAnimator_Beta_TargetPathAlt -PathType leaf) {$CharacterAnimator_Beta_TargetPathAlt} else {$CharacterAnimator_Beta_TargetPathAlt2}
 # Adobe Dimension
 $Dimension_TargetPath = "C:\Program Files\Adobe\"
 $Dimension_Name = if (Test-Path -Path $Dimension_TargetPath) {Get-ChildItem -Directory -Path $Dimension_TargetPath | Where-Object { $_.Name -match '^.*Dimension(?!.*\(Beta\)$)' } | Sort-Object -Descending}
@@ -450,10 +468,13 @@ $Dimension_Beta_Name = if ($Dimension_Beta_Name.length -ge 1) {$Dimension_Beta_N
 $Dimension_Beta_StartIn = $Dimension_Beta_TargetPath+$Dimension_Beta_Name
 $Dimension_Beta_StartInAlt = $Dimension_Beta_StartIn+"\Support Files"
 $Dimension_Beta_StartInAlt2 = $Dimension_Beta_StartInAlt+"\Contents\Windows"
+$Dimension_Beta_TargetPathExeAlt = $Dimension_Beta_StartIn+"\Dimension.exe"
+$Dimension_Beta_TargetPathAltExeAlt = $Dimension_Beta_StartInAlt+"\Dimension.exe"
+$Dimension_Beta_TargetPathAlt2ExeAlt = $Dimension_Beta_StartInAlt2+"\Dimension.exe"
 $Dimension_Beta_TargetPath = $Dimension_Beta_StartIn+"\Dimension (Beta).exe"
 $Dimension_Beta_TargetPathAlt = $Dimension_Beta_StartInAlt+"\Dimension (Beta).exe"
 $Dimension_Beta_TargetPathAlt2 = $Dimension_Beta_StartInAlt2+"\Dimension (Beta).exe"
-$Dimension_Beta_TargetPath = if (Test-Path -Path $Dimension_Beta_TargetPath -PathType leaf) {$Dimension_Beta_TargetPath} elseif (Test-Path -Path $Dimension_Beta_TargetPathAlt -PathType leaf) {$Dimension_Beta_TargetPathAlt} else {$Dimension_Beta_TargetPathAlt2}
+$Dimension_Beta_TargetPath = if (Test-Path -Path $Dimension_Beta_TargetPathExeAlt -PathType leaf) {$Dimension_Beta_TargetPathExeAlt} elseif (Test-Path -Path $Dimension_Beta_TargetPathAltExeAlt -PathType leaf) {$Dimension_Beta_TargetPathAltExeAlt} elseif (Test-Path -Path $Dimension_Beta_TargetPathAlt2ExeAlt -PathType leaf) {$Dimension_Beta_TargetPathAlt2ExeAlt} elseif (Test-Path -Path $Dimension_Beta_TargetPath -PathType leaf) {$Dimension_Beta_TargetPath} elseif (Test-Path -Path $Dimension_Beta_TargetPathAlt -PathType leaf) {$Dimension_Beta_TargetPathAlt} else {$Dimension_Beta_TargetPathAlt2}
 # Adobe Dreamweaver
 $Dreamweaver_TargetPath = "C:\Program Files\Adobe\"
 $Dreamweaver_Name = if (Test-Path -Path $Dreamweaver_TargetPath) {Get-ChildItem -Directory -Path $Dreamweaver_TargetPath | Where-Object { $_.Name -match '^.*Dreamweaver(?!.*\(Beta\)$)' } | Sort-Object -Descending}
@@ -471,10 +492,37 @@ $Dreamweaver_Beta_Name = if ($Dreamweaver_Beta_Name.length -ge 1) {$Dreamweaver_
 $Dreamweaver_Beta_StartIn = $Dreamweaver_Beta_TargetPath+$Dreamweaver_Beta_Name
 $Dreamweaver_Beta_StartInAlt = $Dreamweaver_Beta_StartIn+"\Support Files"
 $Dreamweaver_Beta_StartInAlt2 = $Dreamweaver_Beta_StartInAlt+"\Contents\Windows"
+$Dreamweaver_Beta_TargetPathExeAlt = $Dreamweaver_Beta_StartIn+"\Dreamweaver.exe"
+$Dreamweaver_Beta_TargetPathAltExeAlt = $Dreamweaver_Beta_StartInAlt+"\Dreamweaver.exe"
+$Dreamweaver_Beta_TargetPathAlt2ExeAlt = $Dreamweaver_Beta_StartInAlt2+"\Dreamweaver.exe"
 $Dreamweaver_Beta_TargetPath = $Dreamweaver_Beta_StartIn+"\Dreamweaver (Beta).exe"
 $Dreamweaver_Beta_TargetPathAlt = $Dreamweaver_Beta_StartInAlt+"\Dreamweaver (Beta).exe"
 $Dreamweaver_Beta_TargetPathAlt2 = $Dreamweaver_Beta_StartInAlt2+"\Dreamweaver (Beta).exe"
-$Dreamweaver_Beta_TargetPath = if (Test-Path -Path $Dreamweaver_Beta_TargetPath -PathType leaf) {$Dreamweaver_Beta_TargetPath} elseif (Test-Path -Path $Dreamweaver_Beta_TargetPathAlt -PathType leaf) {$Dreamweaver_Beta_TargetPathAlt} else {$Dreamweaver_Beta_TargetPathAlt2}
+$Dreamweaver_Beta_TargetPath = if (Test-Path -Path $Dreamweaver_Beta_TargetPathExeAlt -PathType leaf) {$Dreamweaver_Beta_TargetPathExeAlt} elseif (Test-Path -Path $Dreamweaver_Beta_TargetPathAltExeAlt -PathType leaf) {$Dreamweaver_Beta_TargetPathAltExeAlt} elseif (Test-Path -Path $Dreamweaver_Beta_TargetPathAlt2ExeAlt -PathType leaf) {$Dreamweaver_Beta_TargetPathAlt2ExeAlt} elseif (Test-Path -Path $Dreamweaver_Beta_TargetPath -PathType leaf) {$Dreamweaver_Beta_TargetPath} elseif (Test-Path -Path $Dreamweaver_Beta_TargetPathAlt -PathType leaf) {$Dreamweaver_Beta_TargetPathAlt} else {$Dreamweaver_Beta_TargetPathAlt2}
+# Adobe Illustrator
+$Illustrator_TargetPath = "C:\Program Files\Adobe\"
+$Illustrator_Name = if (Test-Path -Path $Illustrator_TargetPath) {Get-ChildItem -Directory -Path $Illustrator_TargetPath | Where-Object { $_.Name -match '^.*Illustrator(?!.*\(Beta\)$)' } | Sort-Object -Descending}
+$Illustrator_Name = if ($Illustrator_Name.length -ge 1) {$Illustrator_Name[0].name} else {"Adobe Illustrator"}
+$Illustrator_StartIn = $Illustrator_TargetPath+$Illustrator_Name
+$Illustrator_StartInAlt = $Illustrator_StartIn+"\Support Files"
+$Illustrator_StartInAlt2 = $Illustrator_StartInAlt+"\Contents\Windows"
+$Illustrator_TargetPath = $Illustrator_StartIn+"\Illustrator.exe"
+$Illustrator_TargetPathAlt = $Illustrator_StartInAlt+"\Illustrator.exe"
+$Illustrator_TargetPathAlt2 = $Illustrator_StartInAlt2+"\Illustrator.exe"
+$Illustrator_TargetPath = if (Test-Path -Path $Illustrator_TargetPath -PathType leaf) {$Illustrator_TargetPath} elseif (Test-Path -Path $Illustrator_TargetPathAlt -PathType leaf) {$Illustrator_TargetPathAlt} else {$Illustrator_TargetPathAlt2}
+$Illustrator_Beta_TargetPath = "C:\Program Files\Adobe\"
+$Illustrator_Beta_Name = if (Test-Path -Path $Illustrator_Beta_TargetPath) {Get-ChildItem -Directory -Path $Illustrator_Beta_TargetPath | Where-Object { $_.Name -match '^.*Illustrator.*\(Beta\)' } | Sort-Object -Descending}
+$Illustrator_Beta_Name = if ($Illustrator_Beta_Name.length -ge 1) {$Illustrator_Beta_Name[0].name} else {"Adobe Illustrator (Beta)"}
+$Illustrator_Beta_StartIn = $Illustrator_Beta_TargetPath+$Illustrator_Beta_Name
+$Illustrator_Beta_StartInAlt = $Illustrator_Beta_StartIn+"\Support Files"
+$Illustrator_Beta_StartInAlt2 = $Illustrator_Beta_StartInAlt+"\Contents\Windows"
+$Illustrator_Beta_TargetPathExeAlt = $Illustrator_Beta_StartIn+"\Illustrator.exe"
+$Illustrator_Beta_TargetPathAltExeAlt = $Illustrator_Beta_StartInAlt+"\Illustrator.exe"
+$Illustrator_Beta_TargetPathAlt2ExeAlt = $Illustrator_Beta_StartInAlt2+"\Illustrator.exe"
+$Illustrator_Beta_TargetPath = $Illustrator_Beta_StartIn+"\Illustrator (Beta).exe"
+$Illustrator_Beta_TargetPathAlt = $Illustrator_Beta_StartInAlt+"\Illustrator (Beta).exe"
+$Illustrator_Beta_TargetPathAlt2 = $Illustrator_Beta_StartInAlt2+"\Illustrator (Beta).exe"
+$Illustrator_Beta_TargetPath = if (Test-Path -Path $Illustrator_Beta_TargetPathExeAlt -PathType leaf) {$Illustrator_Beta_TargetPathExeAlt} elseif (Test-Path -Path $Illustrator_Beta_TargetPathAltExeAlt -PathType leaf) {$Illustrator_Beta_TargetPathAltExeAlt} elseif (Test-Path -Path $Illustrator_Beta_TargetPathAlt2ExeAlt -PathType leaf) {$Illustrator_Beta_TargetPathAlt2ExeAlt} elseif (Test-Path -Path $Illustrator_Beta_TargetPath -PathType leaf) {$Illustrator_Beta_TargetPath} elseif (Test-Path -Path $Illustrator_Beta_TargetPathAlt -PathType leaf) {$Illustrator_Beta_TargetPathAlt} else {$Illustrator_Beta_TargetPathAlt2}
 # GIMP
 $GIMP_TargetPath = "C:\Program Files\"
 $GIMP_FindFolder = Get-ChildItem -Directory -Path $GIMP_TargetPath | Where-Object {$_.Name -match '^GIMP'} | Sort-Object -Descending
@@ -580,6 +628,8 @@ $sys3rdPartyAppList = @(
   @{Name=$Dimension_Beta_Name; TargetPath=$Dimension_Beta_TargetPath; StartIn=$Dimension_Beta_StartIn},
   @{Name=$Dreamweaver_Name; TargetPath=$Dreamweaver_TargetPath; StartIn=$Dreamweaver_StartIn},
   @{Name=$Dreamweaver_Beta_Name; TargetPath=$Dreamweaver_Beta_TargetPath; StartIn=$Dreamweaver_Beta_StartIn},
+  @{Name=$Illustrator_Name; TargetPath=$Illustrator_TargetPath; StartIn=$Illustrator_StartIn},
+  @{Name=$Illustrator_Beta_Name; TargetPath=$Illustrator_Beta_TargetPath; StartIn=$Illustrator_Beta_StartIn},
   @{Name="Adobe UXP Developer Tool"; TargetPath="C:\Program Files\Adobe\Adobe UXP Developer Tool\Adobe UXP Developer Tool.exe"; StartIn="C:\Program Files\Adobe\Adobe UXP Developer Tool"},
   @{Name="Adobe Acrobat (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Acrobat DC\Acrobat\Acrobat.exe"},
   @{Name="Adobe Acrobat Distiller (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Acrobat DC\Acrobat\acrodist.exe"},
