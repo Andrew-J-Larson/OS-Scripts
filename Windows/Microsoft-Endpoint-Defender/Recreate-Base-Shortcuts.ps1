@@ -375,6 +375,23 @@ $Audition_Beta_StartInAlt = $Audition_Beta_StartIn+"\Support Files"
 $Audition_Beta_TargetPath = $Audition_Beta_StartIn+"\Adobe Audition (Beta).exe"
 $Audition_Beta_TargetPathAlt = $Audition_Beta_StartInAlt+"\Adobe Audition (Beta).exe"
 $Audition_Beta_TargetPath = if (Test-Path -Path $Audition_Beta_TargetPath -PathType leaf) {$Audition_Beta_TargetPath} elseif (Test-Path -Path $Audition_Beta_TargetPathAlt -PathType leaf) {$Audition_Beta_TargetPathAlt} else {$Audition_Beta_StartIn+"\Adobe Audition.exe"}
+# Adobe Bridge
+$Bridge_TargetPath = "C:\Program Files\Adobe\"
+$Bridge_Name = if (Test-Path -Path $Bridge_TargetPath) {Get-ChildItem -Directory -Path $Bridge_TargetPath | Where-Object { $_.Name -match '^.*Bridge(?!.*\(Beta\)$)' } | Sort-Object -Descending}
+$Bridge_Name = if ($Bridge_Name.length -ge 1) {$Bridge_Name[0].name} else {"Adobe Bridge"}
+$Bridge_StartIn = $Bridge_TargetPath+$Bridge_Name
+$Bridge_StartInAlt = $Bridge_StartIn+"\Support Files"
+$Bridge_TargetPath = $Bridge_StartIn+"\Adobe Bridge.exe"
+$Bridge_TargetPathAlt = $Bridge_StartInAlt+"\Adobe Bridge.exe"
+$Bridge_TargetPath = if (Test-Path -Path $Bridge_TargetPath -PathType leaf) {$Bridge_TargetPath} else {$Bridge_TargetPathAlt}
+$Bridge_Beta_TargetPath = "C:\Program Files\Adobe\"
+$Bridge_Beta_Name = if (Test-Path -Path $Bridge_Beta_TargetPath) {Get-ChildItem -Directory -Path $Bridge_Beta_TargetPath | Where-Object { $_.Name -match '^.*Audition.*\(Beta\)' } | Sort-Object -Descending}
+$Bridge_Beta_Name = if ($Bridge_Beta_Name.length -ge 1) {$Bridge_Beta_Name[0].name} else {"Adobe Bridge (Beta)"}
+$Bridge_Beta_StartIn = $Bridge_Beta_TargetPath+$Bridge_Beta_Name
+$Bridge_Beta_StartInAlt = $Bridge_Beta_StartIn+"\Support Files"
+$Bridge_Beta_TargetPath = $Bridge_Beta_StartIn+"\Adobe Bridge (Beta).exe"
+$Bridge_Beta_TargetPathAlt = $Bridge_Beta_StartInAlt+"\Adobe Bridge (Beta).exe"
+$Bridge_Beta_TargetPath = if (Test-Path -Path $Bridge_Beta_TargetPath -PathType leaf) {$Bridge_Beta_TargetPath} elseif (Test-Path -Path $Bridge_Beta_TargetPathAlt -PathType leaf) {$Bridge_Beta_TargetPathAlt} else {$Bridge_Beta_StartIn+"\Adobe Bridge.exe"}
 # GIMP
 $GIMP_TargetPath = "C:\Program Files\"
 $GIMP_FindFolder = Get-ChildItem -Directory -Path $GIMP_TargetPath | Where-Object {$_.Name -match '^GIMP'} | Sort-Object -Descending
@@ -472,6 +489,8 @@ $sys3rdPartyAppList = @(
   @{Name=$Animate_Beta_Name; TargetPath=$Animate_Beta_TargetPath; StartIn=$Animate_Beta_StartIn},
   @{Name=$Audition_Name; TargetPath=$Audition_TargetPath; StartIn=$Audition_StartIn},
   @{Name=$Audition_Beta_Name; TargetPath=$Audition_Beta_TargetPath; StartIn=$Audition_Beta_StartIn},
+  @{Name=$Bridge_Name; TargetPath=$Bridge_TargetPath; StartIn=$Bridge_StartIn},
+  @{Name=$Bridge_Beta_Name; TargetPath=$Bridge_Beta_TargetPath; StartIn=$Bridge_Beta_StartIn},
   @{Name="Adobe UXP Developer Tool"; TargetPath="C:\Program Files\Adobe\Adobe UXP Developer Tool\Adobe UXP Developer Tool.exe"; StartIn="C:\Program Files\Adobe\Adobe UXP Developer Tool"},
   @{Name="Adobe Acrobat (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Acrobat DC\Acrobat\Acrobat.exe"},
   @{Name="Adobe Acrobat Distiller (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Acrobat DC\Acrobat\acrodist.exe"},
