@@ -1195,6 +1195,8 @@ $sys3rdPartyAppList = @(
   # SonicWall Global VPN Client
   @{Name = "Global VPN Client"; TargetPath = "C:\Program Files\SonicWALL\Global VPN Client\SWGVC.exe"; StartIn = "C:\Program Files\SonicWall\Global VPN Client\"; Description = "Launch the Global VPN Client" },
   @{Name = "Global VPN Client (32-bit)"; TargetPath = "C:\Program Files (x86)\SonicWALL\Global VPN Client\SWGVC.exe"; StartIn = "C:\Program Files (x86)\SonicWall\Global VPN Client\"; Description = "Launch the Global VPN Client" },
+  @{Name = "Global VPN Client"; TargetPath = "C:\Program Files\Dell SonicWALL\Global VPN Client\SWGVC.exe"; StartIn = "C:\Program Files\Dell SonicWall\Global VPN Client\"; Description = "Launch the Global VPN Client" },
+  @{Name = "Global VPN Client (32-bit)"; TargetPath = "C:\Program Files (x86)\Dell SonicWALL\Global VPN Client\SWGVC.exe"; StartIn = "C:\Program Files (x86)\Dell SonicWall\Global VPN Client\"; Description = "Launch the Global VPN Client" },
   # SoundSwitch
   @{Name = "SoundSwitch"; TargetPath = "C:\Program Files\SoundSwitch\SoundSwitch.exe"; SystemLnk = "SoundSwitch\"; StartIn = "C:\Program Files\SoundSwitch" },
   @{Name = "SoundSwitch (32-bit)"; TargetPath = "C:\Program Files (x86)\SoundSwitch\SoundSwitch.exe"; SystemLnk = "SoundSwitch\"; StartIn = "C:\Program Files (x86)\SoundSwitch" },
