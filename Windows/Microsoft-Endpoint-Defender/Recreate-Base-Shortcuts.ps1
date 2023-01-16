@@ -667,6 +667,30 @@ $Photoshop_Beta_TargetPath = $Photoshop_Beta_StartIn+"\Photoshop (Beta).exe"
 $Photoshop_Beta_TargetPathAlt = $Photoshop_Beta_StartInAlt+"\Photoshop (Beta).exe"
 $Photoshop_Beta_TargetPathAlt2 = $Photoshop_Beta_StartInAlt2+"\Photoshop (Beta).exe"
 $Photoshop_Beta_TargetPath = if (Test-Path -Path $Photoshop_Beta_TargetPathExeAlt -PathType leaf) {$Photoshop_Beta_TargetPathExeAlt} elseif (Test-Path -Path $Photoshop_Beta_TargetPathAltExeAlt -PathType leaf) {$Photoshop_Beta_TargetPathAltExeAlt} elseif (Test-Path -Path $Photoshop_Beta_TargetPathAlt2ExeAlt -PathType leaf) {$Photoshop_Beta_TargetPathAlt2ExeAlt} elseif (Test-Path -Path $Photoshop_Beta_TargetPath -PathType leaf) {$Photoshop_Beta_TargetPath} elseif (Test-Path -Path $Photoshop_Beta_TargetPathAlt -PathType leaf) {$Photoshop_Beta_TargetPathAlt} else {$Photoshop_Beta_TargetPathAlt2}
+# Adobe Premiere Pro
+$PremierePro_TargetPath = "C:\Program Files\Adobe\"
+$PremierePro_Name = if (Test-Path -Path $PremierePro_TargetPath) {Get-ChildItem -Directory -Path $PremierePro_TargetPath | Where-Object { $_.Name -match '^.*Premiere Pro(?!.*\(Beta\)$)' } | Sort-Object -Descending}
+$PremierePro_Name = if ($PremierePro_Name.length -ge 1) {$PremierePro_Name[0].name} else {"Adobe Premiere Pro"}
+$PremierePro_StartIn = $PremierePro_TargetPath+$PremierePro_Name
+$PremierePro_StartInAlt = $PremierePro_StartIn+"\Support Files"
+$PremierePro_StartInAlt2 = $PremierePro_StartInAlt+"\Contents\Windows"
+$PremierePro_TargetPath = $PremierePro_StartIn+"\Adobe Premiere Pro.exe"
+$PremierePro_TargetPathAlt = $PremierePro_StartInAlt+"\Adobe Premiere Pro.exe"
+$PremierePro_TargetPathAlt2 = $PremierePro_StartInAlt2+"\Adobe Premiere Pro.exe"
+$PremierePro_TargetPath = if (Test-Path -Path $PremierePro_TargetPath -PathType leaf) {$PremierePro_TargetPath} elseif (Test-Path -Path $PremierePro_TargetPathAlt -PathType leaf) {$PremierePro_TargetPathAlt} else {$PremierePro_TargetPathAlt2}
+$PremierePro_Beta_TargetPath = "C:\Program Files\Adobe\"
+$PremierePro_Beta_Name = if (Test-Path -Path $PremierePro_Beta_TargetPath) {Get-ChildItem -Directory -Path $PremierePro_Beta_TargetPath | Where-Object { $_.Name -match '^.*Premiere Pro.*\(Beta\)$' } | Sort-Object -Descending}
+$PremierePro_Beta_Name = if ($PremierePro_Beta_Name.length -ge 1) {$PremierePro_Beta_Name[0].name} else {"Adobe Premiere Pro (Beta)"}
+$PremierePro_Beta_StartIn = $PremierePro_Beta_TargetPath+$PremierePro_Beta_Name
+$PremierePro_Beta_StartInAlt = $PremierePro_Beta_StartIn+"\Support Files"
+$PremierePro_Beta_StartInAlt2 = $PremierePro_Beta_StartInAlt+"\Contents\Windows"
+$PremierePro_Beta_TargetPathExeAlt = $PremierePro_Beta_StartIn+"\Adobe Premiere Pro.exe"
+$PremierePro_Beta_TargetPathAltExeAlt = $PremierePro_Beta_StartInAlt+"\Adobe Premiere Pro.exe"
+$PremierePro_Beta_TargetPathAlt2ExeAlt = $PremierePro_Beta_StartInAlt2+"\Adobe Premiere Pro.exe"
+$PremierePro_Beta_TargetPath = $PremierePro_Beta_StartIn+"\Adobe Premiere Pro (Beta).exe"
+$PremierePro_Beta_TargetPathAlt = $PremierePro_Beta_StartInAlt+"\Adobe Premiere Pro (Beta).exe"
+$PremierePro_Beta_TargetPathAlt2 = $PremierePro_Beta_StartInAlt2+"\Adobe Premiere Pro (Beta).exe"
+$PremierePro_Beta_TargetPath = if (Test-Path -Path $PremierePro_Beta_TargetPathExeAlt -PathType leaf) {$PremierePro_Beta_TargetPathExeAlt} elseif (Test-Path -Path $PremierePro_Beta_TargetPathAltExeAlt -PathType leaf) {$PremierePro_Beta_TargetPathAltExeAlt} elseif (Test-Path -Path $PremierePro_Beta_TargetPathAlt2ExeAlt -PathType leaf) {$PremierePro_Beta_TargetPathAlt2ExeAlt} elseif (Test-Path -Path $PremierePro_Beta_TargetPath -PathType leaf) {$PremierePro_Beta_TargetPath} elseif (Test-Path -Path $PremierePro_Beta_TargetPathAlt -PathType leaf) {$PremierePro_Beta_TargetPathAlt} else {$PremierePro_Beta_TargetPathAlt2}
 # GIMP
 $GIMP_TargetPath = "C:\Program Files\"
 $GIMP_FindFolder = Get-ChildItem -Directory -Path $GIMP_TargetPath | Where-Object {$_.Name -match '^GIMP'} | Sort-Object -Descending
@@ -786,6 +810,8 @@ $sys3rdPartyAppList = @(
   @{Name=$MediaEncoder_Beta_Name; TargetPath=$MediaEncoder_Beta_TargetPath; StartIn=$MediaEncoder_Beta_StartIn},
   @{Name=$Photoshop_Name; TargetPath=$Photoshop_TargetPath; StartIn=$Photoshop_StartIn},
   @{Name=$Photoshop_Beta_Name; TargetPath=$Photoshop_Beta_TargetPath; StartIn=$Photoshop_Beta_StartIn},
+  @{Name=$PremierePro_Name; TargetPath=$PremierePro_TargetPath; StartIn=$PremierePro_StartIn},
+  @{Name=$PremierePro_Beta_Name; TargetPath=$PremierePro_Beta_TargetPath; StartIn=$PremierePro_Beta_StartIn},
   @{Name="Adobe UXP Developer Tool"; TargetPath="C:\Program Files\Adobe\Adobe UXP Developer Tool\Adobe UXP Developer Tool.exe"; StartIn="C:\Program Files\Adobe\Adobe UXP Developer Tool"},
   @{Name="Adobe Acrobat (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Acrobat DC\Acrobat\Acrobat.exe"},
   @{Name="Adobe Acrobat Distiller (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Acrobat DC\Acrobat\acrodist.exe"},
