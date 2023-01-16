@@ -18,6 +18,7 @@
 
 
 Start-Transcript -Path "C:\Recreate-Base-Shortcuts.log"
+Write-Host "" # Makes log look better
 
 # Constants
 
