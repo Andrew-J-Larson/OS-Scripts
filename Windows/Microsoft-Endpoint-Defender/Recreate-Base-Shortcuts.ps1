@@ -17,6 +17,8 @@
 
 
 
+Start-Transcript -Path "C:\Recreate-Base-Shortcuts.log"
+
 # Constants
 
 Set-Variable NotInstalled -Option Constant -Value "NOT-INSTALLED"
@@ -305,7 +307,7 @@ for ($i = 0; $i -lt $oemSysAppList.length; $i++) {
   $aDescription = if ($app.Description) { $app.Description } else { "" }
   $aRunAsAdmin = if ($app.RunAsAdmin) { $app.RunAsAdmin } else { $false }
 
-  $ScriptResults = New-Shortcut -n $aName -tp $aTargetPath -a $sArguments -sl $aSystemLnk -si $aStartIn -d $aDescription -r $aRunAsAdmin
+  $ScriptResults = New-Shortcut -n $aName -tp $aTargetPath -a $aArguments -sl $aSystemLnk -si $aStartIn -d $aDescription -r $aRunAsAdmin
 }
 
 
@@ -1190,7 +1192,7 @@ for ($i = 0; $i -lt $sys3rdPartyAppList.length; $i++) {
   $aDescription = if ($app.Description) { $app.Description } else { "" }
   $aRunAsAdmin = if ($app.RunAsAdmin) { $app.RunAsAdmin } else { $false }
 
-  $ScriptResults = New-Shortcut -n $aName -tp $aTargetPath -a $sArguments -sl $aSystemLnk -si $aStartIn -d $aDescription -r $aRunAsAdmin
+  $ScriptResults = New-Shortcut -n $aName -tp $aTargetPath -a $aArguments -sl $aSystemLnk -si $aStartIn -d $aDescription -r $aRunAsAdmin
 }
 
 
@@ -1352,9 +1354,11 @@ for ($i = 0; $i -lt $Users.length; $i++) {
     $aDescription = if ($app.Description) { $app.Description } else { "" }
     $aRunAsAdmin = if ($app.RunAsAdmin) { $app.RunAsAdmin } else { $false }
 
-    $ScriptResults = New-Shortcut -n $aName -tp $aTargetPath -a $sArguments -sl $aSystemLnk -si $aStartIn -d $aDescription -r $aRunAsAdmin -u $aUser
+    $ScriptResults = New-Shortcut -n $aName -tp $aTargetPath -a $aArguments -sl $aSystemLnk -si $aStartIn -d $aDescription -r $aRunAsAdmin -u $aUser
   }
 }
+
+Stop-Transcript
 
 if ($ScriptResults) { Write-Host "Script completed successfully." }
 else { Write-Warning "Script completed with warnings and/or errors." }
