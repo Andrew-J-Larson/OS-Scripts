@@ -31,6 +31,10 @@ Set-Variable NotInstalled -Option Constant -Value "NOT-INSTALLED"
 $isWindows11 = ((Get-WMIObject win32_operatingsystem).Caption).StartsWith("Microsoft Windows 11")
 $isWindows10 = ((Get-WMIObject win32_operatingsystem).Caption).StartsWith("Microsoft Windows 10")
 $isWin10orNewer = [System.Environment]::OSVersion.Version.Major -ge 10
+$UninstallKeys = "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall", "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall"
+$UninstallList = foreach ($UninstallKey in $UninstallKeys) {
+  Get-ChildItem -Path $UninstallKey -ErrorAction SilentlyContinue | Where-Object { $_.PSChildName -match '^{[A-Z0-9]{8}-([A-Z0-9]{4}-){3}[A-Z0-9]{12}}$' } | Select-Object @{n = 'GUID'; e = { $_.PSChildName } }, @{n = 'Name'; e = { $_.GetValue('DisplayName') } }
+}
 
 
 
@@ -174,6 +178,11 @@ if (-Not $isWin10orNewer) {
 
 # System Applications
 
+# App arguments dependant on uninstall strings
+
+## App Name
+#$App_Arguments = ...
+
 # App paths dependant on app version
 
 # Powershell (7 or newer)
@@ -285,6 +294,11 @@ for ($i = 0; $i -lt $sysAppList.length; $i++) {
 
 # OEM System Applications (e.g. Dell)
 
+# App arguments dependant on uninstall strings
+
+## App Name
+#$App_Arguments = ...
+
 # App paths dependant on app version
 
 ## App Name
@@ -323,6 +337,14 @@ for ($i = 0; $i -lt $oemSysAppList.length; $i++) {
 
 
 # Third-Party System Applications (not made by Microsoft)
+
+# App arguments dependant on uninstall strings
+
+# Egnyte Desktop App
+$EgnyteDesktopAppUninstallGUID = $UninstallList | Where-Object { $_.Name -match "Egnyte Desktop App" }
+$EgnyteDesktopAppUninstallGUID = if ($EgnyteDesktopAppUninstallGUID.length -ge 1) { $EgnyteDesktopAppUninstallGUID[0].GUID } else { $null }
+$EgnyteDesktopAppUninstall_Arguments = if (EgnyteDesktopAppUninstallGUID) { "/x ${EgnyteDesktopAppUninstallGUID}" } else { "" }
+$EgnyteDesktopAppUninstall_TargetPath = if (EgnyteDesktopAppUninstallGUID) { "C:\Windows\System32\msiexec.exe" } else { "C:\${NotInstalled}\${NotInstalled}\${NotInstalled}.exe" }
 
 # App paths dependant on app version
 
@@ -1049,6 +1071,9 @@ $sys3rdPartyAppList = @(
   # draw.io
   @{Name = "draw.io"; TargetPath = "C:\Program Files\draw.io\draw.io.exe"; StartIn = "C:\Program Files\draw.io"; Description = "draw.io desktop" },
   @{Name = "draw.io (32-bit)"; TargetPath = "C:\Program Files (x86)\draw.io\draw.io.exe"; StartIn = "C:\Program Files (x86)\draw.io"; Description = "draw.io desktop" },
+  # Egnyte
+  @{Name = "Egnyte Desktop App"; TargetPath = "C:\Program Files (x86)\Egnyte Connect\EgnyteClient.exe"; Arguments = "--short-menu"; SystemLnk = "Egnyte Connect\"; StartIn = "C:\Program Files (x86)\Egnyte Connect\" },
+  @{Name = "Uninstall Egnyte Desktop App"; TargetPath = $EgnyteDesktopAppUninstall_TargetPath; Arguments = $EgnyteDesktopAppUninstall_Arguments; SystemLnk = "Egnyte Connect\"; Description = "Uninstalls Egnyte Desktop App" },
   # Epson
   @{Name = "Epson Scan 2"; TargetPath = "C:\Program Files\epson\Epson Scan 2\Core\es2launcher.exe"; SystemLnk = "EPSON\Epson Scan 2\" }, # it's the only install on 32-bit
   @{Name = "FAX Utility"; TargetPath = "C:\Program Files\Epson Software\FAX Utility\FUFAXCNT.exe"; SystemLnk = "EPSON Software\" }, # it's the only install on 32-bit
@@ -1212,6 +1237,11 @@ for ($i = 0; $i -lt $sys3rdPartyAppList.length; $i++) {
 # get all users 
 $Users = (Get-ChildItem -Directory -Path "C:\Users\" | ForEach-Object { if (($_.name -ne "Default") -And ($_.name -ne "Public")) { $_.name } })
 if ($Users -And ($Users[0].length -eq 1)) { $Users = @("$Users") } # if only one user, array needs to be recreated
+
+# System app arguments dependant on uninstall strings
+
+## App Name
+#$App_Arguments = ...
 
 # System app paths dependant on app version
 
