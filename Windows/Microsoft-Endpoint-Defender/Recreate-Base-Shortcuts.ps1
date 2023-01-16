@@ -33,7 +33,7 @@ $isWin10orNewer = [System.Environment]::OSVersion.Version.Major -ge 10
 
 # Functions
 
-function Recreate-Shortcut {
+function New-Shortcut {
     param(
     [Parameter(Mandatory=$true)]
     [Alias("name","n")]
@@ -155,6 +155,8 @@ function Recreate-Shortcut {
 
 # MAIN
 
+$ScriptResults = $true
+
 if (-Not $isWin10orNewer) {
   Write-Error "This script is only meant to be ran on Windows 10 and newer!"
   exit 1
@@ -259,7 +261,7 @@ for ($i = 0; $i -lt $sysAppList.length; $i++) {
   $aDescription = if ($app.Description) {$app.Description} else {""}
   $aRunAsAdmin = if ($app.RunAsAdmin) {$app.RunAsAdmin} else {$false}
 
-  $Results = Recreate-Shortcut -n $aName -tp $aTargetPath -a $sArguments -sl $aSystemLnk -si $aStartIn -d $aDescription -r $aRunAsAdmin
+  $ScriptResults = New-Shortcut -n $aName -tp $aTargetPath -a $aArguments -sl $aSystemLnk -si $aStartIn -d $aDescription -r $aRunAsAdmin
 }
 
 
@@ -298,7 +300,7 @@ for ($i = 0; $i -lt $oemSysAppList.length; $i++) {
   $aDescription = if ($app.Description) {$app.Description} else {""}
   $aRunAsAdmin = if ($app.RunAsAdmin) {$app.RunAsAdmin} else {$false}
 
-  $Results = Recreate-Shortcut -n $aName -tp $aTargetPath -a $sArguments -sl $aSystemLnk -si $aStartIn -d $aDescription -r $aRunAsAdmin
+  $ScriptResults = New-Shortcut -n $aName -tp $aTargetPath -a $sArguments -sl $aSystemLnk -si $aStartIn -d $aDescription -r $aRunAsAdmin
 }
 
 
@@ -317,7 +319,7 @@ $Aero_StartInAlt2 = $Aero_StartInAlt+"\Contents\Windows"
 $Aero_TargetPath = $Aero_StartIn+"\Aero.exe"
 $Aero_TargetPathAlt = $Aero_StartInAlt+"\Aero.exe"
 $Aero_TargetPathAlt2 = $Aero_StartInAlt2+"\Aero.exe"
-$Aero_TargetPath = if (Test-Path -Path $Aero_TargetPath -PathType leaf) {$Aero_TargetPath} elseif (Test-Path -Path $Aero_TargetPathAlt -PathType leaf) {$Aero_TargetPathAlt} else {Aero_TargetPathAlt2}
+$Aero_TargetPath = if (Test-Path -Path $Aero_TargetPath -PathType leaf) {$Aero_TargetPath} elseif (Test-Path -Path $Aero_TargetPathAlt -PathType leaf) {$Aero_TargetPathAlt} else {$Aero_TargetPathAlt2}
 $Aero_Beta_TargetPath = "C:\Program Files\Adobe\"
 $Aero_Beta_Name = if (Test-Path -Path $Aero_Beta_TargetPath) {Get-ChildItem -Directory -Path $Aero_Beta_TargetPath | Where-Object { $_.Name -match '^.*Aero.*\(Beta\)$' } | Sort-Object -Descending}
 $Aero_Beta_Name = if ($Aero_Beta_Name.length -ge 1) {$Aero_Beta_Name[0].name} else {"Adobe Aero (Beta)"}
@@ -900,7 +902,7 @@ $KeePass_Version = if ($KeePass_FileVersionRaw) {$KeePass_FileVersionRaw.Major} 
 $KeePass_Name = "KeePass ${KeePass_Version}"
 $KeePass_32bit_FileVersionRaw = if (Test-Path -Path $KeePass_32bit_TargetPath -PathType Leaf) {(Get-Item $KeePass_32bit_TargetPath).VersionInfo.FileVersionRaw}
 $KeePass_32bit_Version = if ($KeePass_32bit_FileVersionRaw) {$KeePass_32bit_FileVersionRaw.Major} else {$NotInstalled}
-$KeePass_32bit_Name = "KeePass ${KeePass_Version}"
+$KeePass_32bit_Name = "KeePass ${KeePass_32bit_Version}"
 # Maxon
 $MaxonCinema4D_Commandline_Name = "Commandline"+$(if ($MaxonCinema4D_Version) {" ${MaxonCinema4D_Version}"})
 $MaxonCinema4D_Name = "Maxon Cinema 4D"+$(if ($MaxonCinema4D_Version) {" ${MaxonCinema4D_Version}"})
@@ -1183,7 +1185,7 @@ for ($i = 0; $i -lt $sys3rdPartyAppList.length; $i++) {
   $aDescription = if ($app.Description) {$app.Description} else {""}
   $aRunAsAdmin = if ($app.RunAsAdmin) {$app.RunAsAdmin} else {$false}
 
-  $Results = Recreate-Shortcut -n $aName -tp $aTargetPath -a $sArguments -sl $aSystemLnk -si $aStartIn -d $aDescription -r $aRunAsAdmin
+  $ScriptResults = New-Shortcut -n $aName -tp $aTargetPath -a $sArguments -sl $aSystemLnk -si $aStartIn -d $aDescription -r $aRunAsAdmin
 }
 
 
@@ -1191,7 +1193,7 @@ for ($i = 0; $i -lt $sys3rdPartyAppList.length; $i++) {
 # User Applications (per user installed apps)
 
 # get all users 
-$Users = (Get-ChildItem -Directory -Path "C:\Users\" | % { if (($_.name -ne "Default") -And ($_.name -ne "Public")) {$_.name} })
+$Users = (Get-ChildItem -Directory -Path "C:\Users\" | ForEach-Object { if (($_.name -ne "Default") -And ($_.name -ne "Public")) {$_.name} })
 if ($Users -And ($Users[0].length -eq 1)) {$Users = @("$Users")} # if only one user, array needs to be recreated
 
 # System app paths dependant on app version
@@ -1225,7 +1227,7 @@ $AdobeDigitalEditions_Version = if ($AdobeDigitalEditions_FileVersionRaw) {[stri
 $AdobeDigitalEditions_Name = "Adobe Digital Editions ${AdobeDigitalEditions_Version}"
 $AdobeDigitalEditions_32bit_FileVersionRaw = if (Test-Path -Path $AdobeDigitalEditions_32bit_TargetPath -PathType Leaf) {(Get-Item $AdobeDigitalEditions_32bit_TargetPath).VersionInfo.FileVersionRaw}
 $AdobeDigitalEditions_32bit_Version = if ($AdobeDigitalEditions_32bit_FileVersionRaw) {[string]($AdobeDigitalEditions_32bit_FileVersionRaw.Major)+'.'+[string]($AdobeDigitalEditions_32bit_FileVersionRaw.Minor)} else {$NotInstalled}
-$AdobeDigitalEditions_32bit_Name = "Adobe Digital Editions ${AdobeDigitalEditions_32bit_Name}"
+$AdobeDigitalEditions_32bit_Name = "Adobe Digital Editions ${AdobeDigitalEditions_32bit_Version}"
 
 # App names dependant on OS or app version
 
@@ -1345,6 +1347,9 @@ for ($i = 0; $i -lt $Users.length; $i++) {
     $aDescription = if ($app.Description) {$app.Description} else {""}
     $aRunAsAdmin = if ($app.RunAsAdmin) {$app.RunAsAdmin} else {$false}
 
-    $Results = Recreate-Shortcut -n $aName -tp $aTargetPath -a $sArguments -sl $aSystemLnk -si $aStartIn -d $aDescription -r $aRunAsAdmin -u $aUser
+    $ScriptResults = New-Shortcut -n $aName -tp $aTargetPath -a $sArguments -sl $aSystemLnk -si $aStartIn -d $aDescription -r $aRunAsAdmin -u $aUser
   }
 }
+
+if ($ScriptResults) {Write-Host "Script completed successfully."}
+else {Write-Warning "Script completed with warnings and/or errors."}
