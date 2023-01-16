@@ -341,6 +341,23 @@ $AfterEffects_Beta_StartInAlt = $AfterEffects_Beta_StartIn+"\Support Files"
 $AfterEffects_Beta_TargetPath = $AfterEffects_Beta_StartIn+"\AfterFX (Beta).exe"
 $AfterEffects_Beta_TargetPathAlt = $AfterEffects_Beta_StartInAlt+"\AfterFX (Beta).exe"
 $AfterEffects_Beta_TargetPath = if (Test-Path -Path $AfterEffects_Beta_TargetPath -PathType leaf) {$AfterEffects_Beta_TargetPath} elseif (Test-Path -Path $AfterEffects_Beta_TargetPathAlt -PathType leaf) {$AfterEffects_Beta_TargetPathAlt} else {$AfterEffects_Beta_StartIn+"\AfterFX.exe"}
+# Adobe Animate
+$Animate_TargetPath = "C:\Program Files\Adobe\"
+$Animate_Name = if (Test-Path -Path $Animate_TargetPath) {Get-ChildItem -Directory -Path $Animate_TargetPath | Where-Object { $_.Name -match '^.*Animate(?!.*\(Beta\)$)' } | Sort-Object -Descending}
+$Animate_Name = if ($Animate_Name.length -ge 1) {$Animate_Name[0].name} else {"Animate"}
+$Animate_StartIn = $Animate_TargetPath+$Animate_Name
+$Animate_StartInAlt = $Animate_StartIn+"\Support Files"
+$Animate_TargetPath = $Animate_StartIn+"\Animate.exe"
+$Animate_TargetPathAlt = $Animate_StartInAlt+"\Animate.exe"
+$Animate_TargetPath = if (Test-Path -Path $Animate_TargetPath -PathType leaf) {$Animate_TargetPath} else {$Animate_TargetPathAlt}
+$Animate_Beta_TargetPath = "C:\Program Files\Adobe\"
+$Animate_Beta_Name = if (Test-Path -Path $Animate_Beta_TargetPath) {Get-ChildItem -Directory -Path $Animate_Beta_TargetPath | Where-Object { $_.Name -match '^.*Animate.*\(Beta\)' } | Sort-Object -Descending}
+$Animate_Beta_Name = if ($Animate_Beta_Name.length -ge 1) {$Animate_Beta_Name[0].name} else {"Animate (Beta)"}
+$Animate_Beta_StartIn = $Animate_Beta_TargetPath+$Animate_Beta_Name
+$Animate_Beta_StartInAlt = $Animate_Beta_StartIn+"\Support Files"
+$Animate_Beta_TargetPath = $Animate_Beta_StartIn+"\Animate (Beta).exe"
+$Animate_Beta_TargetPathAlt = $Animate_Beta_StartInAlt+"\Animate (Beta).exe"
+$Animate_Beta_TargetPath = if (Test-Path -Path $Animate_Beta_TargetPath -PathType leaf) {$Animate_Beta_TargetPath} elseif (Test-Path -Path $Animate_Beta_TargetPathAlt -PathType leaf) {$Animate_Beta_TargetPathAlt} else {$Animate_Beta_StartIn+"\Animate.exe"}
 # GIMP
 $GIMP_TargetPath = "C:\Program Files\"
 $GIMP_FindFolder = Get-ChildItem -Directory -Path $GIMP_TargetPath | Where-Object {$_.Name -match '^GIMP'} | Sort-Object -Descending
@@ -434,6 +451,8 @@ $sys3rdPartyAppList = @(
   @{Name=$Aero_Beta_Name; TargetPath=$Aero_Beta_TargetPath; StartIn=$Aero_Beta_StartIn},
   @{Name=$AfterEffects_Name; TargetPath=$AfterEffects_TargetPath; StartIn=$AfterEffects_StartIn},
   @{Name=$AfterEffects_Beta_Name; TargetPath=$AfterEffects_Beta_TargetPath; StartIn=$AfterEffects_Beta_StartIn},
+  @{Name=$Animate_Name; TargetPath=$Animate_TargetPath; StartIn=$Animate_StartIn},
+  @{Name=$Animate_Beta_Name; TargetPath=$Animate_Beta_TargetPath; StartIn=$Animate_Beta_StartIn},
   @{Name="Adobe UXP Developer Tool"; TargetPath="C:\Program Files\Adobe\Adobe UXP Developer Tool\Adobe UXP Developer Tool.exe"; StartIn="C:\Program Files\Adobe\Adobe UXP Developer Tool"},
   @{Name="Adobe Acrobat (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Acrobat DC\Acrobat\Acrobat.exe"},
   @{Name="Adobe Acrobat Distiller (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Acrobat DC\Acrobat\acrodist.exe"},
