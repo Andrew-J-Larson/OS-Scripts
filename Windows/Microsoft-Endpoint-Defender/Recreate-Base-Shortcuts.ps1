@@ -426,6 +426,23 @@ $Dimension_Beta_StartInAlt = $Dimension_Beta_StartIn+"\Support Files"
 $Dimension_Beta_TargetPath = $Dimension_Beta_StartIn+"\Dimension (Beta).exe"
 $Dimension_Beta_TargetPathAlt = $Dimension_Beta_StartInAlt+"\Dimension (Beta).exe"
 $Dimension_Beta_TargetPath = if (Test-Path -Path $Dimension_Beta_TargetPath -PathType leaf) {$Dimension_Beta_TargetPath} elseif (Test-Path -Path $Dimension_Beta_TargetPathAlt -PathType leaf) {$Dimension_Beta_TargetPathAlt} else {$Dimension_Beta_StartIn+"\Dimension.exe"}
+# Adobe Dreamweaver
+$Dreamweaver_TargetPath = "C:\Program Files\Adobe\"
+$Dreamweaver_Name = if (Test-Path -Path $Dreamweaver_TargetPath) {Get-ChildItem -Directory -Path $Dreamweaver_TargetPath | Where-Object { $_.Name -match '^.*Dreamweaver(?!.*\(Beta\)$)' } | Sort-Object -Descending}
+$Dreamweaver_Name = if ($Dreamweaver_Name.length -ge 1) {$Dreamweaver_Name[0].name} else {"Adobe Dreamweaver"}
+$Dreamweaver_StartIn = $Dreamweaver_TargetPath+$Dreamweaver_Name
+$Dreamweaver_StartInAlt = $Dreamweaver_StartIn+"\Support Files"
+$Dreamweaver_TargetPath = $Dreamweaver_StartIn+"\Dreamweaver.exe"
+$Dreamweaver_TargetPathAlt = $Dreamweaver_StartInAlt+"\Dreamweaver.exe"
+$Dreamweaver_TargetPath = if (Test-Path -Path $Dreamweaver_TargetPath -PathType leaf) {$Dreamweaver_TargetPath} else {$Dreamweaver_TargetPathAlt}
+$Dreamweaver_Beta_TargetPath = "C:\Program Files\Adobe\"
+$Dreamweaver_Beta_Name = if (Test-Path -Path $Dreamweaver_Beta_TargetPath) {Get-ChildItem -Directory -Path $Dreamweaver_Beta_TargetPath | Where-Object { $_.Name -match '^.*Dreamweaver.*\(Beta\)' } | Sort-Object -Descending}
+$Dreamweaver_Beta_Name = if ($Dreamweaver_Beta_Name.length -ge 1) {$Dreamweaver_Beta_Name[0].name} else {"Adobe Dreamweaver (Beta)"}
+$Dreamweaver_Beta_StartIn = $Dreamweaver_Beta_TargetPath+$Dreamweaver_Beta_Name
+$Dreamweaver_Beta_StartInAlt = $Dreamweaver_Beta_StartIn+"\Support Files"
+$Dreamweaver_Beta_TargetPath = $Dreamweaver_Beta_StartIn+"\Dreamweaver (Beta).exe"
+$Dreamweaver_Beta_TargetPathAlt = $Dreamweaver_Beta_StartInAlt+"\Dreamweaver (Beta).exe"
+$Dreamweaver_Beta_TargetPath = if (Test-Path -Path $Dreamweaver_Beta_TargetPath -PathType leaf) {$Dreamweaver_Beta_TargetPath} elseif (Test-Path -Path $Dreamweaver_Beta_TargetPathAlt -PathType leaf) {$Dreamweaver_Beta_TargetPathAlt} else {$Dreamweaver_Beta_StartIn+"\Dreamweaver.exe"}
 # GIMP
 $GIMP_TargetPath = "C:\Program Files\"
 $GIMP_FindFolder = Get-ChildItem -Directory -Path $GIMP_TargetPath | Where-Object {$_.Name -match '^GIMP'} | Sort-Object -Descending
@@ -529,6 +546,8 @@ $sys3rdPartyAppList = @(
   @{Name=$CharacterAnimator_Beta_Name; TargetPath=$CharacterAnimator_Beta_TargetPath; StartIn=$CharacterAnimator_Beta_StartIn},
   @{Name=$Dimension_Name; TargetPath=$Dimension_TargetPath; StartIn=$Dimension_StartIn},
   @{Name=$Dimension_Beta_Name; TargetPath=$Dimension_Beta_TargetPath; StartIn=$Dimension_Beta_StartIn},
+  @{Name=$Dreamweaver_Name; TargetPath=$Dreamweaver_TargetPath; StartIn=$Dreamweaver_StartIn},
+  @{Name=$Dreamweaver_Beta_Name; TargetPath=$Dreamweaver_Beta_TargetPath; StartIn=$Dreamweaver_Beta_StartIn},
   @{Name="Adobe UXP Developer Tool"; TargetPath="C:\Program Files\Adobe\Adobe UXP Developer Tool\Adobe UXP Developer Tool.exe"; StartIn="C:\Program Files\Adobe\Adobe UXP Developer Tool"},
   @{Name="Adobe Acrobat (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Acrobat DC\Acrobat\Acrobat.exe"},
   @{Name="Adobe Acrobat Distiller (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Acrobat DC\Acrobat\acrodist.exe"},
