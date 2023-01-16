@@ -385,13 +385,30 @@ $Bridge_TargetPath = $Bridge_StartIn+"\Adobe Bridge.exe"
 $Bridge_TargetPathAlt = $Bridge_StartInAlt+"\Adobe Bridge.exe"
 $Bridge_TargetPath = if (Test-Path -Path $Bridge_TargetPath -PathType leaf) {$Bridge_TargetPath} else {$Bridge_TargetPathAlt}
 $Bridge_Beta_TargetPath = "C:\Program Files\Adobe\"
-$Bridge_Beta_Name = if (Test-Path -Path $Bridge_Beta_TargetPath) {Get-ChildItem -Directory -Path $Bridge_Beta_TargetPath | Where-Object { $_.Name -match '^.*Audition.*\(Beta\)' } | Sort-Object -Descending}
+$Bridge_Beta_Name = if (Test-Path -Path $Bridge_Beta_TargetPath) {Get-ChildItem -Directory -Path $Bridge_Beta_TargetPath | Where-Object { $_.Name -match '^.*Bridge.*\(Beta\)' } | Sort-Object -Descending}
 $Bridge_Beta_Name = if ($Bridge_Beta_Name.length -ge 1) {$Bridge_Beta_Name[0].name} else {"Adobe Bridge (Beta)"}
 $Bridge_Beta_StartIn = $Bridge_Beta_TargetPath+$Bridge_Beta_Name
 $Bridge_Beta_StartInAlt = $Bridge_Beta_StartIn+"\Support Files"
 $Bridge_Beta_TargetPath = $Bridge_Beta_StartIn+"\Adobe Bridge (Beta).exe"
 $Bridge_Beta_TargetPathAlt = $Bridge_Beta_StartInAlt+"\Adobe Bridge (Beta).exe"
 $Bridge_Beta_TargetPath = if (Test-Path -Path $Bridge_Beta_TargetPath -PathType leaf) {$Bridge_Beta_TargetPath} elseif (Test-Path -Path $Bridge_Beta_TargetPathAlt -PathType leaf) {$Bridge_Beta_TargetPathAlt} else {$Bridge_Beta_StartIn+"\Adobe Bridge.exe"}
+# Adobe Character Animator
+$CharacterAnimator_TargetPath = "C:\Program Files\Adobe\"
+$CharacterAnimator_Name = if (Test-Path -Path $CharacterAnimator_TargetPath) {Get-ChildItem -Directory -Path $CharacterAnimator_TargetPath | Where-Object { $_.Name -match '^.*Character Animator(?!.*\(Beta\)$)' } | Sort-Object -Descending}
+$CharacterAnimator_Name = if ($CharacterAnimator_Name.length -ge 1) {$CharacterAnimator_Name[0].name} else {"Adobe Character Animator"}
+$CharacterAnimator_StartIn = $CharacterAnimator_TargetPath+$CharacterAnimator_Name
+$CharacterAnimator_StartInAlt = $CharacterAnimator_StartIn+"\Support Files"
+$CharacterAnimator_TargetPath = $CharacterAnimator_StartIn+"\Adobe Character Animator.exe"
+$CharacterAnimator_TargetPathAlt = $CharacterAnimator_StartInAlt+"\Adobe Character Animator.exe"
+$CharacterAnimator_TargetPath = if (Test-Path -Path $CharacterAnimator_TargetPath -PathType leaf) {$CharacterAnimator_TargetPath} else {$CharacterAnimator_TargetPathAlt}
+$CharacterAnimator_Beta_TargetPath = "C:\Program Files\Adobe\"
+$CharacterAnimator_Beta_Name = if (Test-Path -Path $CharacterAnimator_Beta_TargetPath) {Get-ChildItem -Directory -Path $CharacterAnimator_Beta_TargetPath | Where-Object { $_.Name -match '^.*Character Animator.*\(Beta\)' } | Sort-Object -Descending}
+$CharacterAnimator_Beta_Name = if ($CharacterAnimator_Beta_Name.length -ge 1) {$CharacterAnimator_Beta_Name[0].name} else {"Adobe Character Animator (Beta)"}
+$CharacterAnimator_Beta_StartIn = $CharacterAnimator_Beta_TargetPath+$CharacterAnimator_Beta_Name
+$CharacterAnimator_Beta_StartInAlt = $CharacterAnimator_Beta_StartIn+"\Support Files"
+$CharacterAnimator_Beta_TargetPath = $CharacterAnimator_Beta_StartIn+"\Adobe Character Animator (Beta).exe"
+$CharacterAnimator_Beta_TargetPathAlt = $CharacterAnimator_Beta_StartInAlt+"\Adobe Character Animator (Beta).exe"
+$CharacterAnimator_Beta_TargetPath = if (Test-Path -Path $CharacterAnimator_Beta_TargetPath -PathType leaf) {$CharacterAnimator_Beta_TargetPath} elseif (Test-Path -Path $CharacterAnimator_Beta_TargetPathAlt -PathType leaf) {$CharacterAnimator_Beta_TargetPathAlt} else {$CharacterAnimator_Beta_StartIn+"\Adobe Character Animator.exe"}
 # GIMP
 $GIMP_TargetPath = "C:\Program Files\"
 $GIMP_FindFolder = Get-ChildItem -Directory -Path $GIMP_TargetPath | Where-Object {$_.Name -match '^GIMP'} | Sort-Object -Descending
@@ -491,6 +508,8 @@ $sys3rdPartyAppList = @(
   @{Name=$Audition_Beta_Name; TargetPath=$Audition_Beta_TargetPath; StartIn=$Audition_Beta_StartIn},
   @{Name=$Bridge_Name; TargetPath=$Bridge_TargetPath; StartIn=$Bridge_StartIn},
   @{Name=$Bridge_Beta_Name; TargetPath=$Bridge_Beta_TargetPath; StartIn=$Bridge_Beta_StartIn},
+  @{Name=$CharacterAnimator_Name; TargetPath=$CharacterAnimator_TargetPath; StartIn=$CharacterAnimator_StartIn},
+  @{Name=$CharacterAnimator_Beta_Name; TargetPath=$CharacterAnimator_Beta_TargetPath; StartIn=$CharacterAnimator_Beta_StartIn},
   @{Name="Adobe UXP Developer Tool"; TargetPath="C:\Program Files\Adobe\Adobe UXP Developer Tool\Adobe UXP Developer Tool.exe"; StartIn="C:\Program Files\Adobe\Adobe UXP Developer Tool"},
   @{Name="Adobe Acrobat (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Acrobat DC\Acrobat\Acrobat.exe"},
   @{Name="Adobe Acrobat Distiller (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Acrobat DC\Acrobat\acrodist.exe"},
