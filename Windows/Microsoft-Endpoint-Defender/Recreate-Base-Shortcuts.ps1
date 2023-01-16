@@ -1065,6 +1065,9 @@ $sys3rdPartyAppList = @(
   # Bytello
   @{Name = "Bytello Share"; TargetPath = "C:\Program Files\Bytello Share\Bytello Share.exe"; SystemLnk = "Bytello Share\"; StartIn = "C:\Program Files\Bytello Share" }, # it's the only install on 32-bit
   @{Name = "Bytello Share"; TargetPath = "C:\Program Files (x86)\Bytello Share\Bytello Share.exe"; SystemLnk = "Bytello Share\"; StartIn = "C:\Program Files (x86)\Bytello Share" }, # it's the only install on 64-bit
+  # Cisco
+  @{Name = "Cisco AnyConnect Secure Mobility Client"; TargetPath = "C:\Program Files\Cisco\Cisco AnyConnect Secure Mobility Client\vpnui.exe"; SystemLnk = "C:\Program Files\Cisco\Cisco AnyConnect Secure Mobility Client\"; Description = "Cisco AnyConnect Secure Mobility Client" }, # it's the only install on 32-bit
+  @{Name = "Cisco AnyConnect Secure Mobility Client"; TargetPath = "C:\Program Files (x86)\Cisco\Cisco AnyConnect Secure Mobility Client\vpnui.exe"; SystemLnk = "C:\Program Files (x86)\Cisco\Cisco AnyConnect Secure Mobility Client\"; Description = "Cisco AnyConnect Secure Mobility Client" }, # it's the only install on 64-bit
   # Citrix Workspace
   @{Name = "Citrix Workspace"; TargetPath = "C:\Program Files\Citrix\ICA Client\SelfServicePlugin\SelfService.exe"; Arguments = "-showAppPicker"; StartIn = "C:\Program Files\Citrix\ICA Client\SelfServicePlugin\"; Description = "Select applications you want to use on your computer" }, # it's the only install on 32-bit
   @{Name = "Citrix Workspace"; TargetPath = "C:\Program Files (x86)\Citrix\ICA Client\SelfServicePlugin\SelfService.exe"; Arguments = "-showAppPicker"; StartIn = "C:\Program Files (x86)\Citrix\ICA Client\SelfServicePlugin\"; Description = "Select applications you want to use on your computer" }, # it's the only install on 64-bit
@@ -1081,7 +1084,8 @@ $sys3rdPartyAppList = @(
   @{Name = "draw.io"; TargetPath = "C:\Program Files\draw.io\draw.io.exe"; StartIn = "C:\Program Files\draw.io"; Description = "draw.io desktop" },
   @{Name = "draw.io (32-bit)"; TargetPath = "C:\Program Files (x86)\draw.io\draw.io.exe"; StartIn = "C:\Program Files (x86)\draw.io"; Description = "draw.io desktop" },
   # Egnyte
-  @{Name = "Egnyte Desktop App"; TargetPath = "C:\Program Files (x86)\Egnyte Connect\EgnyteClient.exe"; Arguments = "--short-menu"; SystemLnk = "Egnyte Connect\"; StartIn = "C:\Program Files (x86)\Egnyte Connect\" },
+  @{Name = "Egnyte Desktop App"; TargetPath = "C:\Program Files\Egnyte Connect\EgnyteClient.exe"; Arguments = "--short-menu"; SystemLnk = "Egnyte Connect\"; StartIn = "C:\Program Files\Egnyte Connect\" }, # it's the only install on 32-bit
+  @{Name = "Egnyte Desktop App"; TargetPath = "C:\Program Files (x86)\Egnyte Connect\EgnyteClient.exe"; Arguments = "--short-menu"; SystemLnk = "Egnyte Connect\"; StartIn = "C:\Program Files (x86)\Egnyte Connect\" }, # it's the only install on 64-bit
   @{Name = "Uninstall Egnyte Desktop App"; TargetPath = $EgnyteDesktopAppUninstall_TargetPath; Arguments = $EgnyteDesktopAppUninstall_Arguments; SystemLnk = "Egnyte Connect\"; Description = "Uninstalls Egnyte Desktop App" },
   # Epson
   @{Name = "Epson Scan 2"; TargetPath = "C:\Program Files\epson\Epson Scan 2\Core\es2launcher.exe"; SystemLnk = "EPSON\Epson Scan 2\" }, # it's the only install on 32-bit
