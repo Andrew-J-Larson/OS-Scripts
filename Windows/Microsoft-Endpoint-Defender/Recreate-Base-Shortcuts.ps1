@@ -8,14 +8,14 @@
 
 # Application objects are setup like so:
 <# @{
-       Name="[name of shortcut here]";
-       TargetPath="[path to exe/url/folder here]";
-       Arguments="[any arguments that an app starts with here]";
-       SystemLnk="[path to lnk or name of app here]";
-       StartIn="[start in path, if needed, here]";
-       Description="[comment, that shows up in tooltip, here]";
-       IconLocation="[path to ico|exe|ico w/ index]";
-       RunAsAdmin="[true or false, if needed]"
+       Name = "[name of shortcut here]";
+       TargetPath = "[path to exe/url/folder here]";
+       Arguments = "[any arguments that an app starts with here]";
+       SystemLnk = "[path to lnk or name of app here]";
+       StartIn = "[start in path, if needed, here]";
+       Description = "[comment, that shows up in tooltip, here]";
+       IconLocation = "[path to ico|exe|ico w/ index]";
+       RunAsAdmin = "[true or false, if needed]"
    } #>
 
 
@@ -290,7 +290,7 @@ $sysAppList = @(
   @{Name = $WindowsMediaPlayerOld_Name; TargetPath = "%ProgramFiles(x86)%\Windows Media Player\wmplayer.exe"; Arguments = "/prefetch:1"; SystemLnk = "Accessories\"; StartIn = "%ProgramFiles(x86)%\Windows Media Player" }, # it's the only install on 64-bit
   @{Name = "WordPad"; TargetPath = "%ProgramFiles%\Windows NT\Accessories\wordpad.exe"; SystemLnk = "Accessories\"; Description = "Creates and edits text documents with complex formatting." },
   @{Name = "Character Map"; TargetPath = "%windir%\system32\charmap.exe"; SystemLnk = "Accessories\System Tools\"; Description = "Selects special characters and copies them to your document." }
-  #@{ Name=""; TargetPath=""; Arguments=""; SystemLnk=""; StartIn=""; Description=""; IconLocation=""; RunAsAdmin=($true -Or $false) },
+  #@{ Name = ""; TargetPath = ""; Arguments = ""; SystemLnk = ""; StartIn = ""; Description = ""; IconLocation = ""; RunAsAdmin = ($true -Or $false) },
 )
 
 for ($i = 0; $i -lt $sysAppList.length; $i++) {
@@ -335,7 +335,7 @@ $oemSysAppList = @(
   @{Name = "SupportAssist Recovery Assistant (32-bit)"; TargetPath = "C:\Program Files (x86)\Dell\SARemediation\postosri\osrecoveryagent.exe"; SystemLnk = "Dell\SupportAssist\" },
   # NVIDIA Corporation
   @{Name = "GeForce Experience"; TargetPath = "C:\Program Files\NVIDIA Corporation\NVIDIA GeForce Experience\NVIDIA GeForce Experience.exe"; SystemLnk = "NVIDIA Corporation\"; StartIn = "C:\Program Files\NVIDIA Corporation\NVIDIA GeForce Experience" }
-  #@{ Name=""; TargetPath=""; Arguments=""; SystemLnk=""; StartIn=""; Description=""; IconLocation=""; RunAsAdmin=($true -Or $false) },
+  #@{ Name = ""; TargetPath = ""; Arguments = ""; SystemLnk = ""; StartIn = ""; Description = ""; IconLocation = ""; RunAsAdmin = ($true -Or $false) },
 )
 
 for ($i = 0; $i -lt $oemSysAppList.length; $i++) {
@@ -1075,8 +1075,8 @@ $sys3rdPartyAppList = @(
   @{Name = "Bytello Share"; TargetPath = "C:\Program Files\Bytello Share\Bytello Share.exe"; SystemLnk = "Bytello Share\"; StartIn = "C:\Program Files\Bytello Share" }, # it's the only install on 32-bit
   @{Name = "Bytello Share"; TargetPath = "C:\Program Files (x86)\Bytello Share\Bytello Share.exe"; SystemLnk = "Bytello Share\"; StartIn = "C:\Program Files (x86)\Bytello Share" }, # it's the only install on 64-bit
   # Cisco
-  @{Name = "Cisco AnyConnect Secure Mobility Client"; TargetPath = "C:\Program Files\Cisco\Cisco AnyConnect Secure Mobility Client\vpnui.exe"; SystemLnk = "C:\Program Files\Cisco\Cisco AnyConnect Secure Mobility Client\"; Description = "Cisco AnyConnect Secure Mobility Client" }, # it's the only install on 32-bit
-  @{Name = "Cisco AnyConnect Secure Mobility Client"; TargetPath = "C:\Program Files (x86)\Cisco\Cisco AnyConnect Secure Mobility Client\vpnui.exe"; SystemLnk = "C:\Program Files (x86)\Cisco\Cisco AnyConnect Secure Mobility Client\"; Description = "Cisco AnyConnect Secure Mobility Client" }, # it's the only install on 64-bit
+  @{Name = "Cisco AnyConnect Secure Mobility Client"; TargetPath = "C:\Program Files\Cisco\Cisco AnyConnect Secure Mobility Client\vpnui.exe"; SystemLnk = "Cisco\Cisco AnyConnect Secure Mobility Client"; StartIn = "C:\Program Files\Cisco\Cisco AnyConnect Secure Mobility Client\"; Description = "Cisco AnyConnect Secure Mobility Client" }, # it's the only install on 32-bit
+  @{Name = "Cisco AnyConnect Secure Mobility Client"; TargetPath = "C:\Program Files (x86)\Cisco\Cisco AnyConnect Secure Mobility Client\vpnui.exe"; SystemLnk = "Cisco\Cisco AnyConnect Secure Mobility Client"; StartIn = "C:\Program Files (x86)\Cisco\Cisco AnyConnect Secure Mobility Client\"; Description = "Cisco AnyConnect Secure Mobility Client" }, # it's the only install on 64-bit
   # Citrix Workspace
   @{Name = "Citrix Workspace"; TargetPath = "C:\Program Files\Citrix\ICA Client\SelfServicePlugin\SelfService.exe"; Arguments = "-showAppPicker"; StartIn = "C:\Program Files\Citrix\ICA Client\SelfServicePlugin\"; Description = "Select applications you want to use on your computer" }, # it's the only install on 32-bit
   @{Name = "Citrix Workspace"; TargetPath = "C:\Program Files (x86)\Citrix\ICA Client\SelfServicePlugin\SelfService.exe"; Arguments = "-showAppPicker"; StartIn = "C:\Program Files (x86)\Citrix\ICA Client\SelfServicePlugin\"; Description = "Select applications you want to use on your computer" }, # it's the only install on 64-bit
@@ -1236,7 +1236,7 @@ $sys3rdPartyAppList = @(
   # WinSCP
   @{Name = "WinSCP"; TargetPath = "C:\Program Files\WinSCP\WinSCP.exe"; StartIn = "C:\Program Files\WinSCP"; Description = "WinSCP: SFTP, FTP, WebDAV and SCP client" }, # it's the only install on 32-bit
   @{Name = "WinSCP"; TargetPath = "C:\Program Files (x86)\WinSCP\WinSCP.exe"; StartIn = "C:\Program Files (x86)\WinSCP"; Description = "WinSCP: SFTP, FTP, WebDAV and SCP client" } # it's the only install on 64-bit
-  #@{ Name=""; TargetPath=""; Arguments=""; SystemLnk=""; StartIn=""; Description=""; IconLocation=""; RunAsAdmin=($true -Or $false) },
+  #@{ Name = ""; TargetPath = ""; Arguments = ""; SystemLnk = ""; StartIn = ""; Description = ""; IconLocation = ""; RunAsAdmin = ($true -Or $false) },
 )
 
 for ($i = 0; $i -lt $sys3rdPartyAppList.length; $i++) {
@@ -1404,7 +1404,7 @@ for ($i = 0; $i -lt $Users.length; $i++) {
     @{Name = "Help (ENG)"; TargetPath = "C:\Program Files (x86)\WinDirStat\windirstat.chm"; SystemLnk = "WinDirStat\"; StartIn = "C:\Program Files (x86)\WinDirStat" }, # it's the only install on 64-bit
     @{Name = "Uninstall WinDirStat"; TargetPath = "C:\Program Files (x86)\WinDirStat\Uninstall.exe"; SystemLnk = "WinDirStat\"; StartIn = "C:\Program Files (x86)\WinDirStat" }, # it's the only install on 64-bit
     @{Name = "WinDirStat"; TargetPath = "C:\Program Files (x86)\WinDirStat\windirstat.exe"; SystemLnk = "WinDirStat\"; StartIn = "C:\Program Files (x86)\WinDirStat" } # it's the only install on 64-bit
-    #@{ Name=""; TargetPath=""; Arguments=""; SystemLnk=""; StartIn=""; Description=""; IconLocation=""; RunAsAdmin=($true -Or $false) },
+    #@{ Name = ""; TargetPath = ""; Arguments = ""; SystemLnk = ""; StartIn = ""; Description = ""; IconLocation = ""; RunAsAdmin = ($true -Or $false) },
   )
 
   for ($j = 0; $j -lt $userAppList.length; $j++) {
