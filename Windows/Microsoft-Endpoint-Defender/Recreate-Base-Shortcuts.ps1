@@ -91,7 +91,7 @@ function New-Shortcut {
     if (-Not ($sSystemLnk -match '.*\.lnk$')) { $sSystemLnk = $sSystemLnk + '.lnk' }
 
     # only create shortcut if it doesn't already exist
-    if (Test-Path $sTargetPath -PathType leaf) {
+    if (Test-Path $sSystemLnk -PathType leaf) {
       $resultMsg += "A shortcut already exists at:`n${sSystemLnk}"
       $result = $false
     }
