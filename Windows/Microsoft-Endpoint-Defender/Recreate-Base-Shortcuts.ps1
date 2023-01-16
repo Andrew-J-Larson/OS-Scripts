@@ -632,7 +632,7 @@ for ($i = 0; $i -lt $sys3rdPartyAppList.length; $i++) {
 # User Applications (per user installed apps)
 
 # get all users 
-$Users = (Get-ChildItem "C:\Users\" | % { $_.name })
+$Users = (Get-ChildItem -Directory -Path "C:\Users\" | % { if (($_.name -ne "Default") -And ($_.name -ne "Public")) {$_.name} })
 if ($Users -And ($Users[0].length -eq 1)) {$Users = @("$Users")} # if only one user, array needs to be recreated
 
 # System app paths dependant on app version
