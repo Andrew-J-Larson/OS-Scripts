@@ -307,7 +307,7 @@ for ($i = 0; $i -lt $oemSysAppList.length; $i++) {
 
 # App paths dependant on app version
 
-# Adobe
+# Adobe Aero
 $Aero_TargetPath = "C:\Program Files\Adobe\"
 $Aero_Name = if (Test-Path -Path $Aero_TargetPath) {Get-ChildItem -Directory -Path $Aero_TargetPath | Where-Object { $_.Name -match '^.*Aero(?!.*\(Beta\)$)' } | Sort-Object -Descending}
 $Aero_Name = if ($Aero_Name.length -ge 1) {$Aero_Name[0].name} else {"Aero"}
@@ -317,7 +317,34 @@ $Aero_Beta_TargetPath = "C:\Program Files\Adobe\"
 $Aero_Beta_Name = if (Test-Path -Path $Aero_Beta_TargetPath) {Get-ChildItem -Directory -Path $Aero_Beta_TargetPath | Where-Object { $_.Name -match '^.*Aero.*\(Beta\)' } | Sort-Object -Descending}
 $Aero_Beta_Name = if ($Aero_Beta_Name.length -ge 1) {$Aero_Beta_Name[0].name} else {"Aero (Beta)"}
 $Aero_Beta_StartIn = $Aero_Beta_TargetPath+$Aero_Beta_Name
-$Aero_Beta_TargetPath = $Aero_Beta_StartIn+"\Aero.exe"
+$Aero_Beta_TargetPath = $Aero_Beta_StartIn+"\Aero (Beta).exe"
+$Aero_Beta_TargetPath = if (Test-Path -Path $Aero_Beta_TargetPath -PathType leaf) {$Aero_Beta_TargetPath} else {$Aero_Beta_StartIn+"\Aero.exe"}
+# Adobe After Effects
+$AfterEffects_TargetPath = "C:\Program Files\Adobe\"
+$AfterEffects_Name = if (Test-Path -Path $AfterEffects_TargetPath) {Get-ChildItem -Directory -Path $AfterEffects_TargetPath | Where-Object { $_.Name -match '^.*After Effects(?!.*\(Beta\)$)' } | Sort-Object -Descending}
+$AfterEffects_Name = if ($AfterEffects_Name.length -ge 1) {$AfterEffects_Name[0].name} else {"After Effects"}
+$AfterEffects_StartIn = $AfterEffects_TargetPath+$AfterEffects_Name
+$AfterEffects_TargetPath = $AfterEffects_StartIn+"\AfterFX.exe"
+$AfterEffects_Beta_TargetPath = "C:\Program Files\Adobe\"
+$AfterEffects_Beta_Name = if (Test-Path -Path $AfterEffects_Beta_TargetPath) {Get-ChildItem -Directory -Path $AfterEffects_Beta_TargetPath | Where-Object { $_.Name -match '^.*After Effects.*\(Beta\)' } | Sort-Object -Descending}
+$AfterEffects_Beta_Name = if ($AfterEffects_Beta_Name.length -ge 1) {$AfterEffects_Beta_Name[0].name} else {"After Effects (Beta)"}
+$AfterEffects_Beta_StartIn = $AfterEffects_Beta_TargetPath+$AfterEffects_Beta_Name
+$AfterEffects_Beta_TargetPath = $AfterEffects_Beta_StartIn+"\AfterFX (Beta).exe"
+$AfterEffects_Beta_TargetPath = if (Test-Path -Path $AfterEffects_Beta_TargetPath -PathType leaf) {$AfterEffects_Beta_TargetPath} else {$AfterEffects_Beta_StartIn+"\AfterFX.exe"}
+
+<# # Adobe After Effects
+$AfterEffects_TargetPath = "C:\Program Files\Adobe\"
+$AfterEffects_Name = if (Test-Path -Path $AfterEffects_TargetPath) {Get-ChildItem -Directory -Path $AfterEffects_TargetPath | Where-Object { $_.Name -match '^.*After Effects(?!.*\(Beta\)$)' } | Sort-Object -Descending}
+$AfterEffects_Name = if ($AfterEffects_Name.length -ge 1) {$AfterEffects_Name[0].name} else {"After Effects"}
+$AfterEffects_StartIn = $AfterEffects_TargetPath+$AfterEffects_Name
+$AfterEffects_TargetPath = $AfterEffects_StartIn+"\AfterFX.exe"
+$AfterEffects_Beta_TargetPath = "C:\Program Files\Adobe\"
+$AfterEffects_Beta_Name = if (Test-Path -Path $AfterEffects_Beta_TargetPath) {Get-ChildItem -Directory -Path $AfterEffects_Beta_TargetPath | Where-Object { $_.Name -match '^.*After Effects.*\(Beta\)' } | Sort-Object -Descending}
+$AfterEffects_Beta_Name = if ($AfterEffects_Beta_Name.length -ge 1) {$AfterEffects_Beta_Name[0].name} else {"After Effects (Beta)"}
+$AfterEffects_Beta_StartIn = $AfterEffects_Beta_TargetPath+$AfterEffects_Beta_Name
+$AfterEffects_Beta_TargetPath = $AfterEffects_Beta_StartIn+"\AfterFX (Beta).exe"
+$AfterEffects_Beta_TargetPath = if (Test-Path -Path $AfterEffects_Beta_TargetPath -PathType leaf) {$AfterEffects_Beta_TargetPath} else {$AfterEffects_Beta_StartIn+"\AfterFX.exe"} #>
+
 # GIMP
 $GIMP_TargetPath = "C:\Program Files\"
 $GIMP_FindFolder = Get-ChildItem -Directory -Path $GIMP_TargetPath | Where-Object {$_.Name -match '^GIMP'} | Sort-Object -Descending
@@ -345,7 +372,7 @@ $GoogleOneVPN_TargetPath += "${GoogleOneVPN_Version}\googleone.exe"
 # KeePass
 $KeePass_StartIn = "C:\Program Files\"
 $KeePass_FindFolder = Get-ChildItem -Directory -Path $KeePass_StartIn | Where-Object {$_.Name -match '^KeePass Password Safe'} | Sort-Object -Descending
-if ($KeePass_FindFolder.length -ge 1) {$KeePass_FindFolder[0].name} else {$NotInstalled}
+$KeePass_FindFolder = if ($KeePass_FindFolder.length -ge 1) {$KeePass_FindFolder[0].name} else {$NotInstalled}
 $KeePass_TargetPath = "${KeePass_FindFolder}\KeePass.exe"
 $KeePass_32bit_StartIn = "C:\Program Files (x86)\"
 $KeePass_32bit_FindFolder = Get-ChildItem -Directory -Path $KeePass_32bit_StartIn | Where-Object {$_.Name -match '^KeePass Password Safe'} | Sort-Object -Descending
@@ -409,6 +436,52 @@ $sys3rdPartyAppList = @(
   @{Name="Adobe Creative Cloud"; TargetPath="C:\Program Files\Adobe\Adobe Creative Cloud\ACC\Creative Cloud.exe"},
   @{Name=$Aero_Name; TargetPath=$Aero_TargetPath; StartIn=$Aero_StartIn},
   @{Name=$Aero_Beta_Name; TargetPath=$Aero_Beta_TargetPath; StartIn=$Aero_Beta_StartIn},
+  @{Name=$AfterEffects_Name; TargetPath=$AfterEffects_TargetPath; StartIn=$AfterEffects_StartIn},
+  @{Name=$AfterEffects_Beta_Name; TargetPath=$AfterEffects_Beta_TargetPath; StartIn=$AfterEffects_Beta_StartIn},
+<#   @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""},
+  @{Name=""; TargetPath=""; StartIn=""}, #>
   @{Name="Adobe UXP Developer Tool"; TargetPath="C:\Program Files\Adobe\Adobe UXP Developer Tool\Adobe UXP Developer Tool.exe"; StartIn="C:\Program Files\Adobe\Adobe UXP Developer Tool"},
   @{Name="Adobe Acrobat (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Acrobat DC\Acrobat\Acrobat.exe"},
   @{Name="Adobe Acrobat Distiller (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Acrobat DC\Acrobat\acrodist.exe"},
