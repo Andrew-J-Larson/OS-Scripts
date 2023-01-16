@@ -715,6 +715,30 @@ $PremiereRush_Beta_TargetPath = $PremiereRush_Beta_StartIn+"\Adobe Premiere Rush
 $PremiereRush_Beta_TargetPathAlt = $PremiereRush_Beta_StartInAlt+"\Adobe Premiere Rush (Beta).exe"
 $PremiereRush_Beta_TargetPathAlt2 = $PremiereRush_Beta_StartInAlt2+"\Adobe Premiere Rush (Beta).exe"
 $PremiereRush_Beta_TargetPath = if (Test-Path -Path $PremiereRush_Beta_TargetPathExeAlt -PathType leaf) {$PremiereRush_Beta_TargetPathExeAlt} elseif (Test-Path -Path $PremiereRush_Beta_TargetPathAltExeAlt -PathType leaf) {$PremiereRush_Beta_TargetPathAltExeAlt} elseif (Test-Path -Path $PremiereRush_Beta_TargetPathAlt2ExeAlt -PathType leaf) {$PremiereRush_Beta_TargetPathAlt2ExeAlt} elseif (Test-Path -Path $PremiereRush_Beta_TargetPath -PathType leaf) {$PremiereRush_Beta_TargetPath} elseif (Test-Path -Path $PremiereRush_Beta_TargetPathAlt -PathType leaf) {$PremiereRush_Beta_TargetPathAlt} else {$PremiereRush_Beta_TargetPathAlt2}
+# Adobe Substance 3D Designer
+$Substance3dDesigner_TargetPath = "C:\Program Files\Adobe\"
+$Substance3dDesigner_Name = if (Test-Path -Path $Substance3dDesigner_TargetPath) {Get-ChildItem -Directory -Path $Substance3dDesigner_TargetPath | Where-Object { $_.Name -match '^.*Substance 3D Designer(?!.*\(Beta\)$)' } | Sort-Object -Descending}
+$Substance3dDesigner_Name = if ($Substance3dDesigner_Name.length -ge 1) {$Substance3dDesigner_Name[0].name} else {"Adobe Substance 3D Designer"}
+$Substance3dDesigner_StartIn = $Substance3dDesigner_TargetPath+$Substance3dDesigner_Name
+$Substance3dDesigner_StartInAlt = $Substance3dDesigner_StartIn+"\Support Files"
+$Substance3dDesigner_StartInAlt2 = $Substance3dDesigner_StartInAlt+"\Contents\Windows"
+$Substance3dDesigner_TargetPath = $Substance3dDesigner_StartIn+"\Adobe Substance 3D Designer.exe"
+$Substance3dDesigner_TargetPathAlt = $Substance3dDesigner_StartInAlt+"\Adobe Substance 3D Designer.exe"
+$Substance3dDesigner_TargetPathAlt2 = $Substance3dDesigner_StartInAlt2+"\Adobe Substance 3D Designer.exe"
+$Substance3dDesigner_TargetPath = if (Test-Path -Path $Substance3dDesigner_TargetPath -PathType leaf) {$Substance3dDesigner_TargetPath} elseif (Test-Path -Path $Substance3dDesigner_TargetPathAlt -PathType leaf) {$Substance3dDesigner_TargetPathAlt} else {$Substance3dDesigner_TargetPathAlt2}
+$Substance3dDesigner_Beta_TargetPath = "C:\Program Files\Adobe\"
+$Substance3dDesigner_Beta_Name = if (Test-Path -Path $Substance3dDesigner_Beta_TargetPath) {Get-ChildItem -Directory -Path $Substance3dDesigner_Beta_TargetPath | Where-Object { $_.Name -match '^.*Substance 3D Designer.*\(Beta\)$' } | Sort-Object -Descending}
+$Substance3dDesigner_Beta_Name = if ($Substance3dDesigner_Beta_Name.length -ge 1) {$Substance3dDesigner_Beta_Name[0].name} else {"Adobe Substance 3D Designer (Beta)"}
+$Substance3dDesigner_Beta_StartIn = $Substance3dDesigner_Beta_TargetPath+$Substance3dDesigner_Beta_Name
+$Substance3dDesigner_Beta_StartInAlt = $Substance3dDesigner_Beta_StartIn+"\Support Files"
+$Substance3dDesigner_Beta_StartInAlt2 = $Substance3dDesigner_Beta_StartInAlt+"\Contents\Windows"
+$Substance3dDesigner_Beta_TargetPathExeAlt = $Substance3dDesigner_Beta_StartIn+"\Adobe Substance 3D Designer.exe"
+$Substance3dDesigner_Beta_TargetPathAltExeAlt = $Substance3dDesigner_Beta_StartInAlt+"\Adobe Substance 3D Designer.exe"
+$Substance3dDesigner_Beta_TargetPathAlt2ExeAlt = $Substance3dDesigner_Beta_StartInAlt2+"\Adobe Substance 3D Designer.exe"
+$Substance3dDesigner_Beta_TargetPath = $Substance3dDesigner_Beta_StartIn+"\Adobe Substance 3D Designer (Beta).exe"
+$Substance3dDesigner_Beta_TargetPathAlt = $Substance3dDesigner_Beta_StartInAlt+"\Adobe Substance 3D Designer (Beta).exe"
+$Substance3dDesigner_Beta_TargetPathAlt2 = $Substance3dDesigner_Beta_StartInAlt2+"\Adobe Substance 3D Designer (Beta).exe"
+$Substance3dDesigner_Beta_TargetPath = if (Test-Path -Path $Substance3dDesigner_Beta_TargetPathExeAlt -PathType leaf) {$Substance3dDesigner_Beta_TargetPathExeAlt} elseif (Test-Path -Path $Substance3dDesigner_Beta_TargetPathAltExeAlt -PathType leaf) {$Substance3dDesigner_Beta_TargetPathAltExeAlt} elseif (Test-Path -Path $Substance3dDesigner_Beta_TargetPathAlt2ExeAlt -PathType leaf) {$Substance3dDesigner_Beta_TargetPathAlt2ExeAlt} elseif (Test-Path -Path $Substance3dDesigner_Beta_TargetPath -PathType leaf) {$Substance3dDesigner_Beta_TargetPath} elseif (Test-Path -Path $Substance3dDesigner_Beta_TargetPathAlt -PathType leaf) {$Substance3dDesigner_Beta_TargetPathAlt} else {$Substance3dDesigner_Beta_TargetPathAlt2}
 # GIMP
 $GIMP_TargetPath = "C:\Program Files\"
 $GIMP_FindFolder = Get-ChildItem -Directory -Path $GIMP_TargetPath | Where-Object {$_.Name -match '^GIMP'} | Sort-Object -Descending
@@ -838,6 +862,8 @@ $sys3rdPartyAppList = @(
   @{Name=$PremierePro_Beta_Name; TargetPath=$PremierePro_Beta_TargetPath; StartIn=$PremierePro_Beta_StartIn},
   @{Name=$PremiereRush_Name; TargetPath=$PremiereRush_TargetPath; StartIn=$PremiereRush_StartIn},
   @{Name=$PremiereRush_Beta_Name; TargetPath=$PremiereRush_Beta_TargetPath; StartIn=$PremiereRush_Beta_StartIn},
+  @{Name=$Substance3dDesigner_Name; TargetPath=$Substance3dDesigner_TargetPath; StartIn=$Substance3dDesigner_StartIn},
+  @{Name=$Substance3dDesigner_Beta_Name; TargetPath=$Substance3dDesigner_Beta_TargetPath; StartIn=$Substance3dDesigner_Beta_StartIn},
   @{Name="Adobe UXP Developer Tool"; TargetPath="C:\Program Files\Adobe\Adobe UXP Developer Tool\Adobe UXP Developer Tool.exe"; StartIn="C:\Program Files\Adobe\Adobe UXP Developer Tool"},
   @{Name="Adobe Acrobat (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Acrobat DC\Acrobat\Acrobat.exe"},
   @{Name="Adobe Acrobat Distiller (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Acrobat DC\Acrobat\acrodist.exe"},
