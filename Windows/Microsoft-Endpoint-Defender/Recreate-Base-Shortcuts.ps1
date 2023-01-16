@@ -547,6 +547,30 @@ $InCopy_Beta_TargetPath = $InCopy_Beta_StartIn+"\InCopy (Beta).exe"
 $InCopy_Beta_TargetPathAlt = $InCopy_Beta_StartInAlt+"\InCopy (Beta).exe"
 $InCopy_Beta_TargetPathAlt2 = $InCopy_Beta_StartInAlt2+"\InCopy (Beta).exe"
 $InCopy_Beta_TargetPath = if (Test-Path -Path $InCopy_Beta_TargetPathExeAlt -PathType leaf) {$InCopy_Beta_TargetPathExeAlt} elseif (Test-Path -Path $InCopy_Beta_TargetPathAltExeAlt -PathType leaf) {$InCopy_Beta_TargetPathAltExeAlt} elseif (Test-Path -Path $InCopy_Beta_TargetPathAlt2ExeAlt -PathType leaf) {$InCopy_Beta_TargetPathAlt2ExeAlt} elseif (Test-Path -Path $InCopy_Beta_TargetPath -PathType leaf) {$InCopy_Beta_TargetPath} elseif (Test-Path -Path $InCopy_Beta_TargetPathAlt -PathType leaf) {$InCopy_Beta_TargetPathAlt} else {$InCopy_Beta_TargetPathAlt2}
+# Adobe InDesign
+$InDesign_TargetPath = "C:\Program Files\Adobe\"
+$InDesign_Name = if (Test-Path -Path $InDesign_TargetPath) {Get-ChildItem -Directory -Path $InDesign_TargetPath | Where-Object { $_.Name -match '^.*InDesign(?!.*\(Beta\)$)' } | Sort-Object -Descending}
+$InDesign_Name = if ($InDesign_Name.length -ge 1) {$InDesign_Name[0].name} else {"Adobe InDesign"}
+$InDesign_StartIn = $InDesign_TargetPath+$InDesign_Name
+$InDesign_StartInAlt = $InDesign_StartIn+"\Support Files"
+$InDesign_StartInAlt2 = $InDesign_StartInAlt+"\Contents\Windows"
+$InDesign_TargetPath = $InDesign_StartIn+"\InDesign.exe"
+$InDesign_TargetPathAlt = $InDesign_StartInAlt+"\InDesign.exe"
+$InDesign_TargetPathAlt2 = $InDesign_StartInAlt2+"\InDesign.exe"
+$InDesign_TargetPath = if (Test-Path -Path $InDesign_TargetPath -PathType leaf) {$InDesign_TargetPath} elseif (Test-Path -Path $InDesign_TargetPathAlt -PathType leaf) {$InDesign_TargetPathAlt} else {$InDesign_TargetPathAlt2}
+$InDesign_Beta_TargetPath = "C:\Program Files\Adobe\"
+$InDesign_Beta_Name = if (Test-Path -Path $InDesign_Beta_TargetPath) {Get-ChildItem -Directory -Path $InDesign_Beta_TargetPath | Where-Object { $_.Name -match '^.*InDesign.*\(Beta\)' } | Sort-Object -Descending}
+$InDesign_Beta_Name = if ($InDesign_Beta_Name.length -ge 1) {$InDesign_Beta_Name[0].name} else {"Adobe InDesign (Beta)"}
+$InDesign_Beta_StartIn = $InDesign_Beta_TargetPath+$InDesign_Beta_Name
+$InDesign_Beta_StartInAlt = $InDesign_Beta_StartIn+"\Support Files"
+$InDesign_Beta_StartInAlt2 = $InDesign_Beta_StartInAlt+"\Contents\Windows"
+$InDesign_Beta_TargetPathExeAlt = $InDesign_Beta_StartIn+"\InDesign.exe"
+$InDesign_Beta_TargetPathAltExeAlt = $InDesign_Beta_StartInAlt+"\InDesign.exe"
+$InDesign_Beta_TargetPathAlt2ExeAlt = $InDesign_Beta_StartInAlt2+"\InDesign.exe"
+$InDesign_Beta_TargetPath = $InDesign_Beta_StartIn+"\InDesign (Beta).exe"
+$InDesign_Beta_TargetPathAlt = $InDesign_Beta_StartInAlt+"\InDesign (Beta).exe"
+$InDesign_Beta_TargetPathAlt2 = $InDesign_Beta_StartInAlt2+"\InDesign (Beta).exe"
+$InDesign_Beta_TargetPath = if (Test-Path -Path $InDesign_Beta_TargetPathExeAlt -PathType leaf) {$InDesign_Beta_TargetPathExeAlt} elseif (Test-Path -Path $InDesign_Beta_TargetPathAltExeAlt -PathType leaf) {$InDesign_Beta_TargetPathAltExeAlt} elseif (Test-Path -Path $InDesign_Beta_TargetPathAlt2ExeAlt -PathType leaf) {$InDesign_Beta_TargetPathAlt2ExeAlt} elseif (Test-Path -Path $InDesign_Beta_TargetPath -PathType leaf) {$InDesign_Beta_TargetPath} elseif (Test-Path -Path $InDesign_Beta_TargetPathAlt -PathType leaf) {$InDesign_Beta_TargetPathAlt} else {$InDesign_Beta_TargetPathAlt2}
 # GIMP
 $GIMP_TargetPath = "C:\Program Files\"
 $GIMP_FindFolder = Get-ChildItem -Directory -Path $GIMP_TargetPath | Where-Object {$_.Name -match '^GIMP'} | Sort-Object -Descending
@@ -656,6 +680,8 @@ $sys3rdPartyAppList = @(
   @{Name=$Illustrator_Beta_Name; TargetPath=$Illustrator_Beta_TargetPath; StartIn=$Illustrator_Beta_StartIn},
   @{Name=$InCopy_Name; TargetPath=$InCopy_TargetPath; StartIn=$InCopy_StartIn},
   @{Name=$InCopy_Beta_Name; TargetPath=$InCopy_Beta_TargetPath; StartIn=$InCopy_Beta_StartIn},
+  @{Name=$InDesign_Name; TargetPath=$InDesign_TargetPath; StartIn=$InDesign_StartIn},
+  @{Name=$InDesign_Beta_Name; TargetPath=$InDesign_Beta_TargetPath; StartIn=$InDesign_Beta_StartIn},
   @{Name="Adobe UXP Developer Tool"; TargetPath="C:\Program Files\Adobe\Adobe UXP Developer Tool\Adobe UXP Developer Tool.exe"; StartIn="C:\Program Files\Adobe\Adobe UXP Developer Tool"},
   @{Name="Adobe Acrobat (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Acrobat DC\Acrobat\Acrobat.exe"},
   @{Name="Adobe Acrobat Distiller (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Acrobat DC\Acrobat\acrodist.exe"},
