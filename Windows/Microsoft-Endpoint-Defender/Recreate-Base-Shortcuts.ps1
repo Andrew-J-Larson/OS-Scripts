@@ -571,6 +571,30 @@ $InDesign_Beta_TargetPath = $InDesign_Beta_StartIn+"\InDesign (Beta).exe"
 $InDesign_Beta_TargetPathAlt = $InDesign_Beta_StartInAlt+"\InDesign (Beta).exe"
 $InDesign_Beta_TargetPathAlt2 = $InDesign_Beta_StartInAlt2+"\InDesign (Beta).exe"
 $InDesign_Beta_TargetPath = if (Test-Path -Path $InDesign_Beta_TargetPathExeAlt -PathType leaf) {$InDesign_Beta_TargetPathExeAlt} elseif (Test-Path -Path $InDesign_Beta_TargetPathAltExeAlt -PathType leaf) {$InDesign_Beta_TargetPathAltExeAlt} elseif (Test-Path -Path $InDesign_Beta_TargetPathAlt2ExeAlt -PathType leaf) {$InDesign_Beta_TargetPathAlt2ExeAlt} elseif (Test-Path -Path $InDesign_Beta_TargetPath -PathType leaf) {$InDesign_Beta_TargetPath} elseif (Test-Path -Path $InDesign_Beta_TargetPathAlt -PathType leaf) {$InDesign_Beta_TargetPathAlt} else {$InDesign_Beta_TargetPathAlt2}
+# Adobe Lightroom
+$Lightroom_TargetPath = "C:\Program Files\Adobe\"
+$Lightroom_Name = if (Test-Path -Path $Lightroom_TargetPath) {Get-ChildItem -Directory -Path $Lightroom_TargetPath | Where-Object { $_.Name -match '^.*Lightroom(?!.*\(Beta\)$)' } | Sort-Object -Descending}
+$Lightroom_Name = if ($Lightroom_Name.length -ge 1) {$Lightroom_Name[0].name} else {"Adobe Lightroom"}
+$Lightroom_StartIn = $Lightroom_TargetPath+$Lightroom_Name
+$Lightroom_StartInAlt = $Lightroom_StartIn+"\Support Files"
+$Lightroom_StartInAlt2 = $Lightroom_StartInAlt+"\Contents\Windows"
+$Lightroom_TargetPath = $Lightroom_StartIn+"\lightroom.exe"
+$Lightroom_TargetPathAlt = $Lightroom_StartInAlt+"\lightroom.exe"
+$Lightroom_TargetPathAlt2 = $Lightroom_StartInAlt2+"\lightroom.exe"
+$Lightroom_TargetPath = if (Test-Path -Path $Lightroom_TargetPath -PathType leaf) {$Lightroom_TargetPath} elseif (Test-Path -Path $Lightroom_TargetPathAlt -PathType leaf) {$Lightroom_TargetPathAlt} else {$Lightroom_TargetPathAlt2}
+$Lightroom_Beta_TargetPath = "C:\Program Files\Adobe\"
+$Lightroom_Beta_Name = if (Test-Path -Path $Lightroom_Beta_TargetPath) {Get-ChildItem -Directory -Path $Lightroom_Beta_TargetPath | Where-Object { $_.Name -match '^.*Lightroom.*\(Beta\)' } | Sort-Object -Descending}
+$Lightroom_Beta_Name = if ($Lightroom_Beta_Name.length -ge 1) {$Lightroom_Beta_Name[0].name} else {"Adobe Lightroom (Beta)"}
+$Lightroom_Beta_StartIn = $Lightroom_Beta_TargetPath+$Lightroom_Beta_Name
+$Lightroom_Beta_StartInAlt = $Lightroom_Beta_StartIn+"\Support Files"
+$Lightroom_Beta_StartInAlt2 = $Lightroom_Beta_StartInAlt+"\Contents\Windows"
+$Lightroom_Beta_TargetPathExeAlt = $Lightroom_Beta_StartIn+"\lightroom.exe"
+$Lightroom_Beta_TargetPathAltExeAlt = $Lightroom_Beta_StartInAlt+"\lightroom.exe"
+$Lightroom_Beta_TargetPathAlt2ExeAlt = $Lightroom_Beta_StartInAlt2+"\lightroom.exe"
+$Lightroom_Beta_TargetPath = $Lightroom_Beta_StartIn+"\lightroom (Beta).exe"
+$Lightroom_Beta_TargetPathAlt = $Lightroom_Beta_StartInAlt+"\lightroom (Beta).exe"
+$Lightroom_Beta_TargetPathAlt2 = $Lightroom_Beta_StartInAlt2+"\lightroom (Beta).exe"
+$Lightroom_Beta_TargetPath = if (Test-Path -Path $Lightroom_Beta_TargetPathExeAlt -PathType leaf) {$Lightroom_Beta_TargetPathExeAlt} elseif (Test-Path -Path $Lightroom_Beta_TargetPathAltExeAlt -PathType leaf) {$Lightroom_Beta_TargetPathAltExeAlt} elseif (Test-Path -Path $Lightroom_Beta_TargetPathAlt2ExeAlt -PathType leaf) {$Lightroom_Beta_TargetPathAlt2ExeAlt} elseif (Test-Path -Path $Lightroom_Beta_TargetPath -PathType leaf) {$Lightroom_Beta_TargetPath} elseif (Test-Path -Path $Lightroom_Beta_TargetPathAlt -PathType leaf) {$Lightroom_Beta_TargetPathAlt} else {$Lightroom_Beta_TargetPathAlt2}
 # GIMP
 $GIMP_TargetPath = "C:\Program Files\"
 $GIMP_FindFolder = Get-ChildItem -Directory -Path $GIMP_TargetPath | Where-Object {$_.Name -match '^GIMP'} | Sort-Object -Descending
@@ -682,6 +706,8 @@ $sys3rdPartyAppList = @(
   @{Name=$InCopy_Beta_Name; TargetPath=$InCopy_Beta_TargetPath; StartIn=$InCopy_Beta_StartIn},
   @{Name=$InDesign_Name; TargetPath=$InDesign_TargetPath; StartIn=$InDesign_StartIn},
   @{Name=$InDesign_Beta_Name; TargetPath=$InDesign_Beta_TargetPath; StartIn=$InDesign_Beta_StartIn},
+  @{Name=$Lightroom_Name; TargetPath=$Lightroom_TargetPath; StartIn=$Lightroom_StartIn},
+  @{Name=$Lightroom_Beta_Name; TargetPath=$Lightroom_Beta_TargetPath; StartIn=$Lightroom_Beta_StartIn},
   @{Name="Adobe UXP Developer Tool"; TargetPath="C:\Program Files\Adobe\Adobe UXP Developer Tool\Adobe UXP Developer Tool.exe"; StartIn="C:\Program Files\Adobe\Adobe UXP Developer Tool"},
   @{Name="Adobe Acrobat (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Acrobat DC\Acrobat\Acrobat.exe"},
   @{Name="Adobe Acrobat Distiller (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Acrobat DC\Acrobat\acrodist.exe"},
