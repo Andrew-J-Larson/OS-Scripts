@@ -310,7 +310,7 @@ for ($i = 0; $i -lt $oemSysAppList.length; $i++) {
 # Adobe Aero
 $Aero_TargetPath = "C:\Program Files\Adobe\"
 $Aero_Name = if (Test-Path -Path $Aero_TargetPath) {Get-ChildItem -Directory -Path $Aero_TargetPath | Where-Object { $_.Name -match '^.*Aero(?!.*\(Beta\)$)' } | Sort-Object -Descending}
-$Aero_Name = if ($Aero_Name.length -ge 1) {$Aero_Name[0].name} else {"Aero"}
+$Aero_Name = if ($Aero_Name.length -ge 1) {$Aero_Name[0].name} else {"Adobe Aero"}
 $Aero_StartIn = $Aero_TargetPath+$Aero_Name
 $Aero_StartInAlt = $Aero_StartIn+"\Support Files"
 $Aero_TargetPath = $Aero_StartIn+"\Aero.exe"
@@ -318,7 +318,7 @@ $Aero_TargetPathAlt = $Aero_StartInAlt+"\Aero.exe"
 $Aero_TargetPath = if (Test-Path -Path $Aero_TargetPath -PathType leaf) {$Aero_TargetPath} else {$Aero_TargetPathAlt}
 $Aero_Beta_TargetPath = "C:\Program Files\Adobe\"
 $Aero_Beta_Name = if (Test-Path -Path $Aero_Beta_TargetPath) {Get-ChildItem -Directory -Path $Aero_Beta_TargetPath | Where-Object { $_.Name -match '^.*Aero.*\(Beta\)' } | Sort-Object -Descending}
-$Aero_Beta_Name = if ($Aero_Beta_Name.length -ge 1) {$Aero_Beta_Name[0].name} else {"Aero (Beta)"}
+$Aero_Beta_Name = if ($Aero_Beta_Name.length -ge 1) {$Aero_Beta_Name[0].name} else {"Adobe Aero (Beta)"}
 $Aero_Beta_StartIn = $Aero_Beta_TargetPath+$Aero_Beta_Name
 $Aero_Beta_StartInAlt = $Aero_Beta_StartIn+"\Support Files"
 $Aero_Beta_TargetPath = $Aero_Beta_StartIn+"\Aero (Beta).exe"
@@ -327,7 +327,7 @@ $Aero_Beta_TargetPath = if (Test-Path -Path $Aero_Beta_TargetPath -PathType leaf
 # Adobe After Effects
 $AfterEffects_TargetPath = "C:\Program Files\Adobe\"
 $AfterEffects_Name = if (Test-Path -Path $AfterEffects_TargetPath) {Get-ChildItem -Directory -Path $AfterEffects_TargetPath | Where-Object { $_.Name -match '^.*After Effects(?!.*\(Beta\)$)' } | Sort-Object -Descending}
-$AfterEffects_Name = if ($AfterEffects_Name.length -ge 1) {$AfterEffects_Name[0].name} else {"After Effects"}
+$AfterEffects_Name = if ($AfterEffects_Name.length -ge 1) {$AfterEffects_Name[0].name} else {"Adobe After Effects"}
 $AfterEffects_StartIn = $AfterEffects_TargetPath+$AfterEffects_Name
 $AfterEffects_StartInAlt = $AfterEffects_StartIn+"\Support Files"
 $AfterEffects_TargetPath = $AfterEffects_StartIn+"\AfterFX.exe"
@@ -335,7 +335,7 @@ $AfterEffects_TargetPathAlt = $AfterEffects_StartInAlt+"\AfterFX.exe"
 $AfterEffects_TargetPath = if (Test-Path -Path $AfterEffects_TargetPath -PathType leaf) {$AfterEffects_TargetPath} else {$AfterEffects_TargetPathAlt}
 $AfterEffects_Beta_TargetPath = "C:\Program Files\Adobe\"
 $AfterEffects_Beta_Name = if (Test-Path -Path $AfterEffects_Beta_TargetPath) {Get-ChildItem -Directory -Path $AfterEffects_Beta_TargetPath | Where-Object { $_.Name -match '^.*After Effects.*\(Beta\)' } | Sort-Object -Descending}
-$AfterEffects_Beta_Name = if ($AfterEffects_Beta_Name.length -ge 1) {$AfterEffects_Beta_Name[0].name} else {"After Effects (Beta)"}
+$AfterEffects_Beta_Name = if ($AfterEffects_Beta_Name.length -ge 1) {$AfterEffects_Beta_Name[0].name} else {"Adobe After Effects (Beta)"}
 $AfterEffects_Beta_StartIn = $AfterEffects_Beta_TargetPath+$AfterEffects_Beta_Name
 $AfterEffects_Beta_StartInAlt = $AfterEffects_Beta_StartIn+"\Support Files"
 $AfterEffects_Beta_TargetPath = $AfterEffects_Beta_StartIn+"\AfterFX (Beta).exe"
@@ -344,7 +344,7 @@ $AfterEffects_Beta_TargetPath = if (Test-Path -Path $AfterEffects_Beta_TargetPat
 # Adobe Animate
 $Animate_TargetPath = "C:\Program Files\Adobe\"
 $Animate_Name = if (Test-Path -Path $Animate_TargetPath) {Get-ChildItem -Directory -Path $Animate_TargetPath | Where-Object { $_.Name -match '^.*Animate(?!.*\(Beta\)$)' } | Sort-Object -Descending}
-$Animate_Name = if ($Animate_Name.length -ge 1) {$Animate_Name[0].name} else {"Animate"}
+$Animate_Name = if ($Animate_Name.length -ge 1) {$Animate_Name[0].name} else {"Adobe Animate"}
 $Animate_StartIn = $Animate_TargetPath+$Animate_Name
 $Animate_StartInAlt = $Animate_StartIn+"\Support Files"
 $Animate_TargetPath = $Animate_StartIn+"\Animate.exe"
@@ -352,12 +352,29 @@ $Animate_TargetPathAlt = $Animate_StartInAlt+"\Animate.exe"
 $Animate_TargetPath = if (Test-Path -Path $Animate_TargetPath -PathType leaf) {$Animate_TargetPath} else {$Animate_TargetPathAlt}
 $Animate_Beta_TargetPath = "C:\Program Files\Adobe\"
 $Animate_Beta_Name = if (Test-Path -Path $Animate_Beta_TargetPath) {Get-ChildItem -Directory -Path $Animate_Beta_TargetPath | Where-Object { $_.Name -match '^.*Animate.*\(Beta\)' } | Sort-Object -Descending}
-$Animate_Beta_Name = if ($Animate_Beta_Name.length -ge 1) {$Animate_Beta_Name[0].name} else {"Animate (Beta)"}
+$Animate_Beta_Name = if ($Animate_Beta_Name.length -ge 1) {$Animate_Beta_Name[0].name} else {"Adobe Animate (Beta)"}
 $Animate_Beta_StartIn = $Animate_Beta_TargetPath+$Animate_Beta_Name
 $Animate_Beta_StartInAlt = $Animate_Beta_StartIn+"\Support Files"
 $Animate_Beta_TargetPath = $Animate_Beta_StartIn+"\Animate (Beta).exe"
 $Animate_Beta_TargetPathAlt = $Animate_Beta_StartInAlt+"\Animate (Beta).exe"
 $Animate_Beta_TargetPath = if (Test-Path -Path $Animate_Beta_TargetPath -PathType leaf) {$Animate_Beta_TargetPath} elseif (Test-Path -Path $Animate_Beta_TargetPathAlt -PathType leaf) {$Animate_Beta_TargetPathAlt} else {$Animate_Beta_StartIn+"\Animate.exe"}
+# Adobe Audition
+$Audition_TargetPath = "C:\Program Files\Adobe\"
+$Audition_Name = if (Test-Path -Path $Audition_TargetPath) {Get-ChildItem -Directory -Path $Audition_TargetPath | Where-Object { $_.Name -match '^.*Audition(?!.*\(Beta\)$)' } | Sort-Object -Descending}
+$Audition_Name = if ($Audition_Name.length -ge 1) {$Audition_Name[0].name} else {"Adobe Audition"}
+$Audition_StartIn = $Audition_TargetPath+$Audition_Name
+$Audition_StartInAlt = $Audition_StartIn+"\Support Files"
+$Audition_TargetPath = $Audition_StartIn+"\Adobe Audition.exe"
+$Audition_TargetPathAlt = $Audition_StartInAlt+"\Adobe Audition.exe"
+$Audition_TargetPath = if (Test-Path -Path $Audition_TargetPath -PathType leaf) {$Audition_TargetPath} else {$Audition_TargetPathAlt}
+$Audition_Beta_TargetPath = "C:\Program Files\Adobe\"
+$Audition_Beta_Name = if (Test-Path -Path $Audition_Beta_TargetPath) {Get-ChildItem -Directory -Path $Audition_Beta_TargetPath | Where-Object { $_.Name -match '^.*Audition.*\(Beta\)' } | Sort-Object -Descending}
+$Audition_Beta_Name = if ($Audition_Beta_Name.length -ge 1) {$Audition_Beta_Name[0].name} else {"Adobe Audition (Beta)"}
+$Audition_Beta_StartIn = $Audition_Beta_TargetPath+$Audition_Beta_Name
+$Audition_Beta_StartInAlt = $Audition_Beta_StartIn+"\Support Files"
+$Audition_Beta_TargetPath = $Audition_Beta_StartIn+"\Adobe Audition (Beta).exe"
+$Audition_Beta_TargetPathAlt = $Audition_Beta_StartInAlt+"\Adobe Audition (Beta).exe"
+$Audition_Beta_TargetPath = if (Test-Path -Path $Audition_Beta_TargetPath -PathType leaf) {$Audition_Beta_TargetPath} elseif (Test-Path -Path $Audition_Beta_TargetPathAlt -PathType leaf) {$Audition_Beta_TargetPathAlt} else {$Audition_Beta_StartIn+"\Adobe Audition.exe"}
 # GIMP
 $GIMP_TargetPath = "C:\Program Files\"
 $GIMP_FindFolder = Get-ChildItem -Directory -Path $GIMP_TargetPath | Where-Object {$_.Name -match '^GIMP'} | Sort-Object -Descending
@@ -453,6 +470,8 @@ $sys3rdPartyAppList = @(
   @{Name=$AfterEffects_Beta_Name; TargetPath=$AfterEffects_Beta_TargetPath; StartIn=$AfterEffects_Beta_StartIn},
   @{Name=$Animate_Name; TargetPath=$Animate_TargetPath; StartIn=$Animate_StartIn},
   @{Name=$Animate_Beta_Name; TargetPath=$Animate_Beta_TargetPath; StartIn=$Animate_Beta_StartIn},
+  @{Name=$Audition_Name; TargetPath=$Audition_TargetPath; StartIn=$Audition_StartIn},
+  @{Name=$Audition_Beta_Name; TargetPath=$Audition_Beta_TargetPath; StartIn=$Audition_Beta_StartIn},
   @{Name="Adobe UXP Developer Tool"; TargetPath="C:\Program Files\Adobe\Adobe UXP Developer Tool\Adobe UXP Developer Tool.exe"; StartIn="C:\Program Files\Adobe\Adobe UXP Developer Tool"},
   @{Name="Adobe Acrobat (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Acrobat DC\Acrobat\Acrobat.exe"},
   @{Name="Adobe Acrobat Distiller (32-bit)"; TargetPath="C:\Program Files (x86)\Adobe\Acrobat DC\Acrobat\acrodist.exe"},
