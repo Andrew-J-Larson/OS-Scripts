@@ -1193,6 +1193,22 @@ $sys3rdPartyAppList = @(
   # paint.net
   @{Name = "paint.net"; TargetPath = "${env:ProgramFiles}\paint.net\paintdotnet.exe"; StartIn = "${env:ProgramFiles}\paint.net"; Description = "Create, edit, scan, and print images and photographs." },
   @{Name = "paint.net (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\paint.net\paintdotnet.exe"; StartIn = "${env:ProgramFiles(x86)}\paint.net"; Description = "Create, edit, scan, and print images and photographs." },
+  # Pulse Secure
+  @{Name="Pulse Secure"; TargetPath="C:\Program Files\Common Files\Pulse Secure\JamUI\Pulse.exe"; Arguments="-show"; SystemLnk="Pulse Secure\"; Description="Pulse Secure Desktop Client" },  # it's the only install on 32-bit
+  @{Name="Pulse Secure"; TargetPath="C:\Program Files (x86)\Common Files\Pulse Secure\JamUI\Pulse.exe"; Arguments="-show"; SystemLnk="Pulse Secure\"; Description="Pulse Secure Desktop Client" }, # it's the only install on 64-bit
+  # PuTTY
+  @{Name = "Pageant"; TargetPath = "${env:ProgramFiles}\PuTTY\pageant.exe"; SystemLnk = "PuTTY (64-bit)\"; StartIn = "${env:ProgramFiles}\PuTTY\" },
+  @{Name = "PSFTP"; TargetPath = "${env:ProgramFiles}\PuTTY\psftp.exe"; SystemLnk = "PuTTY (64-bit)\"; StartIn = "${env:ProgramFiles}\PuTTY\" },
+  @{Name = "PuTTY Manual"; TargetPath = "${env:ProgramFiles}\PuTTY\putty.chm"; SystemLnk = "PuTTY (64-bit)\" },
+  @{Name = "PuTTY Web Site"; TargetPath = "${env:ProgramFiles}\PuTTY\website.url"; SystemLnk = "PuTTY (64-bit)\" },
+  @{Name = "PuTTY"; TargetPath = "${env:ProgramFiles}\PuTTY\putty.exe"; SystemLnk = "PuTTY (64-bit)\"; StartIn = "${env:ProgramFiles}\PuTTY\" },
+  @{Name = "PuTTYgen"; TargetPath = "${env:ProgramFiles}\PuTTY\puttygen.exe"; SystemLnk = "PuTTY (64-bit)\"; StartIn = "${env:ProgramFiles}\PuTTY\" },
+  @{Name = "Pageant"; TargetPath = "${env:ProgramFiles(x86)}\PuTTY\pageant.exe"; SystemLnk = "PuTTY\"; StartIn = "${env:ProgramFiles(x86)}\PuTTY\" },
+  @{Name = "PSFTP"; TargetPath = "${env:ProgramFiles(x86)}\PuTTY\psftp.exe"; SystemLnk = "PuTTY\"; StartIn = "${env:ProgramFiles(x86)}\PuTTY\" },
+  @{Name = "PuTTY Manual"; TargetPath = "${env:ProgramFiles(x86)}\PuTTY\putty.chm"; SystemLnk = "PuTTY\" },
+  @{Name = "PuTTY Web Site"; TargetPath = "${env:ProgramFiles(x86)}\PuTTY\website.url"; SystemLnk = "PuTTY\" },
+  @{Name = "PuTTY"; TargetPath = "${env:ProgramFiles(x86)}\PuTTY\putty.exe"; SystemLnk = "PuTTY\"; StartIn = "${env:ProgramFiles(x86)}\PuTTY\" },
+  @{Name = "PuTTYgen"; TargetPath = "${env:ProgramFiles(x86)}\PuTTY\puttygen.exe"; SystemLnk = "PuTTY\"; StartIn = "${env:ProgramFiles(x86)}\PuTTY\" },
   # RealVNC
   @{Name = "VNC Server"; TargetPath = "${env:ProgramFiles}\RealVNC\VNC Server\vncguihelper.exe"; Arguments = "vncserver.exe -_fromGui -start -showstatus"; SystemLnk = "RealVNC\"; StartIn = "${env:ProgramFiles}\RealVNC\VNC Server\" },
   @{Name = "VNC Server (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\RealVNC\VNC Server\vncguihelper.exe"; Arguments = "vncserver.exe -_fromGui -start -showstatus"; SystemLnk = "RealVNC\"; StartIn = "${env:ProgramFiles(x86)}\RealVNC\VNC Server\" },
