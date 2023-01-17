@@ -12,7 +12,7 @@
      TargetPath = "[path to exe/url/folder here]";
      Arguments = "[any arguments that an app starts with here]";
      SystemLnk = "[path to lnk or name of app here]";
-     StartIn = "[start in path, if needed, here]";
+     WorkingDirectory = "[start in path, if needed, here]";
      Description = "[comment, that shows up in tooltip, here]";
      IconLocation = "[path to ico|exe|ico w/ index]";
      RunAsAdmin = "[true or false, if needed]"
@@ -186,8 +186,8 @@ function New-Shortcut {
     [Alias("systemlnk", "sl")]
     [string]$sSystemLnk, # Optional (for if name / path is different from normal)
 
-    [Alias("startin", "si")]
-    [string]$sStartIn, # Optional (for special shortcuts)
+    [Alias("workingdirectory", "wd")]
+    [string]$sWorkingDirectory, # Optional (for special shortcuts)
 
     [Alias("description", "d")]
     [string]$sDescription, # Optional (some shortcuts have comments for tooltips)
@@ -234,7 +234,7 @@ function New-Shortcut {
 
       $newLNK.TargetPath = $sTargetPath
       if ($sArguments) { $newLNK.Arguments = $sArguments }
-      if ($sStartIn) { $newLNK.WorkingDirectory = $sStartIn }
+      if ($sWorkingDirectory) { $newLNK.WorkingDirectory = $sWorkingDirectory }
       if ($sDescription) { $newLNK.Description = $sDescription }
       if ($sIconLocation) { $newLNK.IconLocation = $sIconLocation }
 
@@ -361,16 +361,16 @@ $WindowsMediaPlayerOld_Name = "Windows Media Player" + $(if ($isWindows11) { " L
 
 $sysAppList = @(
   # Azure
-  @{Name = "Azure Data Studio"; TargetPath = "${env:ProgramFiles}\Azure Data Studio\azuredatastudio.exe"; SystemLnk = "Azure Data Studio\"; StartIn = "${env:ProgramFiles}\Azure Data Studio" },
-  @{Name = "Azure Data Studio"; TargetPath = "${env:ProgramFiles(x86)}\Azure Data Studio\azuredatastudio.exe"; SystemLnk = "Azure Data Studio\"; StartIn = "${env:ProgramFiles(x86)}\Azure Data Studio" },
+  @{Name = "Azure Data Studio"; TargetPath = "${env:ProgramFiles}\Azure Data Studio\azuredatastudio.exe"; SystemLnk = "Azure Data Studio\"; WorkingDirectory = "${env:ProgramFiles}\Azure Data Studio" },
+  @{Name = "Azure Data Studio"; TargetPath = "${env:ProgramFiles(x86)}\Azure Data Studio\azuredatastudio.exe"; SystemLnk = "Azure Data Studio\"; WorkingDirectory = "${env:ProgramFiles(x86)}\Azure Data Studio" },
   # Edge
-  @{Name = "Microsoft Edge"; TargetPath = "${env:ProgramFiles}\Microsoft\Edge\Application\msedge.exe"; StartIn = "${env:ProgramFiles}\Microsoft\Edge\Application"; Description = "Browse the web" }, # it's the only install on 32-bit
-  @{Name = "Microsoft Edge"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft\Edge\Application\msedge.exe"; StartIn = "${env:ProgramFiles(x86)}\Microsoft\Edge\Application"; Description = "Browse the web" }, # it's the only install on 64-bit
+  @{Name = "Microsoft Edge"; TargetPath = "${env:ProgramFiles}\Microsoft\Edge\Application\msedge.exe"; WorkingDirectory = "${env:ProgramFiles}\Microsoft\Edge\Application"; Description = "Browse the web" }, # it's the only install on 32-bit
+  @{Name = "Microsoft Edge"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft\Edge\Application\msedge.exe"; WorkingDirectory = "${env:ProgramFiles(x86)}\Microsoft\Edge\Application"; Description = "Browse the web" }, # it's the only install on 64-bit
   # Intune 
   @{Name = "Microsoft Intune Management Extension"; TargetPath = "${env:ProgramFiles}\Microsoft Intune Management Extension\AgentExecutor.exe"; SystemLnk = "Microsoft Intune Management Extension\"; Description = "Microsoft Intune Management Extension" }, # it's the only install on 32-bit
-  @{Name = "Remote help"; TargetPath = "${env:ProgramFiles}\Remote help\RemoteHelp.exe"; SystemLnk = "Remote help\"; StartIn = "${env:ProgramFiles}\Remote help\"; Description = "Remote help" },
+  @{Name = "Remote help"; TargetPath = "${env:ProgramFiles}\Remote help\RemoteHelp.exe"; SystemLnk = "Remote help\"; WorkingDirectory = "${env:ProgramFiles}\Remote help\"; Description = "Remote help" },
   @{Name = "Microsoft Intune Management Extension"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Intune Management Extension\AgentExecutor.exe"; SystemLnk = "Microsoft Intune Management Extension\"; Description = "Microsoft Intune Management Extension" }, # it's the only install on 64-bit
-  @{Name = "Remote help"; TargetPath = "${env:ProgramFiles(x86)}\Remote help\RemoteHelp.exe"; SystemLnk = "Remote help\"; StartIn = "${env:ProgramFiles(x86)}\Remote help\"; Description = "Remote help" },
+  @{Name = "Remote help"; TargetPath = "${env:ProgramFiles(x86)}\Remote help\RemoteHelp.exe"; SystemLnk = "Remote help\"; WorkingDirectory = "${env:ProgramFiles(x86)}\Remote help\"; Description = "Remote help" },
   # Office (note: "Database Compare" and "Spreadsheet Compare" have specialized paths that need to be accounted for)
   @{Name = "Access"; TargetPath = "${env:ProgramFiles}\Microsoft Office\root\Office16\MSACCESS.EXE"; Description = "Build a professional app quickly to manage data." },
   @{Name = "Excel"; TargetPath = "${env:ProgramFiles}\Microsoft Office\root\Office16\EXCEL.EXE"; Description = "Easily discover, visualize, and share insights from your data." },
@@ -406,63 +406,63 @@ $sysAppList = @(
   @{Name = "OneDrive"; TargetPath = "${env:ProgramFiles}\Microsoft OneDrive\OneDrive.exe"; Description = "Keep your most important files with you wherever you go, on any device." },
   @{Name = "OneDrive"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft OneDrive\OneDrive.exe"; Description = "Keep your most important files with you wherever you go, on any device." },
   # Power BI Desktop
-  @{Name = "Power BI Desktop"; TargetPath = "${env:ProgramFiles}\Microsoft Power BI Desktop\bin\PBIDesktop.exe"; SystemLnk = "Microsoft Power BI Desktop\"; StartIn = "${env:ProgramFiles}\Microsoft Power BI Desktop\bin\"; Description = "Power BI Desktop" },
-  @{Name = "Power BI Desktop"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Power BI Desktop\bin\PBIDesktop.exe"; SystemLnk = "Microsoft Power BI Desktop\"; StartIn = "${env:ProgramFiles(x86)}\Microsoft Power BI Desktop\bin\"; Description = "Power BI Desktop" },
+  @{Name = "Power BI Desktop"; TargetPath = "${env:ProgramFiles}\Microsoft Power BI Desktop\bin\PBIDesktop.exe"; SystemLnk = "Microsoft Power BI Desktop\"; WorkingDirectory = "${env:ProgramFiles}\Microsoft Power BI Desktop\bin\"; Description = "Power BI Desktop" },
+  @{Name = "Power BI Desktop"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Power BI Desktop\bin\PBIDesktop.exe"; SystemLnk = "Microsoft Power BI Desktop\"; WorkingDirectory = "${env:ProgramFiles(x86)}\Microsoft Power BI Desktop\bin\"; Description = "Power BI Desktop" },
   # PowerShell (7 or newer)
   @{Name = $PowerShell_Name; TargetPath = $PowerShell_TargetPath; Arguments = "-WorkingDirectory ~"; SystemLnk = "PowerShell\"; Description = $PowerShell_Name },
   @{Name = $PowerShell_32bit_Name; TargetPath = $PowerShell_32bit_TargetPath; Arguments = "-WorkingDirectory ~"; SystemLnk = "PowerShell\"; Description = $PowerShell_32bit_Name },
   # PowerToys (note: there will never be a 32-bit version)
-  @{Name = $PowerToys_Name; TargetPath = $PowerToys_TargetPath; SystemLnk = $PowerToys_Name + '\'; StartIn = "${env:ProgramFiles}\PowerToys\"; Description = "PowerToys - Windows system utilities to maximize productivity" },
+  @{Name = $PowerToys_Name; TargetPath = $PowerToys_TargetPath; SystemLnk = $PowerToys_Name + '\'; WorkingDirectory = "${env:ProgramFiles}\PowerToys\"; Description = "PowerToys - Windows system utilities to maximize productivity" },
   # Visual Studio
-  @{Name = "Visual Studio 2022"; TargetPath = "${env:ProgramFiles}\Microsoft Visual Studio\2022\Community\Common7\IDE\devenv.exe"; StartIn = "${env:ProgramFiles}\Microsoft Visual Studio\2022\Community\Common7\IDE\"; Description = "Microsoft Visual Studio 2022" },
-  @{Name = "Visual Studio 2022"; TargetPath = "${env:ProgramFiles}\Microsoft Visual Studio\2022\Professional\Common7\IDE\devenv.exe"; StartIn = "${env:ProgramFiles}\Microsoft Visual Studio\2022\Professional\Common7\IDE\"; Description = "Microsoft Visual Studio 2022" },
-  @{Name = "Visual Studio 2022"; TargetPath = "${env:ProgramFiles}\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.exe"; StartIn = "${env:ProgramFiles}\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\"; Description = "Microsoft Visual Studio 2022" },
-  @{Name = "Blend for Visual Studio 2022"; TargetPath = "${env:ProgramFiles}\Microsoft Visual Studio\2022\Community\Common7\IDE\Blend.exe"; StartIn = "${env:ProgramFiles}\Microsoft Visual Studio\2022\Community\Common7\IDE\"; Description = "Microsoft Blend for Visual Studio 2022" },
-  @{Name = "Blend for Visual Studio 2022"; TargetPath = "${env:ProgramFiles}\Microsoft Visual Studio\2022\Professional\Common7\IDE\Blend.exe"; StartIn = "${env:ProgramFiles}\Microsoft Visual Studio\2022\Professional\Common7\IDE\"; Description = "Microsoft Blend for Visual Studio 2022" },
-  @{Name = "Blend for Visual Studio 2022"; TargetPath = "${env:ProgramFiles}\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\Blend.exe"; StartIn = "${env:ProgramFiles}\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\"; Description = "Microsoft Blend for Visual Studio 2022" },
-  @{Name = "Visual Studio 2019"; TargetPath = "${env:ProgramFiles}\Microsoft Visual Studio\2019\Community\Common7\IDE\devenv.exe"; StartIn = "${env:ProgramFiles}\Microsoft Visual Studio\2019\Community\Common7\IDE\"; Description = "Microsoft Visual Studio 2019" },
-  @{Name = "Visual Studio 2019"; TargetPath = "${env:ProgramFiles}\Microsoft Visual Studio\2019\Professional\Common7\IDE\devenv.exe"; StartIn = "${env:ProgramFiles}\Microsoft Visual Studio\2019\Professional\Common7\IDE\"; Description = "Microsoft Visual Studio 2019" },
-  @{Name = "Visual Studio 2019"; TargetPath = "${env:ProgramFiles}\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\devenv.exe"; StartIn = "${env:ProgramFiles}\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\"; Description = "Microsoft Visual Studio 2019" },
-  @{Name = "Blend for Visual Studio 2019"; TargetPath = "${env:ProgramFiles}\Microsoft Visual Studio\2019\Community\Common7\IDE\Blend.exe"; StartIn = "${env:ProgramFiles}\Microsoft Visual Studio\2019\Community\Common7\IDE\"; Description = "Microsoft Blend for Visual Studio 2019" },
-  @{Name = "Blend for Visual Studio 2019"; TargetPath = "${env:ProgramFiles}\Microsoft Visual Studio\2019\Professional\Common7\IDE\Blend.exe"; StartIn = "${env:ProgramFiles}\Microsoft Visual Studio\2019\Professional\Common7\IDE\"; Description = "Microsoft Blend for Visual Studio 2019" },
-  @{Name = "Blend for Visual Studio 2019"; TargetPath = "${env:ProgramFiles}\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\Blend.exe"; StartIn = "${env:ProgramFiles}\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\"; Description = "Microsoft Blend for Visual Studio 2019" },
-  @{Name = "Visual Studio 2017"; TargetPath = "${env:ProgramFiles}\Microsoft Visual Studio\2017\Community\Common7\IDE\devenv.exe"; StartIn = "${env:ProgramFiles}\Microsoft Visual Studio\2017\Community\Common7\IDE\"; Description = "Microsoft Visual Studio 2017" },
-  @{Name = "Visual Studio 2017"; TargetPath = "${env:ProgramFiles}\Microsoft Visual Studio\2017\Professional\Common7\IDE\devenv.exe"; StartIn = "${env:ProgramFiles}\Microsoft Visual Studio\2017\Professional\Common7\IDE\"; Description = "Microsoft Visual Studio 2017" },
-  @{Name = "Visual Studio 2017"; TargetPath = "${env:ProgramFiles}\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\devenv.exe"; StartIn = "${env:ProgramFiles}\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\"; Description = "Microsoft Visual Studio 2017" },
-  @{Name = "Blend for Visual Studio 2017"; TargetPath = "${env:ProgramFiles}\Microsoft Visual Studio\2017\Community\Common7\IDE\Blend.exe"; StartIn = "${env:ProgramFiles}\Microsoft Visual Studio\2017\Community\Common7\IDE\"; Description = "Microsoft Blend for Visual Studio 2017" },
-  @{Name = "Blend for Visual Studio 2017"; TargetPath = "${env:ProgramFiles}\Microsoft Visual Studio\2017\Professional\Common7\IDE\Blend.exe"; StartIn = "${env:ProgramFiles}\Microsoft Visual Studio\2017\Professional\Common7\IDE\"; Description = "Microsoft Blend for Visual Studio 2017" },
-  @{Name = "Blend for Visual Studio 2017"; TargetPath = "${env:ProgramFiles}\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\Blend.exe"; StartIn = "${env:ProgramFiles}\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\"; Description = "Microsoft Blend for Visual Studio 2017" },
-  @{Name = "Visual Studio Code"; TargetPath = "${env:ProgramFiles}\Microsoft VS Code\Code.exe"; SystemLnk = "Visual Studio Code\"; StartIn = "${env:ProgramFiles}\Microsoft VS Code" },
-  @{Name = "Visual Studio Installer"; TargetPath = "${env:ProgramFiles}\Microsoft Visual Studio\Installer\setup.exe"; StartIn = "${env:ProgramFiles}\Microsoft Visual Studio\Installer" }, # it's the only install on 32-bit
-  @{Name = "Visual Studio 2022"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\Community\Common7\IDE\devenv.exe"; StartIn = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\Community\Common7\IDE\"; Description = "Microsoft Visual Studio 2022" },
-  @{Name = "Visual Studio 2022"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\Professional\Common7\IDE\devenv.exe"; StartIn = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\Professional\Common7\IDE\"; Description = "Microsoft Visual Studio 2022" },
-  @{Name = "Visual Studio 2022"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.exe"; StartIn = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\"; Description = "Microsoft Visual Studio 2022" },
-  @{Name = "Blend for Visual Studio 2022"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\Community\Common7\IDE\Blend.exe"; StartIn = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\Community\Common7\IDE\"; Description = "Microsoft Blend for Visual Studio 2022" },
-  @{Name = "Blend for Visual Studio 2022"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\Professional\Common7\IDE\Blend.exe"; StartIn = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\Professional\Common7\IDE\"; Description = "Microsoft Blend for Visual Studio 2022" },
-  @{Name = "Blend for Visual Studio 2022"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\Blend.exe"; StartIn = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\"; Description = "Microsoft Blend for Visual Studio 2022" },
-  @{Name = "Visual Studio 2019"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Community\Common7\IDE\devenv.exe"; StartIn = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Community\Common7\IDE\"; Description = "Microsoft Visual Studio 2019" },
-  @{Name = "Visual Studio 2019"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Professional\Common7\IDE\devenv.exe"; StartIn = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Professional\Common7\IDE\"; Description = "Microsoft Visual Studio 2019" },
-  @{Name = "Visual Studio 2019"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\devenv.exe"; StartIn = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\"; Description = "Microsoft Visual Studio 2019" },
-  @{Name = "Blend for Visual Studio 2019"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Community\Common7\IDE\Blend.exe"; StartIn = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Community\Common7\IDE\"; Description = "Microsoft Blend for Visual Studio 2019" },
-  @{Name = "Blend for Visual Studio 2019"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Professional\Common7\IDE\Blend.exe"; StartIn = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Professional\Common7\IDE\"; Description = "Microsoft Blend for Visual Studio 2019" },
-  @{Name = "Blend for Visual Studio 2019"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\Blend.exe"; StartIn = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\"; Description = "Microsoft Blend for Visual Studio 2019" },
-  @{Name = "Visual Studio 2017"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\Community\Common7\IDE\devenv.exe"; StartIn = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\Community\Common7\IDE\"; Description = "Microsoft Visual Studio 2017" },
-  @{Name = "Visual Studio 2017"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\Professional\Common7\IDE\devenv.exe"; StartIn = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\Professional\Common7\IDE\"; Description = "Microsoft Visual Studio 2017" },
-  @{Name = "Visual Studio 2017"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\devenv.exe"; StartIn = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\"; Description = "Microsoft Visual Studio 2017" },
-  @{Name = "Blend for Visual Studio 2017"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\Community\Common7\IDE\Blend.exe"; StartIn = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\Community\Common7\IDE\"; Description = "Microsoft Blend for Visual Studio 2017" },
-  @{Name = "Blend for Visual Studio 2017"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\Professional\Common7\IDE\Blend.exe"; StartIn = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\Professional\Common7\IDE\"; Description = "Microsoft Blend for Visual Studio 2017" },
-  @{Name = "Blend for Visual Studio 2017"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\Blend.exe"; StartIn = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\"; Description = "Microsoft Blend for Visual Studio 2017" },
-  @{Name = "Visual Studio Code"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft VS Code\Code.exe"; SystemLnk = "Visual Studio Code\"; StartIn = "${env:ProgramFiles(x86)}\Microsoft VS Code" },
-  @{Name = "Visual Studio Installer"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\setup.exe"; StartIn = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer" }, # it's the only install on 64-bit
+  @{Name = "Visual Studio 2022"; TargetPath = "${env:ProgramFiles}\Microsoft Visual Studio\2022\Community\Common7\IDE\devenv.exe"; WorkingDirectory = "${env:ProgramFiles}\Microsoft Visual Studio\2022\Community\Common7\IDE\"; Description = "Microsoft Visual Studio 2022" },
+  @{Name = "Visual Studio 2022"; TargetPath = "${env:ProgramFiles}\Microsoft Visual Studio\2022\Professional\Common7\IDE\devenv.exe"; WorkingDirectory = "${env:ProgramFiles}\Microsoft Visual Studio\2022\Professional\Common7\IDE\"; Description = "Microsoft Visual Studio 2022" },
+  @{Name = "Visual Studio 2022"; TargetPath = "${env:ProgramFiles}\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.exe"; WorkingDirectory = "${env:ProgramFiles}\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\"; Description = "Microsoft Visual Studio 2022" },
+  @{Name = "Blend for Visual Studio 2022"; TargetPath = "${env:ProgramFiles}\Microsoft Visual Studio\2022\Community\Common7\IDE\Blend.exe"; WorkingDirectory = "${env:ProgramFiles}\Microsoft Visual Studio\2022\Community\Common7\IDE\"; Description = "Microsoft Blend for Visual Studio 2022" },
+  @{Name = "Blend for Visual Studio 2022"; TargetPath = "${env:ProgramFiles}\Microsoft Visual Studio\2022\Professional\Common7\IDE\Blend.exe"; WorkingDirectory = "${env:ProgramFiles}\Microsoft Visual Studio\2022\Professional\Common7\IDE\"; Description = "Microsoft Blend for Visual Studio 2022" },
+  @{Name = "Blend for Visual Studio 2022"; TargetPath = "${env:ProgramFiles}\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\Blend.exe"; WorkingDirectory = "${env:ProgramFiles}\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\"; Description = "Microsoft Blend for Visual Studio 2022" },
+  @{Name = "Visual Studio 2019"; TargetPath = "${env:ProgramFiles}\Microsoft Visual Studio\2019\Community\Common7\IDE\devenv.exe"; WorkingDirectory = "${env:ProgramFiles}\Microsoft Visual Studio\2019\Community\Common7\IDE\"; Description = "Microsoft Visual Studio 2019" },
+  @{Name = "Visual Studio 2019"; TargetPath = "${env:ProgramFiles}\Microsoft Visual Studio\2019\Professional\Common7\IDE\devenv.exe"; WorkingDirectory = "${env:ProgramFiles}\Microsoft Visual Studio\2019\Professional\Common7\IDE\"; Description = "Microsoft Visual Studio 2019" },
+  @{Name = "Visual Studio 2019"; TargetPath = "${env:ProgramFiles}\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\devenv.exe"; WorkingDirectory = "${env:ProgramFiles}\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\"; Description = "Microsoft Visual Studio 2019" },
+  @{Name = "Blend for Visual Studio 2019"; TargetPath = "${env:ProgramFiles}\Microsoft Visual Studio\2019\Community\Common7\IDE\Blend.exe"; WorkingDirectory = "${env:ProgramFiles}\Microsoft Visual Studio\2019\Community\Common7\IDE\"; Description = "Microsoft Blend for Visual Studio 2019" },
+  @{Name = "Blend for Visual Studio 2019"; TargetPath = "${env:ProgramFiles}\Microsoft Visual Studio\2019\Professional\Common7\IDE\Blend.exe"; WorkingDirectory = "${env:ProgramFiles}\Microsoft Visual Studio\2019\Professional\Common7\IDE\"; Description = "Microsoft Blend for Visual Studio 2019" },
+  @{Name = "Blend for Visual Studio 2019"; TargetPath = "${env:ProgramFiles}\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\Blend.exe"; WorkingDirectory = "${env:ProgramFiles}\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\"; Description = "Microsoft Blend for Visual Studio 2019" },
+  @{Name = "Visual Studio 2017"; TargetPath = "${env:ProgramFiles}\Microsoft Visual Studio\2017\Community\Common7\IDE\devenv.exe"; WorkingDirectory = "${env:ProgramFiles}\Microsoft Visual Studio\2017\Community\Common7\IDE\"; Description = "Microsoft Visual Studio 2017" },
+  @{Name = "Visual Studio 2017"; TargetPath = "${env:ProgramFiles}\Microsoft Visual Studio\2017\Professional\Common7\IDE\devenv.exe"; WorkingDirectory = "${env:ProgramFiles}\Microsoft Visual Studio\2017\Professional\Common7\IDE\"; Description = "Microsoft Visual Studio 2017" },
+  @{Name = "Visual Studio 2017"; TargetPath = "${env:ProgramFiles}\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\devenv.exe"; WorkingDirectory = "${env:ProgramFiles}\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\"; Description = "Microsoft Visual Studio 2017" },
+  @{Name = "Blend for Visual Studio 2017"; TargetPath = "${env:ProgramFiles}\Microsoft Visual Studio\2017\Community\Common7\IDE\Blend.exe"; WorkingDirectory = "${env:ProgramFiles}\Microsoft Visual Studio\2017\Community\Common7\IDE\"; Description = "Microsoft Blend for Visual Studio 2017" },
+  @{Name = "Blend for Visual Studio 2017"; TargetPath = "${env:ProgramFiles}\Microsoft Visual Studio\2017\Professional\Common7\IDE\Blend.exe"; WorkingDirectory = "${env:ProgramFiles}\Microsoft Visual Studio\2017\Professional\Common7\IDE\"; Description = "Microsoft Blend for Visual Studio 2017" },
+  @{Name = "Blend for Visual Studio 2017"; TargetPath = "${env:ProgramFiles}\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\Blend.exe"; WorkingDirectory = "${env:ProgramFiles}\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\"; Description = "Microsoft Blend for Visual Studio 2017" },
+  @{Name = "Visual Studio Code"; TargetPath = "${env:ProgramFiles}\Microsoft VS Code\Code.exe"; SystemLnk = "Visual Studio Code\"; WorkingDirectory = "${env:ProgramFiles}\Microsoft VS Code" },
+  @{Name = "Visual Studio Installer"; TargetPath = "${env:ProgramFiles}\Microsoft Visual Studio\Installer\setup.exe"; WorkingDirectory = "${env:ProgramFiles}\Microsoft Visual Studio\Installer" }, # it's the only install on 32-bit
+  @{Name = "Visual Studio 2022"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\Community\Common7\IDE\devenv.exe"; WorkingDirectory = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\Community\Common7\IDE\"; Description = "Microsoft Visual Studio 2022" },
+  @{Name = "Visual Studio 2022"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\Professional\Common7\IDE\devenv.exe"; WorkingDirectory = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\Professional\Common7\IDE\"; Description = "Microsoft Visual Studio 2022" },
+  @{Name = "Visual Studio 2022"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.exe"; WorkingDirectory = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\"; Description = "Microsoft Visual Studio 2022" },
+  @{Name = "Blend for Visual Studio 2022"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\Community\Common7\IDE\Blend.exe"; WorkingDirectory = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\Community\Common7\IDE\"; Description = "Microsoft Blend for Visual Studio 2022" },
+  @{Name = "Blend for Visual Studio 2022"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\Professional\Common7\IDE\Blend.exe"; WorkingDirectory = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\Professional\Common7\IDE\"; Description = "Microsoft Blend for Visual Studio 2022" },
+  @{Name = "Blend for Visual Studio 2022"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\Blend.exe"; WorkingDirectory = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\"; Description = "Microsoft Blend for Visual Studio 2022" },
+  @{Name = "Visual Studio 2019"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Community\Common7\IDE\devenv.exe"; WorkingDirectory = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Community\Common7\IDE\"; Description = "Microsoft Visual Studio 2019" },
+  @{Name = "Visual Studio 2019"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Professional\Common7\IDE\devenv.exe"; WorkingDirectory = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Professional\Common7\IDE\"; Description = "Microsoft Visual Studio 2019" },
+  @{Name = "Visual Studio 2019"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\devenv.exe"; WorkingDirectory = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\"; Description = "Microsoft Visual Studio 2019" },
+  @{Name = "Blend for Visual Studio 2019"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Community\Common7\IDE\Blend.exe"; WorkingDirectory = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Community\Common7\IDE\"; Description = "Microsoft Blend for Visual Studio 2019" },
+  @{Name = "Blend for Visual Studio 2019"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Professional\Common7\IDE\Blend.exe"; WorkingDirectory = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Professional\Common7\IDE\"; Description = "Microsoft Blend for Visual Studio 2019" },
+  @{Name = "Blend for Visual Studio 2019"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\Blend.exe"; WorkingDirectory = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\"; Description = "Microsoft Blend for Visual Studio 2019" },
+  @{Name = "Visual Studio 2017"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\Community\Common7\IDE\devenv.exe"; WorkingDirectory = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\Community\Common7\IDE\"; Description = "Microsoft Visual Studio 2017" },
+  @{Name = "Visual Studio 2017"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\Professional\Common7\IDE\devenv.exe"; WorkingDirectory = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\Professional\Common7\IDE\"; Description = "Microsoft Visual Studio 2017" },
+  @{Name = "Visual Studio 2017"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\devenv.exe"; WorkingDirectory = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\"; Description = "Microsoft Visual Studio 2017" },
+  @{Name = "Blend for Visual Studio 2017"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\Community\Common7\IDE\Blend.exe"; WorkingDirectory = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\Community\Common7\IDE\"; Description = "Microsoft Blend for Visual Studio 2017" },
+  @{Name = "Blend for Visual Studio 2017"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\Professional\Common7\IDE\Blend.exe"; WorkingDirectory = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\Professional\Common7\IDE\"; Description = "Microsoft Blend for Visual Studio 2017" },
+  @{Name = "Blend for Visual Studio 2017"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\Blend.exe"; WorkingDirectory = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\"; Description = "Microsoft Blend for Visual Studio 2017" },
+  @{Name = "Visual Studio Code"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft VS Code\Code.exe"; SystemLnk = "Visual Studio Code\"; WorkingDirectory = "${env:ProgramFiles(x86)}\Microsoft VS Code" },
+  @{Name = "Visual Studio Installer"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\setup.exe"; WorkingDirectory = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer" }, # it's the only install on 64-bit
   # Windows Accessories (note: these CMD variables are not a mistake)
-  @{Name = "Remote Desktop Connection"; TargetPath = "%windir%\system32\mstsc.exe"; SystemLnk = "Accessories\"; StartIn = "%windir%\system32\"; Description = "Use your computer to connect to a computer that is located elsewhere and run programs or access files." },
+  @{Name = "Remote Desktop Connection"; TargetPath = "%windir%\system32\mstsc.exe"; SystemLnk = "Accessories\"; WorkingDirectory = "%windir%\system32\"; Description = "Use your computer to connect to a computer that is located elsewhere and run programs or access files." },
   @{Name = "Steps Recorder"; TargetPath = "%windir%\system32\psr.exe"; SystemLnk = "Accessories\"; Description = "Capture steps with screenshots to save or share." },
   @{Name = "Windows Fax and Scan"; TargetPath = "%windir%\system32\WFS.exe"; SystemLnk = "Accessories\"; Description = "Send and receive faxes or scan pictures and documents." },
-  @{Name = $WindowsMediaPlayerOld_Name; TargetPath = "%ProgramFiles%\Windows Media Player\wmplayer.exe"; Arguments = "/prefetch:1"; SystemLnk = "Accessories\"; StartIn = "%ProgramFiles%\Windows Media Player" }, # it's the only install on 32-bit
-  @{Name = $WindowsMediaPlayerOld_Name; TargetPath = "%ProgramFiles(x86)%\Windows Media Player\wmplayer.exe"; Arguments = "/prefetch:1"; SystemLnk = "Accessories\"; StartIn = "%ProgramFiles(x86)%\Windows Media Player" }, # it's the only install on 64-bit
+  @{Name = $WindowsMediaPlayerOld_Name; TargetPath = "%ProgramFiles%\Windows Media Player\wmplayer.exe"; Arguments = "/prefetch:1"; SystemLnk = "Accessories\"; WorkingDirectory = "%ProgramFiles%\Windows Media Player" }, # it's the only install on 32-bit
+  @{Name = $WindowsMediaPlayerOld_Name; TargetPath = "%ProgramFiles(x86)%\Windows Media Player\wmplayer.exe"; Arguments = "/prefetch:1"; SystemLnk = "Accessories\"; WorkingDirectory = "%ProgramFiles(x86)%\Windows Media Player" }, # it's the only install on 64-bit
   @{Name = "WordPad"; TargetPath = "%ProgramFiles%\Windows NT\Accessories\wordpad.exe"; SystemLnk = "Accessories\"; Description = "Creates and edits text documents with complex formatting." },
   @{Name = "Character Map"; TargetPath = "%windir%\system32\charmap.exe"; SystemLnk = "Accessories\System Tools\"; Description = "Selects special characters and copies them to your document." }
-  #@{Name = ""; TargetPath = ""; Arguments = ""; SystemLnk = ""; StartIn = ""; Description = ""; IconLocation = ""; RunAsAdmin = ($true -Or $false) },
+  #@{Name = ""; TargetPath = ""; Arguments = ""; SystemLnk = ""; WorkingDirectory = ""; Description = ""; IconLocation = ""; RunAsAdmin = ($true -Or $false) },
 )
 
 for ($i = 0; $i -lt $sysAppList.length; $i++) {
@@ -471,12 +471,12 @@ for ($i = 0; $i -lt $sysAppList.length; $i++) {
   $aTargetPath = $app.TargetPath
   $aArguments = if ($app.Arguments) { $app.Arguments } else { "" }
   $aSystemLnk = if ($app.SystemLnk) { $app.SystemLnk } else { "" }
-  $aStartIn = if ($app.StartIn) { $app.StartIn } else { "" }
+  $aWorkingDirectory = if ($app.WorkingDirectory) { $app.WorkingDirectory } else { "" }
   $aDescription = if ($app.Description) { $app.Description } else { "" }
   $aIconLocation = if ($app.IconLocation) { $app.IconLocation } else { "" }
   $aRunAsAdmin = if ($app.RunAsAdmin) { $app.RunAsAdmin } else { $false }
 
-  $ScriptResults = New-Shortcut -n $aName -tp $aTargetPath -a $aArguments -sl $aSystemLnk -si $aStartIn -d $aDescription -il $aIconLocation -r $aRunAsAdmin
+  $ScriptResults = New-Shortcut -n $aName -tp $aTargetPath -a $aArguments -sl $aSystemLnk -wd $aWorkingDirectory -d $aDescription -il $aIconLocation -r $aRunAsAdmin
 }
 
 
@@ -492,7 +492,7 @@ for ($i = 0; $i -lt $sysAppList.length; $i++) {
 
 ## App Name
 #$App_TargetPath = ...
-#$App_StartIn = ...
+#$App_WorkingDirectory = ...
 
 # App names dependant on OS or app version
 
@@ -501,13 +501,13 @@ for ($i = 0; $i -lt $sysAppList.length; $i++) {
 
 $oemSysAppList = @(
   # Dell
-  @{Name = "Dell OS Recovery Tool"; TargetPath = "${env:ProgramFiles}\Dell\OS Recovery Tool\DellOSRecoveryTool.exe"; SystemLnk = "Dell\"; StartIn = "${env:ProgramFiles}\Dell\OS Recovery Tool\" }, # it's the only install on 32-bit
+  @{Name = "Dell OS Recovery Tool"; TargetPath = "${env:ProgramFiles}\Dell\OS Recovery Tool\DellOSRecoveryTool.exe"; SystemLnk = "Dell\"; WorkingDirectory = "${env:ProgramFiles}\Dell\OS Recovery Tool\" }, # it's the only install on 32-bit
   @{Name = "SupportAssist Recovery Assistant"; TargetPath = "${env:ProgramFiles}\Dell\SARemediation\postosri\osrecoveryagent.exe"; SystemLnk = "Dell\SupportAssist\" },
-  @{Name = "Dell OS Recovery Tool"; TargetPath = "${env:ProgramFiles(x86)}\Dell\OS Recovery Tool\DellOSRecoveryTool.exe"; SystemLnk = "Dell\"; StartIn = "${env:ProgramFiles(x86)}\Dell\OS Recovery Tool\" }, # it's the only install on 64-bit
+  @{Name = "Dell OS Recovery Tool"; TargetPath = "${env:ProgramFiles(x86)}\Dell\OS Recovery Tool\DellOSRecoveryTool.exe"; SystemLnk = "Dell\"; WorkingDirectory = "${env:ProgramFiles(x86)}\Dell\OS Recovery Tool\" }, # it's the only install on 64-bit
   @{Name = "SupportAssist Recovery Assistant"; TargetPath = "${env:ProgramFiles(x86)}\Dell\SARemediation\postosri\osrecoveryagent.exe"; SystemLnk = "Dell\SupportAssist\" },
   # NVIDIA Corporation
-  @{Name = "GeForce Experience"; TargetPath = "${env:ProgramFiles}\NVIDIA Corporation\NVIDIA GeForce Experience\NVIDIA GeForce Experience.exe"; SystemLnk = "NVIDIA Corporation\"; StartIn = "${env:ProgramFiles}\NVIDIA Corporation\NVIDIA GeForce Experience" }
-  #@{Name = ""; TargetPath = ""; Arguments = ""; SystemLnk = ""; StartIn = ""; Description = ""; IconLocation = ""; RunAsAdmin = ($true -Or $false) },
+  @{Name = "GeForce Experience"; TargetPath = "${env:ProgramFiles}\NVIDIA Corporation\NVIDIA GeForce Experience\NVIDIA GeForce Experience.exe"; SystemLnk = "NVIDIA Corporation\"; WorkingDirectory = "${env:ProgramFiles}\NVIDIA Corporation\NVIDIA GeForce Experience" }
+  #@{Name = ""; TargetPath = ""; Arguments = ""; SystemLnk = ""; WorkingDirectory = ""; Description = ""; IconLocation = ""; RunAsAdmin = ($true -Or $false) },
 )
 
 for ($i = 0; $i -lt $oemSysAppList.length; $i++) {
@@ -516,12 +516,12 @@ for ($i = 0; $i -lt $oemSysAppList.length; $i++) {
   $aTargetPath = $app.TargetPath
   $aArguments = if ($app.Arguments) { $app.Arguments } else { "" }
   $aSystemLnk = if ($app.SystemLnk) { $app.SystemLnk } else { "" }
-  $aStartIn = if ($app.StartIn) { $app.StartIn } else { "" }
+  $aWorkingDirectory = if ($app.WorkingDirectory) { $app.WorkingDirectory } else { "" }
   $aDescription = if ($app.Description) { $app.Description } else { "" }
   $aIconLocation = if ($app.IconLocation) { $app.IconLocation } else { "" }
   $aRunAsAdmin = if ($app.RunAsAdmin) { $app.RunAsAdmin } else { $false }
 
-  $ScriptResults = New-Shortcut -n $aName -tp $aTargetPath -a $aArguments -sl $aSystemLnk -si $aStartIn -d $aDescription -il $aIconLocation -r $aRunAsAdmin
+  $ScriptResults = New-Shortcut -n $aName -tp $aTargetPath -a $aArguments -sl $aSystemLnk -wd $aWorkingDirectory -d $aDescription -il $aIconLocation -r $aRunAsAdmin
 }
 
 
@@ -546,529 +546,529 @@ $EgnyteDesktopApp_Uninstall_32bit_TargetPath = if ($EgnyteDesktopApp_Uninstall_3
 $Aero_TargetPath = "${env:ProgramFiles}\Adobe\"
 $Aero_Name = if (Test-Path -Path $Aero_TargetPath) { Get-ChildItem -Directory -Path $Aero_TargetPath | Where-Object { $_.Name -match '^.*Aero(?!.*\(Beta\)$)' } | Sort-Object -Descending }
 $Aero_Name = if ($Aero_Name.length -ge 1) { $Aero_Name[0].name } else { "Adobe Aero" }
-$Aero_StartIn = $Aero_TargetPath + $Aero_Name
-$Aero_StartInAlt = $Aero_StartIn + "\Support Files"
-$Aero_StartInAlt2 = $Aero_StartInAlt + "\Contents\Windows"
-$Aero_TargetPath = $Aero_StartIn + "\Aero.exe"
-$Aero_TargetPathAlt = $Aero_StartInAlt + "\Aero.exe"
-$Aero_TargetPathAlt2 = $Aero_StartInAlt2 + "\Aero.exe"
+$Aero_WorkingDirectory = $Aero_TargetPath + $Aero_Name
+$Aero_WorkingDirectoryAlt = $Aero_WorkingDirectory + "\Support Files"
+$Aero_WorkingDirectoryAlt2 = $Aero_WorkingDirectoryAlt + "\Contents\Windows"
+$Aero_TargetPath = $Aero_WorkingDirectory + "\Aero.exe"
+$Aero_TargetPathAlt = $Aero_WorkingDirectoryAlt + "\Aero.exe"
+$Aero_TargetPathAlt2 = $Aero_WorkingDirectoryAlt2 + "\Aero.exe"
 $Aero_TargetPath = if (Test-Path -Path $Aero_TargetPath -PathType leaf) { $Aero_TargetPath } elseif (Test-Path -Path $Aero_TargetPathAlt -PathType leaf) { $Aero_TargetPathAlt } else { $Aero_TargetPathAlt2 }
 $Aero_Beta_TargetPath = "${env:ProgramFiles}\Adobe\"
 $Aero_Beta_Name = if (Test-Path -Path $Aero_Beta_TargetPath) { Get-ChildItem -Directory -Path $Aero_Beta_TargetPath | Where-Object { $_.Name -match '^.*Aero.*\(Beta\)$' } | Sort-Object -Descending }
 $Aero_Beta_Name = if ($Aero_Beta_Name.length -ge 1) { $Aero_Beta_Name[0].name } else { "Adobe Aero (Beta)" }
-$Aero_Beta_StartIn = $Aero_Beta_TargetPath + $Aero_Beta_Name
-$Aero_Beta_StartInAlt = $Aero_Beta_StartIn + "\Support Files"
-$Aero_Beta_StartInAlt2 = $Aero_Beta_StartInAlt + "\Contents\Windows"
-$Aero_Beta_TargetPathExeAlt = $Aero_Beta_StartIn + "\Aero.exe"
-$Aero_Beta_TargetPathAltExeAlt = $Aero_Beta_StartInAlt + "\Aero.exe"
-$Aero_Beta_TargetPathAlt2ExeAlt = $Aero_Beta_StartInAlt2 + "\Aero.exe"
-$Aero_Beta_TargetPath = $Aero_Beta_StartIn + "\Aero (Beta).exe"
-$Aero_Beta_TargetPathAlt = $Aero_Beta_StartInAlt + "\Aero (Beta).exe"
-$Aero_Beta_TargetPathAlt2 = $Aero_Beta_StartInAlt2 + "\Aero (Beta).exe"
+$Aero_Beta_WorkingDirectory = $Aero_Beta_TargetPath + $Aero_Beta_Name
+$Aero_Beta_WorkingDirectoryAlt = $Aero_Beta_WorkingDirectory + "\Support Files"
+$Aero_Beta_WorkingDirectoryAlt2 = $Aero_Beta_WorkingDirectoryAlt + "\Contents\Windows"
+$Aero_Beta_TargetPathExeAlt = $Aero_Beta_WorkingDirectory + "\Aero.exe"
+$Aero_Beta_TargetPathAltExeAlt = $Aero_Beta_WorkingDirectoryAlt + "\Aero.exe"
+$Aero_Beta_TargetPathAlt2ExeAlt = $Aero_Beta_WorkingDirectoryAlt2 + "\Aero.exe"
+$Aero_Beta_TargetPath = $Aero_Beta_WorkingDirectory + "\Aero (Beta).exe"
+$Aero_Beta_TargetPathAlt = $Aero_Beta_WorkingDirectoryAlt + "\Aero (Beta).exe"
+$Aero_Beta_TargetPathAlt2 = $Aero_Beta_WorkingDirectoryAlt2 + "\Aero (Beta).exe"
 $Aero_Beta_TargetPath = if (Test-Path -Path $Aero_Beta_TargetPathExeAlt -PathType leaf) { $Aero_Beta_TargetPathExeAlt } elseif (Test-Path -Path $Aero_Beta_TargetPathAltExeAlt -PathType leaf) { $Aero_Beta_TargetPathAltExeAlt } elseif (Test-Path -Path $Aero_Beta_TargetPathAlt2ExeAlt -PathType leaf) { $Aero_Beta_TargetPathAlt2ExeAlt } elseif (Test-Path -Path $Aero_Beta_TargetPath -PathType leaf) { $Aero_Beta_TargetPath } elseif (Test-Path -Path $Aero_Beta_TargetPathAlt -PathType leaf) { $Aero_Beta_TargetPathAlt } else { $Aero_Beta_TargetPathAlt2 }
 # Adobe After Effects
 $AfterEffects_TargetPath = "${env:ProgramFiles}\Adobe\"
 $AfterEffects_Name = if (Test-Path -Path $AfterEffects_TargetPath) { Get-ChildItem -Directory -Path $AfterEffects_TargetPath | Where-Object { $_.Name -match '^.*After Effects(?!.*\(Beta\)$)' } | Sort-Object -Descending }
 $AfterEffects_Name = if ($AfterEffects_Name.length -ge 1) { $AfterEffects_Name[0].name } else { "Adobe After Effects" }
-$AfterEffects_StartIn = $AfterEffects_TargetPath + $AfterEffects_Name
-$AfterEffects_StartInAlt = $AfterEffects_StartIn + "\Support Files"
-$AfterEffects_StartInAlt2 = $AfterEffects_StartInAlt + "\Contents\Windows"
-$AfterEffects_TargetPath = $AfterEffects_StartIn + "\AfterFX.exe"
-$AfterEffects_TargetPathAlt = $AfterEffects_StartInAlt + "\AfterFX.exe"
-$AfterEffects_TargetPathAlt2 = $AfterEffects_StartInAlt2 + "\AfterFX.exe"
+$AfterEffects_WorkingDirectory = $AfterEffects_TargetPath + $AfterEffects_Name
+$AfterEffects_WorkingDirectoryAlt = $AfterEffects_WorkingDirectory + "\Support Files"
+$AfterEffects_WorkingDirectoryAlt2 = $AfterEffects_WorkingDirectoryAlt + "\Contents\Windows"
+$AfterEffects_TargetPath = $AfterEffects_WorkingDirectory + "\AfterFX.exe"
+$AfterEffects_TargetPathAlt = $AfterEffects_WorkingDirectoryAlt + "\AfterFX.exe"
+$AfterEffects_TargetPathAlt2 = $AfterEffects_WorkingDirectoryAlt2 + "\AfterFX.exe"
 $AfterEffects_TargetPath = if (Test-Path -Path $AfterEffects_TargetPath -PathType leaf) { $AfterEffects_TargetPath } elseif (Test-Path -Path $AfterEffects_TargetPathAlt -PathType leaf) { $AfterEffects_TargetPathAlt } else { $AfterEffects_TargetPathAlt2 }
 $AfterEffects_Beta_TargetPath = "${env:ProgramFiles}\Adobe\"
 $AfterEffects_Beta_Name = if (Test-Path -Path $AfterEffects_Beta_TargetPath) { Get-ChildItem -Directory -Path $AfterEffects_Beta_TargetPath | Where-Object { $_.Name -match '^.*After Effects.*\(Beta\)$' } | Sort-Object -Descending }
 $AfterEffects_Beta_Name = if ($AfterEffects_Beta_Name.length -ge 1) { $AfterEffects_Beta_Name[0].name } else { "Adobe After Effects (Beta)" }
-$AfterEffects_Beta_StartIn = $AfterEffects_Beta_TargetPath + $AfterEffects_Beta_Name
-$AfterEffects_Beta_StartInAlt = $AfterEffects_Beta_StartIn + "\Support Files"
-$AfterEffects_Beta_StartInAlt2 = $AfterEffects_Beta_StartInAlt + "\Contents\Windows"
-$AfterEffects_Beta_TargetPathExeAlt = $AfterEffects_Beta_StartIn + "\AfterFX.exe"
-$AfterEffects_Beta_TargetPathAltExeAlt = $AfterEffects_Beta_StartInAlt + "\AfterFX.exe"
-$AfterEffects_Beta_TargetPathAlt2ExeAlt = $AfterEffects_Beta_StartInAlt2 + "\AfterFX.exe"
-$AfterEffects_Beta_TargetPath = $AfterEffects_Beta_StartIn + "\AfterFX (Beta).exe"
-$AfterEffects_Beta_TargetPathAlt = $AfterEffects_Beta_StartInAlt + "\AfterFX (Beta).exe"
-$AfterEffects_Beta_TargetPathAlt2 = $AfterEffects_Beta_StartInAlt2 + "\AfterFX (Beta).exe"
+$AfterEffects_Beta_WorkingDirectory = $AfterEffects_Beta_TargetPath + $AfterEffects_Beta_Name
+$AfterEffects_Beta_WorkingDirectoryAlt = $AfterEffects_Beta_WorkingDirectory + "\Support Files"
+$AfterEffects_Beta_WorkingDirectoryAlt2 = $AfterEffects_Beta_WorkingDirectoryAlt + "\Contents\Windows"
+$AfterEffects_Beta_TargetPathExeAlt = $AfterEffects_Beta_WorkingDirectory + "\AfterFX.exe"
+$AfterEffects_Beta_TargetPathAltExeAlt = $AfterEffects_Beta_WorkingDirectoryAlt + "\AfterFX.exe"
+$AfterEffects_Beta_TargetPathAlt2ExeAlt = $AfterEffects_Beta_WorkingDirectoryAlt2 + "\AfterFX.exe"
+$AfterEffects_Beta_TargetPath = $AfterEffects_Beta_WorkingDirectory + "\AfterFX (Beta).exe"
+$AfterEffects_Beta_TargetPathAlt = $AfterEffects_Beta_WorkingDirectoryAlt + "\AfterFX (Beta).exe"
+$AfterEffects_Beta_TargetPathAlt2 = $AfterEffects_Beta_WorkingDirectoryAlt2 + "\AfterFX (Beta).exe"
 $AfterEffects_Beta_TargetPath = if (Test-Path -Path $AfterEffects_Beta_TargetPathExeAlt -PathType leaf) { $AfterEffects_Beta_TargetPathExeAlt } elseif (Test-Path -Path $AfterEffects_Beta_TargetPathAltExeAlt -PathType leaf) { $AfterEffects_Beta_TargetPathAltExeAlt } elseif (Test-Path -Path $AfterEffects_Beta_TargetPathAlt2ExeAlt -PathType leaf) { $AfterEffects_Beta_TargetPathAlt2ExeAlt } elseif (Test-Path -Path $AfterEffects_Beta_TargetPath -PathType leaf) { $AfterEffects_Beta_TargetPath } elseif (Test-Path -Path $AfterEffects_Beta_TargetPathAlt -PathType leaf) { $AfterEffects_Beta_TargetPathAlt } else { $AfterEffects_Beta_TargetPathAlt2 }
 # Adobe Animate
 $Animate_TargetPath = "${env:ProgramFiles}\Adobe\"
 $Animate_Name = if (Test-Path -Path $Animate_TargetPath) { Get-ChildItem -Directory -Path $Animate_TargetPath | Where-Object { $_.Name -match '^.*Animate(?!.*\(Beta\)$)' } | Sort-Object -Descending }
 $Animate_Name = if ($Animate_Name.length -ge 1) { $Animate_Name[0].name } else { "Adobe Animate" }
-$Animate_StartIn = $Animate_TargetPath + $Animate_Name
-$Animate_StartInAlt = $Animate_StartIn + "\Support Files"
-$Animate_StartInAlt2 = $Animate_StartInAlt + "\Contents\Windows"
-$Animate_TargetPath = $Animate_StartIn + "\Animate.exe"
-$Animate_TargetPathAlt = $Animate_StartInAlt + "\Animate.exe"
-$Animate_TargetPathAlt2 = $Animate_StartInAlt2 + "\Animate.exe"
+$Animate_WorkingDirectory = $Animate_TargetPath + $Animate_Name
+$Animate_WorkingDirectoryAlt = $Animate_WorkingDirectory + "\Support Files"
+$Animate_WorkingDirectoryAlt2 = $Animate_WorkingDirectoryAlt + "\Contents\Windows"
+$Animate_TargetPath = $Animate_WorkingDirectory + "\Animate.exe"
+$Animate_TargetPathAlt = $Animate_WorkingDirectoryAlt + "\Animate.exe"
+$Animate_TargetPathAlt2 = $Animate_WorkingDirectoryAlt2 + "\Animate.exe"
 $Animate_TargetPath = if (Test-Path -Path $Animate_TargetPath -PathType leaf) { $Animate_TargetPath } elseif (Test-Path -Path $Animate_TargetPathAlt -PathType leaf) { $Animate_TargetPathAlt } else { $Animate_TargetPathAlt2 }
 $Animate_Beta_TargetPath = "${env:ProgramFiles}\Adobe\"
 $Animate_Beta_Name = if (Test-Path -Path $Animate_Beta_TargetPath) { Get-ChildItem -Directory -Path $Animate_Beta_TargetPath | Where-Object { $_.Name -match '^.*Animate.*\(Beta\)$' } | Sort-Object -Descending }
 $Animate_Beta_Name = if ($Animate_Beta_Name.length -ge 1) { $Animate_Beta_Name[0].name } else { "Adobe Animate (Beta)" }
-$Animate_Beta_StartIn = $Animate_Beta_TargetPath + $Animate_Beta_Name
-$Animate_Beta_StartInAlt = $Animate_Beta_StartIn + "\Support Files"
-$Animate_Beta_StartInAlt2 = $Animate_Beta_StartInAlt + "\Contents\Windows"
-$Animate_Beta_TargetPathExeAlt = $Animate_Beta_StartIn + "\Animate.exe"
-$Animate_Beta_TargetPathAltExeAlt = $Animate_Beta_StartInAlt + "\Animate.exe"
-$Animate_Beta_TargetPathAlt2ExeAlt = $Animate_Beta_StartInAlt2 + "\Animate.exe"
-$Animate_Beta_TargetPath = $Animate_Beta_StartIn + "\Animate (Beta).exe"
-$Animate_Beta_TargetPathAlt = $Animate_Beta_StartInAlt + "\Animate (Beta).exe"
-$Animate_Beta_TargetPathAlt2 = $Animate_Beta_StartInAlt2 + "\Animate (Beta).exe"
+$Animate_Beta_WorkingDirectory = $Animate_Beta_TargetPath + $Animate_Beta_Name
+$Animate_Beta_WorkingDirectoryAlt = $Animate_Beta_WorkingDirectory + "\Support Files"
+$Animate_Beta_WorkingDirectoryAlt2 = $Animate_Beta_WorkingDirectoryAlt + "\Contents\Windows"
+$Animate_Beta_TargetPathExeAlt = $Animate_Beta_WorkingDirectory + "\Animate.exe"
+$Animate_Beta_TargetPathAltExeAlt = $Animate_Beta_WorkingDirectoryAlt + "\Animate.exe"
+$Animate_Beta_TargetPathAlt2ExeAlt = $Animate_Beta_WorkingDirectoryAlt2 + "\Animate.exe"
+$Animate_Beta_TargetPath = $Animate_Beta_WorkingDirectory + "\Animate (Beta).exe"
+$Animate_Beta_TargetPathAlt = $Animate_Beta_WorkingDirectoryAlt + "\Animate (Beta).exe"
+$Animate_Beta_TargetPathAlt2 = $Animate_Beta_WorkingDirectoryAlt2 + "\Animate (Beta).exe"
 $Animate_Beta_TargetPath = if (Test-Path -Path $Animate_Beta_TargetPathExeAlt -PathType leaf) { $Animate_Beta_TargetPathExeAlt } elseif (Test-Path -Path $Animate_Beta_TargetPathAltExeAlt -PathType leaf) { $Animate_Beta_TargetPathAltExeAlt } elseif (Test-Path -Path $Animate_Beta_TargetPathAlt2ExeAlt -PathType leaf) { $Animate_Beta_TargetPathAlt2ExeAlt } elseif (Test-Path -Path $Animate_Beta_TargetPath -PathType leaf) { $Animate_Beta_TargetPath } elseif (Test-Path -Path $Animate_Beta_TargetPathAlt -PathType leaf) { $Animate_Beta_TargetPathAlt } else { $Animate_Beta_TargetPathAlt2 }
 # Adobe Audition
 $Audition_TargetPath = "${env:ProgramFiles}\Adobe\"
 $Audition_Name = if (Test-Path -Path $Audition_TargetPath) { Get-ChildItem -Directory -Path $Audition_TargetPath | Where-Object { $_.Name -match '^.*Audition(?!.*\(Beta\)$)' } | Sort-Object -Descending }
 $Audition_Name = if ($Audition_Name.length -ge 1) { $Audition_Name[0].name } else { "Adobe Audition" }
-$Audition_StartIn = $Audition_TargetPath + $Audition_Name
-$Audition_StartInAlt = $Audition_StartIn + "\Support Files"
-$Audition_StartInAlt2 = $Audition_StartInAlt + "\Contents\Windows"
-$Audition_TargetPath = $Audition_StartIn + "\Adobe Audition.exe"
-$Audition_TargetPathAlt = $Audition_StartInAlt + "\Adobe Audition.exe"
-$Audition_TargetPathAlt2 = $Audition_StartInAlt2 + "\Adobe Audition.exe"
+$Audition_WorkingDirectory = $Audition_TargetPath + $Audition_Name
+$Audition_WorkingDirectoryAlt = $Audition_WorkingDirectory + "\Support Files"
+$Audition_WorkingDirectoryAlt2 = $Audition_WorkingDirectoryAlt + "\Contents\Windows"
+$Audition_TargetPath = $Audition_WorkingDirectory + "\Adobe Audition.exe"
+$Audition_TargetPathAlt = $Audition_WorkingDirectoryAlt + "\Adobe Audition.exe"
+$Audition_TargetPathAlt2 = $Audition_WorkingDirectoryAlt2 + "\Adobe Audition.exe"
 $Audition_TargetPath = if (Test-Path -Path $Audition_TargetPath -PathType leaf) { $Audition_TargetPath } elseif (Test-Path -Path $Audition_TargetPathAlt -PathType leaf) { $Audition_TargetPathAlt } else { $Audition_TargetPathAlt2 }
 $Audition_Beta_TargetPath = "${env:ProgramFiles}\Adobe\"
 $Audition_Beta_Name = if (Test-Path -Path $Audition_Beta_TargetPath) { Get-ChildItem -Directory -Path $Audition_Beta_TargetPath | Where-Object { $_.Name -match '^.*Audition.*\(Beta\)$' } | Sort-Object -Descending }
 $Audition_Beta_Name = if ($Audition_Beta_Name.length -ge 1) { $Audition_Beta_Name[0].name } else { "Adobe Audition (Beta)" }
-$Audition_Beta_StartIn = $Audition_Beta_TargetPath + $Audition_Beta_Name
-$Audition_Beta_StartInAlt = $Audition_Beta_StartIn + "\Support Files"
-$Audition_Beta_StartInAlt2 = $Audition_Beta_StartInAlt + "\Contents\Windows"
-$Audition_Beta_TargetPathExeAlt = $Audition_Beta_StartIn + "\Adobe Audition.exe"
-$Audition_Beta_TargetPathAltExeAlt = $Audition_Beta_StartInAlt + "\Adobe Audition.exe"
-$Audition_Beta_TargetPathAlt2ExeAlt = $Audition_Beta_StartInAlt2 + "\Adobe Audition.exe"
-$Audition_Beta_TargetPath = $Audition_Beta_StartIn + "\Adobe Audition (Beta).exe"
-$Audition_Beta_TargetPathAlt = $Audition_Beta_StartInAlt + "\Adobe Audition (Beta).exe"
-$Audition_Beta_TargetPathAlt2 = $Audition_Beta_StartInAlt2 + "\Adobe Audition (Beta).exe"
+$Audition_Beta_WorkingDirectory = $Audition_Beta_TargetPath + $Audition_Beta_Name
+$Audition_Beta_WorkingDirectoryAlt = $Audition_Beta_WorkingDirectory + "\Support Files"
+$Audition_Beta_WorkingDirectoryAlt2 = $Audition_Beta_WorkingDirectoryAlt + "\Contents\Windows"
+$Audition_Beta_TargetPathExeAlt = $Audition_Beta_WorkingDirectory + "\Adobe Audition.exe"
+$Audition_Beta_TargetPathAltExeAlt = $Audition_Beta_WorkingDirectoryAlt + "\Adobe Audition.exe"
+$Audition_Beta_TargetPathAlt2ExeAlt = $Audition_Beta_WorkingDirectoryAlt2 + "\Adobe Audition.exe"
+$Audition_Beta_TargetPath = $Audition_Beta_WorkingDirectory + "\Adobe Audition (Beta).exe"
+$Audition_Beta_TargetPathAlt = $Audition_Beta_WorkingDirectoryAlt + "\Adobe Audition (Beta).exe"
+$Audition_Beta_TargetPathAlt2 = $Audition_Beta_WorkingDirectoryAlt2 + "\Adobe Audition (Beta).exe"
 $Audition_Beta_TargetPath = if (Test-Path -Path $Audition_Beta_TargetPathExeAlt -PathType leaf) { $Audition_Beta_TargetPathExeAlt } elseif (Test-Path -Path $Audition_Beta_TargetPathAltExeAlt -PathType leaf) { $Audition_Beta_TargetPathAltExeAlt } elseif (Test-Path -Path $Audition_Beta_TargetPathAlt2ExeAlt -PathType leaf) { $Audition_Beta_TargetPathAlt2ExeAlt } elseif (Test-Path -Path $Audition_Beta_TargetPath -PathType leaf) { $Audition_Beta_TargetPath } elseif (Test-Path -Path $Audition_Beta_TargetPathAlt -PathType leaf) { $Audition_Beta_TargetPathAlt } else { $Audition_Beta_TargetPathAlt2 }
 # Adobe Bridge
 $Bridge_TargetPath = "${env:ProgramFiles}\Adobe\"
 $Bridge_Name = if (Test-Path -Path $Bridge_TargetPath) { Get-ChildItem -Directory -Path $Bridge_TargetPath | Where-Object { $_.Name -match '^.*Bridge(?!.*\(Beta\)$)' } | Sort-Object -Descending }
 $Bridge_Name = if ($Bridge_Name.length -ge 1) { $Bridge_Name[0].name } else { "Adobe Bridge" }
-$Bridge_StartIn = $Bridge_TargetPath + $Bridge_Name
-$Bridge_StartInAlt = $Bridge_StartIn + "\Support Files"
-$Bridge_StartInAlt2 = $Bridge_StartInAlt + "\Contents\Windows"
-$Bridge_TargetPath = $Bridge_StartIn + "\Adobe Bridge.exe"
-$Bridge_TargetPathAlt = $Bridge_StartInAlt + "\Adobe Bridge.exe"
-$Bridge_TargetPathAlt2 = $Bridge_StartInAlt2 + "\Adobe Bridge.exe"
+$Bridge_WorkingDirectory = $Bridge_TargetPath + $Bridge_Name
+$Bridge_WorkingDirectoryAlt = $Bridge_WorkingDirectory + "\Support Files"
+$Bridge_WorkingDirectoryAlt2 = $Bridge_WorkingDirectoryAlt + "\Contents\Windows"
+$Bridge_TargetPath = $Bridge_WorkingDirectory + "\Adobe Bridge.exe"
+$Bridge_TargetPathAlt = $Bridge_WorkingDirectoryAlt + "\Adobe Bridge.exe"
+$Bridge_TargetPathAlt2 = $Bridge_WorkingDirectoryAlt2 + "\Adobe Bridge.exe"
 $Bridge_TargetPath = if (Test-Path -Path $Bridge_TargetPath -PathType leaf) { $Bridge_TargetPath } elseif (Test-Path -Path $Bridge_TargetPathAlt -PathType leaf) { $Bridge_TargetPathAlt } else { $Bridge_TargetPathAlt2 }
 $Bridge_Beta_TargetPath = "${env:ProgramFiles}\Adobe\"
 $Bridge_Beta_Name = if (Test-Path -Path $Bridge_Beta_TargetPath) { Get-ChildItem -Directory -Path $Bridge_Beta_TargetPath | Where-Object { $_.Name -match '^.*Bridge.*\(Beta\)$' } | Sort-Object -Descending }
 $Bridge_Beta_Name = if ($Bridge_Beta_Name.length -ge 1) { $Bridge_Beta_Name[0].name } else { "Adobe Bridge (Beta)" }
-$Bridge_Beta_StartIn = $Bridge_Beta_TargetPath + $Bridge_Beta_Name
-$Bridge_Beta_StartInAlt = $Bridge_Beta_StartIn + "\Support Files"
-$Bridge_Beta_StartInAlt2 = $Bridge_Beta_StartInAlt + "\Contents\Windows"
-$Bridge_Beta_TargetPathExeAlt = $Bridge_Beta_StartIn + "\Adobe Bridge.exe"
-$Bridge_Beta_TargetPathAltExeAlt = $Bridge_Beta_StartInAlt + "\Adobe Bridge.exe"
-$Bridge_Beta_TargetPathAlt2ExeAlt = $Bridge_Beta_StartInAlt2 + "\Adobe Bridge.exe"
-$Bridge_Beta_TargetPath = $Bridge_Beta_StartIn + "\Adobe Bridge (Beta).exe"
-$Bridge_Beta_TargetPathAlt = $Bridge_Beta_StartInAlt + "\Adobe Bridge (Beta).exe"
-$Bridge_Beta_TargetPathAlt2 = $Bridge_Beta_StartInAlt2 + "\Adobe Bridge (Beta).exe"
+$Bridge_Beta_WorkingDirectory = $Bridge_Beta_TargetPath + $Bridge_Beta_Name
+$Bridge_Beta_WorkingDirectoryAlt = $Bridge_Beta_WorkingDirectory + "\Support Files"
+$Bridge_Beta_WorkingDirectoryAlt2 = $Bridge_Beta_WorkingDirectoryAlt + "\Contents\Windows"
+$Bridge_Beta_TargetPathExeAlt = $Bridge_Beta_WorkingDirectory + "\Adobe Bridge.exe"
+$Bridge_Beta_TargetPathAltExeAlt = $Bridge_Beta_WorkingDirectoryAlt + "\Adobe Bridge.exe"
+$Bridge_Beta_TargetPathAlt2ExeAlt = $Bridge_Beta_WorkingDirectoryAlt2 + "\Adobe Bridge.exe"
+$Bridge_Beta_TargetPath = $Bridge_Beta_WorkingDirectory + "\Adobe Bridge (Beta).exe"
+$Bridge_Beta_TargetPathAlt = $Bridge_Beta_WorkingDirectoryAlt + "\Adobe Bridge (Beta).exe"
+$Bridge_Beta_TargetPathAlt2 = $Bridge_Beta_WorkingDirectoryAlt2 + "\Adobe Bridge (Beta).exe"
 $Bridge_Beta_TargetPath = if (Test-Path -Path $Bridge_Beta_TargetPathExeAlt -PathType leaf) { $Bridge_Beta_TargetPathExeAlt } elseif (Test-Path -Path $Bridge_Beta_TargetPathAltExeAlt -PathType leaf) { $Bridge_Beta_TargetPathAltExeAlt } elseif (Test-Path -Path $Bridge_Beta_TargetPathAlt2ExeAlt -PathType leaf) { $Bridge_Beta_TargetPathAlt2ExeAlt } elseif (Test-Path -Path $Bridge_Beta_TargetPath -PathType leaf) { $Bridge_Beta_TargetPath } elseif (Test-Path -Path $Bridge_Beta_TargetPathAlt -PathType leaf) { $Bridge_Beta_TargetPathAlt } else { $Bridge_Beta_TargetPathAlt2 }
 # Adobe Character Animator
 $CharacterAnimator_TargetPath = "${env:ProgramFiles}\Adobe\"
 $CharacterAnimator_Name = if (Test-Path -Path $CharacterAnimator_TargetPath) { Get-ChildItem -Directory -Path $CharacterAnimator_TargetPath | Where-Object { $_.Name -match '^.*Character Animator(?!.*\(Beta\)$)' } | Sort-Object -Descending }
 $CharacterAnimator_Name = if ($CharacterAnimator_Name.length -ge 1) { $CharacterAnimator_Name[0].name } else { "Adobe Character Animator" }
-$CharacterAnimator_StartIn = $CharacterAnimator_TargetPath + $CharacterAnimator_Name
-$CharacterAnimator_StartInAlt = $CharacterAnimator_StartIn + "\Support Files"
-$CharacterAnimator_StartInAlt2 = $CharacterAnimator_StartInAlt + "\Contents\Windows"
-$CharacterAnimator_TargetPath = $CharacterAnimator_StartIn + "\Adobe Character Animator.exe"
-$CharacterAnimator_TargetPathAlt = $CharacterAnimator_StartInAlt + "\Adobe Character Animator.exe"
-$CharacterAnimator_TargetPathAlt2 = $CharacterAnimator_StartInAlt2 + "\Adobe Character Animator.exe"
+$CharacterAnimator_WorkingDirectory = $CharacterAnimator_TargetPath + $CharacterAnimator_Name
+$CharacterAnimator_WorkingDirectoryAlt = $CharacterAnimator_WorkingDirectory + "\Support Files"
+$CharacterAnimator_WorkingDirectoryAlt2 = $CharacterAnimator_WorkingDirectoryAlt + "\Contents\Windows"
+$CharacterAnimator_TargetPath = $CharacterAnimator_WorkingDirectory + "\Adobe Character Animator.exe"
+$CharacterAnimator_TargetPathAlt = $CharacterAnimator_WorkingDirectoryAlt + "\Adobe Character Animator.exe"
+$CharacterAnimator_TargetPathAlt2 = $CharacterAnimator_WorkingDirectoryAlt2 + "\Adobe Character Animator.exe"
 $CharacterAnimator_TargetPath = if (Test-Path -Path $CharacterAnimator_TargetPath -PathType leaf) { $CharacterAnimator_TargetPath } elseif (Test-Path -Path $CharacterAnimator_TargetPathAlt -PathType leaf) { $CharacterAnimator_TargetPathAlt } else { $CharacterAnimator_TargetPathAlt2 }
 $CharacterAnimator_Beta_TargetPath = "${env:ProgramFiles}\Adobe\"
 $CharacterAnimator_Beta_Name = if (Test-Path -Path $CharacterAnimator_Beta_TargetPath) { Get-ChildItem -Directory -Path $CharacterAnimator_Beta_TargetPath | Where-Object { $_.Name -match '^.*Character Animator.*\(Beta\)$' } | Sort-Object -Descending }
 $CharacterAnimator_Beta_Name = if ($CharacterAnimator_Beta_Name.length -ge 1) { $CharacterAnimator_Beta_Name[0].name } else { "Adobe Character Animator (Beta)" }
-$CharacterAnimator_Beta_StartIn = $CharacterAnimator_Beta_TargetPath + $CharacterAnimator_Beta_Name
-$CharacterAnimator_Beta_StartInAlt = $CharacterAnimator_Beta_StartIn + "\Support Files"
-$CharacterAnimator_Beta_StartInAlt2 = $CharacterAnimator_Beta_StartInAlt + "\Contents\Windows"
-$CharacterAnimator_Beta_TargetPathExeAlt = $CharacterAnimator_Beta_StartIn + "\Adobe Character Animator.exe"
-$CharacterAnimator_Beta_TargetPathAltExeAlt = $CharacterAnimator_Beta_StartInAlt + "\Adobe Character Animator.exe"
-$CharacterAnimator_Beta_TargetPathAlt2ExeAlt = $CharacterAnimator_Beta_StartInAlt2 + "\Adobe Character Animator.exe"
-$CharacterAnimator_Beta_TargetPath = $CharacterAnimator_Beta_StartIn + "\Adobe Character Animator (Beta).exe"
-$CharacterAnimator_Beta_TargetPathAlt = $CharacterAnimator_Beta_StartInAlt + "\Adobe Character Animator (Beta).exe"
-$CharacterAnimator_Beta_TargetPathAlt2 = $CharacterAnimator_Beta_StartInAlt2 + "\Adobe Character Animator (Beta).exe"
+$CharacterAnimator_Beta_WorkingDirectory = $CharacterAnimator_Beta_TargetPath + $CharacterAnimator_Beta_Name
+$CharacterAnimator_Beta_WorkingDirectoryAlt = $CharacterAnimator_Beta_WorkingDirectory + "\Support Files"
+$CharacterAnimator_Beta_WorkingDirectoryAlt2 = $CharacterAnimator_Beta_WorkingDirectoryAlt + "\Contents\Windows"
+$CharacterAnimator_Beta_TargetPathExeAlt = $CharacterAnimator_Beta_WorkingDirectory + "\Adobe Character Animator.exe"
+$CharacterAnimator_Beta_TargetPathAltExeAlt = $CharacterAnimator_Beta_WorkingDirectoryAlt + "\Adobe Character Animator.exe"
+$CharacterAnimator_Beta_TargetPathAlt2ExeAlt = $CharacterAnimator_Beta_WorkingDirectoryAlt2 + "\Adobe Character Animator.exe"
+$CharacterAnimator_Beta_TargetPath = $CharacterAnimator_Beta_WorkingDirectory + "\Adobe Character Animator (Beta).exe"
+$CharacterAnimator_Beta_TargetPathAlt = $CharacterAnimator_Beta_WorkingDirectoryAlt + "\Adobe Character Animator (Beta).exe"
+$CharacterAnimator_Beta_TargetPathAlt2 = $CharacterAnimator_Beta_WorkingDirectoryAlt2 + "\Adobe Character Animator (Beta).exe"
 $CharacterAnimator_Beta_TargetPath = if (Test-Path -Path $CharacterAnimator_Beta_TargetPathExeAlt -PathType leaf) { $CharacterAnimator_Beta_TargetPathExeAlt } elseif (Test-Path -Path $CharacterAnimator_Beta_TargetPathAltExeAlt -PathType leaf) { $CharacterAnimator_Beta_TargetPathAltExeAlt } elseif (Test-Path -Path $CharacterAnimator_Beta_TargetPathAlt2ExeAlt -PathType leaf) { $CharacterAnimator_Beta_TargetPathAlt2ExeAlt } elseif (Test-Path -Path $CharacterAnimator_Beta_TargetPath -PathType leaf) { $CharacterAnimator_Beta_TargetPath } elseif (Test-Path -Path $CharacterAnimator_Beta_TargetPathAlt -PathType leaf) { $CharacterAnimator_Beta_TargetPathAlt } else { $CharacterAnimator_Beta_TargetPathAlt2 }
 # Adobe Dimension
 $Dimension_TargetPath = "${env:ProgramFiles}\Adobe\"
 $Dimension_Name = if (Test-Path -Path $Dimension_TargetPath) { Get-ChildItem -Directory -Path $Dimension_TargetPath | Where-Object { $_.Name -match '^.*Dimension(?!.*\(Beta\)$)' } | Sort-Object -Descending }
 $Dimension_Name = if ($Dimension_Name.length -ge 1) { $Dimension_Name[0].name } else { "Dimension" }
-$Dimension_StartIn = $Dimension_TargetPath + $Dimension_Name
-$Dimension_StartInAlt = $Dimension_StartIn + "\Support Files"
-$Dimension_StartInAlt2 = $Dimension_StartInAlt + "\Contents\Windows"
-$Dimension_TargetPath = $Dimension_StartIn + "\Dimension.exe"
-$Dimension_TargetPathAlt = $Dimension_StartInAlt + "\Dimension.exe"
-$Dimension_TargetPathAlt2 = $Dimension_StartInAlt2 + "\Dimension.exe"
+$Dimension_WorkingDirectory = $Dimension_TargetPath + $Dimension_Name
+$Dimension_WorkingDirectoryAlt = $Dimension_WorkingDirectory + "\Support Files"
+$Dimension_WorkingDirectoryAlt2 = $Dimension_WorkingDirectoryAlt + "\Contents\Windows"
+$Dimension_TargetPath = $Dimension_WorkingDirectory + "\Dimension.exe"
+$Dimension_TargetPathAlt = $Dimension_WorkingDirectoryAlt + "\Dimension.exe"
+$Dimension_TargetPathAlt2 = $Dimension_WorkingDirectoryAlt2 + "\Dimension.exe"
 $Dimension_TargetPath = if (Test-Path -Path $Dimension_TargetPath -PathType leaf) { $Dimension_TargetPath } elseif (Test-Path -Path $Dimension_TargetPathAlt -PathType leaf) { $Dimension_TargetPathAlt } else { $Dimension_TargetPathAlt2 }
 $Dimension_Beta_TargetPath = "${env:ProgramFiles}\Adobe\"
 $Dimension_Beta_Name = if (Test-Path -Path $Dimension_Beta_TargetPath) { Get-ChildItem -Directory -Path $Dimension_Beta_TargetPath | Where-Object { $_.Name -match '^.*Dimension.*\(Beta\)$' } | Sort-Object -Descending }
 $Dimension_Beta_Name = if ($Dimension_Beta_Name.length -ge 1) { $Dimension_Beta_Name[0].name } else { "Dimension (Beta)" }
-$Dimension_Beta_StartIn = $Dimension_Beta_TargetPath + $Dimension_Beta_Name
-$Dimension_Beta_StartInAlt = $Dimension_Beta_StartIn + "\Support Files"
-$Dimension_Beta_StartInAlt2 = $Dimension_Beta_StartInAlt + "\Contents\Windows"
-$Dimension_Beta_TargetPathExeAlt = $Dimension_Beta_StartIn + "\Dimension.exe"
-$Dimension_Beta_TargetPathAltExeAlt = $Dimension_Beta_StartInAlt + "\Dimension.exe"
-$Dimension_Beta_TargetPathAlt2ExeAlt = $Dimension_Beta_StartInAlt2 + "\Dimension.exe"
-$Dimension_Beta_TargetPath = $Dimension_Beta_StartIn + "\Dimension (Beta).exe"
-$Dimension_Beta_TargetPathAlt = $Dimension_Beta_StartInAlt + "\Dimension (Beta).exe"
-$Dimension_Beta_TargetPathAlt2 = $Dimension_Beta_StartInAlt2 + "\Dimension (Beta).exe"
+$Dimension_Beta_WorkingDirectory = $Dimension_Beta_TargetPath + $Dimension_Beta_Name
+$Dimension_Beta_WorkingDirectoryAlt = $Dimension_Beta_WorkingDirectory + "\Support Files"
+$Dimension_Beta_WorkingDirectoryAlt2 = $Dimension_Beta_WorkingDirectoryAlt + "\Contents\Windows"
+$Dimension_Beta_TargetPathExeAlt = $Dimension_Beta_WorkingDirectory + "\Dimension.exe"
+$Dimension_Beta_TargetPathAltExeAlt = $Dimension_Beta_WorkingDirectoryAlt + "\Dimension.exe"
+$Dimension_Beta_TargetPathAlt2ExeAlt = $Dimension_Beta_WorkingDirectoryAlt2 + "\Dimension.exe"
+$Dimension_Beta_TargetPath = $Dimension_Beta_WorkingDirectory + "\Dimension (Beta).exe"
+$Dimension_Beta_TargetPathAlt = $Dimension_Beta_WorkingDirectoryAlt + "\Dimension (Beta).exe"
+$Dimension_Beta_TargetPathAlt2 = $Dimension_Beta_WorkingDirectoryAlt2 + "\Dimension (Beta).exe"
 $Dimension_Beta_TargetPath = if (Test-Path -Path $Dimension_Beta_TargetPathExeAlt -PathType leaf) { $Dimension_Beta_TargetPathExeAlt } elseif (Test-Path -Path $Dimension_Beta_TargetPathAltExeAlt -PathType leaf) { $Dimension_Beta_TargetPathAltExeAlt } elseif (Test-Path -Path $Dimension_Beta_TargetPathAlt2ExeAlt -PathType leaf) { $Dimension_Beta_TargetPathAlt2ExeAlt } elseif (Test-Path -Path $Dimension_Beta_TargetPath -PathType leaf) { $Dimension_Beta_TargetPath } elseif (Test-Path -Path $Dimension_Beta_TargetPathAlt -PathType leaf) { $Dimension_Beta_TargetPathAlt } else { $Dimension_Beta_TargetPathAlt2 }
 # Adobe Dreamweaver
 $Dreamweaver_TargetPath = "${env:ProgramFiles}\Adobe\"
 $Dreamweaver_Name = if (Test-Path -Path $Dreamweaver_TargetPath) { Get-ChildItem -Directory -Path $Dreamweaver_TargetPath | Where-Object { $_.Name -match '^.*Dreamweaver(?!.*\(Beta\)$)' } | Sort-Object -Descending }
 $Dreamweaver_Name = if ($Dreamweaver_Name.length -ge 1) { $Dreamweaver_Name[0].name } else { "Adobe Dreamweaver" }
-$Dreamweaver_StartIn = $Dreamweaver_TargetPath + $Dreamweaver_Name
-$Dreamweaver_StartInAlt = $Dreamweaver_StartIn + "\Support Files"
-$Dreamweaver_StartInAlt2 = $Dreamweaver_StartInAlt + "\Contents\Windows"
-$Dreamweaver_TargetPath = $Dreamweaver_StartIn + "\Dreamweaver.exe"
-$Dreamweaver_TargetPathAlt = $Dreamweaver_StartInAlt + "\Dreamweaver.exe"
-$Dreamweaver_TargetPathAlt2 = $Dreamweaver_StartInAlt2 + "\Dreamweaver.exe"
+$Dreamweaver_WorkingDirectory = $Dreamweaver_TargetPath + $Dreamweaver_Name
+$Dreamweaver_WorkingDirectoryAlt = $Dreamweaver_WorkingDirectory + "\Support Files"
+$Dreamweaver_WorkingDirectoryAlt2 = $Dreamweaver_WorkingDirectoryAlt + "\Contents\Windows"
+$Dreamweaver_TargetPath = $Dreamweaver_WorkingDirectory + "\Dreamweaver.exe"
+$Dreamweaver_TargetPathAlt = $Dreamweaver_WorkingDirectoryAlt + "\Dreamweaver.exe"
+$Dreamweaver_TargetPathAlt2 = $Dreamweaver_WorkingDirectoryAlt2 + "\Dreamweaver.exe"
 $Dreamweaver_TargetPath = if (Test-Path -Path $Dreamweaver_TargetPath -PathType leaf) { $Dreamweaver_TargetPath } elseif (Test-Path -Path $Dreamweaver_TargetPathAlt -PathType leaf) { $Dreamweaver_TargetPathAlt } else { $Dreamweaver_TargetPathAlt2 }
 $Dreamweaver_Beta_TargetPath = "${env:ProgramFiles}\Adobe\"
 $Dreamweaver_Beta_Name = if (Test-Path -Path $Dreamweaver_Beta_TargetPath) { Get-ChildItem -Directory -Path $Dreamweaver_Beta_TargetPath | Where-Object { $_.Name -match '^.*Dreamweaver.*\(Beta\)$' } | Sort-Object -Descending }
 $Dreamweaver_Beta_Name = if ($Dreamweaver_Beta_Name.length -ge 1) { $Dreamweaver_Beta_Name[0].name } else { "Adobe Dreamweaver (Beta)" }
-$Dreamweaver_Beta_StartIn = $Dreamweaver_Beta_TargetPath + $Dreamweaver_Beta_Name
-$Dreamweaver_Beta_StartInAlt = $Dreamweaver_Beta_StartIn + "\Support Files"
-$Dreamweaver_Beta_StartInAlt2 = $Dreamweaver_Beta_StartInAlt + "\Contents\Windows"
-$Dreamweaver_Beta_TargetPathExeAlt = $Dreamweaver_Beta_StartIn + "\Dreamweaver.exe"
-$Dreamweaver_Beta_TargetPathAltExeAlt = $Dreamweaver_Beta_StartInAlt + "\Dreamweaver.exe"
-$Dreamweaver_Beta_TargetPathAlt2ExeAlt = $Dreamweaver_Beta_StartInAlt2 + "\Dreamweaver.exe"
-$Dreamweaver_Beta_TargetPath = $Dreamweaver_Beta_StartIn + "\Dreamweaver (Beta).exe"
-$Dreamweaver_Beta_TargetPathAlt = $Dreamweaver_Beta_StartInAlt + "\Dreamweaver (Beta).exe"
-$Dreamweaver_Beta_TargetPathAlt2 = $Dreamweaver_Beta_StartInAlt2 + "\Dreamweaver (Beta).exe"
+$Dreamweaver_Beta_WorkingDirectory = $Dreamweaver_Beta_TargetPath + $Dreamweaver_Beta_Name
+$Dreamweaver_Beta_WorkingDirectoryAlt = $Dreamweaver_Beta_WorkingDirectory + "\Support Files"
+$Dreamweaver_Beta_WorkingDirectoryAlt2 = $Dreamweaver_Beta_WorkingDirectoryAlt + "\Contents\Windows"
+$Dreamweaver_Beta_TargetPathExeAlt = $Dreamweaver_Beta_WorkingDirectory + "\Dreamweaver.exe"
+$Dreamweaver_Beta_TargetPathAltExeAlt = $Dreamweaver_Beta_WorkingDirectoryAlt + "\Dreamweaver.exe"
+$Dreamweaver_Beta_TargetPathAlt2ExeAlt = $Dreamweaver_Beta_WorkingDirectoryAlt2 + "\Dreamweaver.exe"
+$Dreamweaver_Beta_TargetPath = $Dreamweaver_Beta_WorkingDirectory + "\Dreamweaver (Beta).exe"
+$Dreamweaver_Beta_TargetPathAlt = $Dreamweaver_Beta_WorkingDirectoryAlt + "\Dreamweaver (Beta).exe"
+$Dreamweaver_Beta_TargetPathAlt2 = $Dreamweaver_Beta_WorkingDirectoryAlt2 + "\Dreamweaver (Beta).exe"
 $Dreamweaver_Beta_TargetPath = if (Test-Path -Path $Dreamweaver_Beta_TargetPathExeAlt -PathType leaf) { $Dreamweaver_Beta_TargetPathExeAlt } elseif (Test-Path -Path $Dreamweaver_Beta_TargetPathAltExeAlt -PathType leaf) { $Dreamweaver_Beta_TargetPathAltExeAlt } elseif (Test-Path -Path $Dreamweaver_Beta_TargetPathAlt2ExeAlt -PathType leaf) { $Dreamweaver_Beta_TargetPathAlt2ExeAlt } elseif (Test-Path -Path $Dreamweaver_Beta_TargetPath -PathType leaf) { $Dreamweaver_Beta_TargetPath } elseif (Test-Path -Path $Dreamweaver_Beta_TargetPathAlt -PathType leaf) { $Dreamweaver_Beta_TargetPathAlt } else { $Dreamweaver_Beta_TargetPathAlt2 }
 # Adobe Illustrator
 $Illustrator_TargetPath = "${env:ProgramFiles}\Adobe\"
 $Illustrator_Name = if (Test-Path -Path $Illustrator_TargetPath) { Get-ChildItem -Directory -Path $Illustrator_TargetPath | Where-Object { $_.Name -match '^.*Illustrator(?!.*\(Beta\)$)' } | Sort-Object -Descending }
 $Illustrator_Name = if ($Illustrator_Name.length -ge 1) { $Illustrator_Name[0].name } else { "Adobe Illustrator" }
-$Illustrator_StartIn = $Illustrator_TargetPath + $Illustrator_Name
-$Illustrator_StartInAlt = $Illustrator_StartIn + "\Support Files"
-$Illustrator_StartInAlt2 = $Illustrator_StartInAlt + "\Contents\Windows"
-$Illustrator_TargetPath = $Illustrator_StartIn + "\Illustrator.exe"
-$Illustrator_TargetPathAlt = $Illustrator_StartInAlt + "\Illustrator.exe"
-$Illustrator_TargetPathAlt2 = $Illustrator_StartInAlt2 + "\Illustrator.exe"
+$Illustrator_WorkingDirectory = $Illustrator_TargetPath + $Illustrator_Name
+$Illustrator_WorkingDirectoryAlt = $Illustrator_WorkingDirectory + "\Support Files"
+$Illustrator_WorkingDirectoryAlt2 = $Illustrator_WorkingDirectoryAlt + "\Contents\Windows"
+$Illustrator_TargetPath = $Illustrator_WorkingDirectory + "\Illustrator.exe"
+$Illustrator_TargetPathAlt = $Illustrator_WorkingDirectoryAlt + "\Illustrator.exe"
+$Illustrator_TargetPathAlt2 = $Illustrator_WorkingDirectoryAlt2 + "\Illustrator.exe"
 $Illustrator_TargetPath = if (Test-Path -Path $Illustrator_TargetPath -PathType leaf) { $Illustrator_TargetPath } elseif (Test-Path -Path $Illustrator_TargetPathAlt -PathType leaf) { $Illustrator_TargetPathAlt } else { $Illustrator_TargetPathAlt2 }
 $Illustrator_Beta_TargetPath = "${env:ProgramFiles}\Adobe\"
 $Illustrator_Beta_Name = if (Test-Path -Path $Illustrator_Beta_TargetPath) { Get-ChildItem -Directory -Path $Illustrator_Beta_TargetPath | Where-Object { $_.Name -match '^.*Illustrator.*\(Beta\)$' } | Sort-Object -Descending }
 $Illustrator_Beta_Name = if ($Illustrator_Beta_Name.length -ge 1) { $Illustrator_Beta_Name[0].name } else { "Adobe Illustrator (Beta)" }
-$Illustrator_Beta_StartIn = $Illustrator_Beta_TargetPath + $Illustrator_Beta_Name
-$Illustrator_Beta_StartInAlt = $Illustrator_Beta_StartIn + "\Support Files"
-$Illustrator_Beta_StartInAlt2 = $Illustrator_Beta_StartInAlt + "\Contents\Windows"
-$Illustrator_Beta_TargetPathExeAlt = $Illustrator_Beta_StartIn + "\Illustrator.exe"
-$Illustrator_Beta_TargetPathAltExeAlt = $Illustrator_Beta_StartInAlt + "\Illustrator.exe"
-$Illustrator_Beta_TargetPathAlt2ExeAlt = $Illustrator_Beta_StartInAlt2 + "\Illustrator.exe"
-$Illustrator_Beta_TargetPath = $Illustrator_Beta_StartIn + "\Illustrator (Beta).exe"
-$Illustrator_Beta_TargetPathAlt = $Illustrator_Beta_StartInAlt + "\Illustrator (Beta).exe"
-$Illustrator_Beta_TargetPathAlt2 = $Illustrator_Beta_StartInAlt2 + "\Illustrator (Beta).exe"
+$Illustrator_Beta_WorkingDirectory = $Illustrator_Beta_TargetPath + $Illustrator_Beta_Name
+$Illustrator_Beta_WorkingDirectoryAlt = $Illustrator_Beta_WorkingDirectory + "\Support Files"
+$Illustrator_Beta_WorkingDirectoryAlt2 = $Illustrator_Beta_WorkingDirectoryAlt + "\Contents\Windows"
+$Illustrator_Beta_TargetPathExeAlt = $Illustrator_Beta_WorkingDirectory + "\Illustrator.exe"
+$Illustrator_Beta_TargetPathAltExeAlt = $Illustrator_Beta_WorkingDirectoryAlt + "\Illustrator.exe"
+$Illustrator_Beta_TargetPathAlt2ExeAlt = $Illustrator_Beta_WorkingDirectoryAlt2 + "\Illustrator.exe"
+$Illustrator_Beta_TargetPath = $Illustrator_Beta_WorkingDirectory + "\Illustrator (Beta).exe"
+$Illustrator_Beta_TargetPathAlt = $Illustrator_Beta_WorkingDirectoryAlt + "\Illustrator (Beta).exe"
+$Illustrator_Beta_TargetPathAlt2 = $Illustrator_Beta_WorkingDirectoryAlt2 + "\Illustrator (Beta).exe"
 $Illustrator_Beta_TargetPath = if (Test-Path -Path $Illustrator_Beta_TargetPathExeAlt -PathType leaf) { $Illustrator_Beta_TargetPathExeAlt } elseif (Test-Path -Path $Illustrator_Beta_TargetPathAltExeAlt -PathType leaf) { $Illustrator_Beta_TargetPathAltExeAlt } elseif (Test-Path -Path $Illustrator_Beta_TargetPathAlt2ExeAlt -PathType leaf) { $Illustrator_Beta_TargetPathAlt2ExeAlt } elseif (Test-Path -Path $Illustrator_Beta_TargetPath -PathType leaf) { $Illustrator_Beta_TargetPath } elseif (Test-Path -Path $Illustrator_Beta_TargetPathAlt -PathType leaf) { $Illustrator_Beta_TargetPathAlt } else { $Illustrator_Beta_TargetPathAlt2 }
 # Adobe InCopy
 $InCopy_TargetPath = "${env:ProgramFiles}\Adobe\"
 $InCopy_Name = if (Test-Path -Path $InCopy_TargetPath) { Get-ChildItem -Directory -Path $InCopy_TargetPath | Where-Object { $_.Name -match '^.*InCopy(?!.*\(Beta\)$)' } | Sort-Object -Descending }
 $InCopy_Name = if ($InCopy_Name.length -ge 1) { $InCopy_Name[0].name } else { "Adobe InCopy" }
-$InCopy_StartIn = $InCopy_TargetPath + $InCopy_Name
-$InCopy_StartInAlt = $InCopy_StartIn + "\Support Files"
-$InCopy_StartInAlt2 = $InCopy_StartInAlt + "\Contents\Windows"
-$InCopy_TargetPath = $InCopy_StartIn + "\InCopy.exe"
-$InCopy_TargetPathAlt = $InCopy_StartInAlt + "\InCopy.exe"
-$InCopy_TargetPathAlt2 = $InCopy_StartInAlt2 + "\InCopy.exe"
+$InCopy_WorkingDirectory = $InCopy_TargetPath + $InCopy_Name
+$InCopy_WorkingDirectoryAlt = $InCopy_WorkingDirectory + "\Support Files"
+$InCopy_WorkingDirectoryAlt2 = $InCopy_WorkingDirectoryAlt + "\Contents\Windows"
+$InCopy_TargetPath = $InCopy_WorkingDirectory + "\InCopy.exe"
+$InCopy_TargetPathAlt = $InCopy_WorkingDirectoryAlt + "\InCopy.exe"
+$InCopy_TargetPathAlt2 = $InCopy_WorkingDirectoryAlt2 + "\InCopy.exe"
 $InCopy_TargetPath = if (Test-Path -Path $InCopy_TargetPath -PathType leaf) { $InCopy_TargetPath } elseif (Test-Path -Path $InCopy_TargetPathAlt -PathType leaf) { $InCopy_TargetPathAlt } else { $InCopy_TargetPathAlt2 }
 $InCopy_Beta_TargetPath = "${env:ProgramFiles}\Adobe\"
 $InCopy_Beta_Name = if (Test-Path -Path $InCopy_Beta_TargetPath) { Get-ChildItem -Directory -Path $InCopy_Beta_TargetPath | Where-Object { $_.Name -match '^.*InCopy.*\(Beta\)$' } | Sort-Object -Descending }
 $InCopy_Beta_Name = if ($InCopy_Beta_Name.length -ge 1) { $InCopy_Beta_Name[0].name } else { "Adobe InCopy (Beta)" }
-$InCopy_Beta_StartIn = $InCopy_Beta_TargetPath + $InCopy_Beta_Name
-$InCopy_Beta_StartInAlt = $InCopy_Beta_StartIn + "\Support Files"
-$InCopy_Beta_StartInAlt2 = $InCopy_Beta_StartInAlt + "\Contents\Windows"
-$InCopy_Beta_TargetPathExeAlt = $InCopy_Beta_StartIn + "\InCopy.exe"
-$InCopy_Beta_TargetPathAltExeAlt = $InCopy_Beta_StartInAlt + "\InCopy.exe"
-$InCopy_Beta_TargetPathAlt2ExeAlt = $InCopy_Beta_StartInAlt2 + "\InCopy.exe"
-$InCopy_Beta_TargetPath = $InCopy_Beta_StartIn + "\InCopy (Beta).exe"
-$InCopy_Beta_TargetPathAlt = $InCopy_Beta_StartInAlt + "\InCopy (Beta).exe"
-$InCopy_Beta_TargetPathAlt2 = $InCopy_Beta_StartInAlt2 + "\InCopy (Beta).exe"
+$InCopy_Beta_WorkingDirectory = $InCopy_Beta_TargetPath + $InCopy_Beta_Name
+$InCopy_Beta_WorkingDirectoryAlt = $InCopy_Beta_WorkingDirectory + "\Support Files"
+$InCopy_Beta_WorkingDirectoryAlt2 = $InCopy_Beta_WorkingDirectoryAlt + "\Contents\Windows"
+$InCopy_Beta_TargetPathExeAlt = $InCopy_Beta_WorkingDirectory + "\InCopy.exe"
+$InCopy_Beta_TargetPathAltExeAlt = $InCopy_Beta_WorkingDirectoryAlt + "\InCopy.exe"
+$InCopy_Beta_TargetPathAlt2ExeAlt = $InCopy_Beta_WorkingDirectoryAlt2 + "\InCopy.exe"
+$InCopy_Beta_TargetPath = $InCopy_Beta_WorkingDirectory + "\InCopy (Beta).exe"
+$InCopy_Beta_TargetPathAlt = $InCopy_Beta_WorkingDirectoryAlt + "\InCopy (Beta).exe"
+$InCopy_Beta_TargetPathAlt2 = $InCopy_Beta_WorkingDirectoryAlt2 + "\InCopy (Beta).exe"
 $InCopy_Beta_TargetPath = if (Test-Path -Path $InCopy_Beta_TargetPathExeAlt -PathType leaf) { $InCopy_Beta_TargetPathExeAlt } elseif (Test-Path -Path $InCopy_Beta_TargetPathAltExeAlt -PathType leaf) { $InCopy_Beta_TargetPathAltExeAlt } elseif (Test-Path -Path $InCopy_Beta_TargetPathAlt2ExeAlt -PathType leaf) { $InCopy_Beta_TargetPathAlt2ExeAlt } elseif (Test-Path -Path $InCopy_Beta_TargetPath -PathType leaf) { $InCopy_Beta_TargetPath } elseif (Test-Path -Path $InCopy_Beta_TargetPathAlt -PathType leaf) { $InCopy_Beta_TargetPathAlt } else { $InCopy_Beta_TargetPathAlt2 }
 # Adobe InDesign
 $InDesign_TargetPath = "${env:ProgramFiles}\Adobe\"
 $InDesign_Name = if (Test-Path -Path $InDesign_TargetPath) { Get-ChildItem -Directory -Path $InDesign_TargetPath | Where-Object { $_.Name -match '^.*InDesign(?!.*\(Beta\)$)' } | Sort-Object -Descending }
 $InDesign_Name = if ($InDesign_Name.length -ge 1) { $InDesign_Name[0].name } else { "Adobe InDesign" }
-$InDesign_StartIn = $InDesign_TargetPath + $InDesign_Name
-$InDesign_StartInAlt = $InDesign_StartIn + "\Support Files"
-$InDesign_StartInAlt2 = $InDesign_StartInAlt + "\Contents\Windows"
-$InDesign_TargetPath = $InDesign_StartIn + "\InDesign.exe"
-$InDesign_TargetPathAlt = $InDesign_StartInAlt + "\InDesign.exe"
-$InDesign_TargetPathAlt2 = $InDesign_StartInAlt2 + "\InDesign.exe"
+$InDesign_WorkingDirectory = $InDesign_TargetPath + $InDesign_Name
+$InDesign_WorkingDirectoryAlt = $InDesign_WorkingDirectory + "\Support Files"
+$InDesign_WorkingDirectoryAlt2 = $InDesign_WorkingDirectoryAlt + "\Contents\Windows"
+$InDesign_TargetPath = $InDesign_WorkingDirectory + "\InDesign.exe"
+$InDesign_TargetPathAlt = $InDesign_WorkingDirectoryAlt + "\InDesign.exe"
+$InDesign_TargetPathAlt2 = $InDesign_WorkingDirectoryAlt2 + "\InDesign.exe"
 $InDesign_TargetPath = if (Test-Path -Path $InDesign_TargetPath -PathType leaf) { $InDesign_TargetPath } elseif (Test-Path -Path $InDesign_TargetPathAlt -PathType leaf) { $InDesign_TargetPathAlt } else { $InDesign_TargetPathAlt2 }
 $InDesign_Beta_TargetPath = "${env:ProgramFiles}\Adobe\"
 $InDesign_Beta_Name = if (Test-Path -Path $InDesign_Beta_TargetPath) { Get-ChildItem -Directory -Path $InDesign_Beta_TargetPath | Where-Object { $_.Name -match '^.*InDesign.*\(Beta\)$' } | Sort-Object -Descending }
 $InDesign_Beta_Name = if ($InDesign_Beta_Name.length -ge 1) { $InDesign_Beta_Name[0].name } else { "Adobe InDesign (Beta)" }
-$InDesign_Beta_StartIn = $InDesign_Beta_TargetPath + $InDesign_Beta_Name
-$InDesign_Beta_StartInAlt = $InDesign_Beta_StartIn + "\Support Files"
-$InDesign_Beta_StartInAlt2 = $InDesign_Beta_StartInAlt + "\Contents\Windows"
-$InDesign_Beta_TargetPathExeAlt = $InDesign_Beta_StartIn + "\InDesign.exe"
-$InDesign_Beta_TargetPathAltExeAlt = $InDesign_Beta_StartInAlt + "\InDesign.exe"
-$InDesign_Beta_TargetPathAlt2ExeAlt = $InDesign_Beta_StartInAlt2 + "\InDesign.exe"
-$InDesign_Beta_TargetPath = $InDesign_Beta_StartIn + "\InDesign (Beta).exe"
-$InDesign_Beta_TargetPathAlt = $InDesign_Beta_StartInAlt + "\InDesign (Beta).exe"
-$InDesign_Beta_TargetPathAlt2 = $InDesign_Beta_StartInAlt2 + "\InDesign (Beta).exe"
+$InDesign_Beta_WorkingDirectory = $InDesign_Beta_TargetPath + $InDesign_Beta_Name
+$InDesign_Beta_WorkingDirectoryAlt = $InDesign_Beta_WorkingDirectory + "\Support Files"
+$InDesign_Beta_WorkingDirectoryAlt2 = $InDesign_Beta_WorkingDirectoryAlt + "\Contents\Windows"
+$InDesign_Beta_TargetPathExeAlt = $InDesign_Beta_WorkingDirectory + "\InDesign.exe"
+$InDesign_Beta_TargetPathAltExeAlt = $InDesign_Beta_WorkingDirectoryAlt + "\InDesign.exe"
+$InDesign_Beta_TargetPathAlt2ExeAlt = $InDesign_Beta_WorkingDirectoryAlt2 + "\InDesign.exe"
+$InDesign_Beta_TargetPath = $InDesign_Beta_WorkingDirectory + "\InDesign (Beta).exe"
+$InDesign_Beta_TargetPathAlt = $InDesign_Beta_WorkingDirectoryAlt + "\InDesign (Beta).exe"
+$InDesign_Beta_TargetPathAlt2 = $InDesign_Beta_WorkingDirectoryAlt2 + "\InDesign (Beta).exe"
 $InDesign_Beta_TargetPath = if (Test-Path -Path $InDesign_Beta_TargetPathExeAlt -PathType leaf) { $InDesign_Beta_TargetPathExeAlt } elseif (Test-Path -Path $InDesign_Beta_TargetPathAltExeAlt -PathType leaf) { $InDesign_Beta_TargetPathAltExeAlt } elseif (Test-Path -Path $InDesign_Beta_TargetPathAlt2ExeAlt -PathType leaf) { $InDesign_Beta_TargetPathAlt2ExeAlt } elseif (Test-Path -Path $InDesign_Beta_TargetPath -PathType leaf) { $InDesign_Beta_TargetPath } elseif (Test-Path -Path $InDesign_Beta_TargetPathAlt -PathType leaf) { $InDesign_Beta_TargetPathAlt } else { $InDesign_Beta_TargetPathAlt2 }
 # Adobe Lightroom
 $Lightroom_TargetPath = "${env:ProgramFiles}\Adobe\"
 $Lightroom_Name = if (Test-Path -Path $Lightroom_TargetPath) { Get-ChildItem -Directory -Path $Lightroom_TargetPath | Where-Object { $_.Name -match '^.*Lightroom(?!.*Classic)(?!.*\(Beta\)$)' } | Sort-Object -Descending }
 $Lightroom_Name = if ($Lightroom_Name.length -ge 1) { $Lightroom_Name[0].name } else { "Adobe Lightroom" }
-$Lightroom_StartIn = $Lightroom_TargetPath + $Lightroom_Name
-$Lightroom_StartInAlt = $Lightroom_StartIn + "\Support Files"
-$Lightroom_StartInAlt2 = $Lightroom_StartInAlt + "\Contents\Windows"
-$Lightroom_TargetPath = $Lightroom_StartIn + "\lightroom.exe"
-$Lightroom_TargetPathAlt = $Lightroom_StartInAlt + "\lightroom.exe"
-$Lightroom_TargetPathAlt2 = $Lightroom_StartInAlt2 + "\lightroom.exe"
+$Lightroom_WorkingDirectory = $Lightroom_TargetPath + $Lightroom_Name
+$Lightroom_WorkingDirectoryAlt = $Lightroom_WorkingDirectory + "\Support Files"
+$Lightroom_WorkingDirectoryAlt2 = $Lightroom_WorkingDirectoryAlt + "\Contents\Windows"
+$Lightroom_TargetPath = $Lightroom_WorkingDirectory + "\lightroom.exe"
+$Lightroom_TargetPathAlt = $Lightroom_WorkingDirectoryAlt + "\lightroom.exe"
+$Lightroom_TargetPathAlt2 = $Lightroom_WorkingDirectoryAlt2 + "\lightroom.exe"
 $Lightroom_TargetPath = if (Test-Path -Path $Lightroom_TargetPath -PathType leaf) { $Lightroom_TargetPath } elseif (Test-Path -Path $Lightroom_TargetPathAlt -PathType leaf) { $Lightroom_TargetPathAlt } else { $Lightroom_TargetPathAlt2 }
 $Lightroom_Beta_TargetPath = "${env:ProgramFiles}\Adobe\"
 $Lightroom_Beta_Name = if (Test-Path -Path $Lightroom_Beta_TargetPath) { Get-ChildItem -Directory -Path $Lightroom_Beta_TargetPath | Where-Object { $_.Name -match '^.*Lightroom(?!.*Classic).*\(Beta\)$' } | Sort-Object -Descending }
 $Lightroom_Beta_Name = if ($Lightroom_Beta_Name.length -ge 1) { $Lightroom_Beta_Name[0].name } else { "Adobe Lightroom (Beta)" }
-$Lightroom_Beta_StartIn = $Lightroom_Beta_TargetPath + $Lightroom_Beta_Name
-$Lightroom_Beta_StartInAlt = $Lightroom_Beta_StartIn + "\Support Files"
-$Lightroom_Beta_StartInAlt2 = $Lightroom_Beta_StartInAlt + "\Contents\Windows"
-$Lightroom_Beta_TargetPathExeAlt = $Lightroom_Beta_StartIn + "\lightroom.exe"
-$Lightroom_Beta_TargetPathAltExeAlt = $Lightroom_Beta_StartInAlt + "\lightroom.exe"
-$Lightroom_Beta_TargetPathAlt2ExeAlt = $Lightroom_Beta_StartInAlt2 + "\lightroom.exe"
-$Lightroom_Beta_TargetPath = $Lightroom_Beta_StartIn + "\lightroom (Beta).exe"
-$Lightroom_Beta_TargetPathAlt = $Lightroom_Beta_StartInAlt + "\lightroom (Beta).exe"
-$Lightroom_Beta_TargetPathAlt2 = $Lightroom_Beta_StartInAlt2 + "\lightroom (Beta).exe"
+$Lightroom_Beta_WorkingDirectory = $Lightroom_Beta_TargetPath + $Lightroom_Beta_Name
+$Lightroom_Beta_WorkingDirectoryAlt = $Lightroom_Beta_WorkingDirectory + "\Support Files"
+$Lightroom_Beta_WorkingDirectoryAlt2 = $Lightroom_Beta_WorkingDirectoryAlt + "\Contents\Windows"
+$Lightroom_Beta_TargetPathExeAlt = $Lightroom_Beta_WorkingDirectory + "\lightroom.exe"
+$Lightroom_Beta_TargetPathAltExeAlt = $Lightroom_Beta_WorkingDirectoryAlt + "\lightroom.exe"
+$Lightroom_Beta_TargetPathAlt2ExeAlt = $Lightroom_Beta_WorkingDirectoryAlt2 + "\lightroom.exe"
+$Lightroom_Beta_TargetPath = $Lightroom_Beta_WorkingDirectory + "\lightroom (Beta).exe"
+$Lightroom_Beta_TargetPathAlt = $Lightroom_Beta_WorkingDirectoryAlt + "\lightroom (Beta).exe"
+$Lightroom_Beta_TargetPathAlt2 = $Lightroom_Beta_WorkingDirectoryAlt2 + "\lightroom (Beta).exe"
 $Lightroom_Beta_TargetPath = if (Test-Path -Path $Lightroom_Beta_TargetPathExeAlt -PathType leaf) { $Lightroom_Beta_TargetPathExeAlt } elseif (Test-Path -Path $Lightroom_Beta_TargetPathAltExeAlt -PathType leaf) { $Lightroom_Beta_TargetPathAltExeAlt } elseif (Test-Path -Path $Lightroom_Beta_TargetPathAlt2ExeAlt -PathType leaf) { $Lightroom_Beta_TargetPathAlt2ExeAlt } elseif (Test-Path -Path $Lightroom_Beta_TargetPath -PathType leaf) { $Lightroom_Beta_TargetPath } elseif (Test-Path -Path $Lightroom_Beta_TargetPathAlt -PathType leaf) { $Lightroom_Beta_TargetPathAlt } else { $Lightroom_Beta_TargetPathAlt2 }
 # Adobe Lightroom Classic
 $LightroomClassic_TargetPath = "${env:ProgramFiles}\Adobe\"
 $LightroomClassic_Name = if (Test-Path -Path $LightroomClassic_TargetPath) { Get-ChildItem -Directory -Path $LightroomClassic_TargetPath | Where-Object { $_.Name -match '^.*Lightroom Classic(?!.*\(Beta\)$)' } | Sort-Object -Descending }
 $LightroomClassic_Name = if ($LightroomClassic_Name.length -ge 1) { $LightroomClassic_Name[0].name } else { "Adobe Lightroom Classic" }
-$LightroomClassic_StartIn = $LightroomClassic_TargetPath + $LightroomClassic_Name
-$LightroomClassic_StartInAlt = $LightroomClassic_StartIn + "\Support Files"
-$LightroomClassic_StartInAlt2 = $LightroomClassic_StartInAlt + "\Contents\Windows"
-$LightroomClassic_TargetPath = $LightroomClassic_StartIn + "\Lightroom.exe"
-$LightroomClassic_TargetPathAlt = $LightroomClassic_StartInAlt + "\Lightroom.exe"
-$LightroomClassic_TargetPathAlt2 = $LightroomClassic_StartInAlt2 + "\Lightroom.exe"
+$LightroomClassic_WorkingDirectory = $LightroomClassic_TargetPath + $LightroomClassic_Name
+$LightroomClassic_WorkingDirectoryAlt = $LightroomClassic_WorkingDirectory + "\Support Files"
+$LightroomClassic_WorkingDirectoryAlt2 = $LightroomClassic_WorkingDirectoryAlt + "\Contents\Windows"
+$LightroomClassic_TargetPath = $LightroomClassic_WorkingDirectory + "\Lightroom.exe"
+$LightroomClassic_TargetPathAlt = $LightroomClassic_WorkingDirectoryAlt + "\Lightroom.exe"
+$LightroomClassic_TargetPathAlt2 = $LightroomClassic_WorkingDirectoryAlt2 + "\Lightroom.exe"
 $LightroomClassic_TargetPath = if (Test-Path -Path $LightroomClassic_TargetPath -PathType leaf) { $LightroomClassic_TargetPath } elseif (Test-Path -Path $LightroomClassic_TargetPathAlt -PathType leaf) { $LightroomClassic_TargetPathAlt } else { $LightroomClassic_TargetPathAlt2 }
 $LightroomClassic_Beta_TargetPath = "${env:ProgramFiles}\Adobe\"
 $LightroomClassic_Beta_Name = if (Test-Path -Path $LightroomClassic_Beta_TargetPath) { Get-ChildItem -Directory -Path $LightroomClassic_Beta_TargetPath | Where-Object { $_.Name -match '^.*Lightroom Classic.*\(Beta\)$' } | Sort-Object -Descending }
 $LightroomClassic_Beta_Name = if ($LightroomClassic_Beta_Name.length -ge 1) { $LightroomClassic_Beta_Name[0].name } else { "Adobe Lightroom Classic (Beta)" }
-$LightroomClassic_Beta_StartIn = $LightroomClassic_Beta_TargetPath + $LightroomClassic_Beta_Name
-$LightroomClassic_Beta_StartInAlt = $LightroomClassic_Beta_StartIn + "\Support Files"
-$LightroomClassic_Beta_StartInAlt2 = $LightroomClassic_Beta_StartInAlt + "\Contents\Windows"
-$LightroomClassic_Beta_TargetPathExeAlt = $LightroomClassic_Beta_StartIn + "\Lightroom.exe"
-$LightroomClassic_Beta_TargetPathAltExeAlt = $LightroomClassic_Beta_StartInAlt + "\Lightroom.exe"
-$LightroomClassic_Beta_TargetPathAlt2ExeAlt = $LightroomClassic_Beta_StartInAlt2 + "\Lightroom.exe"
-$LightroomClassic_Beta_TargetPath = $LightroomClassic_Beta_StartIn + "\Lightroom (Beta).exe"
-$LightroomClassic_Beta_TargetPathAlt = $LightroomClassic_Beta_StartInAlt + "\Lightroom (Beta).exe"
-$LightroomClassic_Beta_TargetPathAlt2 = $LightroomClassic_Beta_StartInAlt2 + "\Lightroom (Beta).exe"
+$LightroomClassic_Beta_WorkingDirectory = $LightroomClassic_Beta_TargetPath + $LightroomClassic_Beta_Name
+$LightroomClassic_Beta_WorkingDirectoryAlt = $LightroomClassic_Beta_WorkingDirectory + "\Support Files"
+$LightroomClassic_Beta_WorkingDirectoryAlt2 = $LightroomClassic_Beta_WorkingDirectoryAlt + "\Contents\Windows"
+$LightroomClassic_Beta_TargetPathExeAlt = $LightroomClassic_Beta_WorkingDirectory + "\Lightroom.exe"
+$LightroomClassic_Beta_TargetPathAltExeAlt = $LightroomClassic_Beta_WorkingDirectoryAlt + "\Lightroom.exe"
+$LightroomClassic_Beta_TargetPathAlt2ExeAlt = $LightroomClassic_Beta_WorkingDirectoryAlt2 + "\Lightroom.exe"
+$LightroomClassic_Beta_TargetPath = $LightroomClassic_Beta_WorkingDirectory + "\Lightroom (Beta).exe"
+$LightroomClassic_Beta_TargetPathAlt = $LightroomClassic_Beta_WorkingDirectoryAlt + "\Lightroom (Beta).exe"
+$LightroomClassic_Beta_TargetPathAlt2 = $LightroomClassic_Beta_WorkingDirectoryAlt2 + "\Lightroom (Beta).exe"
 $LightroomClassic_Beta_TargetPath = if (Test-Path -Path $LightroomClassic_Beta_TargetPathExeAlt -PathType leaf) { $LightroomClassic_Beta_TargetPathExeAlt } elseif (Test-Path -Path $LightroomClassic_Beta_TargetPathAltExeAlt -PathType leaf) { $LightroomClassic_Beta_TargetPathAltExeAlt } elseif (Test-Path -Path $LightroomClassic_Beta_TargetPathAlt2ExeAlt -PathType leaf) { $LightroomClassic_Beta_TargetPathAlt2ExeAlt } elseif (Test-Path -Path $LightroomClassic_Beta_TargetPath -PathType leaf) { $LightroomClassic_Beta_TargetPath } elseif (Test-Path -Path $LightroomClassic_Beta_TargetPathAlt -PathType leaf) { $LightroomClassic_Beta_TargetPathAlt } else { $LightroomClassic_Beta_TargetPathAlt2 }
 # Adobe Media Encoder
 $MediaEncoder_TargetPath = "${env:ProgramFiles}\Adobe\"
 $MediaEncoder_Name = if (Test-Path -Path $MediaEncoder_TargetPath) { Get-ChildItem -Directory -Path $MediaEncoder_TargetPath | Where-Object { $_.Name -match '^.*Media Encoder(?!.*\(Beta\)$)' } | Sort-Object -Descending }
 $MediaEncoder_Name = if ($MediaEncoder_Name.length -ge 1) { $MediaEncoder_Name[0].name } else { "Adobe Media Encoder" }
-$MediaEncoder_StartIn = $MediaEncoder_TargetPath + $MediaEncoder_Name
-$MediaEncoder_StartInAlt = $MediaEncoder_StartIn + "\Support Files"
-$MediaEncoder_StartInAlt2 = $MediaEncoder_StartInAlt + "\Contents\Windows"
-$MediaEncoder_TargetPath = $MediaEncoder_StartIn + "\Adobe Media Encoder.exe"
-$MediaEncoder_TargetPathAlt = $MediaEncoder_StartInAlt + "\Adobe Media Encoder.exe"
-$MediaEncoder_TargetPathAlt2 = $MediaEncoder_StartInAlt2 + "\Adobe Media Encoder.exe"
+$MediaEncoder_WorkingDirectory = $MediaEncoder_TargetPath + $MediaEncoder_Name
+$MediaEncoder_WorkingDirectoryAlt = $MediaEncoder_WorkingDirectory + "\Support Files"
+$MediaEncoder_WorkingDirectoryAlt2 = $MediaEncoder_WorkingDirectoryAlt + "\Contents\Windows"
+$MediaEncoder_TargetPath = $MediaEncoder_WorkingDirectory + "\Adobe Media Encoder.exe"
+$MediaEncoder_TargetPathAlt = $MediaEncoder_WorkingDirectoryAlt + "\Adobe Media Encoder.exe"
+$MediaEncoder_TargetPathAlt2 = $MediaEncoder_WorkingDirectoryAlt2 + "\Adobe Media Encoder.exe"
 $MediaEncoder_TargetPath = if (Test-Path -Path $MediaEncoder_TargetPath -PathType leaf) { $MediaEncoder_TargetPath } elseif (Test-Path -Path $MediaEncoder_TargetPathAlt -PathType leaf) { $MediaEncoder_TargetPathAlt } else { $MediaEncoder_TargetPathAlt2 }
 $MediaEncoder_Beta_TargetPath = "${env:ProgramFiles}\Adobe\"
 $MediaEncoder_Beta_Name = if (Test-Path -Path $MediaEncoder_Beta_TargetPath) { Get-ChildItem -Directory -Path $MediaEncoder_Beta_TargetPath | Where-Object { $_.Name -match '^.*Media Encoder.*\(Beta\)$' } | Sort-Object -Descending }
 $MediaEncoder_Beta_Name = if ($MediaEncoder_Beta_Name.length -ge 1) { $MediaEncoder_Beta_Name[0].name } else { "Adobe Media Encoder (Beta)" }
-$MediaEncoder_Beta_StartIn = $MediaEncoder_Beta_TargetPath + $MediaEncoder_Beta_Name
-$MediaEncoder_Beta_StartInAlt = $MediaEncoder_Beta_StartIn + "\Support Files"
-$MediaEncoder_Beta_StartInAlt2 = $MediaEncoder_Beta_StartInAlt + "\Contents\Windows"
-$MediaEncoder_Beta_TargetPathExeAlt = $MediaEncoder_Beta_StartIn + "\Adobe Media Encoder.exe"
-$MediaEncoder_Beta_TargetPathAltExeAlt = $MediaEncoder_Beta_StartInAlt + "\Adobe Media Encoder.exe"
-$MediaEncoder_Beta_TargetPathAlt2ExeAlt = $MediaEncoder_Beta_StartInAlt2 + "\Adobe Media Encoder.exe"
-$MediaEncoder_Beta_TargetPath = $MediaEncoder_Beta_StartIn + "\Adobe Media Encoder (Beta).exe"
-$MediaEncoder_Beta_TargetPathAlt = $MediaEncoder_Beta_StartInAlt + "\Adobe Media Encoder (Beta).exe"
-$MediaEncoder_Beta_TargetPathAlt2 = $MediaEncoder_Beta_StartInAlt2 + "\Adobe Media Encoder (Beta).exe"
+$MediaEncoder_Beta_WorkingDirectory = $MediaEncoder_Beta_TargetPath + $MediaEncoder_Beta_Name
+$MediaEncoder_Beta_WorkingDirectoryAlt = $MediaEncoder_Beta_WorkingDirectory + "\Support Files"
+$MediaEncoder_Beta_WorkingDirectoryAlt2 = $MediaEncoder_Beta_WorkingDirectoryAlt + "\Contents\Windows"
+$MediaEncoder_Beta_TargetPathExeAlt = $MediaEncoder_Beta_WorkingDirectory + "\Adobe Media Encoder.exe"
+$MediaEncoder_Beta_TargetPathAltExeAlt = $MediaEncoder_Beta_WorkingDirectoryAlt + "\Adobe Media Encoder.exe"
+$MediaEncoder_Beta_TargetPathAlt2ExeAlt = $MediaEncoder_Beta_WorkingDirectoryAlt2 + "\Adobe Media Encoder.exe"
+$MediaEncoder_Beta_TargetPath = $MediaEncoder_Beta_WorkingDirectory + "\Adobe Media Encoder (Beta).exe"
+$MediaEncoder_Beta_TargetPathAlt = $MediaEncoder_Beta_WorkingDirectoryAlt + "\Adobe Media Encoder (Beta).exe"
+$MediaEncoder_Beta_TargetPathAlt2 = $MediaEncoder_Beta_WorkingDirectoryAlt2 + "\Adobe Media Encoder (Beta).exe"
 $MediaEncoder_Beta_TargetPath = if (Test-Path -Path $MediaEncoder_Beta_TargetPathExeAlt -PathType leaf) { $MediaEncoder_Beta_TargetPathExeAlt } elseif (Test-Path -Path $MediaEncoder_Beta_TargetPathAltExeAlt -PathType leaf) { $MediaEncoder_Beta_TargetPathAltExeAlt } elseif (Test-Path -Path $MediaEncoder_Beta_TargetPathAlt2ExeAlt -PathType leaf) { $MediaEncoder_Beta_TargetPathAlt2ExeAlt } elseif (Test-Path -Path $MediaEncoder_Beta_TargetPath -PathType leaf) { $MediaEncoder_Beta_TargetPath } elseif (Test-Path -Path $MediaEncoder_Beta_TargetPathAlt -PathType leaf) { $MediaEncoder_Beta_TargetPathAlt } else { $MediaEncoder_Beta_TargetPathAlt2 }
 # Adobe Photoshop
 $Photoshop_TargetPath = "${env:ProgramFiles}\Adobe\"
 $Photoshop_Name = if (Test-Path -Path $Photoshop_TargetPath) { Get-ChildItem -Directory -Path $Photoshop_TargetPath | Where-Object { $_.Name -match '^.*Photoshop(?!.*\(Beta\)$)' } | Sort-Object -Descending }
 $Photoshop_Name = if ($Photoshop_Name.length -ge 1) { $Photoshop_Name[0].name } else { "Adobe Photoshop" }
-$Photoshop_StartIn = $Photoshop_TargetPath + $Photoshop_Name
-$Photoshop_StartInAlt = $Photoshop_StartIn + "\Support Files"
-$Photoshop_StartInAlt2 = $Photoshop_StartInAlt + "\Contents\Windows"
-$Photoshop_TargetPath = $Photoshop_StartIn + "\Photoshop.exe"
-$Photoshop_TargetPathAlt = $Photoshop_StartInAlt + "\Photoshop.exe"
-$Photoshop_TargetPathAlt2 = $Photoshop_StartInAlt2 + "\Photoshop.exe"
+$Photoshop_WorkingDirectory = $Photoshop_TargetPath + $Photoshop_Name
+$Photoshop_WorkingDirectoryAlt = $Photoshop_WorkingDirectory + "\Support Files"
+$Photoshop_WorkingDirectoryAlt2 = $Photoshop_WorkingDirectoryAlt + "\Contents\Windows"
+$Photoshop_TargetPath = $Photoshop_WorkingDirectory + "\Photoshop.exe"
+$Photoshop_TargetPathAlt = $Photoshop_WorkingDirectoryAlt + "\Photoshop.exe"
+$Photoshop_TargetPathAlt2 = $Photoshop_WorkingDirectoryAlt2 + "\Photoshop.exe"
 $Photoshop_TargetPath = if (Test-Path -Path $Photoshop_TargetPath -PathType leaf) { $Photoshop_TargetPath } elseif (Test-Path -Path $Photoshop_TargetPathAlt -PathType leaf) { $Photoshop_TargetPathAlt } else { $Photoshop_TargetPathAlt2 }
 $Photoshop_Beta_TargetPath = "${env:ProgramFiles}\Adobe\"
 $Photoshop_Beta_Name = if (Test-Path -Path $Photoshop_Beta_TargetPath) { Get-ChildItem -Directory -Path $Photoshop_Beta_TargetPath | Where-Object { $_.Name -match '^.*Photoshop.*\(Beta\)$' } | Sort-Object -Descending }
 $Photoshop_Beta_Name = if ($Photoshop_Beta_Name.length -ge 1) { $Photoshop_Beta_Name[0].name } else { "Adobe Photoshop (Beta)" }
-$Photoshop_Beta_StartIn = $Photoshop_Beta_TargetPath + $Photoshop_Beta_Name
-$Photoshop_Beta_StartInAlt = $Photoshop_Beta_StartIn + "\Support Files"
-$Photoshop_Beta_StartInAlt2 = $Photoshop_Beta_StartInAlt + "\Contents\Windows"
-$Photoshop_Beta_TargetPathExeAlt = $Photoshop_Beta_StartIn + "\Photoshop.exe"
-$Photoshop_Beta_TargetPathAltExeAlt = $Photoshop_Beta_StartInAlt + "\Photoshop.exe"
-$Photoshop_Beta_TargetPathAlt2ExeAlt = $Photoshop_Beta_StartInAlt2 + "\Photoshop.exe"
-$Photoshop_Beta_TargetPath = $Photoshop_Beta_StartIn + "\Photoshop (Beta).exe"
-$Photoshop_Beta_TargetPathAlt = $Photoshop_Beta_StartInAlt + "\Photoshop (Beta).exe"
-$Photoshop_Beta_TargetPathAlt2 = $Photoshop_Beta_StartInAlt2 + "\Photoshop (Beta).exe"
+$Photoshop_Beta_WorkingDirectory = $Photoshop_Beta_TargetPath + $Photoshop_Beta_Name
+$Photoshop_Beta_WorkingDirectoryAlt = $Photoshop_Beta_WorkingDirectory + "\Support Files"
+$Photoshop_Beta_WorkingDirectoryAlt2 = $Photoshop_Beta_WorkingDirectoryAlt + "\Contents\Windows"
+$Photoshop_Beta_TargetPathExeAlt = $Photoshop_Beta_WorkingDirectory + "\Photoshop.exe"
+$Photoshop_Beta_TargetPathAltExeAlt = $Photoshop_Beta_WorkingDirectoryAlt + "\Photoshop.exe"
+$Photoshop_Beta_TargetPathAlt2ExeAlt = $Photoshop_Beta_WorkingDirectoryAlt2 + "\Photoshop.exe"
+$Photoshop_Beta_TargetPath = $Photoshop_Beta_WorkingDirectory + "\Photoshop (Beta).exe"
+$Photoshop_Beta_TargetPathAlt = $Photoshop_Beta_WorkingDirectoryAlt + "\Photoshop (Beta).exe"
+$Photoshop_Beta_TargetPathAlt2 = $Photoshop_Beta_WorkingDirectoryAlt2 + "\Photoshop (Beta).exe"
 $Photoshop_Beta_TargetPath = if (Test-Path -Path $Photoshop_Beta_TargetPathExeAlt -PathType leaf) { $Photoshop_Beta_TargetPathExeAlt } elseif (Test-Path -Path $Photoshop_Beta_TargetPathAltExeAlt -PathType leaf) { $Photoshop_Beta_TargetPathAltExeAlt } elseif (Test-Path -Path $Photoshop_Beta_TargetPathAlt2ExeAlt -PathType leaf) { $Photoshop_Beta_TargetPathAlt2ExeAlt } elseif (Test-Path -Path $Photoshop_Beta_TargetPath -PathType leaf) { $Photoshop_Beta_TargetPath } elseif (Test-Path -Path $Photoshop_Beta_TargetPathAlt -PathType leaf) { $Photoshop_Beta_TargetPathAlt } else { $Photoshop_Beta_TargetPathAlt2 }
 # Adobe Premiere Pro
 $PremierePro_TargetPath = "${env:ProgramFiles}\Adobe\"
 $PremierePro_Name = if (Test-Path -Path $PremierePro_TargetPath) { Get-ChildItem -Directory -Path $PremierePro_TargetPath | Where-Object { $_.Name -match '^.*Premiere Pro(?!.*\(Beta\)$)' } | Sort-Object -Descending }
 $PremierePro_Name = if ($PremierePro_Name.length -ge 1) { $PremierePro_Name[0].name } else { "Adobe Premiere Pro" }
-$PremierePro_StartIn = $PremierePro_TargetPath + $PremierePro_Name
-$PremierePro_StartInAlt = $PremierePro_StartIn + "\Support Files"
-$PremierePro_StartInAlt2 = $PremierePro_StartInAlt + "\Contents\Windows"
-$PremierePro_TargetPath = $PremierePro_StartIn + "\Adobe Premiere Pro.exe"
-$PremierePro_TargetPathAlt = $PremierePro_StartInAlt + "\Adobe Premiere Pro.exe"
-$PremierePro_TargetPathAlt2 = $PremierePro_StartInAlt2 + "\Adobe Premiere Pro.exe"
+$PremierePro_WorkingDirectory = $PremierePro_TargetPath + $PremierePro_Name
+$PremierePro_WorkingDirectoryAlt = $PremierePro_WorkingDirectory + "\Support Files"
+$PremierePro_WorkingDirectoryAlt2 = $PremierePro_WorkingDirectoryAlt + "\Contents\Windows"
+$PremierePro_TargetPath = $PremierePro_WorkingDirectory + "\Adobe Premiere Pro.exe"
+$PremierePro_TargetPathAlt = $PremierePro_WorkingDirectoryAlt + "\Adobe Premiere Pro.exe"
+$PremierePro_TargetPathAlt2 = $PremierePro_WorkingDirectoryAlt2 + "\Adobe Premiere Pro.exe"
 $PremierePro_TargetPath = if (Test-Path -Path $PremierePro_TargetPath -PathType leaf) { $PremierePro_TargetPath } elseif (Test-Path -Path $PremierePro_TargetPathAlt -PathType leaf) { $PremierePro_TargetPathAlt } else { $PremierePro_TargetPathAlt2 }
 $PremierePro_Beta_TargetPath = "${env:ProgramFiles}\Adobe\"
 $PremierePro_Beta_Name = if (Test-Path -Path $PremierePro_Beta_TargetPath) { Get-ChildItem -Directory -Path $PremierePro_Beta_TargetPath | Where-Object { $_.Name -match '^.*Premiere Pro.*\(Beta\)$' } | Sort-Object -Descending }
 $PremierePro_Beta_Name = if ($PremierePro_Beta_Name.length -ge 1) { $PremierePro_Beta_Name[0].name } else { "Adobe Premiere Pro (Beta)" }
-$PremierePro_Beta_StartIn = $PremierePro_Beta_TargetPath + $PremierePro_Beta_Name
-$PremierePro_Beta_StartInAlt = $PremierePro_Beta_StartIn + "\Support Files"
-$PremierePro_Beta_StartInAlt2 = $PremierePro_Beta_StartInAlt + "\Contents\Windows"
-$PremierePro_Beta_TargetPathExeAlt = $PremierePro_Beta_StartIn + "\Adobe Premiere Pro.exe"
-$PremierePro_Beta_TargetPathAltExeAlt = $PremierePro_Beta_StartInAlt + "\Adobe Premiere Pro.exe"
-$PremierePro_Beta_TargetPathAlt2ExeAlt = $PremierePro_Beta_StartInAlt2 + "\Adobe Premiere Pro.exe"
-$PremierePro_Beta_TargetPath = $PremierePro_Beta_StartIn + "\Adobe Premiere Pro (Beta).exe"
-$PremierePro_Beta_TargetPathAlt = $PremierePro_Beta_StartInAlt + "\Adobe Premiere Pro (Beta).exe"
-$PremierePro_Beta_TargetPathAlt2 = $PremierePro_Beta_StartInAlt2 + "\Adobe Premiere Pro (Beta).exe"
+$PremierePro_Beta_WorkingDirectory = $PremierePro_Beta_TargetPath + $PremierePro_Beta_Name
+$PremierePro_Beta_WorkingDirectoryAlt = $PremierePro_Beta_WorkingDirectory + "\Support Files"
+$PremierePro_Beta_WorkingDirectoryAlt2 = $PremierePro_Beta_WorkingDirectoryAlt + "\Contents\Windows"
+$PremierePro_Beta_TargetPathExeAlt = $PremierePro_Beta_WorkingDirectory + "\Adobe Premiere Pro.exe"
+$PremierePro_Beta_TargetPathAltExeAlt = $PremierePro_Beta_WorkingDirectoryAlt + "\Adobe Premiere Pro.exe"
+$PremierePro_Beta_TargetPathAlt2ExeAlt = $PremierePro_Beta_WorkingDirectoryAlt2 + "\Adobe Premiere Pro.exe"
+$PremierePro_Beta_TargetPath = $PremierePro_Beta_WorkingDirectory + "\Adobe Premiere Pro (Beta).exe"
+$PremierePro_Beta_TargetPathAlt = $PremierePro_Beta_WorkingDirectoryAlt + "\Adobe Premiere Pro (Beta).exe"
+$PremierePro_Beta_TargetPathAlt2 = $PremierePro_Beta_WorkingDirectoryAlt2 + "\Adobe Premiere Pro (Beta).exe"
 $PremierePro_Beta_TargetPath = if (Test-Path -Path $PremierePro_Beta_TargetPathExeAlt -PathType leaf) { $PremierePro_Beta_TargetPathExeAlt } elseif (Test-Path -Path $PremierePro_Beta_TargetPathAltExeAlt -PathType leaf) { $PremierePro_Beta_TargetPathAltExeAlt } elseif (Test-Path -Path $PremierePro_Beta_TargetPathAlt2ExeAlt -PathType leaf) { $PremierePro_Beta_TargetPathAlt2ExeAlt } elseif (Test-Path -Path $PremierePro_Beta_TargetPath -PathType leaf) { $PremierePro_Beta_TargetPath } elseif (Test-Path -Path $PremierePro_Beta_TargetPathAlt -PathType leaf) { $PremierePro_Beta_TargetPathAlt } else { $PremierePro_Beta_TargetPathAlt2 }
 # Adobe Premiere Rush
 $PremiereRush_TargetPath = "${env:ProgramFiles}\Adobe\"
 $PremiereRush_Name = if (Test-Path -Path $PremiereRush_TargetPath) { Get-ChildItem -Directory -Path $PremiereRush_TargetPath | Where-Object { $_.Name -match '^.*Premiere Rush(?!.*\(Beta\)$)' } | Sort-Object -Descending }
 $PremiereRush_Name = if ($PremiereRush_Name.length -ge 1) { $PremiereRush_Name[0].name } else { "Adobe Premiere Rush" }
-$PremiereRush_StartIn = $PremiereRush_TargetPath + $PremiereRush_Name
-$PremiereRush_StartInAlt = $PremiereRush_StartIn + "\Support Files"
-$PremiereRush_StartInAlt2 = $PremiereRush_StartInAlt + "\Contents\Windows"
-$PremiereRush_TargetPath = $PremiereRush_StartIn + "\Adobe Premiere Rush.exe"
-$PremiereRush_TargetPathAlt = $PremiereRush_StartInAlt + "\Adobe Premiere Rush.exe"
-$PremiereRush_TargetPathAlt2 = $PremiereRush_StartInAlt2 + "\Adobe Premiere Rush.exe"
+$PremiereRush_WorkingDirectory = $PremiereRush_TargetPath + $PremiereRush_Name
+$PremiereRush_WorkingDirectoryAlt = $PremiereRush_WorkingDirectory + "\Support Files"
+$PremiereRush_WorkingDirectoryAlt2 = $PremiereRush_WorkingDirectoryAlt + "\Contents\Windows"
+$PremiereRush_TargetPath = $PremiereRush_WorkingDirectory + "\Adobe Premiere Rush.exe"
+$PremiereRush_TargetPathAlt = $PremiereRush_WorkingDirectoryAlt + "\Adobe Premiere Rush.exe"
+$PremiereRush_TargetPathAlt2 = $PremiereRush_WorkingDirectoryAlt2 + "\Adobe Premiere Rush.exe"
 $PremiereRush_TargetPath = if (Test-Path -Path $PremiereRush_TargetPath -PathType leaf) { $PremiereRush_TargetPath } elseif (Test-Path -Path $PremiereRush_TargetPathAlt -PathType leaf) { $PremiereRush_TargetPathAlt } else { $PremiereRush_TargetPathAlt2 }
 $PremiereRush_Beta_TargetPath = "${env:ProgramFiles}\Adobe\"
 $PremiereRush_Beta_Name = if (Test-Path -Path $PremiereRush_Beta_TargetPath) { Get-ChildItem -Directory -Path $PremiereRush_Beta_TargetPath | Where-Object { $_.Name -match '^.*Premiere Rush.*\(Beta\)$' } | Sort-Object -Descending }
 $PremiereRush_Beta_Name = if ($PremiereRush_Beta_Name.length -ge 1) { $PremiereRush_Beta_Name[0].name } else { "Adobe Premiere Rush (Beta)" }
-$PremiereRush_Beta_StartIn = $PremiereRush_Beta_TargetPath + $PremiereRush_Beta_Name
-$PremiereRush_Beta_StartInAlt = $PremiereRush_Beta_StartIn + "\Support Files"
-$PremiereRush_Beta_StartInAlt2 = $PremiereRush_Beta_StartInAlt + "\Contents\Windows"
-$PremiereRush_Beta_TargetPathExeAlt = $PremiereRush_Beta_StartIn + "\Adobe Premiere Rush.exe"
-$PremiereRush_Beta_TargetPathAltExeAlt = $PremiereRush_Beta_StartInAlt + "\Adobe Premiere Rush.exe"
-$PremiereRush_Beta_TargetPathAlt2ExeAlt = $PremiereRush_Beta_StartInAlt2 + "\Adobe Premiere Rush.exe"
-$PremiereRush_Beta_TargetPath = $PremiereRush_Beta_StartIn + "\Adobe Premiere Rush (Beta).exe"
-$PremiereRush_Beta_TargetPathAlt = $PremiereRush_Beta_StartInAlt + "\Adobe Premiere Rush (Beta).exe"
-$PremiereRush_Beta_TargetPathAlt2 = $PremiereRush_Beta_StartInAlt2 + "\Adobe Premiere Rush (Beta).exe"
+$PremiereRush_Beta_WorkingDirectory = $PremiereRush_Beta_TargetPath + $PremiereRush_Beta_Name
+$PremiereRush_Beta_WorkingDirectoryAlt = $PremiereRush_Beta_WorkingDirectory + "\Support Files"
+$PremiereRush_Beta_WorkingDirectoryAlt2 = $PremiereRush_Beta_WorkingDirectoryAlt + "\Contents\Windows"
+$PremiereRush_Beta_TargetPathExeAlt = $PremiereRush_Beta_WorkingDirectory + "\Adobe Premiere Rush.exe"
+$PremiereRush_Beta_TargetPathAltExeAlt = $PremiereRush_Beta_WorkingDirectoryAlt + "\Adobe Premiere Rush.exe"
+$PremiereRush_Beta_TargetPathAlt2ExeAlt = $PremiereRush_Beta_WorkingDirectoryAlt2 + "\Adobe Premiere Rush.exe"
+$PremiereRush_Beta_TargetPath = $PremiereRush_Beta_WorkingDirectory + "\Adobe Premiere Rush (Beta).exe"
+$PremiereRush_Beta_TargetPathAlt = $PremiereRush_Beta_WorkingDirectoryAlt + "\Adobe Premiere Rush (Beta).exe"
+$PremiereRush_Beta_TargetPathAlt2 = $PremiereRush_Beta_WorkingDirectoryAlt2 + "\Adobe Premiere Rush (Beta).exe"
 $PremiereRush_Beta_TargetPath = if (Test-Path -Path $PremiereRush_Beta_TargetPathExeAlt -PathType leaf) { $PremiereRush_Beta_TargetPathExeAlt } elseif (Test-Path -Path $PremiereRush_Beta_TargetPathAltExeAlt -PathType leaf) { $PremiereRush_Beta_TargetPathAltExeAlt } elseif (Test-Path -Path $PremiereRush_Beta_TargetPathAlt2ExeAlt -PathType leaf) { $PremiereRush_Beta_TargetPathAlt2ExeAlt } elseif (Test-Path -Path $PremiereRush_Beta_TargetPath -PathType leaf) { $PremiereRush_Beta_TargetPath } elseif (Test-Path -Path $PremiereRush_Beta_TargetPathAlt -PathType leaf) { $PremiereRush_Beta_TargetPathAlt } else { $PremiereRush_Beta_TargetPathAlt2 }
 # Adobe Substance 3D Designer
 $Substance3dDesigner_TargetPath = "${env:ProgramFiles}\Adobe\"
 $Substance3dDesigner_Name = if (Test-Path -Path $Substance3dDesigner_TargetPath) { Get-ChildItem -Directory -Path $Substance3dDesigner_TargetPath | Where-Object { $_.Name -match '^.*Substance 3D Designer(?!.*\(Beta\)$)' } | Sort-Object -Descending }
 $Substance3dDesigner_Name = if ($Substance3dDesigner_Name.length -ge 1) { $Substance3dDesigner_Name[0].name } else { "Adobe Substance 3D Designer" }
-$Substance3dDesigner_StartIn = $Substance3dDesigner_TargetPath + $Substance3dDesigner_Name
-$Substance3dDesigner_StartInAlt = $Substance3dDesigner_StartIn + "\Support Files"
-$Substance3dDesigner_StartInAlt2 = $Substance3dDesigner_StartInAlt + "\Contents\Windows"
-$Substance3dDesigner_TargetPath = $Substance3dDesigner_StartIn + "\Adobe Substance 3D Designer.exe"
-$Substance3dDesigner_TargetPathAlt = $Substance3dDesigner_StartInAlt + "\Adobe Substance 3D Designer.exe"
-$Substance3dDesigner_TargetPathAlt2 = $Substance3dDesigner_StartInAlt2 + "\Adobe Substance 3D Designer.exe"
+$Substance3dDesigner_WorkingDirectory = $Substance3dDesigner_TargetPath + $Substance3dDesigner_Name
+$Substance3dDesigner_WorkingDirectoryAlt = $Substance3dDesigner_WorkingDirectory + "\Support Files"
+$Substance3dDesigner_WorkingDirectoryAlt2 = $Substance3dDesigner_WorkingDirectoryAlt + "\Contents\Windows"
+$Substance3dDesigner_TargetPath = $Substance3dDesigner_WorkingDirectory + "\Adobe Substance 3D Designer.exe"
+$Substance3dDesigner_TargetPathAlt = $Substance3dDesigner_WorkingDirectoryAlt + "\Adobe Substance 3D Designer.exe"
+$Substance3dDesigner_TargetPathAlt2 = $Substance3dDesigner_WorkingDirectoryAlt2 + "\Adobe Substance 3D Designer.exe"
 $Substance3dDesigner_TargetPath = if (Test-Path -Path $Substance3dDesigner_TargetPath -PathType leaf) { $Substance3dDesigner_TargetPath } elseif (Test-Path -Path $Substance3dDesigner_TargetPathAlt -PathType leaf) { $Substance3dDesigner_TargetPathAlt } else { $Substance3dDesigner_TargetPathAlt2 }
 $Substance3dDesigner_Beta_TargetPath = "${env:ProgramFiles}\Adobe\"
 $Substance3dDesigner_Beta_Name = if (Test-Path -Path $Substance3dDesigner_Beta_TargetPath) { Get-ChildItem -Directory -Path $Substance3dDesigner_Beta_TargetPath | Where-Object { $_.Name -match '^.*Substance 3D Designer.*\(Beta\)$' } | Sort-Object -Descending }
 $Substance3dDesigner_Beta_Name = if ($Substance3dDesigner_Beta_Name.length -ge 1) { $Substance3dDesigner_Beta_Name[0].name } else { "Adobe Substance 3D Designer (Beta)" }
-$Substance3dDesigner_Beta_StartIn = $Substance3dDesigner_Beta_TargetPath + $Substance3dDesigner_Beta_Name
-$Substance3dDesigner_Beta_StartInAlt = $Substance3dDesigner_Beta_StartIn + "\Support Files"
-$Substance3dDesigner_Beta_StartInAlt2 = $Substance3dDesigner_Beta_StartInAlt + "\Contents\Windows"
-$Substance3dDesigner_Beta_TargetPathExeAlt = $Substance3dDesigner_Beta_StartIn + "\Adobe Substance 3D Designer.exe"
-$Substance3dDesigner_Beta_TargetPathAltExeAlt = $Substance3dDesigner_Beta_StartInAlt + "\Adobe Substance 3D Designer.exe"
-$Substance3dDesigner_Beta_TargetPathAlt2ExeAlt = $Substance3dDesigner_Beta_StartInAlt2 + "\Adobe Substance 3D Designer.exe"
-$Substance3dDesigner_Beta_TargetPath = $Substance3dDesigner_Beta_StartIn + "\Adobe Substance 3D Designer (Beta).exe"
-$Substance3dDesigner_Beta_TargetPathAlt = $Substance3dDesigner_Beta_StartInAlt + "\Adobe Substance 3D Designer (Beta).exe"
-$Substance3dDesigner_Beta_TargetPathAlt2 = $Substance3dDesigner_Beta_StartInAlt2 + "\Adobe Substance 3D Designer (Beta).exe"
+$Substance3dDesigner_Beta_WorkingDirectory = $Substance3dDesigner_Beta_TargetPath + $Substance3dDesigner_Beta_Name
+$Substance3dDesigner_Beta_WorkingDirectoryAlt = $Substance3dDesigner_Beta_WorkingDirectory + "\Support Files"
+$Substance3dDesigner_Beta_WorkingDirectoryAlt2 = $Substance3dDesigner_Beta_WorkingDirectoryAlt + "\Contents\Windows"
+$Substance3dDesigner_Beta_TargetPathExeAlt = $Substance3dDesigner_Beta_WorkingDirectory + "\Adobe Substance 3D Designer.exe"
+$Substance3dDesigner_Beta_TargetPathAltExeAlt = $Substance3dDesigner_Beta_WorkingDirectoryAlt + "\Adobe Substance 3D Designer.exe"
+$Substance3dDesigner_Beta_TargetPathAlt2ExeAlt = $Substance3dDesigner_Beta_WorkingDirectoryAlt2 + "\Adobe Substance 3D Designer.exe"
+$Substance3dDesigner_Beta_TargetPath = $Substance3dDesigner_Beta_WorkingDirectory + "\Adobe Substance 3D Designer (Beta).exe"
+$Substance3dDesigner_Beta_TargetPathAlt = $Substance3dDesigner_Beta_WorkingDirectoryAlt + "\Adobe Substance 3D Designer (Beta).exe"
+$Substance3dDesigner_Beta_TargetPathAlt2 = $Substance3dDesigner_Beta_WorkingDirectoryAlt2 + "\Adobe Substance 3D Designer (Beta).exe"
 $Substance3dDesigner_Beta_TargetPath = if (Test-Path -Path $Substance3dDesigner_Beta_TargetPathExeAlt -PathType leaf) { $Substance3dDesigner_Beta_TargetPathExeAlt } elseif (Test-Path -Path $Substance3dDesigner_Beta_TargetPathAltExeAlt -PathType leaf) { $Substance3dDesigner_Beta_TargetPathAltExeAlt } elseif (Test-Path -Path $Substance3dDesigner_Beta_TargetPathAlt2ExeAlt -PathType leaf) { $Substance3dDesigner_Beta_TargetPathAlt2ExeAlt } elseif (Test-Path -Path $Substance3dDesigner_Beta_TargetPath -PathType leaf) { $Substance3dDesigner_Beta_TargetPath } elseif (Test-Path -Path $Substance3dDesigner_Beta_TargetPathAlt -PathType leaf) { $Substance3dDesigner_Beta_TargetPathAlt } else { $Substance3dDesigner_Beta_TargetPathAlt2 }
 # Adobe Substance 3D Modeler
 $Substance3dModeler_TargetPath = "${env:ProgramFiles}\Adobe\"
 $Substance3dModeler_Name = if (Test-Path -Path $Substance3dModeler_TargetPath) { Get-ChildItem -Directory -Path $Substance3dModeler_TargetPath | Where-Object { $_.Name -match '^.*Substance 3D Modeler(?!.*\(Beta\)$)' } | Sort-Object -Descending }
 $Substance3dModeler_Name = if ($Substance3dModeler_Name.length -ge 1) { $Substance3dModeler_Name[0].name } else { "Adobe Substance 3D Modeler" }
-$Substance3dModeler_StartIn = $Substance3dModeler_TargetPath + $Substance3dModeler_Name
-$Substance3dModeler_StartInAlt = $Substance3dModeler_StartIn + "\Support Files"
-$Substance3dModeler_StartInAlt2 = $Substance3dModeler_StartInAlt + "\Contents\Windows"
-$Substance3dModeler_TargetPath = $Substance3dModeler_StartIn + "\Adobe Substance 3D Modeler.exe"
-$Substance3dModeler_TargetPathAlt = $Substance3dModeler_StartInAlt + "\Adobe Substance 3D Modeler.exe"
-$Substance3dModeler_TargetPathAlt2 = $Substance3dModeler_StartInAlt2 + "\Adobe Substance 3D Modeler.exe"
+$Substance3dModeler_WorkingDirectory = $Substance3dModeler_TargetPath + $Substance3dModeler_Name
+$Substance3dModeler_WorkingDirectoryAlt = $Substance3dModeler_WorkingDirectory + "\Support Files"
+$Substance3dModeler_WorkingDirectoryAlt2 = $Substance3dModeler_WorkingDirectoryAlt + "\Contents\Windows"
+$Substance3dModeler_TargetPath = $Substance3dModeler_WorkingDirectory + "\Adobe Substance 3D Modeler.exe"
+$Substance3dModeler_TargetPathAlt = $Substance3dModeler_WorkingDirectoryAlt + "\Adobe Substance 3D Modeler.exe"
+$Substance3dModeler_TargetPathAlt2 = $Substance3dModeler_WorkingDirectoryAlt2 + "\Adobe Substance 3D Modeler.exe"
 $Substance3dModeler_TargetPath = if (Test-Path -Path $Substance3dModeler_TargetPath -PathType leaf) { $Substance3dModeler_TargetPath } elseif (Test-Path -Path $Substance3dModeler_TargetPathAlt -PathType leaf) { $Substance3dModeler_TargetPathAlt } else { $Substance3dModeler_TargetPathAlt2 }
 $Substance3dModeler_Beta_TargetPath = "${env:ProgramFiles}\Adobe\"
 $Substance3dModeler_Beta_Name = if (Test-Path -Path $Substance3dModeler_Beta_TargetPath) { Get-ChildItem -Directory -Path $Substance3dModeler_Beta_TargetPath | Where-Object { $_.Name -match '^.*Substance 3D Modeler.*\(Beta\)$' } | Sort-Object -Descending }
 $Substance3dModeler_Beta_Name = if ($Substance3dModeler_Beta_Name.length -ge 1) { $Substance3dModeler_Beta_Name[0].name } else { "Adobe Substance 3D Modeler (Beta)" }
-$Substance3dModeler_Beta_StartIn = $Substance3dModeler_Beta_TargetPath + $Substance3dModeler_Beta_Name
-$Substance3dModeler_Beta_StartInAlt = $Substance3dModeler_Beta_StartIn + "\Support Files"
-$Substance3dModeler_Beta_StartInAlt2 = $Substance3dModeler_Beta_StartInAlt + "\Contents\Windows"
-$Substance3dModeler_Beta_TargetPathExeAlt = $Substance3dModeler_Beta_StartIn + "\Adobe Substance 3D Modeler.exe"
-$Substance3dModeler_Beta_TargetPathAltExeAlt = $Substance3dModeler_Beta_StartInAlt + "\Adobe Substance 3D Modeler.exe"
-$Substance3dModeler_Beta_TargetPathAlt2ExeAlt = $Substance3dModeler_Beta_StartInAlt2 + "\Adobe Substance 3D Modeler.exe"
-$Substance3dModeler_Beta_TargetPath = $Substance3dModeler_Beta_StartIn + "\Adobe Substance 3D Modeler (Beta).exe"
-$Substance3dModeler_Beta_TargetPathAlt = $Substance3dModeler_Beta_StartInAlt + "\Adobe Substance 3D Modeler (Beta).exe"
-$Substance3dModeler_Beta_TargetPathAlt2 = $Substance3dModeler_Beta_StartInAlt2 + "\Adobe Substance 3D Modeler (Beta).exe"
+$Substance3dModeler_Beta_WorkingDirectory = $Substance3dModeler_Beta_TargetPath + $Substance3dModeler_Beta_Name
+$Substance3dModeler_Beta_WorkingDirectoryAlt = $Substance3dModeler_Beta_WorkingDirectory + "\Support Files"
+$Substance3dModeler_Beta_WorkingDirectoryAlt2 = $Substance3dModeler_Beta_WorkingDirectoryAlt + "\Contents\Windows"
+$Substance3dModeler_Beta_TargetPathExeAlt = $Substance3dModeler_Beta_WorkingDirectory + "\Adobe Substance 3D Modeler.exe"
+$Substance3dModeler_Beta_TargetPathAltExeAlt = $Substance3dModeler_Beta_WorkingDirectoryAlt + "\Adobe Substance 3D Modeler.exe"
+$Substance3dModeler_Beta_TargetPathAlt2ExeAlt = $Substance3dModeler_Beta_WorkingDirectoryAlt2 + "\Adobe Substance 3D Modeler.exe"
+$Substance3dModeler_Beta_TargetPath = $Substance3dModeler_Beta_WorkingDirectory + "\Adobe Substance 3D Modeler (Beta).exe"
+$Substance3dModeler_Beta_TargetPathAlt = $Substance3dModeler_Beta_WorkingDirectoryAlt + "\Adobe Substance 3D Modeler (Beta).exe"
+$Substance3dModeler_Beta_TargetPathAlt2 = $Substance3dModeler_Beta_WorkingDirectoryAlt2 + "\Adobe Substance 3D Modeler (Beta).exe"
 $Substance3dModeler_Beta_TargetPath = if (Test-Path -Path $Substance3dModeler_Beta_TargetPathExeAlt -PathType leaf) { $Substance3dModeler_Beta_TargetPathExeAlt } elseif (Test-Path -Path $Substance3dModeler_Beta_TargetPathAltExeAlt -PathType leaf) { $Substance3dModeler_Beta_TargetPathAltExeAlt } elseif (Test-Path -Path $Substance3dModeler_Beta_TargetPathAlt2ExeAlt -PathType leaf) { $Substance3dModeler_Beta_TargetPathAlt2ExeAlt } elseif (Test-Path -Path $Substance3dModeler_Beta_TargetPath -PathType leaf) { $Substance3dModeler_Beta_TargetPath } elseif (Test-Path -Path $Substance3dModeler_Beta_TargetPathAlt -PathType leaf) { $Substance3dModeler_Beta_TargetPathAlt } else { $Substance3dModeler_Beta_TargetPathAlt2 }
 # Adobe Substance 3D Painter
 $Substance3dPainter_TargetPath = "${env:ProgramFiles}\Adobe\"
 $Substance3dPainter_Name = if (Test-Path -Path $Substance3dPainter_TargetPath) { Get-ChildItem -Directory -Path $Substance3dPainter_TargetPath | Where-Object { $_.Name -match '^.*Substance 3D Painter(?!.*\(Beta\)$)' } | Sort-Object -Descending }
 $Substance3dPainter_Name = if ($Substance3dPainter_Name.length -ge 1) { $Substance3dPainter_Name[0].name } else { "Adobe Substance 3D Painter" }
-$Substance3dPainter_StartIn = $Substance3dPainter_TargetPath + $Substance3dPainter_Name
-$Substance3dPainter_StartInAlt = $Substance3dPainter_StartIn + "\Support Files"
-$Substance3dPainter_StartInAlt2 = $Substance3dPainter_StartInAlt + "\Contents\Windows"
-$Substance3dPainter_TargetPath = $Substance3dPainter_StartIn + "\Adobe Substance 3D Painter.exe"
-$Substance3dPainter_TargetPathAlt = $Substance3dPainter_StartInAlt + "\Adobe Substance 3D Painter.exe"
-$Substance3dPainter_TargetPathAlt2 = $Substance3dPainter_StartInAlt2 + "\Adobe Substance 3D Painter.exe"
+$Substance3dPainter_WorkingDirectory = $Substance3dPainter_TargetPath + $Substance3dPainter_Name
+$Substance3dPainter_WorkingDirectoryAlt = $Substance3dPainter_WorkingDirectory + "\Support Files"
+$Substance3dPainter_WorkingDirectoryAlt2 = $Substance3dPainter_WorkingDirectoryAlt + "\Contents\Windows"
+$Substance3dPainter_TargetPath = $Substance3dPainter_WorkingDirectory + "\Adobe Substance 3D Painter.exe"
+$Substance3dPainter_TargetPathAlt = $Substance3dPainter_WorkingDirectoryAlt + "\Adobe Substance 3D Painter.exe"
+$Substance3dPainter_TargetPathAlt2 = $Substance3dPainter_WorkingDirectoryAlt2 + "\Adobe Substance 3D Painter.exe"
 $Substance3dPainter_TargetPath = if (Test-Path -Path $Substance3dPainter_TargetPath -PathType leaf) { $Substance3dPainter_TargetPath } elseif (Test-Path -Path $Substance3dPainter_TargetPathAlt -PathType leaf) { $Substance3dPainter_TargetPathAlt } else { $Substance3dPainter_TargetPathAlt2 }
 $Substance3dPainter_Beta_TargetPath = "${env:ProgramFiles}\Adobe\"
 $Substance3dPainter_Beta_Name = if (Test-Path -Path $Substance3dPainter_Beta_TargetPath) { Get-ChildItem -Directory -Path $Substance3dPainter_Beta_TargetPath | Where-Object { $_.Name -match '^.*Substance 3D Painter.*\(Beta\)$' } | Sort-Object -Descending }
 $Substance3dPainter_Beta_Name = if ($Substance3dPainter_Beta_Name.length -ge 1) { $Substance3dPainter_Beta_Name[0].name } else { "Adobe Substance 3D Painter (Beta)" }
-$Substance3dPainter_Beta_StartIn = $Substance3dPainter_Beta_TargetPath + $Substance3dPainter_Beta_Name
-$Substance3dPainter_Beta_StartInAlt = $Substance3dPainter_Beta_StartIn + "\Support Files"
-$Substance3dPainter_Beta_StartInAlt2 = $Substance3dPainter_Beta_StartInAlt + "\Contents\Windows"
-$Substance3dPainter_Beta_TargetPathExeAlt = $Substance3dPainter_Beta_StartIn + "\Adobe Substance 3D Painter.exe"
-$Substance3dPainter_Beta_TargetPathAltExeAlt = $Substance3dPainter_Beta_StartInAlt + "\Adobe Substance 3D Painter.exe"
-$Substance3dPainter_Beta_TargetPathAlt2ExeAlt = $Substance3dPainter_Beta_StartInAlt2 + "\Adobe Substance 3D Painter.exe"
-$Substance3dPainter_Beta_TargetPath = $Substance3dPainter_Beta_StartIn + "\Adobe Substance 3D Painter (Beta).exe"
-$Substance3dPainter_Beta_TargetPathAlt = $Substance3dPainter_Beta_StartInAlt + "\Adobe Substance 3D Painter (Beta).exe"
-$Substance3dPainter_Beta_TargetPathAlt2 = $Substance3dPainter_Beta_StartInAlt2 + "\Adobe Substance 3D Painter (Beta).exe"
+$Substance3dPainter_Beta_WorkingDirectory = $Substance3dPainter_Beta_TargetPath + $Substance3dPainter_Beta_Name
+$Substance3dPainter_Beta_WorkingDirectoryAlt = $Substance3dPainter_Beta_WorkingDirectory + "\Support Files"
+$Substance3dPainter_Beta_WorkingDirectoryAlt2 = $Substance3dPainter_Beta_WorkingDirectoryAlt + "\Contents\Windows"
+$Substance3dPainter_Beta_TargetPathExeAlt = $Substance3dPainter_Beta_WorkingDirectory + "\Adobe Substance 3D Painter.exe"
+$Substance3dPainter_Beta_TargetPathAltExeAlt = $Substance3dPainter_Beta_WorkingDirectoryAlt + "\Adobe Substance 3D Painter.exe"
+$Substance3dPainter_Beta_TargetPathAlt2ExeAlt = $Substance3dPainter_Beta_WorkingDirectoryAlt2 + "\Adobe Substance 3D Painter.exe"
+$Substance3dPainter_Beta_TargetPath = $Substance3dPainter_Beta_WorkingDirectory + "\Adobe Substance 3D Painter (Beta).exe"
+$Substance3dPainter_Beta_TargetPathAlt = $Substance3dPainter_Beta_WorkingDirectoryAlt + "\Adobe Substance 3D Painter (Beta).exe"
+$Substance3dPainter_Beta_TargetPathAlt2 = $Substance3dPainter_Beta_WorkingDirectoryAlt2 + "\Adobe Substance 3D Painter (Beta).exe"
 $Substance3dPainter_Beta_TargetPath = if (Test-Path -Path $Substance3dPainter_Beta_TargetPathExeAlt -PathType leaf) { $Substance3dPainter_Beta_TargetPathExeAlt } elseif (Test-Path -Path $Substance3dPainter_Beta_TargetPathAltExeAlt -PathType leaf) { $Substance3dPainter_Beta_TargetPathAltExeAlt } elseif (Test-Path -Path $Substance3dPainter_Beta_TargetPathAlt2ExeAlt -PathType leaf) { $Substance3dPainter_Beta_TargetPathAlt2ExeAlt } elseif (Test-Path -Path $Substance3dPainter_Beta_TargetPath -PathType leaf) { $Substance3dPainter_Beta_TargetPath } elseif (Test-Path -Path $Substance3dPainter_Beta_TargetPathAlt -PathType leaf) { $Substance3dPainter_Beta_TargetPathAlt } else { $Substance3dPainter_Beta_TargetPathAlt2 }
 # Adobe Substance 3D Sampler
 $Substance3dSampler_TargetPath = "${env:ProgramFiles}\Adobe\"
 $Substance3dSampler_Name = if (Test-Path -Path $Substance3dSampler_TargetPath) { Get-ChildItem -Directory -Path $Substance3dSampler_TargetPath | Where-Object { $_.Name -match '^.*Substance 3D Sampler(?!.*\(Beta\)$)' } | Sort-Object -Descending }
 $Substance3dSampler_Name = if ($Substance3dSampler_Name.length -ge 1) { $Substance3dSampler_Name[0].name } else { "Adobe Substance 3D Sampler" }
-$Substance3dSampler_StartIn = $Substance3dSampler_TargetPath + $Substance3dSampler_Name
-$Substance3dSampler_StartInAlt = $Substance3dSampler_StartIn + "\Support Files"
-$Substance3dSampler_StartInAlt2 = $Substance3dSampler_StartInAlt + "\Contents\Windows"
-$Substance3dSampler_TargetPath = $Substance3dSampler_StartIn + "\Adobe Substance 3D Sampler.exe"
-$Substance3dSampler_TargetPathAlt = $Substance3dSampler_StartInAlt + "\Adobe Substance 3D Sampler.exe"
-$Substance3dSampler_TargetPathAlt2 = $Substance3dSampler_StartInAlt2 + "\Adobe Substance 3D Sampler.exe"
+$Substance3dSampler_WorkingDirectory = $Substance3dSampler_TargetPath + $Substance3dSampler_Name
+$Substance3dSampler_WorkingDirectoryAlt = $Substance3dSampler_WorkingDirectory + "\Support Files"
+$Substance3dSampler_WorkingDirectoryAlt2 = $Substance3dSampler_WorkingDirectoryAlt + "\Contents\Windows"
+$Substance3dSampler_TargetPath = $Substance3dSampler_WorkingDirectory + "\Adobe Substance 3D Sampler.exe"
+$Substance3dSampler_TargetPathAlt = $Substance3dSampler_WorkingDirectoryAlt + "\Adobe Substance 3D Sampler.exe"
+$Substance3dSampler_TargetPathAlt2 = $Substance3dSampler_WorkingDirectoryAlt2 + "\Adobe Substance 3D Sampler.exe"
 $Substance3dSampler_TargetPath = if (Test-Path -Path $Substance3dSampler_TargetPath -PathType leaf) { $Substance3dSampler_TargetPath } elseif (Test-Path -Path $Substance3dSampler_TargetPathAlt -PathType leaf) { $Substance3dSampler_TargetPathAlt } else { $Substance3dSampler_TargetPathAlt2 }
 $Substance3dSampler_Beta_TargetPath = "${env:ProgramFiles}\Adobe\"
 $Substance3dSampler_Beta_Name = if (Test-Path -Path $Substance3dSampler_Beta_TargetPath) { Get-ChildItem -Directory -Path $Substance3dSampler_Beta_TargetPath | Where-Object { $_.Name -match '^.*Substance 3D Sampler.*\(Beta\)$' } | Sort-Object -Descending }
 $Substance3dSampler_Beta_Name = if ($Substance3dSampler_Beta_Name.length -ge 1) { $Substance3dSampler_Beta_Name[0].name } else { "Adobe Substance 3D Sampler (Beta)" }
-$Substance3dSampler_Beta_StartIn = $Substance3dSampler_Beta_TargetPath + $Substance3dSampler_Beta_Name
-$Substance3dSampler_Beta_StartInAlt = $Substance3dSampler_Beta_StartIn + "\Support Files"
-$Substance3dSampler_Beta_StartInAlt2 = $Substance3dSampler_Beta_StartInAlt + "\Contents\Windows"
-$Substance3dSampler_Beta_TargetPathExeAlt = $Substance3dSampler_Beta_StartIn + "\Adobe Substance 3D Sampler.exe"
-$Substance3dSampler_Beta_TargetPathAltExeAlt = $Substance3dSampler_Beta_StartInAlt + "\Adobe Substance 3D Sampler.exe"
-$Substance3dSampler_Beta_TargetPathAlt2ExeAlt = $Substance3dSampler_Beta_StartInAlt2 + "\Adobe Substance 3D Sampler.exe"
-$Substance3dSampler_Beta_TargetPath = $Substance3dSampler_Beta_StartIn + "\Adobe Substance 3D Sampler (Beta).exe"
-$Substance3dSampler_Beta_TargetPathAlt = $Substance3dSampler_Beta_StartInAlt + "\Adobe Substance 3D Sampler (Beta).exe"
-$Substance3dSampler_Beta_TargetPathAlt2 = $Substance3dSampler_Beta_StartInAlt2 + "\Adobe Substance 3D Sampler (Beta).exe"
+$Substance3dSampler_Beta_WorkingDirectory = $Substance3dSampler_Beta_TargetPath + $Substance3dSampler_Beta_Name
+$Substance3dSampler_Beta_WorkingDirectoryAlt = $Substance3dSampler_Beta_WorkingDirectory + "\Support Files"
+$Substance3dSampler_Beta_WorkingDirectoryAlt2 = $Substance3dSampler_Beta_WorkingDirectoryAlt + "\Contents\Windows"
+$Substance3dSampler_Beta_TargetPathExeAlt = $Substance3dSampler_Beta_WorkingDirectory + "\Adobe Substance 3D Sampler.exe"
+$Substance3dSampler_Beta_TargetPathAltExeAlt = $Substance3dSampler_Beta_WorkingDirectoryAlt + "\Adobe Substance 3D Sampler.exe"
+$Substance3dSampler_Beta_TargetPathAlt2ExeAlt = $Substance3dSampler_Beta_WorkingDirectoryAlt2 + "\Adobe Substance 3D Sampler.exe"
+$Substance3dSampler_Beta_TargetPath = $Substance3dSampler_Beta_WorkingDirectory + "\Adobe Substance 3D Sampler (Beta).exe"
+$Substance3dSampler_Beta_TargetPathAlt = $Substance3dSampler_Beta_WorkingDirectoryAlt + "\Adobe Substance 3D Sampler (Beta).exe"
+$Substance3dSampler_Beta_TargetPathAlt2 = $Substance3dSampler_Beta_WorkingDirectoryAlt2 + "\Adobe Substance 3D Sampler (Beta).exe"
 $Substance3dSampler_Beta_TargetPath = if (Test-Path -Path $Substance3dSampler_Beta_TargetPathExeAlt -PathType leaf) { $Substance3dSampler_Beta_TargetPathExeAlt } elseif (Test-Path -Path $Substance3dSampler_Beta_TargetPathAltExeAlt -PathType leaf) { $Substance3dSampler_Beta_TargetPathAltExeAlt } elseif (Test-Path -Path $Substance3dSampler_Beta_TargetPathAlt2ExeAlt -PathType leaf) { $Substance3dSampler_Beta_TargetPathAlt2ExeAlt } elseif (Test-Path -Path $Substance3dSampler_Beta_TargetPath -PathType leaf) { $Substance3dSampler_Beta_TargetPath } elseif (Test-Path -Path $Substance3dSampler_Beta_TargetPathAlt -PathType leaf) { $Substance3dSampler_Beta_TargetPathAlt } else { $Substance3dSampler_Beta_TargetPathAlt2 }
 # Adobe Substance 3D Stager
 $Substance3dStager_TargetPath = "${env:ProgramFiles}\Adobe\"
 $Substance3dStager_Name = if (Test-Path -Path $Substance3dStager_TargetPath) { Get-ChildItem -Directory -Path $Substance3dStager_TargetPath | Where-Object { $_.Name -match '^.*Substance 3D Stager(?!.*\(Beta\)$)' } | Sort-Object -Descending }
 $Substance3dStager_Name = if ($Substance3dStager_Name.length -ge 1) { $Substance3dStager_Name[0].name } else { "Adobe Substance 3D Stager" }
-$Substance3dStager_StartIn = $Substance3dStager_TargetPath + $Substance3dStager_Name
-$Substance3dStager_StartInAlt = $Substance3dStager_StartIn + "\Support Files"
-$Substance3dStager_StartInAlt2 = $Substance3dStager_StartInAlt + "\Contents\Windows"
-$Substance3dStager_TargetPath = $Substance3dStager_StartIn + "\Adobe Substance 3D Stager.exe"
-$Substance3dStager_TargetPathAlt = $Substance3dStager_StartInAlt + "\Adobe Substance 3D Stager.exe"
-$Substance3dStager_TargetPathAlt2 = $Substance3dStager_StartInAlt2 + "\Adobe Substance 3D Stager.exe"
+$Substance3dStager_WorkingDirectory = $Substance3dStager_TargetPath + $Substance3dStager_Name
+$Substance3dStager_WorkingDirectoryAlt = $Substance3dStager_WorkingDirectory + "\Support Files"
+$Substance3dStager_WorkingDirectoryAlt2 = $Substance3dStager_WorkingDirectoryAlt + "\Contents\Windows"
+$Substance3dStager_TargetPath = $Substance3dStager_WorkingDirectory + "\Adobe Substance 3D Stager.exe"
+$Substance3dStager_TargetPathAlt = $Substance3dStager_WorkingDirectoryAlt + "\Adobe Substance 3D Stager.exe"
+$Substance3dStager_TargetPathAlt2 = $Substance3dStager_WorkingDirectoryAlt2 + "\Adobe Substance 3D Stager.exe"
 $Substance3dStager_TargetPath = if (Test-Path -Path $Substance3dStager_TargetPath -PathType leaf) { $Substance3dStager_TargetPath } elseif (Test-Path -Path $Substance3dStager_TargetPathAlt -PathType leaf) { $Substance3dStager_TargetPathAlt } else { $Substance3dStager_TargetPathAlt2 }
 $Substance3dStager_Beta_TargetPath = "${env:ProgramFiles}\Adobe\"
 $Substance3dStager_Beta_Name = if (Test-Path -Path $Substance3dStager_Beta_TargetPath) { Get-ChildItem -Directory -Path $Substance3dStager_Beta_TargetPath | Where-Object { $_.Name -match '^.*Substance 3D Stager.*\(Beta\)$' } | Sort-Object -Descending }
 $Substance3dStager_Beta_Name = if ($Substance3dStager_Beta_Name.length -ge 1) { $Substance3dStager_Beta_Name[0].name } else { "Adobe Substance 3D Stager (Beta)" }
-$Substance3dStager_Beta_StartIn = $Substance3dStager_Beta_TargetPath + $Substance3dStager_Beta_Name
-$Substance3dStager_Beta_StartInAlt = $Substance3dStager_Beta_StartIn + "\Support Files"
-$Substance3dStager_Beta_StartInAlt2 = $Substance3dStager_Beta_StartInAlt + "\Contents\Windows"
-$Substance3dStager_Beta_TargetPathExeAlt = $Substance3dStager_Beta_StartIn + "\Adobe Substance 3D Stager.exe"
-$Substance3dStager_Beta_TargetPathAltExeAlt = $Substance3dStager_Beta_StartInAlt + "\Adobe Substance 3D Stager.exe"
-$Substance3dStager_Beta_TargetPathAlt2ExeAlt = $Substance3dStager_Beta_StartInAlt2 + "\Adobe Substance 3D Stager.exe"
-$Substance3dStager_Beta_TargetPath = $Substance3dStager_Beta_StartIn + "\Adobe Substance 3D Stager (Beta).exe"
-$Substance3dStager_Beta_TargetPathAlt = $Substance3dStager_Beta_StartInAlt + "\Adobe Substance 3D Stager (Beta).exe"
-$Substance3dStager_Beta_TargetPathAlt2 = $Substance3dStager_Beta_StartInAlt2 + "\Adobe Substance 3D Stager (Beta).exe"
+$Substance3dStager_Beta_WorkingDirectory = $Substance3dStager_Beta_TargetPath + $Substance3dStager_Beta_Name
+$Substance3dStager_Beta_WorkingDirectoryAlt = $Substance3dStager_Beta_WorkingDirectory + "\Support Files"
+$Substance3dStager_Beta_WorkingDirectoryAlt2 = $Substance3dStager_Beta_WorkingDirectoryAlt + "\Contents\Windows"
+$Substance3dStager_Beta_TargetPathExeAlt = $Substance3dStager_Beta_WorkingDirectory + "\Adobe Substance 3D Stager.exe"
+$Substance3dStager_Beta_TargetPathAltExeAlt = $Substance3dStager_Beta_WorkingDirectoryAlt + "\Adobe Substance 3D Stager.exe"
+$Substance3dStager_Beta_TargetPathAlt2ExeAlt = $Substance3dStager_Beta_WorkingDirectoryAlt2 + "\Adobe Substance 3D Stager.exe"
+$Substance3dStager_Beta_TargetPath = $Substance3dStager_Beta_WorkingDirectory + "\Adobe Substance 3D Stager (Beta).exe"
+$Substance3dStager_Beta_TargetPathAlt = $Substance3dStager_Beta_WorkingDirectoryAlt + "\Adobe Substance 3D Stager (Beta).exe"
+$Substance3dStager_Beta_TargetPathAlt2 = $Substance3dStager_Beta_WorkingDirectoryAlt2 + "\Adobe Substance 3D Stager (Beta).exe"
 $Substance3dStager_Beta_TargetPath = if (Test-Path -Path $Substance3dStager_Beta_TargetPathExeAlt -PathType leaf) { $Substance3dStager_Beta_TargetPathExeAlt } elseif (Test-Path -Path $Substance3dStager_Beta_TargetPathAltExeAlt -PathType leaf) { $Substance3dStager_Beta_TargetPathAltExeAlt } elseif (Test-Path -Path $Substance3dStager_Beta_TargetPathAlt2ExeAlt -PathType leaf) { $Substance3dStager_Beta_TargetPathAlt2ExeAlt } elseif (Test-Path -Path $Substance3dStager_Beta_TargetPath -PathType leaf) { $Substance3dStager_Beta_TargetPath } elseif (Test-Path -Path $Substance3dStager_Beta_TargetPathAlt -PathType leaf) { $Substance3dStager_Beta_TargetPathAlt } else { $Substance3dStager_Beta_TargetPathAlt2 }
 # GIMP
 $GIMP_TargetPath = "${env:ProgramFiles}\"
@@ -1103,25 +1103,25 @@ $GoogleOneVPN_32bit_Version = if (Test-Path -Path $GoogleOneVPN_32bit_TargetPath
 $GoogleOneVPN_32bit_Version = if ($GoogleOneVPN_32bit_Version.length -ge 1) { $GoogleOneVPN_32bit_Version[0].name } else { $NOT_INSTALLED }
 $GoogleOneVPN_32bit_TargetPath += "${GoogleOneVPN_32bit_Version}\googleone.exe"
 # KeePass
-$KeePass_StartIn = "${env:ProgramFiles}\"
-$KeePass_FindFolder = Get-ChildItem -Directory -Path $KeePass_StartIn | Where-Object { $_.Name -match '^KeePass Password Safe' } | Sort-Object -Descending
+$KeePass_WorkingDirectory = "${env:ProgramFiles}\"
+$KeePass_FindFolder = Get-ChildItem -Directory -Path $KeePass_WorkingDirectory | Where-Object { $_.Name -match '^KeePass Password Safe' } | Sort-Object -Descending
 $KeePass_FindFolder = if ($KeePass_FindFolder.length -ge 1) { $KeePass_FindFolder[0].name } else { $NOT_INSTALLED }
 $KeePass_TargetPath = "${KeePass_FindFolder}\KeePass.exe"
-$KeePass_32bit_StartIn = "${env:ProgramFiles(x86)}\"
-$KeePass_32bit_FindFolder = Get-ChildItem -Directory -Path $KeePass_32bit_StartIn | Where-Object { $_.Name -match '^KeePass Password Safe' } | Sort-Object -Descending
+$KeePass_32bit_WorkingDirectory = "${env:ProgramFiles(x86)}\"
+$KeePass_32bit_FindFolder = Get-ChildItem -Directory -Path $KeePass_32bit_WorkingDirectory | Where-Object { $_.Name -match '^KeePass Password Safe' } | Sort-Object -Descending
 $KeePass_32bit_FindFolder = if ($KeePass_32bit_FindFolder.length -ge 1) { $KeePass_32bit_FindFolder[0].name } else { $NOT_INSTALLED }
 $KeePass_32bit_TargetPath = "${KeePass_32bit_FindFolder}\KeePass.exe"
 # Maxon
-$MaxonCinema4D_StartIn = "${env:ProgramFiles}\"
-$MaxonCinema4D_FindFolder = Get-ChildItem -Directory -Path $MaxonCinema4D_StartIn | Where-Object { $_.Name -match '^Maxon Cinema 4D' } | Sort-Object -Descending
+$MaxonCinema4D_WorkingDirectory = "${env:ProgramFiles}\"
+$MaxonCinema4D_FindFolder = Get-ChildItem -Directory -Path $MaxonCinema4D_WorkingDirectory | Where-Object { $_.Name -match '^Maxon Cinema 4D' } | Sort-Object -Descending
 $MaxonCinema4D_FindFolder = if ($MaxonCinema4D_FindFolder.length -ge 1) { $MaxonCinema4D_FindFolder[0].name } else { $NOT_INSTALLED }
 $MaxonCinema4D_Version = $MaxonCinema4D_FindFolder | Select-String -pattern "\d\d\d\d$" -All
 $MaxonCinema4D_Version = if ($MaxonCinema4D_Version.length -ge 1) { $MaxonCinema4D_Version.Matches[-1].value } else { $NOT_INSTALLED }
-$MaxonCinema4D_StartIn += $MaxonCinema4D_FindFolder
-$MaxonCinema4D_Commandline_TargetPath = $MaxonCinema4D_StartIn + "\Commandline.exe"
-$MaxonCinema4D_TargetPath = $MaxonCinema4D_StartIn + "\Cinema 4D.exe"
-$MaxonCinema4D_TeamRenderClient_TargetPath = $MaxonCinema4D_StartIn + "\Cinema 4D Team Render Client.exe"
-$MaxonCinema4D_TeamRenderServer_TargetPath = $MaxonCinema4D_StartIn + "\Cinema 4D Team Render Server.exe"
+$MaxonCinema4D_WorkingDirectory += $MaxonCinema4D_FindFolder
+$MaxonCinema4D_Commandline_TargetPath = $MaxonCinema4D_WorkingDirectory + "\Commandline.exe"
+$MaxonCinema4D_TargetPath = $MaxonCinema4D_WorkingDirectory + "\Cinema 4D.exe"
+$MaxonCinema4D_TeamRenderClient_TargetPath = $MaxonCinema4D_WorkingDirectory + "\Cinema 4D Team Render Client.exe"
+$MaxonCinema4D_TeamRenderServer_TargetPath = $MaxonCinema4D_WorkingDirectory + "\Cinema 4D Team Render Server.exe"
 # VMware
 $VMwareWorkstationPlayer_TargetPath = "${env:ProgramFiles}\VMware\VMware Player\vmplayer.exe"
 $CommandPromptforvctl_Path = if (Test-Path -Path $VMwareWorkstationPlayer_TargetPath -PathType Leaf) { "${env:HOMEDRIVE}\Windows\System32\cmd.exe" } else { "${env:ProgramFiles}\${NOT_INSTALLED}\${NOT_INSTALLED}\${NOT_INSTALLED}.exe" }
@@ -1165,51 +1165,51 @@ $sys3rdPartyAppList = @(
   @{Name = "7-Zip Help"; TargetPath = "${env:ProgramFiles(x86)}\7-Zip\7-zip.chm"; SystemLnk = "7-Zip\" },
   # Adobe
   @{Name = "Adobe Creative Cloud"; TargetPath = "${env:ProgramFiles}\Adobe\Adobe Creative Cloud\ACC\Creative Cloud.exe" },
-  @{Name = $Aero_Name; TargetPath = $Aero_TargetPath; StartIn = $Aero_StartIn },
-  @{Name = $Aero_Beta_Name; TargetPath = $Aero_Beta_TargetPath; StartIn = $Aero_Beta_StartIn },
-  @{Name = $AfterEffects_Name; TargetPath = $AfterEffects_TargetPath; StartIn = $AfterEffects_StartIn },
-  @{Name = $AfterEffects_Beta_Name; TargetPath = $AfterEffects_Beta_TargetPath; StartIn = $AfterEffects_Beta_StartIn },
-  @{Name = $Animate_Name; TargetPath = $Animate_TargetPath; StartIn = $Animate_StartIn },
-  @{Name = $Animate_Beta_Name; TargetPath = $Animate_Beta_TargetPath; StartIn = $Animate_Beta_StartIn },
-  @{Name = $Audition_Name; TargetPath = $Audition_TargetPath; StartIn = $Audition_StartIn },
-  @{Name = $Audition_Beta_Name; TargetPath = $Audition_Beta_TargetPath; StartIn = $Audition_Beta_StartIn },
-  @{Name = $Bridge_Name; TargetPath = $Bridge_TargetPath; StartIn = $Bridge_StartIn },
-  @{Name = $Bridge_Beta_Name; TargetPath = $Bridge_Beta_TargetPath; StartIn = $Bridge_Beta_StartIn },
-  @{Name = $CharacterAnimator_Name; TargetPath = $CharacterAnimator_TargetPath; StartIn = $CharacterAnimator_StartIn },
-  @{Name = $CharacterAnimator_Beta_Name; TargetPath = $CharacterAnimator_Beta_TargetPath; StartIn = $CharacterAnimator_Beta_StartIn },
-  @{Name = $Dimension_Name; TargetPath = $Dimension_TargetPath; StartIn = $Dimension_StartIn },
-  @{Name = $Dimension_Beta_Name; TargetPath = $Dimension_Beta_TargetPath; StartIn = $Dimension_Beta_StartIn },
-  @{Name = $Dreamweaver_Name; TargetPath = $Dreamweaver_TargetPath; StartIn = $Dreamweaver_StartIn },
-  @{Name = $Dreamweaver_Beta_Name; TargetPath = $Dreamweaver_Beta_TargetPath; StartIn = $Dreamweaver_Beta_StartIn },
-  @{Name = $Illustrator_Name; TargetPath = $Illustrator_TargetPath; StartIn = $Illustrator_StartIn },
-  @{Name = $Illustrator_Beta_Name; TargetPath = $Illustrator_Beta_TargetPath; StartIn = $Illustrator_Beta_StartIn },
-  @{Name = $InCopy_Name; TargetPath = $InCopy_TargetPath; StartIn = $InCopy_StartIn },
-  @{Name = $InCopy_Beta_Name; TargetPath = $InCopy_Beta_TargetPath; StartIn = $InCopy_Beta_StartIn },
-  @{Name = $InDesign_Name; TargetPath = $InDesign_TargetPath; StartIn = $InDesign_StartIn },
-  @{Name = $InDesign_Beta_Name; TargetPath = $InDesign_Beta_TargetPath; StartIn = $InDesign_Beta_StartIn },
-  @{Name = $Lightroom_Name; TargetPath = $Lightroom_TargetPath; StartIn = $Lightroom_StartIn },
-  @{Name = $Lightroom_Beta_Name; TargetPath = $Lightroom_Beta_TargetPath; StartIn = $Lightroom_Beta_StartIn },
-  @{Name = $LightroomClassic_Name; TargetPath = $LightroomClassic_TargetPath; StartIn = $LightroomClassic_StartIn },
-  @{Name = $LightroomClassic_Beta_Name; TargetPath = $LightroomClassic_Beta_TargetPath; StartIn = $LightroomClassic_Beta_StartIn },
-  @{Name = $MediaEncoder_Name; TargetPath = $MediaEncoder_TargetPath; StartIn = $MediaEncoder_StartIn },
-  @{Name = $MediaEncoder_Beta_Name; TargetPath = $MediaEncoder_Beta_TargetPath; StartIn = $MediaEncoder_Beta_StartIn },
-  @{Name = $Photoshop_Name; TargetPath = $Photoshop_TargetPath; StartIn = $Photoshop_StartIn },
-  @{Name = $Photoshop_Beta_Name; TargetPath = $Photoshop_Beta_TargetPath; StartIn = $Photoshop_Beta_StartIn },
-  @{Name = $PremierePro_Name; TargetPath = $PremierePro_TargetPath; StartIn = $PremierePro_StartIn },
-  @{Name = $PremierePro_Beta_Name; TargetPath = $PremierePro_Beta_TargetPath; StartIn = $PremierePro_Beta_StartIn },
-  @{Name = $PremiereRush_Name; TargetPath = $PremiereRush_TargetPath; StartIn = $PremiereRush_StartIn },
-  @{Name = $PremiereRush_Beta_Name; TargetPath = $PremiereRush_Beta_TargetPath; StartIn = $PremiereRush_Beta_StartIn },
-  @{Name = $Substance3dDesigner_Name; TargetPath = $Substance3dDesigner_TargetPath; StartIn = $Substance3dDesigner_StartIn },
-  @{Name = $Substance3dDesigner_Beta_Name; TargetPath = $Substance3dDesigner_Beta_TargetPath; StartIn = $Substance3dDesigner_Beta_StartIn },
-  @{Name = $Substance3dModeler_Name; TargetPath = $Substance3dModeler_TargetPath; StartIn = $Substance3dModeler_StartIn },
-  @{Name = $Substance3dModeler_Beta_Name; TargetPath = $Substance3dModeler_Beta_TargetPath; StartIn = $Substance3dModeler_Beta_StartIn },
-  @{Name = $Substance3dPainter_Name; TargetPath = $Substance3dPainter_TargetPath; StartIn = $Substance3dPainter_StartIn },
-  @{Name = $Substance3dPainter_Beta_Name; TargetPath = $Substance3dPainter_Beta_TargetPath; StartIn = $Substance3dPainter_Beta_StartIn },
-  @{Name = $Substance3dSampler_Name; TargetPath = $Substance3dSampler_TargetPath; StartIn = $Substance3dSampler_StartIn },
-  @{Name = $Substance3dSampler_Beta_Name; TargetPath = $Substance3dSampler_Beta_TargetPath; StartIn = $Substance3dSampler_Beta_StartIn },
-  @{Name = $Substance3dStager_Name; TargetPath = $Substance3dStager_TargetPath; StartIn = $Substance3dStager_StartIn },
-  @{Name = $Substance3dStager_Beta_Name; TargetPath = $Substance3dStager_Beta_TargetPath; StartIn = $Substance3dStager_Beta_StartIn },
-  @{Name = "Adobe UXP Developer Tool"; TargetPath = "${env:ProgramFiles}\Adobe\Adobe UXP Developer Tool\Adobe UXP Developer Tool.exe"; StartIn = "${env:ProgramFiles}\Adobe\Adobe UXP Developer Tool" },
+  @{Name = $Aero_Name; TargetPath = $Aero_TargetPath; WorkingDirectory = $Aero_WorkingDirectory },
+  @{Name = $Aero_Beta_Name; TargetPath = $Aero_Beta_TargetPath; WorkingDirectory = $Aero_Beta_WorkingDirectory },
+  @{Name = $AfterEffects_Name; TargetPath = $AfterEffects_TargetPath; WorkingDirectory = $AfterEffects_WorkingDirectory },
+  @{Name = $AfterEffects_Beta_Name; TargetPath = $AfterEffects_Beta_TargetPath; WorkingDirectory = $AfterEffects_Beta_WorkingDirectory },
+  @{Name = $Animate_Name; TargetPath = $Animate_TargetPath; WorkingDirectory = $Animate_WorkingDirectory },
+  @{Name = $Animate_Beta_Name; TargetPath = $Animate_Beta_TargetPath; WorkingDirectory = $Animate_Beta_WorkingDirectory },
+  @{Name = $Audition_Name; TargetPath = $Audition_TargetPath; WorkingDirectory = $Audition_WorkingDirectory },
+  @{Name = $Audition_Beta_Name; TargetPath = $Audition_Beta_TargetPath; WorkingDirectory = $Audition_Beta_WorkingDirectory },
+  @{Name = $Bridge_Name; TargetPath = $Bridge_TargetPath; WorkingDirectory = $Bridge_WorkingDirectory },
+  @{Name = $Bridge_Beta_Name; TargetPath = $Bridge_Beta_TargetPath; WorkingDirectory = $Bridge_Beta_WorkingDirectory },
+  @{Name = $CharacterAnimator_Name; TargetPath = $CharacterAnimator_TargetPath; WorkingDirectory = $CharacterAnimator_WorkingDirectory },
+  @{Name = $CharacterAnimator_Beta_Name; TargetPath = $CharacterAnimator_Beta_TargetPath; WorkingDirectory = $CharacterAnimator_Beta_WorkingDirectory },
+  @{Name = $Dimension_Name; TargetPath = $Dimension_TargetPath; WorkingDirectory = $Dimension_WorkingDirectory },
+  @{Name = $Dimension_Beta_Name; TargetPath = $Dimension_Beta_TargetPath; WorkingDirectory = $Dimension_Beta_WorkingDirectory },
+  @{Name = $Dreamweaver_Name; TargetPath = $Dreamweaver_TargetPath; WorkingDirectory = $Dreamweaver_WorkingDirectory },
+  @{Name = $Dreamweaver_Beta_Name; TargetPath = $Dreamweaver_Beta_TargetPath; WorkingDirectory = $Dreamweaver_Beta_WorkingDirectory },
+  @{Name = $Illustrator_Name; TargetPath = $Illustrator_TargetPath; WorkingDirectory = $Illustrator_WorkingDirectory },
+  @{Name = $Illustrator_Beta_Name; TargetPath = $Illustrator_Beta_TargetPath; WorkingDirectory = $Illustrator_Beta_WorkingDirectory },
+  @{Name = $InCopy_Name; TargetPath = $InCopy_TargetPath; WorkingDirectory = $InCopy_WorkingDirectory },
+  @{Name = $InCopy_Beta_Name; TargetPath = $InCopy_Beta_TargetPath; WorkingDirectory = $InCopy_Beta_WorkingDirectory },
+  @{Name = $InDesign_Name; TargetPath = $InDesign_TargetPath; WorkingDirectory = $InDesign_WorkingDirectory },
+  @{Name = $InDesign_Beta_Name; TargetPath = $InDesign_Beta_TargetPath; WorkingDirectory = $InDesign_Beta_WorkingDirectory },
+  @{Name = $Lightroom_Name; TargetPath = $Lightroom_TargetPath; WorkingDirectory = $Lightroom_WorkingDirectory },
+  @{Name = $Lightroom_Beta_Name; TargetPath = $Lightroom_Beta_TargetPath; WorkingDirectory = $Lightroom_Beta_WorkingDirectory },
+  @{Name = $LightroomClassic_Name; TargetPath = $LightroomClassic_TargetPath; WorkingDirectory = $LightroomClassic_WorkingDirectory },
+  @{Name = $LightroomClassic_Beta_Name; TargetPath = $LightroomClassic_Beta_TargetPath; WorkingDirectory = $LightroomClassic_Beta_WorkingDirectory },
+  @{Name = $MediaEncoder_Name; TargetPath = $MediaEncoder_TargetPath; WorkingDirectory = $MediaEncoder_WorkingDirectory },
+  @{Name = $MediaEncoder_Beta_Name; TargetPath = $MediaEncoder_Beta_TargetPath; WorkingDirectory = $MediaEncoder_Beta_WorkingDirectory },
+  @{Name = $Photoshop_Name; TargetPath = $Photoshop_TargetPath; WorkingDirectory = $Photoshop_WorkingDirectory },
+  @{Name = $Photoshop_Beta_Name; TargetPath = $Photoshop_Beta_TargetPath; WorkingDirectory = $Photoshop_Beta_WorkingDirectory },
+  @{Name = $PremierePro_Name; TargetPath = $PremierePro_TargetPath; WorkingDirectory = $PremierePro_WorkingDirectory },
+  @{Name = $PremierePro_Beta_Name; TargetPath = $PremierePro_Beta_TargetPath; WorkingDirectory = $PremierePro_Beta_WorkingDirectory },
+  @{Name = $PremiereRush_Name; TargetPath = $PremiereRush_TargetPath; WorkingDirectory = $PremiereRush_WorkingDirectory },
+  @{Name = $PremiereRush_Beta_Name; TargetPath = $PremiereRush_Beta_TargetPath; WorkingDirectory = $PremiereRush_Beta_WorkingDirectory },
+  @{Name = $Substance3dDesigner_Name; TargetPath = $Substance3dDesigner_TargetPath; WorkingDirectory = $Substance3dDesigner_WorkingDirectory },
+  @{Name = $Substance3dDesigner_Beta_Name; TargetPath = $Substance3dDesigner_Beta_TargetPath; WorkingDirectory = $Substance3dDesigner_Beta_WorkingDirectory },
+  @{Name = $Substance3dModeler_Name; TargetPath = $Substance3dModeler_TargetPath; WorkingDirectory = $Substance3dModeler_WorkingDirectory },
+  @{Name = $Substance3dModeler_Beta_Name; TargetPath = $Substance3dModeler_Beta_TargetPath; WorkingDirectory = $Substance3dModeler_Beta_WorkingDirectory },
+  @{Name = $Substance3dPainter_Name; TargetPath = $Substance3dPainter_TargetPath; WorkingDirectory = $Substance3dPainter_WorkingDirectory },
+  @{Name = $Substance3dPainter_Beta_Name; TargetPath = $Substance3dPainter_Beta_TargetPath; WorkingDirectory = $Substance3dPainter_Beta_WorkingDirectory },
+  @{Name = $Substance3dSampler_Name; TargetPath = $Substance3dSampler_TargetPath; WorkingDirectory = $Substance3dSampler_WorkingDirectory },
+  @{Name = $Substance3dSampler_Beta_Name; TargetPath = $Substance3dSampler_Beta_TargetPath; WorkingDirectory = $Substance3dSampler_Beta_WorkingDirectory },
+  @{Name = $Substance3dStager_Name; TargetPath = $Substance3dStager_TargetPath; WorkingDirectory = $Substance3dStager_WorkingDirectory },
+  @{Name = $Substance3dStager_Beta_Name; TargetPath = $Substance3dStager_Beta_TargetPath; WorkingDirectory = $Substance3dStager_Beta_WorkingDirectory },
+  @{Name = "Adobe UXP Developer Tool"; TargetPath = "${env:ProgramFiles}\Adobe\Adobe UXP Developer Tool\Adobe UXP Developer Tool.exe"; WorkingDirectory = "${env:ProgramFiles}\Adobe\Adobe UXP Developer Tool" },
   @{Name = "Adobe Acrobat"; TargetPath = "${env:ProgramFiles}\Adobe\Acrobat DC\Acrobat\Acrobat.exe" },
   @{Name = "Adobe Acrobat Distiller"; TargetPath = "${env:ProgramFiles}\Adobe\Acrobat DC\Acrobat\acrodist.exe" },
   @{Name = "Adobe Acrobat"; TargetPath = "${env:ProgramFiles(x86)}\Adobe\Acrobat DC\Acrobat\Acrobat.exe" },
@@ -1224,22 +1224,22 @@ $sys3rdPartyAppList = @(
   @{Name = "Altair Monarch 2021"; TargetPath = "${env:ProgramFiles(x86)}\Altair Monarch 2021\DWMonarch.exe"; SystemLnk = "Altair Monarch 2021\" },
   @{Name = "Altair Monarch 2020"; TargetPath = "${env:ProgramFiles(x86)}\Altair Monarch 2020\DWMonarch.exe"; SystemLnk = "Altair Monarch 2020\" },
   # Amazon
-  @{Name = "AWS VPN Client"; TargetPath = "${env:ProgramFiles}\Amazon\AWS VPN Client\AWSVPNClient.exe"; SystemLnk = "AWS VPN Client\"; StartIn = "${env:ProgramFiles}\Amazon\AWS VPN Client\"; Description = "Client application for AWS Client VPN service" },
-  @{Name = "AWS VPN Client"; TargetPath = "${env:ProgramFiles(x86)}\Amazon\AWS VPN Client\AWSVPNClient.exe"; SystemLnk = "AWS VPN Client\"; StartIn = "${env:ProgramFiles(x86)}\Amazon\AWS VPN Client\"; Description = "Client application for AWS Client VPN service" },
+  @{Name = "AWS VPN Client"; TargetPath = "${env:ProgramFiles}\Amazon\AWS VPN Client\AWSVPNClient.exe"; SystemLnk = "AWS VPN Client\"; WorkingDirectory = "${env:ProgramFiles}\Amazon\AWS VPN Client\"; Description = "Client application for AWS Client VPN service" },
+  @{Name = "AWS VPN Client"; TargetPath = "${env:ProgramFiles(x86)}\Amazon\AWS VPN Client\AWSVPNClient.exe"; SystemLnk = "AWS VPN Client\"; WorkingDirectory = "${env:ProgramFiles(x86)}\Amazon\AWS VPN Client\"; Description = "Client application for AWS Client VPN service" },
   # AmbiBox
-  @{Name = "AmbiBox Web Site"; TargetPath = "${env:ProgramFiles}\AmbiBox\www.ambibox.ru.url"; SystemLnk = "AmbiBox\"; StartIn = "${env:ProgramFiles}\AmbiBox" }, # it's the only install on 32-bit
-  @{Name = "AmbiBox"; TargetPath = "${env:ProgramFiles}\AmbiBox\AmbiBox.exe"; SystemLnk = "AmbiBox\"; StartIn = "${env:ProgramFiles}\AmbiBox" }, # it's the only install on 32-bit
-  @{Name = "Android AmbiBox Remote App"; TargetPath = "${env:ProgramFiles}\AmbiBox\Android AmbiBox Remote App"; SystemLnk = "AmbiBox\"; StartIn = "${env:ProgramFiles}\AmbiBox" }, # it's the only install on 32-bit
-  @{Name = "MediaPortal Extension"; TargetPath = "${env:ProgramFiles}\AmbiBox\MediaPortal Extension"; SystemLnk = "AmbiBox\"; StartIn = "${env:ProgramFiles}\AmbiBox" }, # it's the only install on 32-bit
-  @{Name = "Uninstall AmbiBox"; TargetPath = "${env:ProgramFiles}\AmbiBox\unins000.exe"; SystemLnk = "AmbiBox\"; StartIn = "${env:ProgramFiles}\AmbiBox" }, # it's the only install on 32-bit
-  @{Name = "AmbiBox Web Site"; TargetPath = "${env:ProgramFiles(x86)}\AmbiBox\www.ambibox.ru.url"; SystemLnk = "AmbiBox\"; StartIn = "${env:ProgramFiles(x86)}\AmbiBox" }, # it's the only install on 64-bit
-  @{Name = "AmbiBox"; TargetPath = "${env:ProgramFiles(x86)}\AmbiBox\AmbiBox.exe"; SystemLnk = "AmbiBox\"; StartIn = "${env:ProgramFiles(x86)}\AmbiBox" }, # it's the only install on 64-bit
-  @{Name = "Android AmbiBox Remote App"; TargetPath = "${env:ProgramFiles(x86)}\AmbiBox\Android AmbiBox Remote App"; SystemLnk = "AmbiBox\"; StartIn = "${env:ProgramFiles(x86)}\AmbiBox" }, # it's the only install on 64-bit
-  @{Name = "MediaPortal Extension"; TargetPath = "${env:ProgramFiles(x86)}\AmbiBox\MediaPortal Extension"; SystemLnk = "AmbiBox\"; StartIn = "${env:ProgramFiles(x86)}\AmbiBox" }, # it's the only install on 64-bit
-  @{Name = "Uninstall AmbiBox"; TargetPath = "${env:ProgramFiles(x86)}\AmbiBox\unins000.exe"; SystemLnk = "AmbiBox\"; StartIn = "${env:ProgramFiles(x86)}\AmbiBox" }, # it's the only install on 64-bit
+  @{Name = "AmbiBox Web Site"; TargetPath = "${env:ProgramFiles}\AmbiBox\www.ambibox.ru.url"; SystemLnk = "AmbiBox\"; WorkingDirectory = "${env:ProgramFiles}\AmbiBox" }, # it's the only install on 32-bit
+  @{Name = "AmbiBox"; TargetPath = "${env:ProgramFiles}\AmbiBox\AmbiBox.exe"; SystemLnk = "AmbiBox\"; WorkingDirectory = "${env:ProgramFiles}\AmbiBox" }, # it's the only install on 32-bit
+  @{Name = "Android AmbiBox Remote App"; TargetPath = "${env:ProgramFiles}\AmbiBox\Android AmbiBox Remote App"; SystemLnk = "AmbiBox\"; WorkingDirectory = "${env:ProgramFiles}\AmbiBox" }, # it's the only install on 32-bit
+  @{Name = "MediaPortal Extension"; TargetPath = "${env:ProgramFiles}\AmbiBox\MediaPortal Extension"; SystemLnk = "AmbiBox\"; WorkingDirectory = "${env:ProgramFiles}\AmbiBox" }, # it's the only install on 32-bit
+  @{Name = "Uninstall AmbiBox"; TargetPath = "${env:ProgramFiles}\AmbiBox\unins000.exe"; SystemLnk = "AmbiBox\"; WorkingDirectory = "${env:ProgramFiles}\AmbiBox" }, # it's the only install on 32-bit
+  @{Name = "AmbiBox Web Site"; TargetPath = "${env:ProgramFiles(x86)}\AmbiBox\www.ambibox.ru.url"; SystemLnk = "AmbiBox\"; WorkingDirectory = "${env:ProgramFiles(x86)}\AmbiBox" }, # it's the only install on 64-bit
+  @{Name = "AmbiBox"; TargetPath = "${env:ProgramFiles(x86)}\AmbiBox\AmbiBox.exe"; SystemLnk = "AmbiBox\"; WorkingDirectory = "${env:ProgramFiles(x86)}\AmbiBox" }, # it's the only install on 64-bit
+  @{Name = "Android AmbiBox Remote App"; TargetPath = "${env:ProgramFiles(x86)}\AmbiBox\Android AmbiBox Remote App"; SystemLnk = "AmbiBox\"; WorkingDirectory = "${env:ProgramFiles(x86)}\AmbiBox" }, # it's the only install on 64-bit
+  @{Name = "MediaPortal Extension"; TargetPath = "${env:ProgramFiles(x86)}\AmbiBox\MediaPortal Extension"; SystemLnk = "AmbiBox\"; WorkingDirectory = "${env:ProgramFiles(x86)}\AmbiBox" }, # it's the only install on 64-bit
+  @{Name = "Uninstall AmbiBox"; TargetPath = "${env:ProgramFiles(x86)}\AmbiBox\unins000.exe"; SystemLnk = "AmbiBox\"; WorkingDirectory = "${env:ProgramFiles(x86)}\AmbiBox" }, # it's the only install on 64-bit
   # Audacity
-  @{Name = "Audacity"; TargetPath = "${env:ProgramFiles}\Audacity\Audacity.exe"; StartIn = "${env:ProgramFiles}\Audacity" },
-  @{Name = "Audacity"; TargetPath = "${env:ProgramFiles(x86)}\Audacity\Audacity.exe"; StartIn = "${env:ProgramFiles(x86)}\Audacity" },
+  @{Name = "Audacity"; TargetPath = "${env:ProgramFiles}\Audacity\Audacity.exe"; WorkingDirectory = "${env:ProgramFiles}\Audacity" },
+  @{Name = "Audacity"; TargetPath = "${env:ProgramFiles(x86)}\Audacity\Audacity.exe"; WorkingDirectory = "${env:ProgramFiles(x86)}\Audacity" },
   # AutoHotkey V2
   @{Name = "AutoHotkey Window Spy"; TargetPath = "${env:ProgramFiles}\AutoHotkey\UX\AutoHotkeyUX.exe"; Arguments = "`"${env:ProgramFiles}\AutoHotkey\UX\WindowSpy.ahk`""; Description = "AutoHotkey Window Spy" },
   @{Name = "AutoHotkey"; TargetPath = "${env:ProgramFiles}\AutoHotkey\UX\AutoHotkeyUX.exe"; Arguments = "`"${env:ProgramFiles}\AutoHotkey\UX\ui-dash.ahk`""; Description = "AutoHotkey Dash" },
@@ -1259,23 +1259,23 @@ $sys3rdPartyAppList = @(
   @{Name = "Website"; TargetPath = "${env:ProgramFiles(x86)}\AutoHotkey\AutoHotkey Website.url"; SystemLnk = "AutoHotkey\" },
   @{Name = "Window Spy"; TargetPath = "${env:ProgramFiles(x86)}\AutoHotkey\WindowSpy.ahk"; SystemLnk = "AutoHotkey\" },
   # Bulk Crap Uninstaller
-  @{Name = "BCUninstaller"; TargetPath = "${env:ProgramFiles}\BCUninstaller\BCUninstaller.exe"; SystemLnk = "BCUninstaller\"; StartIn = "${env:ProgramFiles}\BCUninstaller" },
-  @{Name = "Uninstall BCUninstaller"; TargetPath = "${env:ProgramFiles}\BCUninstaller\unins000.exe"; SystemLnk = "BCUninstaller\"; StartIn = "${env:ProgramFiles}\BCUninstaller" },
-  @{Name = "BCUninstaller"; TargetPath = "${env:ProgramFiles(x86)}\BCUninstaller\BCUninstaller.exe"; SystemLnk = "BCUninstaller\"; StartIn = "${env:ProgramFiles(x86)}\BCUninstaller" },
-  @{Name = "Uninstall BCUninstaller"; TargetPath = "${env:ProgramFiles(x86)}\BCUninstaller\unins000.exe"; SystemLnk = "BCUninstaller\"; StartIn = "${env:ProgramFiles(x86)}\BCUninstaller" },
+  @{Name = "BCUninstaller"; TargetPath = "${env:ProgramFiles}\BCUninstaller\BCUninstaller.exe"; SystemLnk = "BCUninstaller\"; WorkingDirectory = "${env:ProgramFiles}\BCUninstaller" },
+  @{Name = "Uninstall BCUninstaller"; TargetPath = "${env:ProgramFiles}\BCUninstaller\unins000.exe"; SystemLnk = "BCUninstaller\"; WorkingDirectory = "${env:ProgramFiles}\BCUninstaller" },
+  @{Name = "BCUninstaller"; TargetPath = "${env:ProgramFiles(x86)}\BCUninstaller\BCUninstaller.exe"; SystemLnk = "BCUninstaller\"; WorkingDirectory = "${env:ProgramFiles(x86)}\BCUninstaller" },
+  @{Name = "Uninstall BCUninstaller"; TargetPath = "${env:ProgramFiles(x86)}\BCUninstaller\unins000.exe"; SystemLnk = "BCUninstaller\"; WorkingDirectory = "${env:ProgramFiles(x86)}\BCUninstaller" },
   # Bytello
-  @{Name = "Bytello Share"; TargetPath = "${env:ProgramFiles}\Bytello Share\Bytello Share.exe"; SystemLnk = "Bytello Share\"; StartIn = "${env:ProgramFiles}\Bytello Share" }, # it's the only install on 32-bit
-  @{Name = "Bytello Share"; TargetPath = "${env:ProgramFiles(x86)}\Bytello Share\Bytello Share.exe"; SystemLnk = "Bytello Share\"; StartIn = "${env:ProgramFiles(x86)}\Bytello Share" }, # it's the only install on 64-bit
+  @{Name = "Bytello Share"; TargetPath = "${env:ProgramFiles}\Bytello Share\Bytello Share.exe"; SystemLnk = "Bytello Share\"; WorkingDirectory = "${env:ProgramFiles}\Bytello Share" }, # it's the only install on 32-bit
+  @{Name = "Bytello Share"; TargetPath = "${env:ProgramFiles(x86)}\Bytello Share\Bytello Share.exe"; SystemLnk = "Bytello Share\"; WorkingDirectory = "${env:ProgramFiles(x86)}\Bytello Share" }, # it's the only install on 64-bit
   # Cisco
-  @{Name = "Cisco AnyConnect Secure Mobility Client"; TargetPath = "${env:ProgramFiles}\Cisco\Cisco AnyConnect Secure Mobility Client\vpnui.exe"; SystemLnk = "Cisco\Cisco AnyConnect Secure Mobility Client"; StartIn = "${env:ProgramFiles}\Cisco\Cisco AnyConnect Secure Mobility Client\"; Description = "Cisco AnyConnect Secure Mobility Client" }, # it's the only install on 32-bit
+  @{Name = "Cisco AnyConnect Secure Mobility Client"; TargetPath = "${env:ProgramFiles}\Cisco\Cisco AnyConnect Secure Mobility Client\vpnui.exe"; SystemLnk = "Cisco\Cisco AnyConnect Secure Mobility Client"; WorkingDirectory = "${env:ProgramFiles}\Cisco\Cisco AnyConnect Secure Mobility Client\"; Description = "Cisco AnyConnect Secure Mobility Client" }, # it's the only install on 32-bit
   @{Name = "Cisco Jabber Problem Report"; TargetPath = "${env:ProgramFiles}\Cisco Systems\Cisco Jabber\CiscoJabberPrt.exe"; SystemLnk = "Cisco Jabber\"; Description = "Cisco Jabber Problem Report" }, # it's the only install on 32-bit
   @{Name = "Cisco Jabber"; TargetPath = "${env:ProgramFiles}\Cisco Systems\Cisco Jabber\CiscoJabber.exe"; SystemLnk = "Cisco Jabber\"; Description = "Cisco Jabber" }, # it's the only install on 32-bit
-  @{Name = "Cisco AnyConnect Secure Mobility Client"; TargetPath = "${env:ProgramFiles(x86)}\Cisco\Cisco AnyConnect Secure Mobility Client\vpnui.exe"; SystemLnk = "Cisco\Cisco AnyConnect Secure Mobility Client"; StartIn = "${env:ProgramFiles(x86)}\Cisco\Cisco AnyConnect Secure Mobility Client\"; Description = "Cisco AnyConnect Secure Mobility Client" }, # it's the only install on 64-bit
+  @{Name = "Cisco AnyConnect Secure Mobility Client"; TargetPath = "${env:ProgramFiles(x86)}\Cisco\Cisco AnyConnect Secure Mobility Client\vpnui.exe"; SystemLnk = "Cisco\Cisco AnyConnect Secure Mobility Client"; WorkingDirectory = "${env:ProgramFiles(x86)}\Cisco\Cisco AnyConnect Secure Mobility Client\"; Description = "Cisco AnyConnect Secure Mobility Client" }, # it's the only install on 64-bit
   @{Name = "Cisco Jabber Problem Report"; TargetPath = "${env:ProgramFiles(x86)}\Cisco Systems\Cisco Jabber\CiscoJabberPrt.exe"; SystemLnk = "Cisco Jabber\"; Description = "Cisco Jabber Problem Report" }, # it's the only install on 64-bit
   @{Name = "Cisco Jabber"; TargetPath = "${env:ProgramFiles(x86)}\Cisco Systems\Cisco Jabber\CiscoJabber.exe"; SystemLnk = "Cisco Jabber\"; Description = "Cisco Jabber" }, # it's the only install on 64-bit
   # Citrix Workspace
-  @{Name = "Citrix Workspace"; TargetPath = "${env:ProgramFiles}\Citrix\ICA Client\SelfServicePlugin\SelfService.exe"; Arguments = "-showAppPicker"; StartIn = "${env:ProgramFiles}\Citrix\ICA Client\SelfServicePlugin\"; Description = "Select applications you want to use on your computer" }, # it's the only install on 32-bit
-  @{Name = "Citrix Workspace"; TargetPath = "${env:ProgramFiles(x86)}\Citrix\ICA Client\SelfServicePlugin\SelfService.exe"; Arguments = "-showAppPicker"; StartIn = "${env:ProgramFiles(x86)}\Citrix\ICA Client\SelfServicePlugin\"; Description = "Select applications you want to use on your computer" }, # it's the only install on 64-bit
+  @{Name = "Citrix Workspace"; TargetPath = "${env:ProgramFiles}\Citrix\ICA Client\SelfServicePlugin\SelfService.exe"; Arguments = "-showAppPicker"; WorkingDirectory = "${env:ProgramFiles}\Citrix\ICA Client\SelfServicePlugin\"; Description = "Select applications you want to use on your computer" }, # it's the only install on 32-bit
+  @{Name = "Citrix Workspace"; TargetPath = "${env:ProgramFiles(x86)}\Citrix\ICA Client\SelfServicePlugin\SelfService.exe"; Arguments = "-showAppPicker"; WorkingDirectory = "${env:ProgramFiles(x86)}\Citrix\ICA Client\SelfServicePlugin\"; Description = "Select applications you want to use on your computer" }, # it's the only install on 64-bit
   # CodeTwo Active Directory Photos
   @{Name = "CodeTwo Active Directory Photos"; TargetPath = "${env:ProgramFiles}\CodeTwo\CodeTwo Active Directory Photos\CodeTwo Active Directory Photos.exe"; SystemLnk = "CodeTwo\CodeTwo Active Directory Photos\"; Description = "CodeTwo Active Directory Photos" },
   @{Name = "Go to program home page"; TargetPath = "${env:ProgramFiles}\CodeTwo\CodeTwo Active Directory Photos\Data\HomePage.url"; SystemLnk = "CodeTwo\CodeTwo Active Directory Photos\"; Description = "CodeTwo Active Directory Photos home page" },
@@ -1287,12 +1287,12 @@ $sys3rdPartyAppList = @(
   @{Name = "Docker Desktop"; TargetPath = "${env:ProgramFiles}\Docker\Docker\Docker Desktop.exe"; SystemLnk = "${env:ALLUSERSPROFILE}\Microsoft\Windows\Start Menu\"; Description = "Docker Desktop" },
   @{Name = "Docker Desktop"; TargetPath = "${env:ProgramFiles(x86)}\Docker\Docker\Docker Desktop.exe"; SystemLnk = "${env:ALLUSERSPROFILE}\Microsoft\Windows\Start Menu\"; Description = "Docker Desktop" },
   # draw.io
-  @{Name = "draw.io"; TargetPath = "${env:ProgramFiles}\draw.io\draw.io.exe"; StartIn = "${env:ProgramFiles}\draw.io"; Description = "draw.io desktop" },
-  @{Name = "draw.io"; TargetPath = "${env:ProgramFiles(x86)}\draw.io\draw.io.exe"; StartIn = "${env:ProgramFiles(x86)}\draw.io"; Description = "draw.io desktop" },
+  @{Name = "draw.io"; TargetPath = "${env:ProgramFiles}\draw.io\draw.io.exe"; WorkingDirectory = "${env:ProgramFiles}\draw.io"; Description = "draw.io desktop" },
+  @{Name = "draw.io"; TargetPath = "${env:ProgramFiles(x86)}\draw.io\draw.io.exe"; WorkingDirectory = "${env:ProgramFiles(x86)}\draw.io"; Description = "draw.io desktop" },
   # Egnyte (note: uninstaller is architecture independent)
-  @{Name = "Egnyte Desktop App"; TargetPath = "${env:ProgramFiles}\Egnyte Connect\EgnyteClient.exe"; Arguments = "--short-menu"; SystemLnk = "Egnyte Connect\"; StartIn = "${env:ProgramFiles}\Egnyte Connect\" }, # it's the only install on 32-bit
+  @{Name = "Egnyte Desktop App"; TargetPath = "${env:ProgramFiles}\Egnyte Connect\EgnyteClient.exe"; Arguments = "--short-menu"; SystemLnk = "Egnyte Connect\"; WorkingDirectory = "${env:ProgramFiles}\Egnyte Connect\" }, # it's the only install on 32-bit
   @{Name = "Uninstall Egnyte Desktop App"; TargetPath = $EgnyteDesktopApp_Uninstall_TargetPath; Arguments = $EgnyteDesktopApp_Uninstall_Arguments; SystemLnk = "Egnyte Connect\"; Description = "Uninstalls Egnyte Desktop App" },
-  @{Name = "Egnyte Desktop App"; TargetPath = "${env:ProgramFiles(x86)}\Egnyte Connect\EgnyteClient.exe"; Arguments = "--short-menu"; SystemLnk = "Egnyte Connect\"; StartIn = "${env:ProgramFiles(x86)}\Egnyte Connect\" }, # it's the only install on 64-bit
+  @{Name = "Egnyte Desktop App"; TargetPath = "${env:ProgramFiles(x86)}\Egnyte Connect\EgnyteClient.exe"; Arguments = "--short-menu"; SystemLnk = "Egnyte Connect\"; WorkingDirectory = "${env:ProgramFiles(x86)}\Egnyte Connect\" }, # it's the only install on 64-bit
   @{Name = "Uninstall Egnyte Desktop App"; TargetPath = $EgnyteDesktopApp_Uninstall_32bit_TargetPath; Arguments = $EgnyteDesktopApp_Uninstall_32bit_Arguments; SystemLnk = "Egnyte Connect\"; Description = "Uninstalls Egnyte Desktop App" },
   # Epson
   @{Name = "Epson Scan 2"; TargetPath = "${env:ProgramFiles}\epson\Epson Scan 2\Core\es2launcher.exe"; SystemLnk = "EPSON\Epson Scan 2\" }, # it's the only install on 32-bit
@@ -1300,161 +1300,161 @@ $sys3rdPartyAppList = @(
   @{Name = "Epson Scan 2"; TargetPath = "${env:ProgramFiles(x86)}\epson\Epson Scan 2\Core\es2launcher.exe"; SystemLnk = "EPSON\Epson Scan 2\" }, # it's the only install on 64-bit
   @{Name = "FAX Utility"; TargetPath = "${env:ProgramFiles(x86)}\Epson Software\FAX Utility\FUFAXCNT.exe"; SystemLnk = "EPSON Software\" }, # it's the only install on 64-bit
   # GIMP
-  @{Name = $GIMP_Name; TargetPath = $GIMP_TargetPath; StartIn = "%USERPROFILE%"; Description = $GIMP_Name },
-  @{Name = $GIMP_32bit_Name; TargetPath = $GIMP_32bit_TargetPath; StartIn = "%USERPROFILE%"; Description = $GIMP_32bit_Name },
+  @{Name = $GIMP_Name; TargetPath = $GIMP_TargetPath; WorkingDirectory = "%USERPROFILE%"; Description = $GIMP_Name },
+  @{Name = $GIMP_32bit_Name; TargetPath = $GIMP_32bit_TargetPath; WorkingDirectory = "%USERPROFILE%"; Description = $GIMP_32bit_Name },
   # Google
-  @{Name = "Google Chrome"; TargetPath = "${env:ProgramFiles}\Google\Chrome\Application\chrome.exe"; StartIn = "${env:ProgramFiles}\Google\Chrome\Application"; Description = "Access the Internet" },
+  @{Name = "Google Chrome"; TargetPath = "${env:ProgramFiles}\Google\Chrome\Application\chrome.exe"; WorkingDirectory = "${env:ProgramFiles}\Google\Chrome\Application"; Description = "Access the Internet" },
   @{Name = "Google Drive"; TargetPath = $GoogleDrive_TargetPath; Description = "Google Drive" },
   @{Name = "VPN by Google One"; TargetPath = $GoogleOneVPN_TargetPath; Description = "VPN by Google One" },
-  @{Name = "Google Chrome"; TargetPath = "${env:ProgramFiles(x86)}\Google\Chrome\Application\chrome.exe"; StartIn = "${env:ProgramFiles(x86)}\Google\Chrome\Application"; Description = "Access the Internet" },
+  @{Name = "Google Chrome"; TargetPath = "${env:ProgramFiles(x86)}\Google\Chrome\Application\chrome.exe"; WorkingDirectory = "${env:ProgramFiles(x86)}\Google\Chrome\Application"; Description = "Access the Internet" },
   @{Name = "Google Drive"; TargetPath = $GoogleDrive_32bit_TargetPath; Description = "Google Drive" },
   @{Name = "VPN by Google One"; TargetPath = $GoogleOneVPN_32bit_TargetPath; Description = "VPN by Google One" },
   # GoTo
-  @{Name = "GoTo Resolve Desktop Console (64-bit)"; TargetPath = "${env:ProgramFiles}\GoTo\GoTo Resolve Desktop Console\ra-technician-console.exe"; StartIn = "${env:ProgramFiles}\GoTo\GoTo Resolve Desktop Console\" },
-  @{Name = "GoTo Resolve Desktop Console"; TargetPath = "${env:ProgramFiles(x86)}\GoTo\GoTo Resolve Desktop Console\ra-technician-console.exe"; StartIn = "${env:ProgramFiles(x86)}\GoTo\GoTo Resolve Desktop Console\" },
+  @{Name = "GoTo Resolve Desktop Console (64-bit)"; TargetPath = "${env:ProgramFiles}\GoTo\GoTo Resolve Desktop Console\ra-technician-console.exe"; WorkingDirectory = "${env:ProgramFiles}\GoTo\GoTo Resolve Desktop Console\" },
+  @{Name = "GoTo Resolve Desktop Console"; TargetPath = "${env:ProgramFiles(x86)}\GoTo\GoTo Resolve Desktop Console\ra-technician-console.exe"; WorkingDirectory = "${env:ProgramFiles(x86)}\GoTo\GoTo Resolve Desktop Console\" },
   # KC Softwares
-  @{Name = "SUMo"; TargetPath = "${env:ProgramFiles}\KC Softwares\SUMo\SUMo.exe"; SystemLnk = "KC Softwares\SUMo\"; StartIn = "${env:ProgramFiles}\KC Softwares\SUMo" }, # it's the only install on 32-bit
-  @{Name = "Uninstall SUMo"; TargetPath = "${env:ProgramFiles}\KC Softwares\SUMo\unins000.exe"; SystemLnk = "KC Softwares\SUMo\"; StartIn = "${env:ProgramFiles}\KC Softwares\SUMo" }, # it's the only install on 32-bit
-  @{Name = "SUMo"; TargetPath = "${env:ProgramFiles(x86)}\KC Softwares\SUMo\SUMo.exe"; SystemLnk = "KC Softwares\SUMo\"; StartIn = "${env:ProgramFiles(x86)}\KC Softwares\SUMo" }, # it's the only install on 64-bit
-  @{Name = "Uninstall SUMo"; TargetPath = "${env:ProgramFiles(x86)}\KC Softwares\SUMo\unins000.exe"; SystemLnk = "KC Softwares\SUMo\"; StartIn = "${env:ProgramFiles(x86)}\KC Softwares\SUMo" }, # it's the only install on 64-bit
+  @{Name = "SUMo"; TargetPath = "${env:ProgramFiles}\KC Softwares\SUMo\SUMo.exe"; SystemLnk = "KC Softwares\SUMo\"; WorkingDirectory = "${env:ProgramFiles}\KC Softwares\SUMo" }, # it's the only install on 32-bit
+  @{Name = "Uninstall SUMo"; TargetPath = "${env:ProgramFiles}\KC Softwares\SUMo\unins000.exe"; SystemLnk = "KC Softwares\SUMo\"; WorkingDirectory = "${env:ProgramFiles}\KC Softwares\SUMo" }, # it's the only install on 32-bit
+  @{Name = "SUMo"; TargetPath = "${env:ProgramFiles(x86)}\KC Softwares\SUMo\SUMo.exe"; SystemLnk = "KC Softwares\SUMo\"; WorkingDirectory = "${env:ProgramFiles(x86)}\KC Softwares\SUMo" }, # it's the only install on 64-bit
+  @{Name = "Uninstall SUMo"; TargetPath = "${env:ProgramFiles(x86)}\KC Softwares\SUMo\unins000.exe"; SystemLnk = "KC Softwares\SUMo\"; WorkingDirectory = "${env:ProgramFiles(x86)}\KC Softwares\SUMo" }, # it's the only install on 64-bit
   # Kdenlive
-  @{Name = "Kdenlive"; TargetPath = "${env:ProgramFiles}\kdenlive\bin\kdenlive.exe"; StartIn = "{workingDirectory}"; Description = "Libre Video Editor, by KDE community" },
-  @{Name = "Kdenlive"; TargetPath = "${env:ProgramFiles(x86)}\kdenlive\bin\kdenlive.exe"; StartIn = "{workingDirectory}"; Description = "Libre Video Editor, by KDE community" },
+  @{Name = "Kdenlive"; TargetPath = "${env:ProgramFiles}\kdenlive\bin\kdenlive.exe"; WorkingDirectory = "{workingDirectory}"; Description = "Libre Video Editor, by KDE community" },
+  @{Name = "Kdenlive"; TargetPath = "${env:ProgramFiles(x86)}\kdenlive\bin\kdenlive.exe"; WorkingDirectory = "{workingDirectory}"; Description = "Libre Video Editor, by KDE community" },
   # KeePass
-  @{Name = $KeePass_Name; TargetPath = $KeePass_TargetPath; StartIn = $KeePass_StartIn }, # new version 2+
-  @{Name = "KeePass"; TargetPath = "${env:ProgramFiles}\KeePass Password Safe\KeePass.exe"; StartIn = "${env:ProgramFiles}\KeePass Password Safe" }, # old version 1.x; it's the only install on 32-bit
-  @{Name = $KeePass_32bit_Name; TargetPath = $KeePass_32bit_TargetPath; StartIn = $KeePass_32bit_StartIn }, # new version 2+
-  @{Name = "KeePass"; TargetPath = "${env:ProgramFiles(x86)}\KeePass Password Safe\KeePass.exe"; StartIn = "${env:ProgramFiles(x86)}\KeePass Password Safe" }, # old version 1.x; it's the only install on 64-bit
+  @{Name = $KeePass_Name; TargetPath = $KeePass_TargetPath; WorkingDirectory = $KeePass_WorkingDirectory }, # new version 2+
+  @{Name = "KeePass"; TargetPath = "${env:ProgramFiles}\KeePass Password Safe\KeePass.exe"; WorkingDirectory = "${env:ProgramFiles}\KeePass Password Safe" }, # old version 1.x; it's the only install on 32-bit
+  @{Name = $KeePass_32bit_Name; TargetPath = $KeePass_32bit_TargetPath; WorkingDirectory = $KeePass_32bit_WorkingDirectory }, # new version 2+
+  @{Name = "KeePass"; TargetPath = "${env:ProgramFiles(x86)}\KeePass Password Safe\KeePass.exe"; WorkingDirectory = "${env:ProgramFiles(x86)}\KeePass Password Safe" }, # old version 1.x; it's the only install on 64-bit
   # Ledger Live
-  @{Name = "Ledger Live"; TargetPath = "${env:ProgramFiles}\Ledger Live\Ledger Live.exe"; StartIn = "${env:ProgramFiles}\Ledger Live"; Description = "Ledger Live - Desktop" },
-  @{Name = "Ledger Live"; TargetPath = "${env:ProgramFiles(x86)}\Ledger Live\Ledger Live.exe"; StartIn = "${env:ProgramFiles(x86)}\Ledger Live"; Description = "Ledger Live - Desktop" },
+  @{Name = "Ledger Live"; TargetPath = "${env:ProgramFiles}\Ledger Live\Ledger Live.exe"; WorkingDirectory = "${env:ProgramFiles}\Ledger Live"; Description = "Ledger Live - Desktop" },
+  @{Name = "Ledger Live"; TargetPath = "${env:ProgramFiles(x86)}\Ledger Live\Ledger Live.exe"; WorkingDirectory = "${env:ProgramFiles(x86)}\Ledger Live"; Description = "Ledger Live - Desktop" },
   # Local Administrator Password Solution
-  @{Name = "LAPS UI"; TargetPath = "${env:ProgramFiles}\LAPS\AdmPwd.UI.exe"; SystemLnk = "LAPS\"; StartIn = "${env:ProgramFiles}\LAPS\" },
-  @{Name = "LAPS UI"; TargetPath = "${env:ProgramFiles(x86)}\LAPS\AdmPwd.UI.exe"; SystemLnk = "LAPS\"; StartIn = "${env:ProgramFiles(x86)}\LAPS\" },
+  @{Name = "LAPS UI"; TargetPath = "${env:ProgramFiles}\LAPS\AdmPwd.UI.exe"; SystemLnk = "LAPS\"; WorkingDirectory = "${env:ProgramFiles}\LAPS\" },
+  @{Name = "LAPS UI"; TargetPath = "${env:ProgramFiles(x86)}\LAPS\AdmPwd.UI.exe"; SystemLnk = "LAPS\"; WorkingDirectory = "${env:ProgramFiles(x86)}\LAPS\" },
   # Maxon
-  @{Name = $MaxonCinema4D_Commandline_Name; TargetPath = $MaxonCinema4D_Commandline_TargetPath; SystemLnk = "Maxon\${MaxonCinema4D_Name}\"; StartIn = $MaxonCinema4D_StartIn; Description = "Commandline" },
-  @{Name = $MaxonCinema4D_Name; TargetPath = $MaxonCinema4D_TargetPath; SystemLnk = "Maxon\${MaxonCinema4D_Name}\"; StartIn = $MaxonCinema4D_StartIn; Description = "Maxon Cinema 4D" },
-  @{Name = $MaxonCinema4D_TeamRenderClient_Name; TargetPath = $MaxonCinema4D_TeamRenderClient_TargetPath; SystemLnk = "Maxon\${MaxonCinema4D_Name}\"; StartIn = $MaxonCinema4D_StartIn; Description = "Team Render Client" },
-  @{Name = $MaxonCinema4D_TeamRenderServer_Name; TargetPath = $MaxonCinema4D_TeamRenderServer_TargetPath; SystemLnk = "Maxon\${MaxonCinema4D_Name}\"; StartIn = $MaxonCinema4D_StartIn; Description = "Team Render Server" },
+  @{Name = $MaxonCinema4D_Commandline_Name; TargetPath = $MaxonCinema4D_Commandline_TargetPath; SystemLnk = "Maxon\${MaxonCinema4D_Name}\"; WorkingDirectory = $MaxonCinema4D_WorkingDirectory; Description = "Commandline" },
+  @{Name = $MaxonCinema4D_Name; TargetPath = $MaxonCinema4D_TargetPath; SystemLnk = "Maxon\${MaxonCinema4D_Name}\"; WorkingDirectory = $MaxonCinema4D_WorkingDirectory; Description = "Maxon Cinema 4D" },
+  @{Name = $MaxonCinema4D_TeamRenderClient_Name; TargetPath = $MaxonCinema4D_TeamRenderClient_TargetPath; SystemLnk = "Maxon\${MaxonCinema4D_Name}\"; WorkingDirectory = $MaxonCinema4D_WorkingDirectory; Description = "Team Render Client" },
+  @{Name = $MaxonCinema4D_TeamRenderServer_Name; TargetPath = $MaxonCinema4D_TeamRenderServer_TargetPath; SystemLnk = "Maxon\${MaxonCinema4D_Name}\"; WorkingDirectory = $MaxonCinema4D_WorkingDirectory; Description = "Team Render Server" },
   # Mozilla
-  @{Name = "Firefox"; TargetPath = "${env:ProgramFiles}\Mozilla Firefox\firefox.exe"; StartIn = "${env:ProgramFiles}\Mozilla Firefox" },
-  @{Name = "Firefox Private Browsing"; TargetPath = "${env:ProgramFiles}\Mozilla Firefox\private_browsing.exe"; StartIn = "${env:ProgramFiles}\Mozilla Firefox"; Description = "Firefox Private Browsing" },
-  @{Name = "Thunderbird"; TargetPath = "${env:ProgramFiles}\Mozilla Thunderbird\thunderbird.exe"; StartIn = "${env:ProgramFiles}\Mozilla Thunderbird" },
-  @{Name = "Firefox"; TargetPath = "${env:ProgramFiles(x86)}\Mozilla Firefox\firefox.exe"; StartIn = "${env:ProgramFiles(x86)}\Mozilla Firefox" },
-  @{Name = "Firefox Private Browsing"; TargetPath = "${env:ProgramFiles(x86)}\Mozilla Firefox\private_browsing.exe"; StartIn = "${env:ProgramFiles(x86)}\Mozilla Firefox"; Description = "Firefox Private Browsing" },
-  @{Name = "Thunderbird"; TargetPath = "${env:ProgramFiles(x86)}\Mozilla Thunderbird\thunderbird.exe"; StartIn = "${env:ProgramFiles(x86)}\Mozilla Thunderbird" },
+  @{Name = "Firefox"; TargetPath = "${env:ProgramFiles}\Mozilla Firefox\firefox.exe"; WorkingDirectory = "${env:ProgramFiles}\Mozilla Firefox" },
+  @{Name = "Firefox Private Browsing"; TargetPath = "${env:ProgramFiles}\Mozilla Firefox\private_browsing.exe"; WorkingDirectory = "${env:ProgramFiles}\Mozilla Firefox"; Description = "Firefox Private Browsing" },
+  @{Name = "Thunderbird"; TargetPath = "${env:ProgramFiles}\Mozilla Thunderbird\thunderbird.exe"; WorkingDirectory = "${env:ProgramFiles}\Mozilla Thunderbird" },
+  @{Name = "Firefox"; TargetPath = "${env:ProgramFiles(x86)}\Mozilla Firefox\firefox.exe"; WorkingDirectory = "${env:ProgramFiles(x86)}\Mozilla Firefox" },
+  @{Name = "Firefox Private Browsing"; TargetPath = "${env:ProgramFiles(x86)}\Mozilla Firefox\private_browsing.exe"; WorkingDirectory = "${env:ProgramFiles(x86)}\Mozilla Firefox"; Description = "Firefox Private Browsing" },
+  @{Name = "Thunderbird"; TargetPath = "${env:ProgramFiles(x86)}\Mozilla Thunderbird\thunderbird.exe"; WorkingDirectory = "${env:ProgramFiles(x86)}\Mozilla Thunderbird" },
   # Notepad++
-  @{Name = "Notepad++"; TargetPath = "${env:ProgramFiles}\Notepad++\notepad++.exe"; StartIn = "${env:ProgramFiles}\Notepad++" },
-  @{Name = "Notepad++"; TargetPath = "${env:ProgramFiles(x86)}\Notepad++\notepad++.exe"; StartIn = "${env:ProgramFiles(x86)}\Notepad++" },
+  @{Name = "Notepad++"; TargetPath = "${env:ProgramFiles}\Notepad++\notepad++.exe"; WorkingDirectory = "${env:ProgramFiles}\Notepad++" },
+  @{Name = "Notepad++"; TargetPath = "${env:ProgramFiles(x86)}\Notepad++\notepad++.exe"; WorkingDirectory = "${env:ProgramFiles(x86)}\Notepad++" },
   # OpenVPN
-  @{Name = "OpenVPN"; TargetPath = "${env:ProgramFiles}\OpenVPN\bin\openvpn-gui.exe"; SystemLnk = "OpenVPN\OpenVPN GUI"; StartIn = "${env:ProgramFiles}\OpenVPN\bin\" },
-  @{Name = "OpenVPN Manual Page"; TargetPath = "${env:ProgramFiles}\OpenVPN\doc\openvpn.8.html"; SystemLnk = "OpenVPN\Documentation\"; StartIn = "${env:ProgramFiles}\OpenVPN\doc\" },
-  @{Name = "OpenVPN Windows Notes"; TargetPath = "${env:ProgramFiles}\OpenVPN\doc\INSTALL-win32.txt"; SystemLnk = "OpenVPN\Documentation\"; StartIn = "${env:ProgramFiles}\OpenVPN\doc\" },
-  @{Name = "OpenVPN Configuration File Directory"; TargetPath = "${env:ProgramFiles}\OpenVPN\config"; SystemLnk = "OpenVPN\Shortcuts\"; StartIn = "${env:ProgramFiles}\OpenVPN\config\" },
-  @{Name = "OpenVPN Log File Directory"; TargetPath = "${env:ProgramFiles}\OpenVPN\log"; SystemLnk = "OpenVPN\Shortcuts\"; StartIn = "${env:ProgramFiles}\OpenVPN\log\" },
-  @{Name = "OpenVPN Sample Configuration Files"; TargetPath = "${env:ProgramFiles}\OpenVPN\sample-config"; SystemLnk = "OpenVPN\Shortcuts\"; StartIn = "${env:ProgramFiles}\OpenVPN\sample-config\" },
-  @{Name = "Add a new TAP-Windows6 virtual network adapter"; TargetPath = "${env:ProgramFiles}\OpenVPN\bin\tapctl.exe"; Arguments = "create --hwid root\tap0901"; SystemLnk = "OpenVPN\Utilities\"; StartIn = "${env:ProgramFiles}\OpenVPN\bin\" },
-  @{Name = "Add a new Wintun virtual network adapter"; TargetPath = "${env:ProgramFiles}\OpenVPN\bin\tapctl.exe"; Arguments = "create --hwid wintun"; SystemLnk = "OpenVPN\Utilities\"; StartIn = "${env:ProgramFiles}\OpenVPN\bin\" },
-  @{Name = "OpenVPN"; TargetPath = "${env:ProgramFiles(x86)}\OpenVPN\bin\openvpn-gui.exe"; SystemLnk = "OpenVPN\OpenVPN GUI"; StartIn = "${env:ProgramFiles(x86)}\OpenVPN\bin\" },
-  @{Name = "OpenVPN Manual Page"; TargetPath = "${env:ProgramFiles(x86)}\OpenVPN\doc\openvpn.8.html"; SystemLnk = "OpenVPN\Documentation\"; StartIn = "${env:ProgramFiles(x86)}\OpenVPN\doc\" },
-  @{Name = "OpenVPN Windows Notes"; TargetPath = "${env:ProgramFiles(x86)}\OpenVPN\doc\INSTALL-win32.txt"; SystemLnk = "OpenVPN\Documentation\"; StartIn = "${env:ProgramFiles(x86)}\OpenVPN\doc\" },
-  @{Name = "OpenVPN Configuration File Directory"; TargetPath = "${env:ProgramFiles(x86)}\OpenVPN\config"; SystemLnk = "OpenVPN\Shortcuts\"; StartIn = "${env:ProgramFiles(x86)}\OpenVPN\config\" },
-  @{Name = "OpenVPN Log File Directory"; TargetPath = "${env:ProgramFiles(x86)}\OpenVPN\log"; SystemLnk = "OpenVPN\Shortcuts\"; StartIn = "${env:ProgramFiles(x86)}\OpenVPN\log\" },
-  @{Name = "OpenVPN Sample Configuration Files"; TargetPath = "${env:ProgramFiles(x86)}\OpenVPN\sample-config"; SystemLnk = "OpenVPN\Shortcuts\"; StartIn = "${env:ProgramFiles(x86)}\OpenVPN\sample-config\" },
-  @{Name = "Add a new TAP-Windows6 virtual network adapter"; TargetPath = "${env:ProgramFiles(x86)}\OpenVPN\bin\tapctl.exe"; Arguments = "create --hwid root\tap0901"; SystemLnk = "OpenVPN\Utilities\"; StartIn = "${env:ProgramFiles(x86)}\OpenVPN\bin\" },
-  @{Name = "Add a new Wintun virtual network adapter"; TargetPath = "${env:ProgramFiles(x86)}\OpenVPN\bin\tapctl.exe"; Arguments = "create --hwid wintun"; SystemLnk = "OpenVPN\Utilities\"; StartIn = "${env:ProgramFiles(x86)}\OpenVPN\bin\" },
+  @{Name = "OpenVPN"; TargetPath = "${env:ProgramFiles}\OpenVPN\bin\openvpn-gui.exe"; SystemLnk = "OpenVPN\OpenVPN GUI"; WorkingDirectory = "${env:ProgramFiles}\OpenVPN\bin\" },
+  @{Name = "OpenVPN Manual Page"; TargetPath = "${env:ProgramFiles}\OpenVPN\doc\openvpn.8.html"; SystemLnk = "OpenVPN\Documentation\"; WorkingDirectory = "${env:ProgramFiles}\OpenVPN\doc\" },
+  @{Name = "OpenVPN Windows Notes"; TargetPath = "${env:ProgramFiles}\OpenVPN\doc\INSTALL-win32.txt"; SystemLnk = "OpenVPN\Documentation\"; WorkingDirectory = "${env:ProgramFiles}\OpenVPN\doc\" },
+  @{Name = "OpenVPN Configuration File Directory"; TargetPath = "${env:ProgramFiles}\OpenVPN\config"; SystemLnk = "OpenVPN\Shortcuts\"; WorkingDirectory = "${env:ProgramFiles}\OpenVPN\config\" },
+  @{Name = "OpenVPN Log File Directory"; TargetPath = "${env:ProgramFiles}\OpenVPN\log"; SystemLnk = "OpenVPN\Shortcuts\"; WorkingDirectory = "${env:ProgramFiles}\OpenVPN\log\" },
+  @{Name = "OpenVPN Sample Configuration Files"; TargetPath = "${env:ProgramFiles}\OpenVPN\sample-config"; SystemLnk = "OpenVPN\Shortcuts\"; WorkingDirectory = "${env:ProgramFiles}\OpenVPN\sample-config\" },
+  @{Name = "Add a new TAP-Windows6 virtual network adapter"; TargetPath = "${env:ProgramFiles}\OpenVPN\bin\tapctl.exe"; Arguments = "create --hwid root\tap0901"; SystemLnk = "OpenVPN\Utilities\"; WorkingDirectory = "${env:ProgramFiles}\OpenVPN\bin\" },
+  @{Name = "Add a new Wintun virtual network adapter"; TargetPath = "${env:ProgramFiles}\OpenVPN\bin\tapctl.exe"; Arguments = "create --hwid wintun"; SystemLnk = "OpenVPN\Utilities\"; WorkingDirectory = "${env:ProgramFiles}\OpenVPN\bin\" },
+  @{Name = "OpenVPN"; TargetPath = "${env:ProgramFiles(x86)}\OpenVPN\bin\openvpn-gui.exe"; SystemLnk = "OpenVPN\OpenVPN GUI"; WorkingDirectory = "${env:ProgramFiles(x86)}\OpenVPN\bin\" },
+  @{Name = "OpenVPN Manual Page"; TargetPath = "${env:ProgramFiles(x86)}\OpenVPN\doc\openvpn.8.html"; SystemLnk = "OpenVPN\Documentation\"; WorkingDirectory = "${env:ProgramFiles(x86)}\OpenVPN\doc\" },
+  @{Name = "OpenVPN Windows Notes"; TargetPath = "${env:ProgramFiles(x86)}\OpenVPN\doc\INSTALL-win32.txt"; SystemLnk = "OpenVPN\Documentation\"; WorkingDirectory = "${env:ProgramFiles(x86)}\OpenVPN\doc\" },
+  @{Name = "OpenVPN Configuration File Directory"; TargetPath = "${env:ProgramFiles(x86)}\OpenVPN\config"; SystemLnk = "OpenVPN\Shortcuts\"; WorkingDirectory = "${env:ProgramFiles(x86)}\OpenVPN\config\" },
+  @{Name = "OpenVPN Log File Directory"; TargetPath = "${env:ProgramFiles(x86)}\OpenVPN\log"; SystemLnk = "OpenVPN\Shortcuts\"; WorkingDirectory = "${env:ProgramFiles(x86)}\OpenVPN\log\" },
+  @{Name = "OpenVPN Sample Configuration Files"; TargetPath = "${env:ProgramFiles(x86)}\OpenVPN\sample-config"; SystemLnk = "OpenVPN\Shortcuts\"; WorkingDirectory = "${env:ProgramFiles(x86)}\OpenVPN\sample-config\" },
+  @{Name = "Add a new TAP-Windows6 virtual network adapter"; TargetPath = "${env:ProgramFiles(x86)}\OpenVPN\bin\tapctl.exe"; Arguments = "create --hwid root\tap0901"; SystemLnk = "OpenVPN\Utilities\"; WorkingDirectory = "${env:ProgramFiles(x86)}\OpenVPN\bin\" },
+  @{Name = "Add a new Wintun virtual network adapter"; TargetPath = "${env:ProgramFiles(x86)}\OpenVPN\bin\tapctl.exe"; Arguments = "create --hwid wintun"; SystemLnk = "OpenVPN\Utilities\"; WorkingDirectory = "${env:ProgramFiles(x86)}\OpenVPN\bin\" },
   # Oracle
-  @{Name = "License (English)"; TargetPath = "${env:ProgramFiles}\Oracle\VirtualBox\License_en_US.rtf"; SystemLnk = "Oracle VM VirtualBox\"; StartIn = "${env:ProgramFiles}\Oracle\VirtualBox\"; Description = "License" },
-  @{Name = "Oracle VM VirtualBox"; TargetPath = "${env:ProgramFiles}\Oracle\VirtualBox\VirtualBox.exe"; SystemLnk = "Oracle VM VirtualBox\"; StartIn = "${env:ProgramFiles}\Oracle\VirtualBox\"; Description = "Oracle VM VirtualBox" },
+  @{Name = "License (English)"; TargetPath = "${env:ProgramFiles}\Oracle\VirtualBox\License_en_US.rtf"; SystemLnk = "Oracle VM VirtualBox\"; WorkingDirectory = "${env:ProgramFiles}\Oracle\VirtualBox\"; Description = "License" },
+  @{Name = "Oracle VM VirtualBox"; TargetPath = "${env:ProgramFiles}\Oracle\VirtualBox\VirtualBox.exe"; SystemLnk = "Oracle VM VirtualBox\"; WorkingDirectory = "${env:ProgramFiles}\Oracle\VirtualBox\"; Description = "Oracle VM VirtualBox" },
   @{Name = "User manual (CHM, English)"; TargetPath = "${env:ProgramFiles}\Oracle\VirtualBox\VirtualBox.chm"; SystemLnk = "Oracle VM VirtualBox\"; Description = "User manual" },
   @{Name = "User manual (PDF, English)"; TargetPath = "${env:ProgramFiles}\Oracle\VirtualBox\doc\UserManual.pdf"; SystemLnk = "Oracle VM VirtualBox\"; Description = "User manual" },
-  @{Name = "License (English)"; TargetPath = "${env:ProgramFiles(x86)}\Oracle\VirtualBox\License_en_US.rtf"; SystemLnk = "Oracle VM VirtualBox\"; StartIn = "${env:ProgramFiles(x86)}\Oracle\VirtualBox\"; Description = "License" },
-  @{Name = "Oracle VM VirtualBox"; TargetPath = "${env:ProgramFiles(x86)}\Oracle\VirtualBox\VirtualBox.exe"; SystemLnk = "Oracle VM VirtualBox\"; StartIn = "${env:ProgramFiles(x86)}\Oracle\VirtualBox\"; Description = "Oracle VM VirtualBox" },
+  @{Name = "License (English)"; TargetPath = "${env:ProgramFiles(x86)}\Oracle\VirtualBox\License_en_US.rtf"; SystemLnk = "Oracle VM VirtualBox\"; WorkingDirectory = "${env:ProgramFiles(x86)}\Oracle\VirtualBox\"; Description = "License" },
+  @{Name = "Oracle VM VirtualBox"; TargetPath = "${env:ProgramFiles(x86)}\Oracle\VirtualBox\VirtualBox.exe"; SystemLnk = "Oracle VM VirtualBox\"; WorkingDirectory = "${env:ProgramFiles(x86)}\Oracle\VirtualBox\"; Description = "Oracle VM VirtualBox" },
   @{Name = "User manual (CHM, English)"; TargetPath = "${env:ProgramFiles(x86)}\Oracle\VirtualBox\VirtualBox.chm"; SystemLnk = "Oracle VM VirtualBox\"; Description = "User manual" },
   @{Name = "User manual (PDF, English)"; TargetPath = "${env:ProgramFiles(x86)}\Oracle\VirtualBox\doc\UserManual.pdf"; SystemLnk = "Oracle VM VirtualBox\"; Description = "User manual" },
   # OSFMount
-  @{Name = "OSFMount Documentation"; TargetPath = "${env:ProgramFiles}\OSFMount\osfmount_Help.exe"; SystemLnk = "OSFMount\"; StartIn = "${env:ProgramFiles}\OSFMount" },
-  @{Name = "OSFMount on the Web"; TargetPath = "${env:ProgramFiles}\OSFMount\OSFMount.url"; SystemLnk = "OSFMount\"; StartIn = "${env:ProgramFiles}\OSFMount" },
-  @{Name = "OSFMount"; TargetPath = "${env:ProgramFiles}\OSFMount\OSFMount.exe"; SystemLnk = "OSFMount\"; StartIn = "${env:ProgramFiles}\OSFMount" },
-  @{Name = "Uninstall OSFMount"; TargetPath = "${env:ProgramFiles}\OSFMount\unins000.exe"; SystemLnk = "OSFMount\"; StartIn = "${env:ProgramFiles}\OSFMount" },
-  @{Name = "OSFMount Documentation"; TargetPath = "${env:ProgramFiles(x86)}\OSFMount\osfmount_Help.exe"; SystemLnk = "OSFMount\"; StartIn = "${env:ProgramFiles(x86)}\OSFMount" },
-  @{Name = "OSFMount on the Web"; TargetPath = "${env:ProgramFiles(x86)}\OSFMount\OSFMount.url"; SystemLnk = "OSFMount\"; StartIn = "${env:ProgramFiles(x86)}\OSFMount" },
-  @{Name = "OSFMount"; TargetPath = "${env:ProgramFiles(x86)}\OSFMount\OSFMount.exe"; SystemLnk = "OSFMount\"; StartIn = "${env:ProgramFiles(x86)}\OSFMount" },
-  @{Name = "Uninstall OSFMount"; TargetPath = "${env:ProgramFiles(x86)}\OSFMount\unins000.exe"; SystemLnk = "OSFMount\"; StartIn = "${env:ProgramFiles(x86)}\OSFMount" },
+  @{Name = "OSFMount Documentation"; TargetPath = "${env:ProgramFiles}\OSFMount\osfmount_Help.exe"; SystemLnk = "OSFMount\"; WorkingDirectory = "${env:ProgramFiles}\OSFMount" },
+  @{Name = "OSFMount on the Web"; TargetPath = "${env:ProgramFiles}\OSFMount\OSFMount.url"; SystemLnk = "OSFMount\"; WorkingDirectory = "${env:ProgramFiles}\OSFMount" },
+  @{Name = "OSFMount"; TargetPath = "${env:ProgramFiles}\OSFMount\OSFMount.exe"; SystemLnk = "OSFMount\"; WorkingDirectory = "${env:ProgramFiles}\OSFMount" },
+  @{Name = "Uninstall OSFMount"; TargetPath = "${env:ProgramFiles}\OSFMount\unins000.exe"; SystemLnk = "OSFMount\"; WorkingDirectory = "${env:ProgramFiles}\OSFMount" },
+  @{Name = "OSFMount Documentation"; TargetPath = "${env:ProgramFiles(x86)}\OSFMount\osfmount_Help.exe"; SystemLnk = "OSFMount\"; WorkingDirectory = "${env:ProgramFiles(x86)}\OSFMount" },
+  @{Name = "OSFMount on the Web"; TargetPath = "${env:ProgramFiles(x86)}\OSFMount\OSFMount.url"; SystemLnk = "OSFMount\"; WorkingDirectory = "${env:ProgramFiles(x86)}\OSFMount" },
+  @{Name = "OSFMount"; TargetPath = "${env:ProgramFiles(x86)}\OSFMount\OSFMount.exe"; SystemLnk = "OSFMount\"; WorkingDirectory = "${env:ProgramFiles(x86)}\OSFMount" },
+  @{Name = "Uninstall OSFMount"; TargetPath = "${env:ProgramFiles(x86)}\OSFMount\unins000.exe"; SystemLnk = "OSFMount\"; WorkingDirectory = "${env:ProgramFiles(x86)}\OSFMount" },
   # paint.net
-  @{Name = "paint.net"; TargetPath = "${env:ProgramFiles}\paint.net\paintdotnet.exe"; StartIn = "${env:ProgramFiles}\paint.net"; Description = "Create, edit, scan, and print images and photographs." },
-  @{Name = "paint.net"; TargetPath = "${env:ProgramFiles(x86)}\paint.net\paintdotnet.exe"; StartIn = "${env:ProgramFiles(x86)}\paint.net"; Description = "Create, edit, scan, and print images and photographs." },
+  @{Name = "paint.net"; TargetPath = "${env:ProgramFiles}\paint.net\paintdotnet.exe"; WorkingDirectory = "${env:ProgramFiles}\paint.net"; Description = "Create, edit, scan, and print images and photographs." },
+  @{Name = "paint.net"; TargetPath = "${env:ProgramFiles(x86)}\paint.net\paintdotnet.exe"; WorkingDirectory = "${env:ProgramFiles(x86)}\paint.net"; Description = "Create, edit, scan, and print images and photographs." },
   # Pulse Secure
   @{Name = "Pulse Secure"; TargetPath = "${env:ProgramFiles}\Common Files\Pulse Secure\JamUI\Pulse.exe"; Arguments = "-show"; SystemLnk = "Pulse Secure\"; Description = "Pulse Secure Desktop Client" }, # it's the only install on 32-bit
   @{Name = "Pulse Secure"; TargetPath = "${env:ProgramFiles(x86)}\Common Files\Pulse Secure\JamUI\Pulse.exe"; Arguments = "-show"; SystemLnk = "Pulse Secure\"; Description = "Pulse Secure Desktop Client" }, # it's the only install on 64-bit
   # PuTTY
-  @{Name = "Pageant"; TargetPath = "${env:ProgramFiles}\PuTTY\pageant.exe"; SystemLnk = "PuTTY (64-bit)\"; StartIn = "${env:ProgramFiles}\PuTTY\" },
-  @{Name = "PSFTP"; TargetPath = "${env:ProgramFiles}\PuTTY\psftp.exe"; SystemLnk = "PuTTY (64-bit)\"; StartIn = "${env:ProgramFiles}\PuTTY\" },
+  @{Name = "Pageant"; TargetPath = "${env:ProgramFiles}\PuTTY\pageant.exe"; SystemLnk = "PuTTY (64-bit)\"; WorkingDirectory = "${env:ProgramFiles}\PuTTY\" },
+  @{Name = "PSFTP"; TargetPath = "${env:ProgramFiles}\PuTTY\psftp.exe"; SystemLnk = "PuTTY (64-bit)\"; WorkingDirectory = "${env:ProgramFiles}\PuTTY\" },
   @{Name = "PuTTY Manual"; TargetPath = "${env:ProgramFiles}\PuTTY\putty.chm"; SystemLnk = "PuTTY (64-bit)\" },
   @{Name = "PuTTY Web Site"; TargetPath = "${env:ProgramFiles}\PuTTY\website.url"; SystemLnk = "PuTTY (64-bit)\" },
-  @{Name = "PuTTY"; TargetPath = "${env:ProgramFiles}\PuTTY\putty.exe"; SystemLnk = "PuTTY (64-bit)\"; StartIn = "${env:ProgramFiles}\PuTTY\" },
-  @{Name = "PuTTYgen"; TargetPath = "${env:ProgramFiles}\PuTTY\puttygen.exe"; SystemLnk = "PuTTY (64-bit)\"; StartIn = "${env:ProgramFiles}\PuTTY\" },
-  @{Name = "Pageant"; TargetPath = "${env:ProgramFiles(x86)}\PuTTY\pageant.exe"; SystemLnk = "PuTTY\"; StartIn = "${env:ProgramFiles(x86)}\PuTTY\" },
-  @{Name = "PSFTP"; TargetPath = "${env:ProgramFiles(x86)}\PuTTY\psftp.exe"; SystemLnk = "PuTTY\"; StartIn = "${env:ProgramFiles(x86)}\PuTTY\" },
+  @{Name = "PuTTY"; TargetPath = "${env:ProgramFiles}\PuTTY\putty.exe"; SystemLnk = "PuTTY (64-bit)\"; WorkingDirectory = "${env:ProgramFiles}\PuTTY\" },
+  @{Name = "PuTTYgen"; TargetPath = "${env:ProgramFiles}\PuTTY\puttygen.exe"; SystemLnk = "PuTTY (64-bit)\"; WorkingDirectory = "${env:ProgramFiles}\PuTTY\" },
+  @{Name = "Pageant"; TargetPath = "${env:ProgramFiles(x86)}\PuTTY\pageant.exe"; SystemLnk = "PuTTY\"; WorkingDirectory = "${env:ProgramFiles(x86)}\PuTTY\" },
+  @{Name = "PSFTP"; TargetPath = "${env:ProgramFiles(x86)}\PuTTY\psftp.exe"; SystemLnk = "PuTTY\"; WorkingDirectory = "${env:ProgramFiles(x86)}\PuTTY\" },
   @{Name = "PuTTY Manual"; TargetPath = "${env:ProgramFiles(x86)}\PuTTY\putty.chm"; SystemLnk = "PuTTY\" },
   @{Name = "PuTTY Web Site"; TargetPath = "${env:ProgramFiles(x86)}\PuTTY\website.url"; SystemLnk = "PuTTY\" },
-  @{Name = "PuTTY"; TargetPath = "${env:ProgramFiles(x86)}\PuTTY\putty.exe"; SystemLnk = "PuTTY\"; StartIn = "${env:ProgramFiles(x86)}\PuTTY\" },
-  @{Name = "PuTTYgen"; TargetPath = "${env:ProgramFiles(x86)}\PuTTY\puttygen.exe"; SystemLnk = "PuTTY\"; StartIn = "${env:ProgramFiles(x86)}\PuTTY\" },
+  @{Name = "PuTTY"; TargetPath = "${env:ProgramFiles(x86)}\PuTTY\putty.exe"; SystemLnk = "PuTTY\"; WorkingDirectory = "${env:ProgramFiles(x86)}\PuTTY\" },
+  @{Name = "PuTTYgen"; TargetPath = "${env:ProgramFiles(x86)}\PuTTY\puttygen.exe"; SystemLnk = "PuTTY\"; WorkingDirectory = "${env:ProgramFiles(x86)}\PuTTY\" },
   # RealVNC
-  @{Name = "VNC Server"; TargetPath = "${env:ProgramFiles}\RealVNC\VNC Server\vncguihelper.exe"; Arguments = "vncserver.exe -_fromGui -start -showstatus"; SystemLnk = "RealVNC\"; StartIn = "${env:ProgramFiles}\RealVNC\VNC Server\" },
-  @{Name = "VNC Viewer"; TargetPath = "${env:ProgramFiles}\RealVNC\VNC Viewer\vncviewer.exe"; SystemLnk = "RealVNC\"; StartIn = "${env:ProgramFiles}\RealVNC\VNC Viewer\" },
-  @{Name = "VNC Server"; TargetPath = "${env:ProgramFiles(x86)}\RealVNC\VNC Server\vncguihelper.exe"; Arguments = "vncserver.exe -_fromGui -start -showstatus"; SystemLnk = "RealVNC\"; StartIn = "${env:ProgramFiles(x86)}\RealVNC\VNC Server\" },
-  @{Name = "VNC Viewer"; TargetPath = "${env:ProgramFiles(x86)}\RealVNC\VNC Viewer\vncviewer.exe"; SystemLnk = "RealVNC\"; StartIn = "${env:ProgramFiles(x86)}\RealVNC\VNC Viewer\" },
+  @{Name = "VNC Server"; TargetPath = "${env:ProgramFiles}\RealVNC\VNC Server\vncguihelper.exe"; Arguments = "vncserver.exe -_fromGui -start -showstatus"; SystemLnk = "RealVNC\"; WorkingDirectory = "${env:ProgramFiles}\RealVNC\VNC Server\" },
+  @{Name = "VNC Viewer"; TargetPath = "${env:ProgramFiles}\RealVNC\VNC Viewer\vncviewer.exe"; SystemLnk = "RealVNC\"; WorkingDirectory = "${env:ProgramFiles}\RealVNC\VNC Viewer\" },
+  @{Name = "VNC Server"; TargetPath = "${env:ProgramFiles(x86)}\RealVNC\VNC Server\vncguihelper.exe"; Arguments = "vncserver.exe -_fromGui -start -showstatus"; SystemLnk = "RealVNC\"; WorkingDirectory = "${env:ProgramFiles(x86)}\RealVNC\VNC Server\" },
+  @{Name = "VNC Viewer"; TargetPath = "${env:ProgramFiles(x86)}\RealVNC\VNC Viewer\vncviewer.exe"; SystemLnk = "RealVNC\"; WorkingDirectory = "${env:ProgramFiles(x86)}\RealVNC\VNC Viewer\" },
   # Samsung
-  @{Name = "Samsung DeX"; TargetPath = "${env:ProgramFiles}\Samsung\Samsung DeX\SamsungDeX.exe"; StartIn = "${env:ProgramFiles}\Samsung\Samsung DeX\" }, # it's the only install on 32-bit
-  @{Name = "Samsung DeX"; TargetPath = "${env:ProgramFiles(x86)}\Samsung\Samsung DeX\SamsungDeX.exe"; StartIn = "${env:ProgramFiles(x86)}\Samsung\Samsung DeX\" }, # it's the only install on 64-bit
+  @{Name = "Samsung DeX"; TargetPath = "${env:ProgramFiles}\Samsung\Samsung DeX\SamsungDeX.exe"; WorkingDirectory = "${env:ProgramFiles}\Samsung\Samsung DeX\" }, # it's the only install on 32-bit
+  @{Name = "Samsung DeX"; TargetPath = "${env:ProgramFiles(x86)}\Samsung\Samsung DeX\SamsungDeX.exe"; WorkingDirectory = "${env:ProgramFiles(x86)}\Samsung\Samsung DeX\" }, # it's the only install on 64-bit
   # SonicWall Global VPN Client
-  @{Name = "Global VPN Client"; TargetPath = "${env:ProgramFiles}\SonicWALL\Global VPN Client\SWGVC.exe"; StartIn = "${env:ProgramFiles}\SonicWall\Global VPN Client\"; Description = "Launch the Global VPN Client" },
-  @{Name = "Global VPN Client"; TargetPath = "${env:ProgramFiles}\Dell SonicWALL\Global VPN Client\SWGVC.exe"; StartIn = "${env:ProgramFiles}\Dell SonicWall\Global VPN Client\"; Description = "Launch the Global VPN Client" },
-  @{Name = "Global VPN Client"; TargetPath = "${env:ProgramFiles(x86)}\SonicWALL\Global VPN Client\SWGVC.exe"; StartIn = "${env:ProgramFiles(x86)}\SonicWall\Global VPN Client\"; Description = "Launch the Global VPN Client" },
-  @{Name = "Global VPN Client"; TargetPath = "${env:ProgramFiles(x86)}\Dell SonicWALL\Global VPN Client\SWGVC.exe"; StartIn = "${env:ProgramFiles(x86)}\Dell SonicWall\Global VPN Client\"; Description = "Launch the Global VPN Client" },
+  @{Name = "Global VPN Client"; TargetPath = "${env:ProgramFiles}\SonicWALL\Global VPN Client\SWGVC.exe"; WorkingDirectory = "${env:ProgramFiles}\SonicWall\Global VPN Client\"; Description = "Launch the Global VPN Client" },
+  @{Name = "Global VPN Client"; TargetPath = "${env:ProgramFiles}\Dell SonicWALL\Global VPN Client\SWGVC.exe"; WorkingDirectory = "${env:ProgramFiles}\Dell SonicWall\Global VPN Client\"; Description = "Launch the Global VPN Client" },
+  @{Name = "Global VPN Client"; TargetPath = "${env:ProgramFiles(x86)}\SonicWALL\Global VPN Client\SWGVC.exe"; WorkingDirectory = "${env:ProgramFiles(x86)}\SonicWall\Global VPN Client\"; Description = "Launch the Global VPN Client" },
+  @{Name = "Global VPN Client"; TargetPath = "${env:ProgramFiles(x86)}\Dell SonicWALL\Global VPN Client\SWGVC.exe"; WorkingDirectory = "${env:ProgramFiles(x86)}\Dell SonicWall\Global VPN Client\"; Description = "Launch the Global VPN Client" },
   # SoundSwitch
-  @{Name = "SoundSwitch"; TargetPath = "${env:ProgramFiles}\SoundSwitch\SoundSwitch.exe"; SystemLnk = "SoundSwitch\"; StartIn = "${env:ProgramFiles}\SoundSwitch" },
-  @{Name = "Uninstall SoundSwitch"; TargetPath = "${env:ProgramFiles}\SoundSwitch\unins000.exe"; SystemLnk = "SoundSwitch\"; StartIn = "${env:ProgramFiles}\SoundSwitch" },
-  @{Name = "SoundSwitch"; TargetPath = "${env:ProgramFiles(x86)}\SoundSwitch\SoundSwitch.exe"; SystemLnk = "SoundSwitch\"; StartIn = "${env:ProgramFiles(x86)}\SoundSwitch" },
-  @{Name = "Uninstall SoundSwitch"; TargetPath = "${env:ProgramFiles(x86)}\SoundSwitch\unins000.exe"; SystemLnk = "SoundSwitch\"; StartIn = "${env:ProgramFiles(x86)}\SoundSwitch" },
+  @{Name = "SoundSwitch"; TargetPath = "${env:ProgramFiles}\SoundSwitch\SoundSwitch.exe"; SystemLnk = "SoundSwitch\"; WorkingDirectory = "${env:ProgramFiles}\SoundSwitch" },
+  @{Name = "Uninstall SoundSwitch"; TargetPath = "${env:ProgramFiles}\SoundSwitch\unins000.exe"; SystemLnk = "SoundSwitch\"; WorkingDirectory = "${env:ProgramFiles}\SoundSwitch" },
+  @{Name = "SoundSwitch"; TargetPath = "${env:ProgramFiles(x86)}\SoundSwitch\SoundSwitch.exe"; SystemLnk = "SoundSwitch\"; WorkingDirectory = "${env:ProgramFiles(x86)}\SoundSwitch" },
+  @{Name = "Uninstall SoundSwitch"; TargetPath = "${env:ProgramFiles(x86)}\SoundSwitch\unins000.exe"; SystemLnk = "SoundSwitch\"; WorkingDirectory = "${env:ProgramFiles(x86)}\SoundSwitch" },
   # USB Redirector TS Edition
   @{Name = "USB Redirector TS Edition - Workstation"; TargetPath = "${env:ProgramFiles}\USB Redirector TS Edition - Workstation\usbredirectortsw.exe"; SystemLnk = "USB Redirector TS Edition - Workstation\" },
   @{Name = "USB Redirector TS Edition - Workstation"; TargetPath = "${env:ProgramFiles(x86)}\USB Redirector TS Edition - Workstation\usbredirectortsw.exe"; SystemLnk = "USB Redirector TS Edition - Workstation\" },
   # VideoLAN
-  @{Name = "Documentation"; TargetPath = "${env:ProgramFiles}\VideoLAN\VLC\Documentation.url"; SystemLnk = "VideoLAN\"; StartIn = "${env:ProgramFiles}\VideoLAN\VLC" },
-  @{Name = "Release Notes"; TargetPath = "${env:ProgramFiles}\VideoLAN\VLC\NEWS.txt"; SystemLnk = "VideoLAN\"; StartIn = "${env:ProgramFiles}\VideoLAN\VLC" },
-  @{Name = "VideoLAN Website"; TargetPath = "${env:ProgramFiles}\VideoLAN\VLC\VideoLAN Website.url"; SystemLnk = "VideoLAN\"; StartIn = "${env:ProgramFiles}\VideoLAN\VLC" },
-  @{Name = "VLC media player - reset preferences and cache files"; TargetPath = "${env:ProgramFiles}\VideoLAN\VLC\vlc.exe"; Arguments = "--reset-config --reset-plugins-cache vlc://quit"; SystemLnk = "VideoLAN\"; StartIn = "${env:ProgramFiles}\VideoLAN\VLC" },
-  @{Name = "VLC media player skinned"; TargetPath = "${env:ProgramFiles}\VideoLAN\VLC\vlc.exe"; Arguments = "-Iskins"; SystemLnk = "VideoLAN\"; StartIn = "${env:ProgramFiles}\VideoLAN\VLC" },
-  @{Name = "VLC media player"; TargetPath = "${env:ProgramFiles}\VideoLAN\VLC\vlc.exe"; SystemLnk = "VideoLAN\"; StartIn = "${env:ProgramFiles}\VideoLAN\VLC" },
-  @{Name = "Documentation"; TargetPath = "${env:ProgramFiles(x86)}\VideoLAN\VLC\Documentation.url"; SystemLnk = "VideoLAN\"; StartIn = "${env:ProgramFiles(x86)}\VideoLAN\VLC" },
-  @{Name = "Release Notes"; TargetPath = "${env:ProgramFiles(x86)}\VideoLAN\VLC\NEWS.txt"; SystemLnk = "VideoLAN\"; StartIn = "${env:ProgramFiles(x86)}\VideoLAN\VLC" },
-  @{Name = "VideoLAN Website"; TargetPath = "${env:ProgramFiles(x86)}\VideoLAN\VLC\VideoLAN Website.url"; SystemLnk = "VideoLAN\"; StartIn = "${env:ProgramFiles(x86)}\VideoLAN\VLC" },
-  @{Name = "VLC media player - reset preferences and cache files"; TargetPath = "${env:ProgramFiles(x86)}\VideoLAN\VLC\vlc.exe"; Arguments = "--reset-config --reset-plugins-cache vlc://quit"; SystemLnk = "VideoLAN\"; StartIn = "${env:ProgramFiles(x86)}\VideoLAN\VLC" },
-  @{Name = "VLC media player skinned"; TargetPath = "${env:ProgramFiles(x86)}\VideoLAN\VLC\vlc.exe"; Arguments = "-Iskins"; SystemLnk = "VideoLAN\"; StartIn = "${env:ProgramFiles(x86)}\VideoLAN\VLC" },
-  @{Name = "VLC media player"; TargetPath = "${env:ProgramFiles(x86)}\VideoLAN\VLC\vlc.exe"; SystemLnk = "VideoLAN\"; StartIn = "${env:ProgramFiles(x86)}\VideoLAN\VLC" },
+  @{Name = "Documentation"; TargetPath = "${env:ProgramFiles}\VideoLAN\VLC\Documentation.url"; SystemLnk = "VideoLAN\"; WorkingDirectory = "${env:ProgramFiles}\VideoLAN\VLC" },
+  @{Name = "Release Notes"; TargetPath = "${env:ProgramFiles}\VideoLAN\VLC\NEWS.txt"; SystemLnk = "VideoLAN\"; WorkingDirectory = "${env:ProgramFiles}\VideoLAN\VLC" },
+  @{Name = "VideoLAN Website"; TargetPath = "${env:ProgramFiles}\VideoLAN\VLC\VideoLAN Website.url"; SystemLnk = "VideoLAN\"; WorkingDirectory = "${env:ProgramFiles}\VideoLAN\VLC" },
+  @{Name = "VLC media player - reset preferences and cache files"; TargetPath = "${env:ProgramFiles}\VideoLAN\VLC\vlc.exe"; Arguments = "--reset-config --reset-plugins-cache vlc://quit"; SystemLnk = "VideoLAN\"; WorkingDirectory = "${env:ProgramFiles}\VideoLAN\VLC" },
+  @{Name = "VLC media player skinned"; TargetPath = "${env:ProgramFiles}\VideoLAN\VLC\vlc.exe"; Arguments = "-Iskins"; SystemLnk = "VideoLAN\"; WorkingDirectory = "${env:ProgramFiles}\VideoLAN\VLC" },
+  @{Name = "VLC media player"; TargetPath = "${env:ProgramFiles}\VideoLAN\VLC\vlc.exe"; SystemLnk = "VideoLAN\"; WorkingDirectory = "${env:ProgramFiles}\VideoLAN\VLC" },
+  @{Name = "Documentation"; TargetPath = "${env:ProgramFiles(x86)}\VideoLAN\VLC\Documentation.url"; SystemLnk = "VideoLAN\"; WorkingDirectory = "${env:ProgramFiles(x86)}\VideoLAN\VLC" },
+  @{Name = "Release Notes"; TargetPath = "${env:ProgramFiles(x86)}\VideoLAN\VLC\NEWS.txt"; SystemLnk = "VideoLAN\"; WorkingDirectory = "${env:ProgramFiles(x86)}\VideoLAN\VLC" },
+  @{Name = "VideoLAN Website"; TargetPath = "${env:ProgramFiles(x86)}\VideoLAN\VLC\VideoLAN Website.url"; SystemLnk = "VideoLAN\"; WorkingDirectory = "${env:ProgramFiles(x86)}\VideoLAN\VLC" },
+  @{Name = "VLC media player - reset preferences and cache files"; TargetPath = "${env:ProgramFiles(x86)}\VideoLAN\VLC\vlc.exe"; Arguments = "--reset-config --reset-plugins-cache vlc://quit"; SystemLnk = "VideoLAN\"; WorkingDirectory = "${env:ProgramFiles(x86)}\VideoLAN\VLC" },
+  @{Name = "VLC media player skinned"; TargetPath = "${env:ProgramFiles(x86)}\VideoLAN\VLC\vlc.exe"; Arguments = "-Iskins"; SystemLnk = "VideoLAN\"; WorkingDirectory = "${env:ProgramFiles(x86)}\VideoLAN\VLC" },
+  @{Name = "VLC media player"; TargetPath = "${env:ProgramFiles(x86)}\VideoLAN\VLC\vlc.exe"; SystemLnk = "VideoLAN\"; WorkingDirectory = "${env:ProgramFiles(x86)}\VideoLAN\VLC" },
   # VMware
-  @{Name = "Command Prompt for vctl"; TargetPath = $CommandPromptforvctl_Path; Arguments = "/k set PATH=${env:ProgramFiles}\VMware\VMware Player\;%PATH% && vctl.exe -h"; SystemLnk = "VMware\"; StartIn = "${env:ProgramFiles}\VMware\VMware Player\bin\" }, # it's the only install on 32-bit
-  @{Name = $VMwareWorkstationPlayer_Name; TargetPath = $VMwareWorkstationPlayer_TargetPath; SystemLnk = "VMware\"; StartIn = "${env:ProgramFiles}\VMware\VMware Player\" }, # it's the only install on 32-bit
-  @{Name = "Command Prompt for vctl"; TargetPath = $CommandPromptforvctl_32bit_Path; Arguments = "/k set PATH=${env:ProgramFiles(x86)}\VMware\VMware Player\;%PATH% && vctl.exe -h"; SystemLnk = "VMware\"; StartIn = "${env:ProgramFiles(x86)}\VMware\VMware Player\bin\" }, # it's the only install on 64-bit
-  @{Name = $VMwareWorkstationPlayer_32bit_Name; TargetPath = $VMwareWorkstationPlayer_32bit_TargetPath; SystemLnk = "VMware\"; StartIn = "${env:ProgramFiles(x86)}\VMware\VMware Player\" }, # it's the only install on 64-bit
+  @{Name = "Command Prompt for vctl"; TargetPath = $CommandPromptforvctl_Path; Arguments = "/k set PATH=${env:ProgramFiles}\VMware\VMware Player\;%PATH% && vctl.exe -h"; SystemLnk = "VMware\"; WorkingDirectory = "${env:ProgramFiles}\VMware\VMware Player\bin\" }, # it's the only install on 32-bit
+  @{Name = $VMwareWorkstationPlayer_Name; TargetPath = $VMwareWorkstationPlayer_TargetPath; SystemLnk = "VMware\"; WorkingDirectory = "${env:ProgramFiles}\VMware\VMware Player\" }, # it's the only install on 32-bit
+  @{Name = "Command Prompt for vctl"; TargetPath = $CommandPromptforvctl_32bit_Path; Arguments = "/k set PATH=${env:ProgramFiles(x86)}\VMware\VMware Player\;%PATH% && vctl.exe -h"; SystemLnk = "VMware\"; WorkingDirectory = "${env:ProgramFiles(x86)}\VMware\VMware Player\bin\" }, # it's the only install on 64-bit
+  @{Name = $VMwareWorkstationPlayer_32bit_Name; TargetPath = $VMwareWorkstationPlayer_32bit_TargetPath; SystemLnk = "VMware\"; WorkingDirectory = "${env:ProgramFiles(x86)}\VMware\VMware Player\" }, # it's the only install on 64-bit
   # Win32DiskImager
-  @{Name = "Uninstall Win32DiskImager"; TargetPath = "${env:ProgramFiles}\ImageWriter\unins000.exe"; SystemLnk = "Image Writer\"; StartIn = "${env:ProgramFiles}\ImageWriter" }, # it's the only install on 32-bit
-  @{Name = "Win32DiskImager"; TargetPath = "${env:ProgramFiles}\ImageWriter\Win32DiskImager.exe"; SystemLnk = "Image Writer\"; StartIn = "${env:ProgramFiles}\ImageWriter" }, # it's the only install on 32-bit
-  @{Name = "Uninstall Win32DiskImager"; TargetPath = "${env:ProgramFiles(x86)}\ImageWriter\unins000.exe"; SystemLnk = "Image Writer\"; StartIn = "${env:ProgramFiles(x86)}\ImageWriter" }, # it's the only install on 64-bit
-  @{Name = "Win32DiskImager"; TargetPath = "${env:ProgramFiles(x86)}\ImageWriter\Win32DiskImager.exe"; SystemLnk = "Image Writer\"; StartIn = "${env:ProgramFiles(x86)}\ImageWriter" }, # it's the only install on 64-bit
+  @{Name = "Uninstall Win32DiskImager"; TargetPath = "${env:ProgramFiles}\ImageWriter\unins000.exe"; SystemLnk = "Image Writer\"; WorkingDirectory = "${env:ProgramFiles}\ImageWriter" }, # it's the only install on 32-bit
+  @{Name = "Win32DiskImager"; TargetPath = "${env:ProgramFiles}\ImageWriter\Win32DiskImager.exe"; SystemLnk = "Image Writer\"; WorkingDirectory = "${env:ProgramFiles}\ImageWriter" }, # it's the only install on 32-bit
+  @{Name = "Uninstall Win32DiskImager"; TargetPath = "${env:ProgramFiles(x86)}\ImageWriter\unins000.exe"; SystemLnk = "Image Writer\"; WorkingDirectory = "${env:ProgramFiles(x86)}\ImageWriter" }, # it's the only install on 64-bit
+  @{Name = "Win32DiskImager"; TargetPath = "${env:ProgramFiles(x86)}\ImageWriter\Win32DiskImager.exe"; SystemLnk = "Image Writer\"; WorkingDirectory = "${env:ProgramFiles(x86)}\ImageWriter" }, # it's the only install on 64-bit
   # Winaero
-  @{Name = "EULA"; TargetPath = "${env:ProgramFiles}\Winaero Tweaker\Winaero EULA.txt"; SystemLnk = "Winaero Tweaker\"; StartIn = "${env:ProgramFiles}\Winaero Tweaker"; Description = "Read the license agreement" },
-  @{Name = "Winaero Tweaker"; TargetPath = "${env:ProgramFiles}\Winaero Tweaker\WinaeroTweaker.exe"; SystemLnk = "Winaero Tweaker\"; StartIn = "${env:ProgramFiles}\Winaero Tweaker" },
-  @{Name = "Winaero Website"; TargetPath = "${env:ProgramFiles}\Winaero Tweaker\Winaero.url"; SystemLnk = "Winaero Tweaker\"; StartIn = "${env:ProgramFiles}\Winaero Tweaker"; Description = "Winaero is about Windows 10 / 8 / 7 and covers all topics that will interest every Windows user." },
-  @{Name = "EULA"; TargetPath = "${env:ProgramFiles(x86)}\Winaero Tweaker\Winaero EULA.txt"; SystemLnk = "Winaero Tweaker\"; StartIn = "${env:ProgramFiles(x86)}\Winaero Tweaker"; Description = "Read the license agreement" },
-  @{Name = "Winaero Tweaker"; TargetPath = "${env:ProgramFiles(x86)}\Winaero Tweaker\WinaeroTweaker.exe"; SystemLnk = "Winaero Tweaker\"; StartIn = "${env:ProgramFiles(x86)}\Winaero Tweaker" },
-  @{Name = "Winaero Website"; TargetPath = "${env:ProgramFiles(x86)}\Winaero Tweaker\Winaero.url"; SystemLnk = "Winaero Tweaker\"; StartIn = "${env:ProgramFiles(x86)}\Winaero Tweaker"; Description = "Winaero is about Windows 10 / 8 / 7 and covers all topics that will interest every Windows user." },
+  @{Name = "EULA"; TargetPath = "${env:ProgramFiles}\Winaero Tweaker\Winaero EULA.txt"; SystemLnk = "Winaero Tweaker\"; WorkingDirectory = "${env:ProgramFiles}\Winaero Tweaker"; Description = "Read the license agreement" },
+  @{Name = "Winaero Tweaker"; TargetPath = "${env:ProgramFiles}\Winaero Tweaker\WinaeroTweaker.exe"; SystemLnk = "Winaero Tweaker\"; WorkingDirectory = "${env:ProgramFiles}\Winaero Tweaker" },
+  @{Name = "Winaero Website"; TargetPath = "${env:ProgramFiles}\Winaero Tweaker\Winaero.url"; SystemLnk = "Winaero Tweaker\"; WorkingDirectory = "${env:ProgramFiles}\Winaero Tweaker"; Description = "Winaero is about Windows 10 / 8 / 7 and covers all topics that will interest every Windows user." },
+  @{Name = "EULA"; TargetPath = "${env:ProgramFiles(x86)}\Winaero Tweaker\Winaero EULA.txt"; SystemLnk = "Winaero Tweaker\"; WorkingDirectory = "${env:ProgramFiles(x86)}\Winaero Tweaker"; Description = "Read the license agreement" },
+  @{Name = "Winaero Tweaker"; TargetPath = "${env:ProgramFiles(x86)}\Winaero Tweaker\WinaeroTweaker.exe"; SystemLnk = "Winaero Tweaker\"; WorkingDirectory = "${env:ProgramFiles(x86)}\Winaero Tweaker" },
+  @{Name = "Winaero Website"; TargetPath = "${env:ProgramFiles(x86)}\Winaero Tweaker\Winaero.url"; SystemLnk = "Winaero Tweaker\"; WorkingDirectory = "${env:ProgramFiles(x86)}\Winaero Tweaker"; Description = "Winaero is about Windows 10 / 8 / 7 and covers all topics that will interest every Windows user." },
   # WinSCP
-  @{Name = "WinSCP"; TargetPath = "${env:ProgramFiles}\WinSCP\WinSCP.exe"; StartIn = "${env:ProgramFiles}\WinSCP"; Description = "WinSCP: SFTP, FTP, WebDAV and SCP client" }, # it's the only install on 32-bit
-  @{Name = "WinSCP"; TargetPath = "${env:ProgramFiles(x86)}\WinSCP\WinSCP.exe"; StartIn = "${env:ProgramFiles(x86)}\WinSCP"; Description = "WinSCP: SFTP, FTP, WebDAV and SCP client" } # it's the only install on 64-bit
-  #@{Name = ""; TargetPath = ""; Arguments = ""; SystemLnk = ""; StartIn = ""; Description = ""; IconLocation = ""; RunAsAdmin = ($true -Or $false) },
+  @{Name = "WinSCP"; TargetPath = "${env:ProgramFiles}\WinSCP\WinSCP.exe"; WorkingDirectory = "${env:ProgramFiles}\WinSCP"; Description = "WinSCP: SFTP, FTP, WebDAV and SCP client" }, # it's the only install on 32-bit
+  @{Name = "WinSCP"; TargetPath = "${env:ProgramFiles(x86)}\WinSCP\WinSCP.exe"; WorkingDirectory = "${env:ProgramFiles(x86)}\WinSCP"; Description = "WinSCP: SFTP, FTP, WebDAV and SCP client" } # it's the only install on 64-bit
+  #@{Name = ""; TargetPath = ""; Arguments = ""; SystemLnk = ""; WorkingDirectory = ""; Description = ""; IconLocation = ""; RunAsAdmin = ($true -Or $false) },
 )
 
 for ($i = 0; $i -lt $sys3rdPartyAppList.length; $i++) {
@@ -1463,12 +1463,12 @@ for ($i = 0; $i -lt $sys3rdPartyAppList.length; $i++) {
   $aTargetPath = $app.TargetPath
   $aArguments = if ($app.Arguments) { $app.Arguments } else { "" }
   $aSystemLnk = if ($app.SystemLnk) { $app.SystemLnk } else { "" }
-  $aStartIn = if ($app.StartIn) { $app.StartIn } else { "" }
+  $aWorkingDirectory = if ($app.WorkingDirectory) { $app.WorkingDirectory } else { "" }
   $aDescription = if ($app.Description) { $app.Description } else { "" }
   $aIconLocation = if ($app.IconLocation) { $app.IconLocation } else { "" }
   $aRunAsAdmin = if ($app.RunAsAdmin) { $app.RunAsAdmin } else { $false }
 
-  $ScriptResults = New-Shortcut -n $aName -tp $aTargetPath -a $aArguments -sl $aSystemLnk -si $aStartIn -d $aDescription -il $aIconLocation -r $aRunAsAdmin
+  $ScriptResults = New-Shortcut -n $aName -tp $aTargetPath -a $aArguments -sl $aSystemLnk -wd $aWorkingDirectory -d $aDescription -il $aIconLocation -r $aRunAsAdmin
 }
 
 
@@ -1499,13 +1499,13 @@ $AdobeDigitalEditions_32bit_TargetPath += "${AdobeDigitalEditions_32bit_FindFold
 $Blender_TargetPath = "${env:ProgramFiles}\Blender Foundation\"
 $Blender_FindFolder = if (Test-Path -Path $Blender_TargetPath) { Get-ChildItem -Directory -Path $Blender_TargetPath | Where-Object { $_.Name -match '^Blender' } | Sort-Object -Descending }
 $Blender_FindFolder = if ($Blender_FindFolder.length -ge 1) { $Blender_FindFolder[0].name } else { $NOT_INSTALLED }
-$Blender_StartIn = $Blender_TargetPath + "${Blender_FindFolder}\"
-$Blender_TargetPath = $Blender_StartIn + "blender-launcher.exe"
+$Blender_WorkingDirectory = $Blender_TargetPath + "${Blender_FindFolder}\"
+$Blender_TargetPath = $Blender_WorkingDirectory + "blender-launcher.exe"
 $Blender_32bit_TargetPath = "${env:ProgramFiles(x86)}\Blender Foundation\"
 $Blender_32bit_FindFolder = if (Test-Path -Path $Blender_32bit_TargetPath) { Get-ChildItem -Directory -Path $Blender_32bit_TargetPath | Where-Object { $_.Name -match '^Blender' } | Sort-Object -Descending }
 $Blender_32bit_FindFolder = if ($Blender_32bit_FindFolder.length -ge 1) { $Blender_32bit_FindFolder[0].name } else { $NOT_INSTALLED }
-$Blender_32bit_StartIn = $Blender_32bit_TargetPath + "${Blender_32bit_FindFolder}\"
-$Blender_32bit_TargetPath = $Blender_32bit_StartIn + "blender-launcher.exe"
+$Blender_32bit_WorkingDirectory = $Blender_32bit_TargetPath + "${Blender_32bit_FindFolder}\"
+$Blender_32bit_TargetPath = $Blender_32bit_WorkingDirectory + "blender-launcher.exe"
 
 # System app names dependant on OS or app version
 
@@ -1534,45 +1534,45 @@ for ($i = 0; $i -lt $Users.length; $i++) {
   $OnePassword_FindFolder = if ($OnePassword_FindFolder.length -ge 1) { $OnePassword_FindFolder[0].name } else { $NOT_INSTALLED }
   $OnePassword_TargetPath += "${OnePassword_FindFolder}\1Password.exe"
   # Adobe
-  $AdobeDigitalEditions_StartIn = "${USERS_FOLDER}\${aUser}\AppData\Local\Temp"
+  $AdobeDigitalEditions_WorkingDirectory = "${USERS_FOLDER}\${aUser}\AppData\Local\Temp"
   # Discord
-  $Discord_StartIn = "${USERS_FOLDER}\${aUser}\AppData\Local\Discord\"
-  $Discord_TargetPath = $Discord_StartIn + "Update.exe"
-  $Discord_FindFolder = if (Test-Path -Path $Discord_StartIn) { Get-ChildItem -Directory -Path $Discord_StartIn | Where-Object { $_.Name -match '^app\-[.0-9]+$' } | Sort-Object -Descending }
+  $Discord_WorkingDirectory = "${USERS_FOLDER}\${aUser}\AppData\Local\Discord\"
+  $Discord_TargetPath = $Discord_WorkingDirectory + "Update.exe"
+  $Discord_FindFolder = if (Test-Path -Path $Discord_WorkingDirectory) { Get-ChildItem -Directory -Path $Discord_WorkingDirectory | Where-Object { $_.Name -match '^app\-[.0-9]+$' } | Sort-Object -Descending }
   $Discord_FindFolder = if ($Discord_FindFolder.length -ge 1) { $Discord_FindFolder[0].name } else { $NOT_INSTALLED }
-  $Discord_StartIn += $Discord_FindFolder
+  $Discord_WorkingDirectory += $Discord_FindFolder
   # GitHub
-  $GitHubDesktop_StartIn = "${USERS_FOLDER}\${aUser}\AppData\Local\GitHubDesktop\"
-  $GitHubDesktop_TargetPath = $GitHubDesktop_StartIn + "GitHubDesktop.exe"
-  $GitHubDesktop_FindFolder = if (Test-Path -Path $GitHubDesktop_StartIn) { Get-ChildItem -Directory -Path $GitHubDesktop_StartIn | Where-Object { $_.Name -match '^app\-[.0-9]+$' } | Sort-Object -Descending }
+  $GitHubDesktop_WorkingDirectory = "${USERS_FOLDER}\${aUser}\AppData\Local\GitHubDesktop\"
+  $GitHubDesktop_TargetPath = $GitHubDesktop_WorkingDirectory + "GitHubDesktop.exe"
+  $GitHubDesktop_FindFolder = if (Test-Path -Path $GitHubDesktop_WorkingDirectory) { Get-ChildItem -Directory -Path $GitHubDesktop_WorkingDirectory | Where-Object { $_.Name -match '^app\-[.0-9]+$' } | Sort-Object -Descending }
   $GitHubDesktop_FindFolder = if ($GitHubDesktop_FindFolder.length -ge 1) { $GitHubDesktop_FindFolder[0].name } else { $NOT_INSTALLED }
-  $GitHubDesktop_StartIn += $GitHubDesktop_FindFolder
+  $GitHubDesktop_WorkingDirectory += $GitHubDesktop_FindFolder
   # GoTo
-  $GoToResolveDesktopConsole_StartIn = "${USERS_FOLDER}\${aUser}\GoTo\GoTo Resolve Desktop Console\"
-  $GoToResolveDesktopConsole_Exe = $GoToResolveDesktopConsole_StartIn + "ra-technician-console.exe"
+  $GoToResolveDesktopConsole_WorkingDirectory = "${USERS_FOLDER}\${aUser}\GoTo\GoTo Resolve Desktop Console\"
+  $GoToResolveDesktopConsole_Exe = $GoToResolveDesktopConsole_WorkingDirectory + "ra-technician-console.exe"
   $GoToResolveDesktopConsole_Arch = if (Test-Path -Path $GoToResolveDesktopConsole_TargetPath) { Get-BinaryType $GoToResolveDesktopConsole_TargetPath }
-  $GoToResolveDesktopConsole_TargetPath = if ($GoToResolveDesktopConsole_Arch -And ($GoToResolveDesktopConsole_Arch -eq "BIT64")) { $GoToResolveDesktopConsole_Exe } else { $GoToResolveDesktopConsole_StartIn + $NOT_INSTALLED }
-  $GoToResolveDesktopConsole_32bit_TargetPath = if ($GoToResolveDesktopConsole_Arch -And ($GoToResolveDesktopConsole_Arch -eq "BIT32")) { $GoToResolveDesktopConsole_Exe } else { $GoToResolveDesktopConsole_StartIn + $NOT_INSTALLED }
+  $GoToResolveDesktopConsole_TargetPath = if ($GoToResolveDesktopConsole_Arch -And ($GoToResolveDesktopConsole_Arch -eq "BIT64")) { $GoToResolveDesktopConsole_Exe } else { $GoToResolveDesktopConsole_WorkingDirectory + $NOT_INSTALLED }
+  $GoToResolveDesktopConsole_32bit_TargetPath = if ($GoToResolveDesktopConsole_Arch -And ($GoToResolveDesktopConsole_Arch -eq "BIT32")) { $GoToResolveDesktopConsole_Exe } else { $GoToResolveDesktopConsole_WorkingDirectory + $NOT_INSTALLED }
   # Microsoft
   $AzureIoTExplorerPreview_TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\azure-iot-explorer\Azure IoT Explorer Preview.exe"
   $AzureIoTExplorer_TargetPath = if (Test-Path -Path $AzureIoTExplorerPreview_TargetPath -PathType Leaf) { $AzureIoTExplorerPreview_TargetPath } else { "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\azure-iot-explorer\Azure IoT Explorer.exe" }
   # Python
-  $Python_StartIn = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\Python\"
-  $Python_FindFolder = if (Test-Path -Path $Python_StartIn) { Get-ChildItem -Directory -Path $Python_StartIn | Where-Object { $_.Name -match '^Python[.0-9]+$' } | Sort-Object -Descending }
+  $Python_WorkingDirectory = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\Python\"
+  $Python_FindFolder = if (Test-Path -Path $Python_WorkingDirectory) { Get-ChildItem -Directory -Path $Python_WorkingDirectory | Where-Object { $_.Name -match '^Python[.0-9]+$' } | Sort-Object -Descending }
   $Python_FindFolder = if ($Python_FindFolder.length -ge 1) { $Python_FindFolder[0].name } else { $NOT_INSTALLED }
-  $Python_StartIn += "${Python_FindFolder}\"
-  $PythonIDLE_TargetPath = $Python_StartIn + "Lib\idlelib\idle.pyw"
-  $PythonManuals_TargetPath = $Python_StartIn + "Doc\html\index.html"
-  $Python_TargetPath = $Python_StartIn + "python.exe"
+  $Python_WorkingDirectory += "${Python_FindFolder}\"
+  $PythonIDLE_TargetPath = $Python_WorkingDirectory + "Lib\idlelib\idle.pyw"
+  $PythonManuals_TargetPath = $Python_WorkingDirectory + "Doc\html\index.html"
+  $Python_TargetPath = $Python_WorkingDirectory + "python.exe"
   $Python_FileVersionRaw = if (Test-Path -Path $Python_TargetPath -PathType Leaf) { (Get-Item $Python_TargetPath).VersionInfo.FileVersionRaw }
   $Python_Version = if ($Python_FileVersionRaw) { [string]($Python_FileVersionRaw.Major) + '.' + [string]($Python_FileVersionRaw.Minor) } else { $NOT_INSTALLED }
   $Python_SystemLnk = "Python ${Python_Version}\"
   # Slack
-  $Slack_StartIn = "${USERS_FOLDER}\${aUser}\AppData\Local\slack\"
-  $Slack_TargetPath = $Slack_StartIn + "slack.exe"
-  $Slack_FindFolder = if (Test-Path -Path $Slack_StartIn) { Get-ChildItem -Directory -Path $Slack_StartIn | Where-Object { $_.Name -match '^app\-[.0-9]+$' } | Sort-Object -Descending }
+  $Slack_WorkingDirectory = "${USERS_FOLDER}\${aUser}\AppData\Local\slack\"
+  $Slack_TargetPath = $Slack_WorkingDirectory + "slack.exe"
+  $Slack_FindFolder = if (Test-Path -Path $Slack_WorkingDirectory) { Get-ChildItem -Directory -Path $Slack_WorkingDirectory | Where-Object { $_.Name -match '^app\-[.0-9]+$' } | Sort-Object -Descending }
   $Slack_FindFolder = if ($Slack_FindFolder.length -ge 1) { $Slack_FindFolder[0].name } else { $NOT_INSTALLED }
-  $Slack_StartIn += $Slack_FindFolder
+  $Slack_WorkingDirectory += $Slack_FindFolder
   
   # User app names dependant on OS or app version
 
@@ -1594,8 +1594,8 @@ for ($i = 0; $i -lt $Users.length; $i++) {
     # 1Password
     @{Name = "1Password"; TargetPath = $OnePassword_TargetPath; Description = "1Password" },
     # Adobe
-    @{Name = $AdobeDigitalEditions_Name; TargetPath = $AdobeDigitalEditions_TargetPath; StartIn = $AdobeDigitalEditions_StartIn },
-    @{Name = $AdobeDigitalEditions_32bit_Name; TargetPath = $AdobeDigitalEditions_32bit_TargetPath; StartIn = $AdobeDigitalEditions_StartIn },
+    @{Name = $AdobeDigitalEditions_Name; TargetPath = $AdobeDigitalEditions_TargetPath; WorkingDirectory = $AdobeDigitalEditions_WorkingDirectory },
+    @{Name = $AdobeDigitalEditions_32bit_Name; TargetPath = $AdobeDigitalEditions_32bit_TargetPath; WorkingDirectory = $AdobeDigitalEditions_WorkingDirectory },
     # AutoHotkey V2
     @{Name = "AutoHotkey Window Spy"; TargetPath = "${USERS_FOLDER}\${aUser}\AutoHotkey\UX\AutoHotkeyUX.exe"; Arguments = "`"${USERS_FOLDER}\${aUser}\AutoHotkey\UX\WindowSpy.ahk`""; Description = "AutoHotkey Window Spy" },
     @{Name = "AutoHotkey"; TargetPath = "${USERS_FOLDER}\${aUser}\AutoHotkey\UX\AutoHotkeyUX.exe"; Arguments = "`"${USERS_FOLDER}\${aUser}\AutoHotkey\UX\ui-dash.ahk`""; Description = "AutoHotkey Dash" },
@@ -1607,61 +1607,61 @@ for ($i = 0; $i -lt $Users.length; $i++) {
     @{Name = "Website"; TargetPath = "${USERS_FOLDER}\${aUser}\AutoHotkey\AutoHotkey Website.url"; SystemLnk = "AutoHotkey\" },
     @{Name = "Window Spy"; TargetPath = "${USERS_FOLDER}\${aUser}\AutoHotkey\WindowSpy.ahk"; SystemLnk = "AutoHotkey\" },
     # balenaEtcher
-    @{Name = "balenaEtcher"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\balena-etcher\balenaEtcher.exe"; StartIn = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\balena-etcher"; Description = "Flash OS images to SD cards and USB drives, safely and easily." },
+    @{Name = "balenaEtcher"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\balena-etcher\balenaEtcher.exe"; WorkingDirectory = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\balena-etcher"; Description = "Flash OS images to SD cards and USB drives, safely and easily." },
     # Blender
-    @{Name = "Blender"; TargetPath = $Blender_TargetPath; SystemLnk = "blender\"; StartIn = $Blender_StartIn },
-    @{Name = "Blender"; TargetPath = $Blender_32bit_TargetPath; SystemLnk = "blender\"; StartIn = $Blender_32bit_StartIn },
+    @{Name = "Blender"; TargetPath = $Blender_TargetPath; SystemLnk = "blender\"; WorkingDirectory = $Blender_WorkingDirectory },
+    @{Name = "Blender"; TargetPath = $Blender_32bit_TargetPath; SystemLnk = "blender\"; WorkingDirectory = $Blender_32bit_WorkingDirectory },
     # Discord
-    @{Name = "Discord"; TargetPath = $Discord_TargetPath; Arguments = "--processStart Discord.exe"; SystemLnk = "Discord Inc\"; StartIn = $Discord_StartIn; Description = "Discord - https://discord.com" },
+    @{Name = "Discord"; TargetPath = $Discord_TargetPath; Arguments = "--processStart Discord.exe"; SystemLnk = "Discord Inc\"; WorkingDirectory = $Discord_WorkingDirectory; Description = "Discord - https://discord.com" },
     # GitHub
-    @{Name = "GitHub Desktop"; TargetPath = $GitHubDesktop_TargetPath; SystemLnk = "GitHub, Inc\"; StartIn = $GitHubDesktop_StartIn; Description = "Simple collaboration from your desktop" },
+    @{Name = "GitHub Desktop"; TargetPath = $GitHubDesktop_TargetPath; SystemLnk = "GitHub, Inc\"; WorkingDirectory = $GitHubDesktop_WorkingDirectory; Description = "Simple collaboration from your desktop" },
     # Google
-    @{Name = "Google Chrome"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Google\Chrome\Application\chrome.exe"; StartIn = "${USERS_FOLDER}\${aUser}\AppData\Local\Google\Chrome\Application"; Description = "Access the Internet" },
+    @{Name = "Google Chrome"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Google\Chrome\Application\chrome.exe"; WorkingDirectory = "${USERS_FOLDER}\${aUser}\AppData\Local\Google\Chrome\Application"; Description = "Access the Internet" },
     # GoTo
-    @{Name = "GoTo Resolve Desktop Console (64-bit)"; TargetPath = $GoToResolveDesktopConsole_TargetPath; StartIn = $GoToResolveDesktopConsole_StartIn },
-    @{Name = "GoTo Resolve Desktop Console"; TargetPath = $GoToResolveDesktopConsole_32bit_TargetPath; StartIn = $GoToResolveDesktopConsole_StartIn },
+    @{Name = "GoTo Resolve Desktop Console (64-bit)"; TargetPath = $GoToResolveDesktopConsole_TargetPath; WorkingDirectory = $GoToResolveDesktopConsole_WorkingDirectory },
+    @{Name = "GoTo Resolve Desktop Console"; TargetPath = $GoToResolveDesktopConsole_32bit_TargetPath; WorkingDirectory = $GoToResolveDesktopConsole_WorkingDirectory },
     # Inkscape
-    @{Name = "Inkscape"; TargetPath = "${env:ProgramFiles}\Inkscape\bin\inkscape.exe"; SystemLnk = "Inkscape\"; StartIn = "${env:ProgramFiles}\Inkscape\bin\" },
-    @{Name = "Inkview"; TargetPath = "${env:ProgramFiles}\Inkscape\bin\inkview.exe"; SystemLnk = "Inkscape\"; StartIn = "${env:ProgramFiles}\Inkscape\bin\" },
-    @{Name = "Inkscape"; TargetPath = "${env:ProgramFiles(x86)}\Inkscape\bin\inkscape.exe"; SystemLnk = "Inkscape\"; StartIn = "${env:ProgramFiles(x86)}\Inkscape\bin\" },
-    @{Name = "Inkview"; TargetPath = "${env:ProgramFiles(x86)}\Inkscape\bin\inkview.exe"; SystemLnk = "Inkscape\"; StartIn = "${env:ProgramFiles(x86)}\Inkscape\bin\" },
+    @{Name = "Inkscape"; TargetPath = "${env:ProgramFiles}\Inkscape\bin\inkscape.exe"; SystemLnk = "Inkscape\"; WorkingDirectory = "${env:ProgramFiles}\Inkscape\bin\" },
+    @{Name = "Inkview"; TargetPath = "${env:ProgramFiles}\Inkscape\bin\inkview.exe"; SystemLnk = "Inkscape\"; WorkingDirectory = "${env:ProgramFiles}\Inkscape\bin\" },
+    @{Name = "Inkscape"; TargetPath = "${env:ProgramFiles(x86)}\Inkscape\bin\inkscape.exe"; SystemLnk = "Inkscape\"; WorkingDirectory = "${env:ProgramFiles(x86)}\Inkscape\bin\" },
+    @{Name = "Inkview"; TargetPath = "${env:ProgramFiles(x86)}\Inkscape\bin\inkview.exe"; SystemLnk = "Inkscape\"; WorkingDirectory = "${env:ProgramFiles(x86)}\Inkscape\bin\" },
     # Microsoft
-    @{Name = "Azure Data Studio"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\Azure Data Studio\azuredatastudio.exe"; SystemLnk = "Azure Data Studio\"; StartIn = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\Azure Data Studio" },
-    @{Name = $AzureIoTExplorer_Name; TargetPath = $AzureIoTExplorer_TargetPath; StartIn = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\azure-iot-explorer\" },
-    @{Name = "Visual Studio Code"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\Microsoft VS Code\Code.exe"; SystemLnk = "Visual Studio Code\"; StartIn = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\Microsoft VS Code" },
-    @{Name = $MicrosoftTeams_Name; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Microsoft\Teams\Update.exe"; Arguments = "--processStart `"Teams.exe`""; StartIn = "${USERS_FOLDER}\${aUser}\AppData\Local\Microsoft\Teams" },
+    @{Name = "Azure Data Studio"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\Azure Data Studio\azuredatastudio.exe"; SystemLnk = "Azure Data Studio\"; WorkingDirectory = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\Azure Data Studio" },
+    @{Name = $AzureIoTExplorer_Name; TargetPath = $AzureIoTExplorer_TargetPath; WorkingDirectory = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\azure-iot-explorer\" },
+    @{Name = "Visual Studio Code"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\Microsoft VS Code\Code.exe"; SystemLnk = "Visual Studio Code\"; WorkingDirectory = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\Microsoft VS Code" },
+    @{Name = $MicrosoftTeams_Name; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Microsoft\Teams\Update.exe"; Arguments = "--processStart `"Teams.exe`""; WorkingDirectory = "${USERS_FOLDER}\${aUser}\AppData\Local\Microsoft\Teams" },
     @{Name = "OneDrive"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Microsoft\OneDrive\OneDrive.exe"; Description = "Keep your most important files with you wherever you go, on any device." },
     # Windows
     @{Name = "Windows Tools"; TargetPath = "%windir%\system32\control.exe"; Arguments = "/name Microsoft.AdministrativeTools"; Description = "Windows Tools" },
     # Mozilla
-    @{Name = "Firefox"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Mozilla Firefox\firefox.exe"; StartIn = "${USERS_FOLDER}\${aUser}\AppData\Local\Mozilla Firefox" },
+    @{Name = "Firefox"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Mozilla Firefox\firefox.exe"; WorkingDirectory = "${USERS_FOLDER}\${aUser}\AppData\Local\Mozilla Firefox" },
     # NVIDIA Corporation
-    @{Name = "NVIDIA GeForce NOW"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\NVIDIA Corporation\GeForceNOW\CEF\GeForceNOW.exe"; StartIn = "${USERS_FOLDER}\${aUser}\AppData\Local\NVIDIA Corporation\GeForceNOW\CEF" },
+    @{Name = "NVIDIA GeForce NOW"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\NVIDIA Corporation\GeForceNOW\CEF\GeForceNOW.exe"; WorkingDirectory = "${USERS_FOLDER}\${aUser}\AppData\Local\NVIDIA Corporation\GeForceNOW\CEF" },
     # Python
-    @{Name = $PythonIDLE_Name; TargetPath = $PythonIDLE_TargetPath; SystemLnk = $Python_SystemLnk; StartIn = $Python_StartIn; Description = $PythonIDLE_Description },
-    @{Name = $Python_Name; TargetPath = $Python_TargetPath; SystemLnk = $Python_SystemLnk; StartIn = $Python_StartIn; Description = $Python_Description },
-    @{Name = $PythonManuals_Name; TargetPath = $PythonManuals_TargetPath; SystemLnk = $Python_SystemLnk; StartIn = $Python_StartIn; Description = $PythonManuals_Description },
-    @{Name = $PythonModuleDocs_Name; TargetPath = $Python_TargetPath; Arguments = "-m pydoc -b"; SystemLnk = $Python_SystemLnk; StartIn = $Python_StartIn; Description = $PythonModuleDocs_Description },
+    @{Name = $PythonIDLE_Name; TargetPath = $PythonIDLE_TargetPath; SystemLnk = $Python_SystemLnk; WorkingDirectory = $Python_WorkingDirectory; Description = $PythonIDLE_Description },
+    @{Name = $Python_Name; TargetPath = $Python_TargetPath; SystemLnk = $Python_SystemLnk; WorkingDirectory = $Python_WorkingDirectory; Description = $Python_Description },
+    @{Name = $PythonManuals_Name; TargetPath = $PythonManuals_TargetPath; SystemLnk = $Python_SystemLnk; WorkingDirectory = $Python_WorkingDirectory; Description = $PythonManuals_Description },
+    @{Name = $PythonModuleDocs_Name; TargetPath = $Python_TargetPath; Arguments = "-m pydoc -b"; SystemLnk = $Python_SystemLnk; WorkingDirectory = $Python_WorkingDirectory; Description = $PythonModuleDocs_Description },
     # Slack
-    @{Name = "Slack"; TargetPath = $Slack_TargetPath; SystemLnk = "Slack Technologies Inc\"; StartIn = $Slack_StartIn; Description = "Slack Desktop" },
+    @{Name = "Slack"; TargetPath = $Slack_TargetPath; SystemLnk = "Slack Technologies Inc\"; WorkingDirectory = $Slack_WorkingDirectory; Description = "Slack Desktop" },
     # Raspberry Pi Imager
-    @{Name = "Raspberry Pi Imager"; TargetPath = "${env:ProgramFiles}\Raspberry Pi Imager\rpi-imager.exe"; StartIn = "${env:ProgramFiles}\Raspberry Pi Imager" }, # it's the only install on 32-bit
-    @{Name = "Raspberry Pi Imager"; TargetPath = "${env:ProgramFiles(x86)}\Raspberry Pi Imager\rpi-imager.exe"; StartIn = "${env:ProgramFiles(x86)}\Raspberry Pi Imager" }, # it's the only install on 64-bit
+    @{Name = "Raspberry Pi Imager"; TargetPath = "${env:ProgramFiles}\Raspberry Pi Imager\rpi-imager.exe"; WorkingDirectory = "${env:ProgramFiles}\Raspberry Pi Imager" }, # it's the only install on 32-bit
+    @{Name = "Raspberry Pi Imager"; TargetPath = "${env:ProgramFiles(x86)}\Raspberry Pi Imager\rpi-imager.exe"; WorkingDirectory = "${env:ProgramFiles(x86)}\Raspberry Pi Imager" }, # it's the only install on 64-bit
     # RingCentral
-    @{Name = "RingCentral"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\RingCentral\RingCentral.exe"; StartIn = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\RingCentral"; Description = "RingCentral" },
+    @{Name = "RingCentral"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\RingCentral\RingCentral.exe"; WorkingDirectory = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\RingCentral"; Description = "RingCentral" },
     @{Name = "RingCentral Meetings"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Roaming\RingCentralMeetings\bin\RingCentralMeetings.exe"; SystemLnk = "RingCentral Meetings\"; Description = "RingCentral Meetings" },
     @{Name = "Uninstall RingCentral Meetings"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Roaming\RingCentralMeetings\uninstall\Installer.exe"; Arguments = "/uninstall"; SystemLnk = "RingCentral Meetings\"; Description = "Uninstall RingCentral Meetings" },
     # WinDirStat
-    @{Name = "Help (ENG)"; TargetPath = "${env:ProgramFiles}\WinDirStat\windirstat.chm"; SystemLnk = "WinDirStat\"; StartIn = "${env:ProgramFiles}\WinDirStat" }, # it's the only install on 32-bit
-    @{Name = "Uninstall WinDirStat"; TargetPath = "${env:ProgramFiles}\WinDirStat\Uninstall.exe"; SystemLnk = "WinDirStat\"; StartIn = "${env:ProgramFiles}\WinDirStat" }, # it's the only install on 32-bit
-    @{Name = "WinDirStat"; TargetPath = "${env:ProgramFiles}\WinDirStat\windirstat.exe"; SystemLnk = "WinDirStat\"; StartIn = "${env:ProgramFiles}\WinDirStat" }, # it's the only install on 32-bit
-    @{Name = "Help (ENG)"; TargetPath = "${env:ProgramFiles(x86)}\WinDirStat\windirstat.chm"; SystemLnk = "WinDirStat\"; StartIn = "${env:ProgramFiles(x86)}\WinDirStat" }, # it's the only install on 64-bit
-    @{Name = "Uninstall WinDirStat"; TargetPath = "${env:ProgramFiles(x86)}\WinDirStat\Uninstall.exe"; SystemLnk = "WinDirStat\"; StartIn = "${env:ProgramFiles(x86)}\WinDirStat" }, # it's the only install on 64-bit
-    @{Name = "WinDirStat"; TargetPath = "${env:ProgramFiles(x86)}\WinDirStat\windirstat.exe"; SystemLnk = "WinDirStat\"; StartIn = "${env:ProgramFiles(x86)}\WinDirStat" }, # it's the only install on 64-bit
+    @{Name = "Help (ENG)"; TargetPath = "${env:ProgramFiles}\WinDirStat\windirstat.chm"; SystemLnk = "WinDirStat\"; WorkingDirectory = "${env:ProgramFiles}\WinDirStat" }, # it's the only install on 32-bit
+    @{Name = "Uninstall WinDirStat"; TargetPath = "${env:ProgramFiles}\WinDirStat\Uninstall.exe"; SystemLnk = "WinDirStat\"; WorkingDirectory = "${env:ProgramFiles}\WinDirStat" }, # it's the only install on 32-bit
+    @{Name = "WinDirStat"; TargetPath = "${env:ProgramFiles}\WinDirStat\windirstat.exe"; SystemLnk = "WinDirStat\"; WorkingDirectory = "${env:ProgramFiles}\WinDirStat" }, # it's the only install on 32-bit
+    @{Name = "Help (ENG)"; TargetPath = "${env:ProgramFiles(x86)}\WinDirStat\windirstat.chm"; SystemLnk = "WinDirStat\"; WorkingDirectory = "${env:ProgramFiles(x86)}\WinDirStat" }, # it's the only install on 64-bit
+    @{Name = "Uninstall WinDirStat"; TargetPath = "${env:ProgramFiles(x86)}\WinDirStat\Uninstall.exe"; SystemLnk = "WinDirStat\"; WorkingDirectory = "${env:ProgramFiles(x86)}\WinDirStat" }, # it's the only install on 64-bit
+    @{Name = "WinDirStat"; TargetPath = "${env:ProgramFiles(x86)}\WinDirStat\windirstat.exe"; SystemLnk = "WinDirStat\"; WorkingDirectory = "${env:ProgramFiles(x86)}\WinDirStat" }, # it's the only install on 64-bit
     # Zoom
     @{Name = "Uninstall Zoom"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Roaming\Zoom\uninstall\Installer.exe"; Arguments = "/uninstall"; SystemLnk = "Zoom\"; Description = "Uninstall Zoom" },
     @{Name = "Zoom"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Roaming\Zoom\bin\Zoom.exe"; SystemLnk = "Zoom\"; Description = "Zoom UMX" }
-    #@{Name = ""; TargetPath = ""; Arguments = ""; SystemLnk = ""; StartIn = ""; Description = ""; IconLocation = ""; RunAsAdmin = ($true -Or $false) },
+    #@{Name = ""; TargetPath = ""; Arguments = ""; SystemLnk = ""; WorkingDirectory = ""; Description = ""; IconLocation = ""; RunAsAdmin = ($true -Or $false) },
   )
 
   for ($j = 0; $j -lt $userAppList.length; $j++) {
@@ -1670,12 +1670,12 @@ for ($i = 0; $i -lt $Users.length; $i++) {
     $aTargetPath = $app.TargetPath
     $aArguments = if ($app.Arguments) { $app.Arguments } else { "" }
     $aSystemLnk = if ($app.SystemLnk) { $app.SystemLnk } else { "" }
-    $aStartIn = if ($app.StartIn) { $app.StartIn } else { "" }
+    $aWorkingDirectory = if ($app.WorkingDirectory) { $app.WorkingDirectory } else { "" }
     $aDescription = if ($app.Description) { $app.Description } else { "" }
     $aIconLocation = if ($app.IconLocation) { $app.IconLocation } else { "" }
     $aRunAsAdmin = if ($app.RunAsAdmin) { $app.RunAsAdmin } else { $false }
 
-    $ScriptResults = New-Shortcut -n $aName -tp $aTargetPath -a $aArguments -sl $aSystemLnk -si $aStartIn -d $aDescription -il $aIconLocation -r $aRunAsAdmin -u $aUser
+    $ScriptResults = New-Shortcut -n $aName -tp $aTargetPath -a $aArguments -sl $aSystemLnk -wd $aWorkingDirectory -d $aDescription -il $aIconLocation -r $aRunAsAdmin -u $aUser
   }
 }
 
