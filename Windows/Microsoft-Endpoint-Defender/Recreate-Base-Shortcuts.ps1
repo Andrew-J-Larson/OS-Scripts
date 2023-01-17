@@ -1345,6 +1345,11 @@ $sys3rdPartyAppList = @(
   # GoTo
   @{Name = "GoTo Resolve Desktop Console (64-bit)"; TargetPath = "${env:ProgramFiles}\GoTo\GoTo Resolve Desktop Console\ra-technician-console.exe"; WorkingDirectory = "${env:ProgramFiles}\GoTo\GoTo Resolve Desktop Console\" },
   @{Name = "GoTo Resolve Desktop Console"; TargetPath = "${env:ProgramFiles(x86)}\GoTo\GoTo Resolve Desktop Console\ra-technician-console.exe"; WorkingDirectory = "${env:ProgramFiles(x86)}\GoTo\GoTo Resolve Desktop Console\" },
+  # FortiClient
+  @{Name = "FortiClient"; TargetPath = "${env:ProgramFiles}\Fortinet\FortiClient\FortiClient.exe"; StartIn = "${env:ProgramFiles}\Fortinet\FortiClient"; Description = "FortiClient Console" },
+  @{Name = "FortiClient Diagnostic Tool"; TargetPath = "${env:ProgramFiles}\Fortinet\FortiClient\FortiClient_Diagnostic_Tool.exe"; StartIn = "${env:ProgramFiles}\Fortinet\FortiClient"; Description = "FortiClient Diagnostic Tool" },
+  @{Name = "FortiClient"; TargetPath = "${env:ProgramFiles(x86)}\Fortinet\FortiClient\FortiClient.exe"; StartIn = "${env:ProgramFiles}\Fortinet\FortiClient"; Description = "FortiClient Console" },
+  @{Name = "FortiClient Diagnostic Tool"; TargetPath = "${env:ProgramFiles(x86)}\Fortinet\FortiClient\FortiClient_Diagnostic_Tool.exe"; StartIn = "${env:ProgramFiles}\Fortinet\FortiClient"; Description = "FortiClient Diagnostic Tool" },
   # KC Softwares
   @{Name = "SUMo"; TargetPath = "${env:ProgramFiles}\KC Softwares\SUMo\SUMo.exe"; SystemLnk = "KC Softwares\SUMo\"; WorkingDirectory = "${env:ProgramFiles}\KC Softwares\SUMo" }, # it's the only install on 32-bit
   @{Name = "Uninstall SUMo"; TargetPath = "${env:ProgramFiles}\KC Softwares\SUMo\unins000.exe"; SystemLnk = "KC Softwares\SUMo\"; WorkingDirectory = "${env:ProgramFiles}\KC Softwares\SUMo" }, # it's the only install on 32-bit
