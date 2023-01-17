@@ -47,7 +47,7 @@ function genLnkInfo {
     $SystemLnk = ($SystemLnk -ireplace [regex]::Escape("${env:HOMEDRIVE}\USERS\${USERNAME}"), '${env:HOMEDRIVE}\USERS\${aUser}')
     $SystemLnk = ($SystemLnk -ireplace [regex]::Escape("${env:HOMEDRIVE}\USERS"), '${USERS_FOLDER}')
     $SystemLnk = ($SystemLnk -ireplace [regex]::Escape("${env:windir}"), '${env:windir}')
-    $Entry += "SystemLnk = `"${SystemLnk}`"; "
+    if ($SystemLnk) {$Entry += "SystemLnk = `"${SystemLnk}`"; "}
     if ($WorkingDirectory) {
         $WorkingDirectory = ($WorkingDirectory -ireplace [regex]::Escape("${env:ProgramFiles(x86)}"), '${env:ProgramFiles(x86)}')
         $WorkingDirectory = ($WorkingDirectory -ireplace [regex]::Escape("${env:ProgramFiles}"), '${env:ProgramFiles}')

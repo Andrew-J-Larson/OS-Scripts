@@ -1451,6 +1451,9 @@ $sys3rdPartyAppList = @(
   @{Name = "Uninstall SoundSwitch"; TargetPath = "${env:ProgramFiles}\SoundSwitch\unins000.exe"; SystemLnk = "SoundSwitch\"; WorkingDirectory = "${env:ProgramFiles}\SoundSwitch" },
   @{Name = "SoundSwitch"; TargetPath = "${env:ProgramFiles(x86)}\SoundSwitch\SoundSwitch.exe"; SystemLnk = "SoundSwitch\"; WorkingDirectory = "${env:ProgramFiles(x86)}\SoundSwitch" },
   @{Name = "Uninstall SoundSwitch"; TargetPath = "${env:ProgramFiles(x86)}\SoundSwitch\unins000.exe"; SystemLnk = "SoundSwitch\"; WorkingDirectory = "${env:ProgramFiles(x86)}\SoundSwitch" },
+  # Team Viewer
+  @{Name = "TeamViewer"; TargetPath = "${env:ProgramFiles}\TeamViewer\TeamViewer.exe"; WorkingDirectory = "${env:ProgramFiles}\TeamViewer" },
+  @{Name = "TeamViewer"; TargetPath = "${env:ProgramFiles(x86)}\TeamViewer\TeamViewer.exe"; WorkingDirectory = "${env:ProgramFiles}\TeamViewer" },
   # USB Redirector TS Edition
   @{Name = "USB Redirector TS Edition - Workstation"; TargetPath = "${env:ProgramFiles}\USB Redirector TS Edition - Workstation\usbredirectortsw.exe"; SystemLnk = "USB Redirector TS Edition - Workstation\" },
   @{Name = "USB Redirector TS Edition - Workstation"; TargetPath = "${env:ProgramFiles(x86)}\USB Redirector TS Edition - Workstation\usbredirectortsw.exe"; SystemLnk = "USB Redirector TS Edition - Workstation\" },
@@ -1665,7 +1668,7 @@ for ($i = 0; $i -lt $Users.length; $i++) {
     @{Name = $MicrosoftTeams_Name; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Microsoft\Teams\Update.exe"; Arguments = "--processStart `"Teams.exe`""; WorkingDirectory = "${USERS_FOLDER}\${aUser}\AppData\Local\Microsoft\Teams" },
     @{Name = "OneDrive"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Microsoft\OneDrive\OneDrive.exe"; Description = "Keep your most important files with you wherever you go, on any device." },
     # Windows
-    @{Name = "Administrative Tools"; TargetPath = "${env:windir}\system32\control.exe"; Arguments = "/name Microsoft.AdministrativeTools"; SystemLnk = ""; Description = "Windows Tools"; IconLocation = "%windir%\system32\imageres.dll,-114" },
+    @{Name = "Administrative Tools"; TargetPath = "${env:windir}\system32\control.exe"; Arguments = "/name Microsoft.AdministrativeTools"; Description = "Windows Tools"; IconLocation = "%windir%\system32\imageres.dll,-114" },
     @{Name = "LiveCaptions"; TargetPath = "${env:windir}\system32\LiveCaptions.exe"; SystemLnk = "Accessibility\"; Description = "Captions audio and video live on your screen."; IconLocation = "%windir%\system32\LiveCaptions.exe,-1" },
     @{Name = "Magnify"; TargetPath = "${env:windir}\system32\magnify.exe"; SystemLnk = "Accessibility\"; Description = "Enlarges selected text and other on-screen items for easier viewing."; IconLocation = "%windir%\system32\magnify.exe,0" },
     @{Name = "Narrator"; TargetPath = "${env:windir}\system32\narrator.exe"; SystemLnk = "Accessibility\"; Description = "Reads on-screen text, dialog boxes, menus, and buttons aloud if speakers or a sound output device is installed."; IconLocation = "%windir%\system32\narrator.exe,-1" },
