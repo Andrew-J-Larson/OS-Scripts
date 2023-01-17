@@ -1655,7 +1655,10 @@ for ($i = 0; $i -lt $Users.length; $i++) {
     @{Name = "WinDirStat"; TargetPath = "${env:ProgramFiles}\WinDirStat\windirstat.exe"; SystemLnk = "WinDirStat\"; StartIn = "${env:ProgramFiles}\WinDirStat" }, # it's the only install on 32-bit
     @{Name = "Help (ENG)"; TargetPath = "${env:ProgramFiles(x86)}\WinDirStat\windirstat.chm"; SystemLnk = "WinDirStat\"; StartIn = "${env:ProgramFiles(x86)}\WinDirStat" }, # it's the only install on 64-bit
     @{Name = "Uninstall WinDirStat"; TargetPath = "${env:ProgramFiles(x86)}\WinDirStat\Uninstall.exe"; SystemLnk = "WinDirStat\"; StartIn = "${env:ProgramFiles(x86)}\WinDirStat" }, # it's the only install on 64-bit
-    @{Name = "WinDirStat"; TargetPath = "${env:ProgramFiles(x86)}\WinDirStat\windirstat.exe"; SystemLnk = "WinDirStat\"; StartIn = "${env:ProgramFiles(x86)}\WinDirStat" } # it's the only install on 64-bit
+    @{Name = "WinDirStat"; TargetPath = "${env:ProgramFiles(x86)}\WinDirStat\windirstat.exe"; SystemLnk = "WinDirStat\"; StartIn = "${env:ProgramFiles(x86)}\WinDirStat" }, # it's the only install on 64-bit
+    # Zoom
+    @{Name = "Uninstall Zoom"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Roaming\Zoom\uninstall\Installer.exe"; Arguments = "/uninstall"; SystemLnk = "Zoom\"; Description = "Uninstall Zoom" },
+    @{Name = "Zoom"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Roaming\Zoom\bin\Zoom.exe"; SystemLnk = "Zoom\"; Description = "Zoom UMX" }
     #@{Name = ""; TargetPath = ""; Arguments = ""; SystemLnk = ""; StartIn = ""; Description = ""; IconLocation = ""; RunAsAdmin = ($true -Or $false) },
   )
 
