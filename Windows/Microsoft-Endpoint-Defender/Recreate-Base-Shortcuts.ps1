@@ -293,7 +293,7 @@ $sysAppList = @(
   @{Name = $WindowsMediaPlayerOld_Name; TargetPath = "%ProgramFiles(x86)%\Windows Media Player\wmplayer.exe"; Arguments = "/prefetch:1"; SystemLnk = "Accessories\"; StartIn = "%ProgramFiles(x86)%\Windows Media Player" }, # it's the only install on 64-bit
   @{Name = "WordPad"; TargetPath = "%ProgramFiles%\Windows NT\Accessories\wordpad.exe"; SystemLnk = "Accessories\"; Description = "Creates and edits text documents with complex formatting." },
   @{Name = "Character Map"; TargetPath = "%windir%\system32\charmap.exe"; SystemLnk = "Accessories\System Tools\"; Description = "Selects special characters and copies them to your document." }
-  #@{ Name = ""; TargetPath = ""; Arguments = ""; SystemLnk = ""; StartIn = ""; Description = ""; IconLocation = ""; RunAsAdmin = ($true -Or $false) },
+  #@{Name = ""; TargetPath = ""; Arguments = ""; SystemLnk = ""; StartIn = ""; Description = ""; IconLocation = ""; RunAsAdmin = ($true -Or $false) },
 )
 
 for ($i = 0; $i -lt $sysAppList.length; $i++) {
@@ -338,7 +338,7 @@ $oemSysAppList = @(
   @{Name = "SupportAssist Recovery Assistant (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\Dell\SARemediation\postosri\osrecoveryagent.exe"; SystemLnk = "Dell\SupportAssist\" },
   # NVIDIA Corporation
   @{Name = "GeForce Experience"; TargetPath = "${env:ProgramFiles}\NVIDIA Corporation\NVIDIA GeForce Experience\NVIDIA GeForce Experience.exe"; SystemLnk = "NVIDIA Corporation\"; StartIn = "${env:ProgramFiles}\NVIDIA Corporation\NVIDIA GeForce Experience" }
-  #@{ Name = ""; TargetPath = ""; Arguments = ""; SystemLnk = ""; StartIn = ""; Description = ""; IconLocation = ""; RunAsAdmin = ($true -Or $false) },
+  #@{Name = ""; TargetPath = ""; Arguments = ""; SystemLnk = ""; StartIn = ""; Description = ""; IconLocation = ""; RunAsAdmin = ($true -Or $false) },
 )
 
 for ($i = 0; $i -lt $oemSysAppList.length; $i++) {
@@ -1080,6 +1080,10 @@ $sys3rdPartyAppList = @(
   # Cisco
   @{Name = "Cisco AnyConnect Secure Mobility Client"; TargetPath = "${env:ProgramFiles}\Cisco\Cisco AnyConnect Secure Mobility Client\vpnui.exe"; SystemLnk = "Cisco\Cisco AnyConnect Secure Mobility Client"; StartIn = "${env:ProgramFiles}\Cisco\Cisco AnyConnect Secure Mobility Client\"; Description = "Cisco AnyConnect Secure Mobility Client" }, # it's the only install on 32-bit
   @{Name = "Cisco AnyConnect Secure Mobility Client"; TargetPath = "${env:ProgramFiles(x86)}\Cisco\Cisco AnyConnect Secure Mobility Client\vpnui.exe"; SystemLnk = "Cisco\Cisco AnyConnect Secure Mobility Client"; StartIn = "${env:ProgramFiles(x86)}\Cisco\Cisco AnyConnect Secure Mobility Client\"; Description = "Cisco AnyConnect Secure Mobility Client" }, # it's the only install on 64-bit
+  @{Name = "Cisco Jabber Problem Report"; TargetPath = "${env:ProgramFiles}\Cisco Systems\Cisco Jabber\CiscoJabberPrt.exe"; SystemLnk = "Cisco Jabber\"; Description = "Cisco Jabber Problem Report" }, # it's the only install on 32-bit
+  @{Name = "Cisco Jabber"; TargetPath = "${env:ProgramFiles}\Cisco Systems\Cisco Jabber\CiscoJabber.exe"; SystemLnk = "Cisco Jabber\"; Description = "Cisco Jabber" }, # it's the only install on 32-bit
+  @{Name = "Cisco Jabber Problem Report"; TargetPath = "${env:ProgramFiles(x86)}\Cisco Systems\Cisco Jabber\CiscoJabberPrt.exe"; SystemLnk = "Cisco Jabber\"; Description = "Cisco Jabber Problem Report" }, # it's the only install on 64-bit
+  @{Name = "Cisco Jabber"; TargetPath = "${env:ProgramFiles(x86)}\Cisco Systems\Cisco Jabber\CiscoJabber.exe"; SystemLnk = "Cisco Jabber\"; Description = "Cisco Jabber" }, # it's the only install on 64-bit
   # Citrix Workspace
   @{Name = "Citrix Workspace"; TargetPath = "${env:ProgramFiles}\Citrix\ICA Client\SelfServicePlugin\SelfService.exe"; Arguments = "-showAppPicker"; StartIn = "${env:ProgramFiles}\Citrix\ICA Client\SelfServicePlugin\"; Description = "Select applications you want to use on your computer" }, # it's the only install on 32-bit
   @{Name = "Citrix Workspace"; TargetPath = "${env:ProgramFiles(x86)}\Citrix\ICA Client\SelfServicePlugin\SelfService.exe"; Arguments = "-showAppPicker"; StartIn = "${env:ProgramFiles(x86)}\Citrix\ICA Client\SelfServicePlugin\"; Description = "Select applications you want to use on your computer" }, # it's the only install on 64-bit
@@ -1241,7 +1245,7 @@ $sys3rdPartyAppList = @(
   # WinSCP
   @{Name = "WinSCP"; TargetPath = "${env:ProgramFiles}\WinSCP\WinSCP.exe"; StartIn = "${env:ProgramFiles}\WinSCP"; Description = "WinSCP: SFTP, FTP, WebDAV and SCP client" }, # it's the only install on 32-bit
   @{Name = "WinSCP"; TargetPath = "${env:ProgramFiles(x86)}\WinSCP\WinSCP.exe"; StartIn = "${env:ProgramFiles(x86)}\WinSCP"; Description = "WinSCP: SFTP, FTP, WebDAV and SCP client" } # it's the only install on 64-bit
-  #@{ Name = ""; TargetPath = ""; Arguments = ""; SystemLnk = ""; StartIn = ""; Description = ""; IconLocation = ""; RunAsAdmin = ($true -Or $false) },
+  #@{Name = ""; TargetPath = ""; Arguments = ""; SystemLnk = ""; StartIn = ""; Description = ""; IconLocation = ""; RunAsAdmin = ($true -Or $false) },
 )
 
 for ($i = 0; $i -lt $sys3rdPartyAppList.length; $i++) {
@@ -1409,7 +1413,7 @@ for ($i = 0; $i -lt $Users.length; $i++) {
     @{Name = "Help (ENG)"; TargetPath = "${env:ProgramFiles(x86)}\WinDirStat\windirstat.chm"; SystemLnk = "WinDirStat\"; StartIn = "${env:ProgramFiles(x86)}\WinDirStat" }, # it's the only install on 64-bit
     @{Name = "Uninstall WinDirStat"; TargetPath = "${env:ProgramFiles(x86)}\WinDirStat\Uninstall.exe"; SystemLnk = "WinDirStat\"; StartIn = "${env:ProgramFiles(x86)}\WinDirStat" }, # it's the only install on 64-bit
     @{Name = "WinDirStat"; TargetPath = "${env:ProgramFiles(x86)}\WinDirStat\windirstat.exe"; SystemLnk = "WinDirStat\"; StartIn = "${env:ProgramFiles(x86)}\WinDirStat" } # it's the only install on 64-bit
-    #@{ Name = ""; TargetPath = ""; Arguments = ""; SystemLnk = ""; StartIn = ""; Description = ""; IconLocation = ""; RunAsAdmin = ($true -Or $false) },
+    #@{Name = ""; TargetPath = ""; Arguments = ""; SystemLnk = ""; StartIn = ""; Description = ""; IconLocation = ""; RunAsAdmin = ($true -Or $false) },
   )
 
   for ($j = 0; $j -lt $userAppList.length; $j++) {
