@@ -1681,8 +1681,6 @@ for ($i = 0; $i -lt $Users.length; $i++) {
     @{Name = "On-Screen Keyboard"; TargetPath = "${env:windir}\system32\osk.exe"; SystemLnk = "Accessibility\"; Description = "Displays a keyboard that is controlled by a mouse or switch input device."; IconLocation = "%windir%\system32\osk.exe,-1" },
     @{Name = "VoiceAccess"; TargetPath = "${env:windir}\system32\voiceaccess.exe"; SystemLnk = "Accessibility\"; Description = "Helps you to interact with your PC and dictate text with your voice."; IconLocation = "%windir%\system32\voiceaccess.exe,-1" },
     @{Name = "Command Prompt"; TargetPath = "${env:windir}\system32\cmd.exe"; SystemLnk = "System Tools\"; WorkingDirectory = "%HOMEDRIVE%%HOMEPATH%"; Description = "Performs text-based (command-line) functions."; IconLocation = "%windir%\system32\cmd.exe,0" },
-    @{Name = "Control Panel"; TargetPath = ""; SystemLnk = "System Tools\"; IconLocation = "%windir%\system32\imageres.dll,-27" },
-    @{Name = "Run"; TargetPath = ""; SystemLnk = "System Tools\"; IconLocation = "%windir%\system32\shell32.dll,-25" },
     @{Name = "Windows PowerShell"; TargetPath = "${env:windir}\System32\WindowsPowerShell\v1.0\powershell.exe"; SystemLnk = "Windows PowerShell\"; WorkingDirectory = "%HOMEDRIVE%%HOMEPATH%"; Description = "Performs object-based (command-line) functions"; IconLocation = "%SystemRoot%\system32\WindowsPowerShell\v1.0\powershell.exe,0" },
     @{Name = "Windows PowerShell (x86)"; TargetPath = "${env:windir}\SysWOW64\WindowsPowerShell\v1.0\powershell.exe"; SystemLnk = "Windows PowerShell\"; WorkingDirectory = "%HOMEDRIVE%%HOMEPATH%"; Description = "Performs object-based (command-line) functions"; IconLocation = "%SystemRoot%\syswow64\WindowsPowerShell\v1.0\powershell.exe,0" },
     # Mozilla
