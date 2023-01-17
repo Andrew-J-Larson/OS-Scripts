@@ -337,19 +337,19 @@ $PowerToys_TargetPath = "${env:ProgramFiles}\PowerToys\PowerToys.exe"
 $O365_DatabaseCompare_Exe = "${env:ProgramFiles}\Microsoft Office\Office16\DCF\DATABASECOMPARE.EXE"
 $O365_DatabaseCompare_Arguments = "`"${O365_DatabaseCompare_Exe}`""
 $O365_DatabaseCompare_TargetPath = "${env:ProgramFiles}\Microsoft Office\root\Client\"
-$O365_DatabaseCompare_TargetPath += if (Test-Path -Path $O365_DatabaseCompare_Exe -PathType Leaf) {"AppVLP.exe"} else {"${NotInstalled}.exe"} 
+$O365_DatabaseCompare_TargetPath += if (Test-Path -Path $O365_DatabaseCompare_Exe -PathType Leaf) { "AppVLP.exe" } else { "${NotInstalled}.exe" } 
 $O365_SpreadsheetCompare_Exe = "${env:ProgramFiles}\Microsoft Office\Office16\DCF\SPREADSHEETCOMPARE.EXE"
 $O365_SpreadsheetCompare_Arguments = "`"${O365_SpreadsheetCompare_Exe}`""
 $O365_SpreadsheetCompare_TargetPath = "${env:ProgramFiles}\Microsoft Office\root\Client\"
-$O365_SpreadsheetCompare_TargetPath += if (Test-Path -Path $O365_SpreadsheetCompare_Exe -PathType Leaf) {"AppVLP.exe"} else {"${NotInstalled}.exe"}
+$O365_SpreadsheetCompare_TargetPath += if (Test-Path -Path $O365_SpreadsheetCompare_Exe -PathType Leaf) { "AppVLP.exe" } else { "${NotInstalled}.exe" }
 $O365_DatabaseCompare_32bit_Exe = "${env:ProgramFiles(x86)}\Microsoft Office\Office16\DCF\DATABASECOMPARE.EXE"
 $O365_DatabaseCompare_32bit_Arguments = "`"${O365_DatabaseCompare_32bit_Exe}`""
 $O365_DatabaseCompare_32bit_TargetPath = "${env:ProgramFiles}\Microsoft Office\root\Client\"
-$O365_DatabaseCompare_32bit_TargetPath += if (Test-Path -Path $O365_DatabaseCompare_32bit_Exe -PathType Leaf) {"AppVLP.exe"} else {"${NotInstalled}.exe"}
+$O365_DatabaseCompare_32bit_TargetPath += if (Test-Path -Path $O365_DatabaseCompare_32bit_Exe -PathType Leaf) { "AppVLP.exe" } else { "${NotInstalled}.exe" }
 $O365_SpreadsheetCompare_32bit_Exe = "${env:ProgramFiles(x86)}\Microsoft Office\Office16\DCF\SPREADSHEETCOMPARE.EXE"
 $O365_SpreadsheetCompare_32bit_Arguments = "`"${O365_SpreadsheetCompare_32bit_Exe}`""
 $O365_SpreadsheetCompare_32bit_TargetPath += "${env:ProgramFiles}\Microsoft Office\root\Client\"
-$O365_SpreadsheetCompare_32bit_TargetPath = if (Test-Path -Path $O365_SpreadsheetCompare_32bit_Exe -PathType Leaf) {"AppVLP.exe"} else {"${NotInstalled}.exe"}
+$O365_SpreadsheetCompare_32bit_TargetPath = if (Test-Path -Path $O365_SpreadsheetCompare_32bit_Exe -PathType Leaf) { "AppVLP.exe" } else { "${NotInstalled}.exe" }
 # PowerShell (7 or newer)
 $PowerShell_Name = "PowerShell " + $(if ($PowerShell_Version) { $PowerShell_Version } else { $NOT_INSTALLED }) + " (x64)"
 $PowerShell_32bit_Name = "PowerShell " + $(if ($PowerShell_32bit_Version) { $PowerShell_32bit_Version } else { $NOT_INSTALLED }) + " (x86)"
@@ -403,6 +403,9 @@ $sysAppList = @(
   # OneDrive
   @{Name = "OneDrive"; TargetPath = "${env:ProgramFiles}\Microsoft OneDrive\OneDrive.exe"; Description = "Keep your most important files with you wherever you go, on any device." },
   @{Name = "OneDrive"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft OneDrive\OneDrive.exe"; Description = "Keep your most important files with you wherever you go, on any device." },
+  # Power BI Desktop
+  @{Name = "Power BI Desktop"; TargetPath = "${env:ProgramFiles}\Microsoft Power BI Desktop\bin\PBIDesktop.exe"; SystemLnk = "Microsoft Power BI Desktop\"; StartIn = "${env:ProgramFiles}\Microsoft Power BI Desktop\bin\"; Description = "Power BI Desktop" },
+  @{Name = "Power BI Desktop"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Power BI Desktop\bin\PBIDesktop.exe"; SystemLnk = "Microsoft Power BI Desktop\"; StartIn = "${env:ProgramFiles(x86)}\Microsoft Power BI Desktop\bin\"; Description = "Power BI Desktop" },
   # PowerShell (7 or newer)
   @{Name = $PowerShell_Name; TargetPath = $PowerShell_TargetPath; Arguments = "-WorkingDirectory ~"; SystemLnk = "PowerShell\"; Description = $PowerShell_Name },
   @{Name = $PowerShell_32bit_Name; TargetPath = $PowerShell_32bit_TargetPath; Arguments = "-WorkingDirectory ~"; SystemLnk = "PowerShell\"; Description = $PowerShell_32bit_Name },
