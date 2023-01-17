@@ -8,14 +8,14 @@
 
 # Application objects are setup like so:
 <# @{
-       Name = "[name of shortcut here]";
-       TargetPath = "[path to exe/url/folder here]";
-       Arguments = "[any arguments that an app starts with here]";
-       SystemLnk = "[path to lnk or name of app here]";
-       StartIn = "[start in path, if needed, here]";
-       Description = "[comment, that shows up in tooltip, here]";
-       IconLocation = "[path to ico|exe|ico w/ index]";
-       RunAsAdmin = "[true or false, if needed]"
+     Name = "[name of shortcut here]";
+     TargetPath = "[path to exe/url/folder here]";
+     Arguments = "[any arguments that an app starts with here]";
+     SystemLnk = "[path to lnk or name of app here]";
+     StartIn = "[start in path, if needed, here]";
+     Description = "[comment, that shows up in tooltip, here]";
+     IconLocation = "[path to ico|exe|ico w/ index]";
+     RunAsAdmin = "[true or false, if needed]"
    } #>
 
 
@@ -37,14 +37,137 @@ Set-Variable NOT_INSTALLED -Option Constant -Value "NOT-INSTALLED"
 $isWindows11 = ((Get-WMIObject win32_operatingsystem).Caption).StartsWith("Microsoft Windows 11")
 $isWindows10 = ((Get-WMIObject win32_operatingsystem).Caption).StartsWith("Microsoft Windows 10")
 $isWin10orNewer = [System.Environment]::OSVersion.Version.Major -ge 10
-$UninstallKeys = "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall", "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall"
+$UninstallKeys = "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall"
 $UninstallList = foreach ($UninstallKey in $UninstallKeys) {
+  Get-ChildItem -Path $UninstallKey -ErrorAction SilentlyContinue | Where-Object { $_.PSChildName -match '^{[A-Z0-9]{8}-([A-Z0-9]{4}-){3}[A-Z0-9]{12}}$' } | Select-Object @{n = 'GUID'; e = { $_.PSChildName } }, @{n = 'Name'; e = { $_.GetValue('DisplayName') } }
+}
+$UninstallKeys_32bit = "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall"
+$UninstallList_32bit = foreach ($UninstallKey in $UninstallKeys_32bit) {
   Get-ChildItem -Path $UninstallKey -ErrorAction SilentlyContinue | Where-Object { $_.PSChildName -match '^{[A-Z0-9]{8}-([A-Z0-9]{4}-){3}[A-Z0-9]{12}}$' } | Select-Object @{n = 'GUID'; e = { $_.PSChildName } }, @{n = 'Name'; e = { $_.GetValue('DisplayName') } }
 }
 
 
 
 # Functions
+
+# code via https://gist.github.com/MattUebel/2292484
+function Get-BinaryType {
+  <#
+    .SYNOPSIS
+      Gets the binary executable type for a given set of files
+    .DESCRIPTION
+      PowerShell wrapper around the GetBinaryType Windows API that inspects file headers
+      and reports the binary file type (e.g., 32-bit Windows app, 64-bit Windows app, 16-bit DOS/Windows app, etc.)
+    .PARAMETER Path
+      File path(s) to inspect
+    .EXAMPLE
+      #Reports the file type of C:\Windows\Explorer.exe:
+      Get-BinaryType C:\Windows\Explorer.exe
+    .EXAMPLE
+      #Attempts to get the binary type of all files in the current directory
+      Get-ChildItem | where { !$_.PsIsContainer } | Get-BinaryType
+    .EXAMPLE
+      #Attempts to get the binary type of all exe files in the windows directory,
+      #ignoring any non-terminating errors
+      Get-ChildItem $env:windir -filter *.exe | Get-BinaryType -ErrorAction SilentlyContinue
+    .EXAMPLE
+      #From a 32bit process on a 64 bit Windows install, attempts to get the binary type of all exe files 
+      #in the windows system32 directory by bypassing filesystem redirection using "sysnative",
+      #ignoring any non-terminating errors, and finally showing the file name and binary type
+      Get-ChildItem $env:windir\sysnative -filter *.exe | Get-BinaryType -ErrorAction SilentlyContinue -passthrough | select Name,BinaryType
+    .NOTES
+      Author:      Battleship, Aaron Margosis
+      Inspiration: http://pinvoke.net/default.aspx/kernel32/GetBinaryType.html
+    .LINK
+      http://wonkysoftware.appspot.com
+  #> 
+
+  [CmdletBinding(  
+    SupportsShouldProcess = $false,
+    ConfirmImpact = "none",
+    DefaultParameterSetName = ""
+  )]
+
+  param
+  (
+    [Parameter(
+      HelpMessage = "Enter binary file(s) to examine",
+      Position = 0,
+      Mandatory = $true,
+      ValueFromPipeline = $true,
+      ValueFromPipelineByPropertyName = $true
+    )]
+    [ValidateNotNullOrEmpty()]
+    [ValidateScript({ Test-Path $_.FullName })]
+    [IO.FileInfo[]]
+    $Path,
+
+    [Alias("PassThru")]
+    [switch]
+    $PassThrough
+  )
+
+  begin {
+    try {
+      #add the enum for the binary types
+      #Using more user friendly names since they won't likely be used outside this context
+      Add-Type "
+        public enum BinaryType 
+        {
+          BIT32 = 0, // A 32-bit Windows-based application,           SCS_32BIT_BINARY
+          DOS   = 1, // An MS-DOS - based application,            SCS_DOS_BINARY
+          WOW   = 2, // A 16-bit Windows-based application,           SCS_WOW_BINARY
+          PIF   = 3, // A PIF file that executes an MS-DOS based application, SCS_PIF_BINARY
+          POSIX = 4, // A POSIX based application,                SCS_POSIX_BINARY
+          OS216 = 5, // A 16-bit OS/2-based application,              SCS_OS216_BINARY
+          BIT64 = 6  // A 64-bit Windows-based application,           SCS_64BIT_BINARY
+        }"
+    }
+    catch {} #type already been loaded, do nothing
+
+    try {
+      # create the win32 signature
+      $Signature = '
+        [DllImport("kernel32.dll")]
+        public static extern bool GetBinaryType(
+          string lpApplicationName,
+          ref int lpBinaryType
+        );
+      '
+
+      # Create a new type that lets us access the Windows API function
+      Add-Type -MemberDefinition $Signature `
+        -Name                 BinaryType `
+        -Namespace             Win32Utils
+    }
+    catch {} #type already been loaded, do nothing
+  }
+
+  process {
+    foreach ($Item in $Path) {
+      $ReturnedType = -1
+      Write-Verbose "Attempting to get type for file: $($Item.FullName)"
+      $Result = [Win32Utils.BinaryType]::GetBinaryType($Item.FullName, [ref] $ReturnedType)
+
+      #if the function returned $false, indicating an error, or the binary type wasn't returned
+      if (!$Result -or ($ReturnedType -eq -1)) {
+        Write-Error "Failed to get binary type for file $($Item.FullName)"
+      }
+      else {
+        $ToReturn = [BinaryType]$ReturnedType
+        if ($PassThrough) {
+          #get the file object, attach a property indicating the type, and passthru to pipeline
+          Get-Item $Item.FullName -Force |
+          Add-Member -MemberType noteproperty -Name BinaryType -Value $ToReturn -Force -PassThru 
+        }
+        else { 
+          #Put enum object directly into pipeline
+          $ToReturn 
+        }
+      }
+    }
+  }
+}
 
 function New-Shortcut {
   param(
@@ -209,6 +332,23 @@ $PowerToys_TargetPath = "${env:ProgramFiles}\PowerToys\PowerToys.exe"
 
 # App names dependant on OS or app version
 
+# Office
+$O365_DatabaseCompare_Exe = "${env:ProgramFiles}\Microsoft Office\Office16\DCF\DATABASECOMPARE.EXE"
+$O365_DatabaseCompare_Arguments = "`"${O365_DatabaseCompare_Exe}`""
+$O365_DatabaseCompare_TargetPath = "${env:ProgramFiles}\Microsoft Office\root\Client\"
+$O365_DatabaseCompare_TargetPath += if (Test-Path -Path $O365_DatabaseCompare_Exe -PathType Leaf) {"AppVLP.exe"} else {"${NotInstalled}.exe"} 
+$O365_SpreadsheetCompare_Exe = "${env:ProgramFiles}\Microsoft Office\Office16\DCF\SPREADSHEETCOMPARE.EXE"
+$O365_SpreadsheetCompare_Arguments = "`"${O365_SpreadsheetCompare_Exe}`""
+$O365_SpreadsheetCompare_TargetPath = "${env:ProgramFiles}\Microsoft Office\root\Client\"
+$O365_SpreadsheetCompare_TargetPath += if (Test-Path -Path $O365_SpreadsheetCompare_Exe -PathType Leaf) {"AppVLP.exe"} else {"${NotInstalled}.exe"}
+$O365_DatabaseCompare_32bit_Exe = "${env:ProgramFiles(x86)}\Microsoft Office\Office16\DCF\DATABASECOMPARE.EXE"
+$O365_DatabaseCompare_32bit_Arguments = "`"${O365_DatabaseCompare_32bit_Exe}`""
+$O365_DatabaseCompare_32bit_TargetPath = "${env:ProgramFiles}\Microsoft Office\root\Client\"
+$O365_DatabaseCompare_32bit_TargetPath += if (Test-Path -Path $O365_DatabaseCompare_32bit_Exe -PathType Leaf) {"AppVLP.exe"} else {"${NotInstalled}.exe"}
+$O365_SpreadsheetCompare_32bit_Exe = "${env:ProgramFiles(x86)}\Microsoft Office\Office16\DCF\SPREADSHEETCOMPARE.EXE"
+$O365_SpreadsheetCompare_32bit_Arguments = "`"${O365_SpreadsheetCompare_32bit_Exe}`""
+$O365_SpreadsheetCompare_32bit_TargetPath += "${env:ProgramFiles}\Microsoft Office\root\Client\"
+$O365_SpreadsheetCompare_32bit_TargetPath = if (Test-Path -Path $O365_SpreadsheetCompare_32bit_Exe -PathType Leaf) {"AppVLP.exe"} else {"${NotInstalled}.exe"}
 # PowerShell (7 or newer)
 $PowerShell_Name = "PowerShell " + $(if ($PowerShell_Version) { $PowerShell_Version } else { $NOT_INSTALLED }) + " (x64)"
 $PowerShell_32bit_Name = "PowerShell " + $(if ($PowerShell_32bit_Version) { $PowerShell_32bit_Version } else { $NOT_INSTALLED }) + " (x86)"
@@ -221,15 +361,16 @@ $WindowsMediaPlayerOld_Name = "Windows Media Player" + $(if ($isWindows11) { " L
 $sysAppList = @(
   # Azure
   @{Name = "Azure Data Studio"; TargetPath = "${env:ProgramFiles}\Azure Data Studio\azuredatastudio.exe"; SystemLnk = "Azure Data Studio\"; StartIn = "${env:ProgramFiles}\Azure Data Studio" },
+  @{Name = "Azure Data Studio"; TargetPath = "${env:ProgramFiles(x86)}\Azure Data Studio\azuredatastudio.exe"; SystemLnk = "Azure Data Studio\"; StartIn = "${env:ProgramFiles(x86)}\Azure Data Studio" },
   # Edge
   @{Name = "Microsoft Edge"; TargetPath = "${env:ProgramFiles}\Microsoft\Edge\Application\msedge.exe"; StartIn = "${env:ProgramFiles}\Microsoft\Edge\Application"; Description = "Browse the web" }, # it's the only install on 32-bit
   @{Name = "Microsoft Edge"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft\Edge\Application\msedge.exe"; StartIn = "${env:ProgramFiles(x86)}\Microsoft\Edge\Application"; Description = "Browse the web" }, # it's the only install on 64-bit
   # Intune 
   @{Name = "Microsoft Intune Management Extension"; TargetPath = "${env:ProgramFiles}\Microsoft Intune Management Extension\AgentExecutor.exe"; SystemLnk = "Microsoft Intune Management Extension\"; Description = "Microsoft Intune Management Extension" }, # it's the only install on 32-bit
-  @{Name = "Microsoft Intune Management Extension"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Intune Management Extension\AgentExecutor.exe"; SystemLnk = "Microsoft Intune Management Extension\"; Description = "Microsoft Intune Management Extension" }, # it's the only install on 64-bit
   @{Name = "Remote help"; TargetPath = "${env:ProgramFiles}\Remote help\RemoteHelp.exe"; SystemLnk = "Remote help\"; StartIn = "${env:ProgramFiles}\Remote help\"; Description = "Remote help" },
-  @{Name = "Remote help (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\Remote help\RemoteHelp.exe"; SystemLnk = "Remote help\"; StartIn = "${env:ProgramFiles(x86)}\Remote help\"; Description = "Remote help" },
-  # Office
+  @{Name = "Microsoft Intune Management Extension"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Intune Management Extension\AgentExecutor.exe"; SystemLnk = "Microsoft Intune Management Extension\"; Description = "Microsoft Intune Management Extension" }, # it's the only install on 64-bit
+  @{Name = "Remote help"; TargetPath = "${env:ProgramFiles(x86)}\Remote help\RemoteHelp.exe"; SystemLnk = "Remote help\"; StartIn = "${env:ProgramFiles(x86)}\Remote help\"; Description = "Remote help" },
+  # Office (note: "Database Compare" and "Spreadsheet Compare" have specialized paths that need to be accounted for)
   @{Name = "Access"; TargetPath = "${env:ProgramFiles}\Microsoft Office\root\Office16\MSACCESS.EXE"; Description = "Build a professional app quickly to manage data." },
   @{Name = "Excel"; TargetPath = "${env:ProgramFiles}\Microsoft Office\root\Office16\EXCEL.EXE"; Description = "Easily discover, visualize, and share insights from your data." },
   @{Name = "OneNote"; TargetPath = "${env:ProgramFiles}\Microsoft Office\root\Office16\ONENOTE.EXE"; Description = "Take notes and have them when you need them." },
@@ -239,30 +380,32 @@ $sysAppList = @(
   @{Name = "Publisher"; TargetPath = "${env:ProgramFiles}\Microsoft Office\root\Office16\MSPUB.EXE"; Description = "Create professional-grade publications that make an impact." },
   @{Name = "Visio"; TargetPath = "${env:ProgramFiles}\Microsoft Office\root\Office16\VISIO.EXE"; Description = "Create professional and versatile diagrams that simplify complex information." },
   @{Name = "Word"; TargetPath = "${env:ProgramFiles}\Microsoft Office\root\Office16\WINWORD.EXE"; Description = "Create beautiful documents, easily work with others, and enjoy the read." },
-  @{Name = "Database Compare"; TargetPath = "${env:ProgramFiles}\Microsoft Office\root\Client\AppVLP.exe"; Arguments = "`"${env:ProgramFiles(x86)}\Microsoft Office\Office16\DCF\DATABASECOMPARE.EXE`""; SystemLnk = "Microsoft Office Tools\"; Description = "Compare versions of an Access database." },
+  @{Name = "Database Compare"; TargetPath = $O365_DatabaseCompare_TargetPath; Arguments = $O365_DatabaseCompare_Arguments; SystemLnk = "Microsoft Office Tools\"; Description = "Compare versions of an Access database." }, # it's the only install on 32-bit
+  @{Name = "Database Compare"; TargetPath = $O365_DatabaseCompare_32bit_TargetPath; Arguments = $O365_DatabaseCompare_32bit_Arguments; SystemLnk = "Microsoft Office Tools\"; Description = "Compare versions of an Access database." }, # it's the only install on 64-bit
   @{Name = "Office Language Preferences"; TargetPath = "${env:ProgramFiles}\Microsoft Office\root\Office16\SETLANG.EXE"; SystemLnk = "Microsoft Office Tools\"; Description = "Change the language preferences for Office applications." },
-  @{Name = "Spreadsheet Compare"; TargetPath = "${env:ProgramFiles}\Microsoft Office\root\Client\AppVLP.exe"; Arguments = "`"${env:ProgramFiles(x86)}\Microsoft Office\Office16\DCF\SPREADSHEETCOMPARE.EXE`""; SystemLnk = "Microsoft Office Tools\"; Description = "Compare versions of an Excel workbook." },
+  @{Name = "Spreadsheet Compare"; TargetPath = $O365_SpreadsheetCompare_TargetPath; Arguments = $O365_SpreadsheetCompare_Arguments; SystemLnk = "Microsoft Office Tools\"; Description = "Compare versions of an Excel workbook." }, # it's the only install on 32-bit
+  @{Name = "Spreadsheet Compare"; TargetPath = $O365_SpreadsheetCompare_32bit_TargetPath; Arguments = $O365_SpreadsheetCompare_32bit_Arguments; SystemLnk = "Microsoft Office Tools\"; Description = "Compare versions of an Excel workbook." }, # it's the only install on 64-bit
   @{Name = "Telemetry Log for Office"; TargetPath = "${env:ProgramFiles}\Microsoft Office\root\Office16\msoev.exe"; SystemLnk = "Microsoft Office Tools\"; Description = "View critical errors, compatibility issues and workaround information for your Office solutions by using Office Telemetry Log." },
-  @{Name = "Access (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Office\root\Office16\MSACCESS.EXE"; Description = "Build a professional app quickly to manage data." },
-  @{Name = "Excel (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Office\root\Office16\EXCEL.EXE"; Description = "Easily discover, visualize, and share insights from your data." },
-  @{Name = "OneNote (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Office\root\Office16\ONENOTE.EXE"; Description = "Take notes and have them when you need them." },
-  @{Name = "Outlook (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Office\root\Office16\OUTLOOK.EXE"; Description = "Manage your email, schedules, contacts, and to-dos." },
-  @{Name = "PowerPoint (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Office\root\Office16\POWERPNT.EXE"; Description = "Design and deliver beautiful presentations with ease and confidence." },
-  @{Name = "Project (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Office\root\Office16\WINPROJ.EXE"; Description = "Easily collaborate with others to quickly start and deliver winning projects." },
-  @{Name = "Publisher (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Office\root\Office16\MSPUB.EXE"; Description = "Create professional-grade publications that make an impact." },
-  @{Name = "Visio (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Office\root\Office16\VISIO.EXE"; Description = "Create professional and versatile diagrams that simplify complex information." },
-  @{Name = "Word (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Office\root\Office16\WINWORD.EXE"; Description = "Create beautiful documents, easily work with others, and enjoy the read." },
-  @{Name = "Database Compare (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Office\root\Client\AppVLP.exe"; Arguments = "`"${env:ProgramFiles(x86)}\Microsoft Office\Office16\DCF\DATABASECOMPARE.EXE`""; SystemLnk = "Microsoft Office Tools\"; Description = "Compare versions of an Access database." },
-  @{Name = "Office Language Preferences (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Office\root\Office16\SETLANG.EXE"; SystemLnk = "Microsoft Office Tools\"; Description = "Change the language preferences for Office applications." },
-  @{Name = "Spreadsheet Compare (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Office\root\Client\AppVLP.exe"; Arguments = "`"${env:ProgramFiles(x86)}\Microsoft Office\Office16\DCF\SPREADSHEETCOMPARE.EXE`""; SystemLnk = "Microsoft Office Tools\"; Description = "Compare versions of an Excel workbook." },
-  @{Name = "Telemetry Log for Office (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Office\root\Office16\msoev.exe"; SystemLnk = "Microsoft Office Tools\"; Description = "View critical errors, compatibility issues and workaround information for your Office solutions by using Office Telemetry Log." },
+  @{Name = "Access"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Office\root\Office16\MSACCESS.EXE"; Description = "Build a professional app quickly to manage data." },
+  @{Name = "Excel"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Office\root\Office16\EXCEL.EXE"; Description = "Easily discover, visualize, and share insights from your data." },
+  @{Name = "OneNote"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Office\root\Office16\ONENOTE.EXE"; Description = "Take notes and have them when you need them." },
+  @{Name = "Outlook"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Office\root\Office16\OUTLOOK.EXE"; Description = "Manage your email, schedules, contacts, and to-dos." },
+  @{Name = "PowerPoint"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Office\root\Office16\POWERPNT.EXE"; Description = "Design and deliver beautiful presentations with ease and confidence." },
+  @{Name = "Project"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Office\root\Office16\WINPROJ.EXE"; Description = "Easily collaborate with others to quickly start and deliver winning projects." },
+  @{Name = "Publisher"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Office\root\Office16\MSPUB.EXE"; Description = "Create professional-grade publications that make an impact." },
+  @{Name = "Visio"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Office\root\Office16\VISIO.EXE"; Description = "Create professional and versatile diagrams that simplify complex information." },
+  @{Name = "Word"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Office\root\Office16\WINWORD.EXE"; Description = "Create beautiful documents, easily work with others, and enjoy the read." },
+  @{Name = "Database Compare"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Office\root\Client\AppVLP.exe"; Arguments = "`"${env:ProgramFiles(x86)}\Microsoft Office\Office16\DCF\DATABASECOMPARE.EXE`""; SystemLnk = "Microsoft Office Tools\"; Description = "Compare versions of an Access database." },
+  @{Name = "Office Language Preferences"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Office\root\Office16\SETLANG.EXE"; SystemLnk = "Microsoft Office Tools\"; Description = "Change the language preferences for Office applications." },
+  @{Name = "Spreadsheet Compare"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Office\root\Client\AppVLP.exe"; Arguments = "`"${env:ProgramFiles(x86)}\Microsoft Office\Office16\DCF\SPREADSHEETCOMPARE.EXE`""; SystemLnk = "Microsoft Office Tools\"; Description = "Compare versions of an Excel workbook." },
+  @{Name = "Telemetry Log for Office"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Office\root\Office16\msoev.exe"; SystemLnk = "Microsoft Office Tools\"; Description = "View critical errors, compatibility issues and workaround information for your Office solutions by using Office Telemetry Log." },
   # OneDrive
   @{Name = "OneDrive"; TargetPath = "${env:ProgramFiles}\Microsoft OneDrive\OneDrive.exe"; Description = "Keep your most important files with you wherever you go, on any device." },
-  @{Name = "OneDrive (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft OneDrive\OneDrive.exe"; Description = "Keep your most important files with you wherever you go, on any device." },
+  @{Name = "OneDrive"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft OneDrive\OneDrive.exe"; Description = "Keep your most important files with you wherever you go, on any device." },
   # PowerShell (7 or newer)
   @{Name = $PowerShell_Name; TargetPath = $PowerShell_TargetPath; Arguments = "-WorkingDirectory ~"; SystemLnk = "PowerShell\"; Description = $PowerShell_Name },
   @{Name = $PowerShell_32bit_Name; TargetPath = $PowerShell_32bit_TargetPath; Arguments = "-WorkingDirectory ~"; SystemLnk = "PowerShell\"; Description = $PowerShell_32bit_Name },
-  # PowerToys
+  # PowerToys (note: there will never be a 32-bit version)
   @{Name = $PowerToys_Name; TargetPath = $PowerToys_TargetPath; SystemLnk = $PowerToys_Name + '\'; StartIn = "${env:ProgramFiles}\PowerToys\"; Description = "PowerToys - Windows system utilities to maximize productivity" },
   # Visual Studio
   @{Name = "Visual Studio 2022"; TargetPath = "${env:ProgramFiles}\Microsoft Visual Studio\2022\Community\Common7\IDE\devenv.exe"; StartIn = "${env:ProgramFiles}\Microsoft Visual Studio\2022\Community\Common7\IDE\"; Description = "Microsoft Visual Studio 2022" },
@@ -284,14 +427,32 @@ $sysAppList = @(
   @{Name = "Blend for Visual Studio 2017"; TargetPath = "${env:ProgramFiles}\Microsoft Visual Studio\2017\Professional\Common7\IDE\Blend.exe"; StartIn = "${env:ProgramFiles}\Microsoft Visual Studio\2017\Professional\Common7\IDE\"; Description = "Microsoft Blend for Visual Studio 2017" },
   @{Name = "Blend for Visual Studio 2017"; TargetPath = "${env:ProgramFiles}\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\Blend.exe"; StartIn = "${env:ProgramFiles}\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\"; Description = "Microsoft Blend for Visual Studio 2017" },
   @{Name = "Visual Studio Code"; TargetPath = "${env:ProgramFiles}\Microsoft VS Code\Code.exe"; SystemLnk = "Visual Studio Code\"; StartIn = "${env:ProgramFiles}\Microsoft VS Code" },
-  @{Name = "Visual Studio Code (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft VS Code\Code.exe"; SystemLnk = "Visual Studio Code\"; StartIn = "${env:ProgramFiles}\Microsoft VS Code" },
   @{Name = "Visual Studio Installer"; TargetPath = "${env:ProgramFiles}\Microsoft Visual Studio\Installer\setup.exe"; StartIn = "${env:ProgramFiles}\Microsoft Visual Studio\Installer" }, # it's the only install on 32-bit
+  @{Name = "Visual Studio 2022"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\Community\Common7\IDE\devenv.exe"; StartIn = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\Community\Common7\IDE\"; Description = "Microsoft Visual Studio 2022" },
+  @{Name = "Visual Studio 2022"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\Professional\Common7\IDE\devenv.exe"; StartIn = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\Professional\Common7\IDE\"; Description = "Microsoft Visual Studio 2022" },
+  @{Name = "Visual Studio 2022"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.exe"; StartIn = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\"; Description = "Microsoft Visual Studio 2022" },
+  @{Name = "Blend for Visual Studio 2022"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\Community\Common7\IDE\Blend.exe"; StartIn = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\Community\Common7\IDE\"; Description = "Microsoft Blend for Visual Studio 2022" },
+  @{Name = "Blend for Visual Studio 2022"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\Professional\Common7\IDE\Blend.exe"; StartIn = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\Professional\Common7\IDE\"; Description = "Microsoft Blend for Visual Studio 2022" },
+  @{Name = "Blend for Visual Studio 2022"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\Blend.exe"; StartIn = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\"; Description = "Microsoft Blend for Visual Studio 2022" },
+  @{Name = "Visual Studio 2019"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Community\Common7\IDE\devenv.exe"; StartIn = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Community\Common7\IDE\"; Description = "Microsoft Visual Studio 2019" },
+  @{Name = "Visual Studio 2019"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Professional\Common7\IDE\devenv.exe"; StartIn = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Professional\Common7\IDE\"; Description = "Microsoft Visual Studio 2019" },
+  @{Name = "Visual Studio 2019"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\devenv.exe"; StartIn = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\"; Description = "Microsoft Visual Studio 2019" },
+  @{Name = "Blend for Visual Studio 2019"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Community\Common7\IDE\Blend.exe"; StartIn = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Community\Common7\IDE\"; Description = "Microsoft Blend for Visual Studio 2019" },
+  @{Name = "Blend for Visual Studio 2019"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Professional\Common7\IDE\Blend.exe"; StartIn = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Professional\Common7\IDE\"; Description = "Microsoft Blend for Visual Studio 2019" },
+  @{Name = "Blend for Visual Studio 2019"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\Blend.exe"; StartIn = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\"; Description = "Microsoft Blend for Visual Studio 2019" },
+  @{Name = "Visual Studio 2017"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\Community\Common7\IDE\devenv.exe"; StartIn = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\Community\Common7\IDE\"; Description = "Microsoft Visual Studio 2017" },
+  @{Name = "Visual Studio 2017"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\Professional\Common7\IDE\devenv.exe"; StartIn = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\Professional\Common7\IDE\"; Description = "Microsoft Visual Studio 2017" },
+  @{Name = "Visual Studio 2017"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\devenv.exe"; StartIn = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\"; Description = "Microsoft Visual Studio 2017" },
+  @{Name = "Blend for Visual Studio 2017"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\Community\Common7\IDE\Blend.exe"; StartIn = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\Community\Common7\IDE\"; Description = "Microsoft Blend for Visual Studio 2017" },
+  @{Name = "Blend for Visual Studio 2017"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\Professional\Common7\IDE\Blend.exe"; StartIn = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\Professional\Common7\IDE\"; Description = "Microsoft Blend for Visual Studio 2017" },
+  @{Name = "Blend for Visual Studio 2017"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\Blend.exe"; StartIn = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\"; Description = "Microsoft Blend for Visual Studio 2017" },
+  @{Name = "Visual Studio Code"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft VS Code\Code.exe"; SystemLnk = "Visual Studio Code\"; StartIn = "${env:ProgramFiles(x86)}\Microsoft VS Code" },
   @{Name = "Visual Studio Installer"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\setup.exe"; StartIn = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer" }, # it's the only install on 64-bit
-  # Windows Accessories
+  # Windows Accessories (note: these CMD variables are not a mistake)
   @{Name = "Remote Desktop Connection"; TargetPath = "%windir%\system32\mstsc.exe"; SystemLnk = "Accessories\"; StartIn = "%windir%\system32\"; Description = "Use your computer to connect to a computer that is located elsewhere and run programs or access files." },
   @{Name = "Steps Recorder"; TargetPath = "%windir%\system32\psr.exe"; SystemLnk = "Accessories\"; Description = "Capture steps with screenshots to save or share." },
   @{Name = "Windows Fax and Scan"; TargetPath = "%windir%\system32\WFS.exe"; SystemLnk = "Accessories\"; Description = "Send and receive faxes or scan pictures and documents." },
-  @{Name = $WindowsMediaPlayerOld_Name; TargetPath = "%ProgramFiles%\Windows Media Player\wmplayer.exe"; Arguments = "/prefetch:1"; SystemLnk = "Accessories\"; StartIn = "%ProgramFiles(x86)%\Windows Media Player" }, # it's the only install on 32-bit
+  @{Name = $WindowsMediaPlayerOld_Name; TargetPath = "%ProgramFiles%\Windows Media Player\wmplayer.exe"; Arguments = "/prefetch:1"; SystemLnk = "Accessories\"; StartIn = "%ProgramFiles%\Windows Media Player" }, # it's the only install on 32-bit
   @{Name = $WindowsMediaPlayerOld_Name; TargetPath = "%ProgramFiles(x86)%\Windows Media Player\wmplayer.exe"; Arguments = "/prefetch:1"; SystemLnk = "Accessories\"; StartIn = "%ProgramFiles(x86)%\Windows Media Player" }, # it's the only install on 64-bit
   @{Name = "WordPad"; TargetPath = "%ProgramFiles%\Windows NT\Accessories\wordpad.exe"; SystemLnk = "Accessories\"; Description = "Creates and edits text documents with complex formatting." },
   @{Name = "Character Map"; TargetPath = "%windir%\system32\charmap.exe"; SystemLnk = "Accessories\System Tools\"; Description = "Selects special characters and copies them to your document." }
@@ -335,9 +496,9 @@ for ($i = 0; $i -lt $sysAppList.length; $i++) {
 $oemSysAppList = @(
   # Dell
   @{Name = "Dell OS Recovery Tool"; TargetPath = "${env:ProgramFiles}\Dell\OS Recovery Tool\DellOSRecoveryTool.exe"; SystemLnk = "Dell\"; StartIn = "${env:ProgramFiles}\Dell\OS Recovery Tool\" }, # it's the only install on 32-bit
-  @{Name = "Dell OS Recovery Tool"; TargetPath = "${env:ProgramFiles(x86)}\Dell\OS Recovery Tool\DellOSRecoveryTool.exe"; SystemLnk = "Dell\"; StartIn = "${env:ProgramFiles(x86)}\Dell\OS Recovery Tool\" }, # it's the only install on 64-bit
   @{Name = "SupportAssist Recovery Assistant"; TargetPath = "${env:ProgramFiles}\Dell\SARemediation\postosri\osrecoveryagent.exe"; SystemLnk = "Dell\SupportAssist\" },
-  @{Name = "SupportAssist Recovery Assistant (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\Dell\SARemediation\postosri\osrecoveryagent.exe"; SystemLnk = "Dell\SupportAssist\" },
+  @{Name = "Dell OS Recovery Tool"; TargetPath = "${env:ProgramFiles(x86)}\Dell\OS Recovery Tool\DellOSRecoveryTool.exe"; SystemLnk = "Dell\"; StartIn = "${env:ProgramFiles(x86)}\Dell\OS Recovery Tool\" }, # it's the only install on 64-bit
+  @{Name = "SupportAssist Recovery Assistant"; TargetPath = "${env:ProgramFiles(x86)}\Dell\SARemediation\postosri\osrecoveryagent.exe"; SystemLnk = "Dell\SupportAssist\" },
   # NVIDIA Corporation
   @{Name = "GeForce Experience"; TargetPath = "${env:ProgramFiles}\NVIDIA Corporation\NVIDIA GeForce Experience\NVIDIA GeForce Experience.exe"; SystemLnk = "NVIDIA Corporation\"; StartIn = "${env:ProgramFiles}\NVIDIA Corporation\NVIDIA GeForce Experience" }
   #@{Name = ""; TargetPath = ""; Arguments = ""; SystemLnk = ""; StartIn = ""; Description = ""; IconLocation = ""; RunAsAdmin = ($true -Or $false) },
@@ -364,10 +525,14 @@ for ($i = 0; $i -lt $oemSysAppList.length; $i++) {
 # App arguments dependant on uninstall strings
 
 # Egnyte Desktop App
-$EgnyteDesktopAppUninstallGUID = $UninstallList | Where-Object { $_.Name -match "Egnyte Desktop App" }
-$EgnyteDesktopAppUninstallGUID = if ($EgnyteDesktopAppUninstallGUID.length -ge 1) { $EgnyteDesktopAppUninstallGUID[0].GUID } else { $null }
-$EgnyteDesktopAppUninstall_Arguments = if ($EgnyteDesktopAppUninstallGUID) { "/x ${EgnyteDesktopAppUninstallGUID}" } else { "" }
-$EgnyteDesktopAppUninstall_TargetPath = if ($EgnyteDesktopAppUninstallGUID) { "${env:HOMEDRIVE}\Windows\System32\msiexec.exe" } else { "${env:HOMEDRIVE}\${NOT_INSTALLED}\${NOT_INSTALLED}\${NOT_INSTALLED}.exe" }
+$EgnyteDesktopApp_Uninstall_GUID = $UninstallList | Where-Object { $_.Name -match "Egnyte Desktop App" }
+$EgnyteDesktopApp_Uninstall_GUID = if ($EgnyteDesktopApp_Uninstall_GUID.length -ge 1) { $EgnyteDesktopApp_Uninstall_GUID[0].GUID } else { $null }
+$EgnyteDesktopApp_Uninstall_Arguments = if ($EgnyteDesktopApp_Uninstall_GUID) { "/x ${EgnyteDesktopApp_Uninstall_GUID}" } else { "" }
+$EgnyteDesktopApp_Uninstall_TargetPath = if ($EgnyteDesktopApp_Uninstall_GUID) { "${env:HOMEDRIVE}\Windows\System32\msiexec.exe" } else { "${env:HOMEDRIVE}\${NOT_INSTALLED}\${NOT_INSTALLED}\${NOT_INSTALLED}.exe" }
+$EgnyteDesktopApp_Uninstall_32bit_GUID = $UninstallList_32bit | Where-Object { $_.Name -match "Egnyte Desktop App" }
+$EgnyteDesktopApp_Uninstall_32bit_GUID = if ($EgnyteDesktopApp_Uninstall_32bit_GUID.length -ge 1) { $EgnyteDesktopApp_Uninstall_32bit_GUID[0].GUID } else { $null }
+$EgnyteDesktopApp_Uninstall_32bit_Arguments = if ($EgnyteDesktopApp_Uninstall_32bit_GUID) { "/x ${EgnyteDesktopApp_Uninstall_32bit_GUID}" } else { "" }
+$EgnyteDesktopApp_Uninstall_32bit_TargetPath = if ($EgnyteDesktopApp_Uninstall_32bit_GUID) { "${env:HOMEDRIVE}\Windows\System32\msiexec.exe" } else { "${env:HOMEDRIVE}\${NOT_INSTALLED}\${NOT_INSTALLED}\${NOT_INSTALLED}.exe" }
 
 # App paths dependant on app version
 
@@ -919,10 +1084,18 @@ $GoogleDrive_TargetPath = "${env:ProgramFiles}\Google\Drive File Stream\"
 $GoogleDrive_Version = if (Test-Path -Path $GoogleDrive_TargetPath) { Get-ChildItem -Directory -Path $GoogleDrive_TargetPath | Where-Object { $_.Name -match '^[.0-9]+$' } | Sort-Object -Descending }
 $GoogleDrive_Version = if ($GoogleDrive_Version.length -ge 1) { $GoogleDrive_Version[0].name } else { $NOT_INSTALLED }
 $GoogleDrive_TargetPath += "${GoogleDrive_Version}\GoogleDriveFS.exe"
+$GoogleDrive_32bit_TargetPath = "${env:ProgramFiles(x86)}\Google\Drive File Stream\"
+$GoogleDrive_32bit_Version = if (Test-Path -Path $GoogleDrive_32bit_TargetPath) { Get-ChildItem -Directory -Path $GoogleDrive_32bit_TargetPath | Where-Object { $_.Name -match '^[.0-9]+$' } | Sort-Object -Descending }
+$GoogleDrive_32bit_Version = if ($GoogleDrive_32bit_Version.length -ge 1) { $GoogleDrive_32bit_Version[0].name } else { $NOT_INSTALLED }
+$GoogleDrive_32bit_TargetPath += "${GoogleDrive_32bit_Version}\GoogleDriveFS.exe"
 $GoogleOneVPN_TargetPath = "${env:ProgramFiles}\Google\VPN by Google One\"
 $GoogleOneVPN_Version = if (Test-Path -Path $GoogleOneVPN_TargetPath) { Get-ChildItem -Directory -Path $GoogleOneVPN_TargetPath | Where-Object { $_.Name -match '^[.0-9]+$' } | Sort-Object -Descending }
 $GoogleOneVPN_Version = if ($GoogleOneVPN_Version.length -ge 1) { $GoogleOneVPN_Version[0].name } else { $NOT_INSTALLED }
 $GoogleOneVPN_TargetPath += "${GoogleOneVPN_Version}\googleone.exe"
+$GoogleOneVPN_32bit_TargetPath = "${env:ProgramFiles}\Google\VPN by Google One\"
+$GoogleOneVPN_32bit_Version = if (Test-Path -Path $GoogleOneVPN_32bit_TargetPath) { Get-ChildItem -Directory -Path $GoogleOneVPN_32bit_TargetPath | Where-Object { $_.Name -match '^[.0-9]+$' } | Sort-Object -Descending }
+$GoogleOneVPN_32bit_Version = if ($GoogleOneVPN_32bit_Version.length -ge 1) { $GoogleOneVPN_32bit_Version[0].name } else { $NOT_INSTALLED }
+$GoogleOneVPN_32bit_TargetPath += "${GoogleOneVPN_32bit_Version}\googleone.exe"
 # KeePass
 $KeePass_StartIn = "${env:ProgramFiles}\"
 $KeePass_FindFolder = Get-ChildItem -Directory -Path $KeePass_StartIn | Where-Object { $_.Name -match '^KeePass Password Safe' } | Sort-Object -Descending
@@ -982,11 +1155,9 @@ $sys3rdPartyAppList = @(
   # 7-Zip
   @{Name = "7-Zip File Manager"; TargetPath = "${env:ProgramFiles}\7-Zip\7zFM.exe"; SystemLnk = "7-Zip\" },
   @{Name = "7-Zip Help"; TargetPath = "${env:ProgramFiles}\7-Zip\7-zip.chm"; SystemLnk = "7-Zip\" },
-  @{Name = "7-Zip File Manager (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\7-Zip\7zFM.exe"; SystemLnk = "7-Zip\" },
+  @{Name = "7-Zip File Manager"; TargetPath = "${env:ProgramFiles(x86)}\7-Zip\7zFM.exe"; SystemLnk = "7-Zip\" },
   @{Name = "7-Zip Help"; TargetPath = "${env:ProgramFiles(x86)}\7-Zip\7-zip.chm"; SystemLnk = "7-Zip\" },
   # Adobe
-  @{Name = "Adobe Acrobat"; TargetPath = "${env:ProgramFiles}\Adobe\Acrobat DC\Acrobat\Acrobat.exe" },
-  @{Name = "Adobe Acrobat Distiller"; TargetPath = "${env:ProgramFiles}\Adobe\Acrobat DC\Acrobat\acrodist.exe" },
   @{Name = "Adobe Creative Cloud"; TargetPath = "${env:ProgramFiles}\Adobe\Adobe Creative Cloud\ACC\Creative Cloud.exe" },
   @{Name = $Aero_Name; TargetPath = $Aero_TargetPath; StartIn = $Aero_StartIn },
   @{Name = $Aero_Beta_Name; TargetPath = $Aero_Beta_TargetPath; StartIn = $Aero_Beta_StartIn },
@@ -1033,17 +1204,19 @@ $sys3rdPartyAppList = @(
   @{Name = $Substance3dStager_Name; TargetPath = $Substance3dStager_TargetPath; StartIn = $Substance3dStager_StartIn },
   @{Name = $Substance3dStager_Beta_Name; TargetPath = $Substance3dStager_Beta_TargetPath; StartIn = $Substance3dStager_Beta_StartIn },
   @{Name = "Adobe UXP Developer Tool"; TargetPath = "${env:ProgramFiles}\Adobe\Adobe UXP Developer Tool\Adobe UXP Developer Tool.exe"; StartIn = "${env:ProgramFiles}\Adobe\Adobe UXP Developer Tool" },
-  @{Name = "Adobe Acrobat (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\Adobe\Acrobat DC\Acrobat\Acrobat.exe" },
-  @{Name = "Adobe Acrobat Distiller (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\Adobe\Acrobat DC\Acrobat\acrodist.exe" },
+  @{Name = "Adobe Acrobat"; TargetPath = "${env:ProgramFiles}\Adobe\Acrobat DC\Acrobat\Acrobat.exe" },
+  @{Name = "Adobe Acrobat Distiller"; TargetPath = "${env:ProgramFiles}\Adobe\Acrobat DC\Acrobat\acrodist.exe" },
+  @{Name = "Adobe Acrobat"; TargetPath = "${env:ProgramFiles(x86)}\Adobe\Acrobat DC\Acrobat\Acrobat.exe" },
+  @{Name = "Adobe Acrobat Distiller"; TargetPath = "${env:ProgramFiles(x86)}\Adobe\Acrobat DC\Acrobat\acrodist.exe" },
   @{Name = "Adobe Acrobat Reader"; TargetPath = "${env:ProgramFiles}\Adobe\Acrobat Reader DC\Reader\AcroRd32.exe" }, # old version; it's the only install on 32-bit
   @{Name = "Adobe Acrobat Distiller"; TargetPath = "${env:ProgramFiles}\Adobe\Acrobat Reader DC\Reader\acrodist.exe" }, # old version; it's the only install on 32-bit
   @{Name = "Adobe Acrobat Reader"; TargetPath = "${env:ProgramFiles(x86)}\Adobe\Acrobat Reader DC\Reader\AcroRd32.exe" }, # old version; it's the only install on 64-bit
   @{Name = "Adobe Acrobat Distiller"; TargetPath = "${env:ProgramFiles(x86)}\Adobe\Acrobat Reader DC\Reader\acrodist.exe" }, # old version; it's the only install on 64-bit
   # Altair Monarch
   @{Name = "Altair Monarch 2021"; TargetPath = "${env:ProgramFiles}\Altair Monarch 2021\DWMonarch.exe"; SystemLnk = "Altair Monarch 2021\" },
-  @{Name = "Altair Monarch 2021 (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\Altair Monarch 2021\DWMonarch.exe"; SystemLnk = "Altair Monarch 2021\" },
   @{Name = "Altair Monarch 2020"; TargetPath = "${env:ProgramFiles}\Altair Monarch 2020\DWMonarch.exe"; SystemLnk = "Altair Monarch 2020\" },
-  @{Name = "Altair Monarch 2020 (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\Altair Monarch 2020\DWMonarch.exe"; SystemLnk = "Altair Monarch 2020\" },
+  @{Name = "Altair Monarch 2021"; TargetPath = "${env:ProgramFiles(x86)}\Altair Monarch 2021\DWMonarch.exe"; SystemLnk = "Altair Monarch 2021\" },
+  @{Name = "Altair Monarch 2020"; TargetPath = "${env:ProgramFiles(x86)}\Altair Monarch 2020\DWMonarch.exe"; SystemLnk = "Altair Monarch 2020\" },
   # AmbiBox
   @{Name = "AmbiBox Web Site"; TargetPath = "${env:ProgramFiles}\AmbiBox\www.ambibox.ru.url"; SystemLnk = "AmbiBox\"; StartIn = "${env:ProgramFiles}\AmbiBox" }, # it's the only install on 32-bit
   @{Name = "AmbiBox"; TargetPath = "${env:ProgramFiles}\AmbiBox\AmbiBox.exe"; SystemLnk = "AmbiBox\"; StartIn = "${env:ProgramFiles}\AmbiBox" }, # it's the only install on 32-bit
@@ -1057,7 +1230,12 @@ $sys3rdPartyAppList = @(
   @{Name = "Uninstall AmbiBox"; TargetPath = "${env:ProgramFiles(x86)}\AmbiBox\unins000.exe"; SystemLnk = "AmbiBox\"; StartIn = "${env:ProgramFiles(x86)}\AmbiBox" }, # it's the only install on 64-bit
   # Audacity
   @{Name = "Audacity"; TargetPath = "${env:ProgramFiles}\Audacity\Audacity.exe"; StartIn = "${env:ProgramFiles}\Audacity" },
-  @{Name = "Audacity (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\Audacity\Audacity.exe"; StartIn = "${env:ProgramFiles(x86)}\Audacity" },
+  @{Name = "Audacity"; TargetPath = "${env:ProgramFiles(x86)}\Audacity\Audacity.exe"; StartIn = "${env:ProgramFiles(x86)}\Audacity" },
+  # AutoHotkey V2
+  @{Name = "AutoHotkey Window Spy"; TargetPath = "${env:ProgramFiles}\AutoHotkey\UX\AutoHotkeyUX.exe"; Arguments = "`"${env:ProgramFiles}\AutoHotkey\UX\WindowSpy.ahk`""; Description = "AutoHotkey Window Spy" },
+  @{Name = "AutoHotkey"; TargetPath = "${env:ProgramFiles}\AutoHotkey\UX\AutoHotkeyUX.exe"; Arguments = "`"${env:ProgramFiles}\AutoHotkey\UX\ui-dash.ahk`""; Description = "AutoHotkey Dash" },
+  @{Name = "AutoHotkey Window Spy"; TargetPath = "${env:ProgramFiles(x86)}\AutoHotkey\UX\AutoHotkeyUX.exe"; Arguments = "`"${env:ProgramFiles(x86)}\AutoHotkey\UX\WindowSpy.ahk`""; Description = "AutoHotkey Window Spy" },
+  @{Name = "AutoHotkey"; TargetPath = "${env:ProgramFiles(x86)}\AutoHotkey\UX\AutoHotkeyUX.exe"; Arguments = "`"${env:ProgramFiles(x86)}\AutoHotkey\UX\ui-dash.ahk`""; Description = "AutoHotkey Dash" },
   # AutoHotkey
   @{Name = "AutoHotkey Help File"; TargetPath = "${env:ProgramFiles}\AutoHotkey\AutoHotkey.chm"; SystemLnk = "AutoHotkey\" },
   @{Name = "AutoHotkey Setup"; TargetPath = "${env:ProgramFiles}\AutoHotkey\Installer.ahk"; SystemLnk = "AutoHotkey\" },
@@ -1067,23 +1245,23 @@ $sys3rdPartyAppList = @(
   @{Name = "Window Spy"; TargetPath = "${env:ProgramFiles}\AutoHotkey\WindowSpy.ahk"; SystemLnk = "AutoHotkey\" },
   @{Name = "AutoHotkey Help File"; TargetPath = "${env:ProgramFiles(x86)}\AutoHotkey\AutoHotkey.chm"; SystemLnk = "AutoHotkey\" },
   @{Name = "AutoHotkey Setup"; TargetPath = "${env:ProgramFiles(x86)}\AutoHotkey\Installer.ahk"; SystemLnk = "AutoHotkey\" },
-  @{Name = "AutoHotkey (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\AutoHotkey\AutoHotkey.exe"; SystemLnk = "AutoHotkey\" },
-  @{Name = "Convert .ahk to .exe (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\AutoHotkey\Compiler\Ahk2Exe.exe"; SystemLnk = "AutoHotkey\" },
+  @{Name = "AutoHotkey"; TargetPath = "${env:ProgramFiles(x86)}\AutoHotkey\AutoHotkey.exe"; SystemLnk = "AutoHotkey\" },
+  @{Name = "Convert .ahk to .exe"; TargetPath = "${env:ProgramFiles(x86)}\AutoHotkey\Compiler\Ahk2Exe.exe"; SystemLnk = "AutoHotkey\" },
   @{Name = "Website"; TargetPath = "${env:ProgramFiles(x86)}\AutoHotkey\AutoHotkey Website.url"; SystemLnk = "AutoHotkey\" },
   @{Name = "Window Spy"; TargetPath = "${env:ProgramFiles(x86)}\AutoHotkey\WindowSpy.ahk"; SystemLnk = "AutoHotkey\" },
   # Bulk Crap Uninstaller
   @{Name = "BCUninstaller"; TargetPath = "${env:ProgramFiles}\BCUninstaller\BCUninstaller.exe"; SystemLnk = "BCUninstaller\"; StartIn = "${env:ProgramFiles}\BCUninstaller" },
   @{Name = "Uninstall BCUninstaller"; TargetPath = "${env:ProgramFiles}\BCUninstaller\unins000.exe"; SystemLnk = "BCUninstaller\"; StartIn = "${env:ProgramFiles}\BCUninstaller" },
-  @{Name = "BCUninstaller (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\BCUninstaller\BCUninstaller.exe"; SystemLnk = "BCUninstaller\"; StartIn = "${env:ProgramFiles(x86)}\BCUninstaller" },
-  @{Name = "Uninstall BCUninstaller (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\BCUninstaller\unins000.exe"; SystemLnk = "BCUninstaller\"; StartIn = "${env:ProgramFiles(x86)}\BCUninstaller" },
+  @{Name = "BCUninstaller"; TargetPath = "${env:ProgramFiles(x86)}\BCUninstaller\BCUninstaller.exe"; SystemLnk = "BCUninstaller\"; StartIn = "${env:ProgramFiles(x86)}\BCUninstaller" },
+  @{Name = "Uninstall BCUninstaller"; TargetPath = "${env:ProgramFiles(x86)}\BCUninstaller\unins000.exe"; SystemLnk = "BCUninstaller\"; StartIn = "${env:ProgramFiles(x86)}\BCUninstaller" },
   # Bytello
   @{Name = "Bytello Share"; TargetPath = "${env:ProgramFiles}\Bytello Share\Bytello Share.exe"; SystemLnk = "Bytello Share\"; StartIn = "${env:ProgramFiles}\Bytello Share" }, # it's the only install on 32-bit
   @{Name = "Bytello Share"; TargetPath = "${env:ProgramFiles(x86)}\Bytello Share\Bytello Share.exe"; SystemLnk = "Bytello Share\"; StartIn = "${env:ProgramFiles(x86)}\Bytello Share" }, # it's the only install on 64-bit
   # Cisco
   @{Name = "Cisco AnyConnect Secure Mobility Client"; TargetPath = "${env:ProgramFiles}\Cisco\Cisco AnyConnect Secure Mobility Client\vpnui.exe"; SystemLnk = "Cisco\Cisco AnyConnect Secure Mobility Client"; StartIn = "${env:ProgramFiles}\Cisco\Cisco AnyConnect Secure Mobility Client\"; Description = "Cisco AnyConnect Secure Mobility Client" }, # it's the only install on 32-bit
-  @{Name = "Cisco AnyConnect Secure Mobility Client"; TargetPath = "${env:ProgramFiles(x86)}\Cisco\Cisco AnyConnect Secure Mobility Client\vpnui.exe"; SystemLnk = "Cisco\Cisco AnyConnect Secure Mobility Client"; StartIn = "${env:ProgramFiles(x86)}\Cisco\Cisco AnyConnect Secure Mobility Client\"; Description = "Cisco AnyConnect Secure Mobility Client" }, # it's the only install on 64-bit
   @{Name = "Cisco Jabber Problem Report"; TargetPath = "${env:ProgramFiles}\Cisco Systems\Cisco Jabber\CiscoJabberPrt.exe"; SystemLnk = "Cisco Jabber\"; Description = "Cisco Jabber Problem Report" }, # it's the only install on 32-bit
   @{Name = "Cisco Jabber"; TargetPath = "${env:ProgramFiles}\Cisco Systems\Cisco Jabber\CiscoJabber.exe"; SystemLnk = "Cisco Jabber\"; Description = "Cisco Jabber" }, # it's the only install on 32-bit
+  @{Name = "Cisco AnyConnect Secure Mobility Client"; TargetPath = "${env:ProgramFiles(x86)}\Cisco\Cisco AnyConnect Secure Mobility Client\vpnui.exe"; SystemLnk = "Cisco\Cisco AnyConnect Secure Mobility Client"; StartIn = "${env:ProgramFiles(x86)}\Cisco\Cisco AnyConnect Secure Mobility Client\"; Description = "Cisco AnyConnect Secure Mobility Client" }, # it's the only install on 64-bit
   @{Name = "Cisco Jabber Problem Report"; TargetPath = "${env:ProgramFiles(x86)}\Cisco Systems\Cisco Jabber\CiscoJabberPrt.exe"; SystemLnk = "Cisco Jabber\"; Description = "Cisco Jabber Problem Report" }, # it's the only install on 64-bit
   @{Name = "Cisco Jabber"; TargetPath = "${env:ProgramFiles(x86)}\Cisco Systems\Cisco Jabber\CiscoJabber.exe"; SystemLnk = "Cisco Jabber\"; Description = "Cisco Jabber" }, # it's the only install on 64-bit
   # Citrix Workspace
@@ -1093,18 +1271,20 @@ $sys3rdPartyAppList = @(
   @{Name = "CodeTwo Active Directory Photos"; TargetPath = "${env:ProgramFiles}\CodeTwo\CodeTwo Active Directory Photos\CodeTwo Active Directory Photos.exe"; SystemLnk = "CodeTwo\CodeTwo Active Directory Photos\"; Description = "CodeTwo Active Directory Photos" },
   @{Name = "Go to program home page"; TargetPath = "${env:ProgramFiles}\CodeTwo\CodeTwo Active Directory Photos\Data\HomePage.url"; SystemLnk = "CodeTwo\CodeTwo Active Directory Photos\"; Description = "CodeTwo Active Directory Photos home page" },
   @{Name = "User's manual"; TargetPath = "${env:ProgramFiles}\CodeTwo\CodeTwo Active Directory Photos\Data\User's manual.url"; SystemLnk = "CodeTwo\CodeTwo Active Directory Photos\"; Description = "Go to User Guide" },
-  @{Name = "CodeTwo Active Directory Photos (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\CodeTwo\CodeTwo Active Directory Photos\CodeTwo Active Directory Photos.exe"; SystemLnk = "CodeTwo\CodeTwo Active Directory Photos\"; Description = "CodeTwo Active Directory Photos" },
+  @{Name = "CodeTwo Active Directory Photos"; TargetPath = "${env:ProgramFiles(x86)}\CodeTwo\CodeTwo Active Directory Photos\CodeTwo Active Directory Photos.exe"; SystemLnk = "CodeTwo\CodeTwo Active Directory Photos\"; Description = "CodeTwo Active Directory Photos" },
   @{Name = "Go to program home page"; TargetPath = "${env:ProgramFiles(x86)}\CodeTwo\CodeTwo Active Directory Photos\Data\HomePage.url"; SystemLnk = "CodeTwo\CodeTwo Active Directory Photos\"; Description = "CodeTwo Active Directory Photos home page" },
   @{Name = "User's manual"; TargetPath = "${env:ProgramFiles(x86)}\CodeTwo\CodeTwo Active Directory Photos\Data\User's manual.url"; SystemLnk = "CodeTwo\CodeTwo Active Directory Photos\"; Description = "Go to User Guide" },
   # Docker
   @{Name = "Docker Desktop"; TargetPath = "${env:ProgramFiles}\Docker\Docker\Docker Desktop.exe"; SystemLnk = "${env:ALLUSERSPROFILE}\Microsoft\Windows\Start Menu\"; Description = "Docker Desktop" },
+  @{Name = "Docker Desktop"; TargetPath = "${env:ProgramFiles(x86)}\Docker\Docker\Docker Desktop.exe"; SystemLnk = "${env:ALLUSERSPROFILE}\Microsoft\Windows\Start Menu\"; Description = "Docker Desktop" },
   # draw.io
   @{Name = "draw.io"; TargetPath = "${env:ProgramFiles}\draw.io\draw.io.exe"; StartIn = "${env:ProgramFiles}\draw.io"; Description = "draw.io desktop" },
-  @{Name = "draw.io (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\draw.io\draw.io.exe"; StartIn = "${env:ProgramFiles(x86)}\draw.io"; Description = "draw.io desktop" },
-  # Egnyte
+  @{Name = "draw.io"; TargetPath = "${env:ProgramFiles(x86)}\draw.io\draw.io.exe"; StartIn = "${env:ProgramFiles(x86)}\draw.io"; Description = "draw.io desktop" },
+  # Egnyte (note: uninstaller is architecture independent)
   @{Name = "Egnyte Desktop App"; TargetPath = "${env:ProgramFiles}\Egnyte Connect\EgnyteClient.exe"; Arguments = "--short-menu"; SystemLnk = "Egnyte Connect\"; StartIn = "${env:ProgramFiles}\Egnyte Connect\" }, # it's the only install on 32-bit
+  @{Name = "Uninstall Egnyte Desktop App"; TargetPath = $EgnyteDesktopApp_Uninstall_TargetPath; Arguments = $EgnyteDesktopApp_Uninstall_Arguments; SystemLnk = "Egnyte Connect\"; Description = "Uninstalls Egnyte Desktop App" },
   @{Name = "Egnyte Desktop App"; TargetPath = "${env:ProgramFiles(x86)}\Egnyte Connect\EgnyteClient.exe"; Arguments = "--short-menu"; SystemLnk = "Egnyte Connect\"; StartIn = "${env:ProgramFiles(x86)}\Egnyte Connect\" }, # it's the only install on 64-bit
-  @{Name = "Uninstall Egnyte Desktop App"; TargetPath = $EgnyteDesktopAppUninstall_TargetPath; Arguments = $EgnyteDesktopAppUninstall_Arguments; SystemLnk = "Egnyte Connect\"; Description = "Uninstalls Egnyte Desktop App" },
+  @{Name = "Uninstall Egnyte Desktop App"; TargetPath = $EgnyteDesktopApp_Uninstall_32bit_TargetPath; Arguments = $EgnyteDesktopApp_Uninstall_32bit_Arguments; SystemLnk = "Egnyte Connect\"; Description = "Uninstalls Egnyte Desktop App" },
   # Epson
   @{Name = "Epson Scan 2"; TargetPath = "${env:ProgramFiles}\epson\Epson Scan 2\Core\es2launcher.exe"; SystemLnk = "EPSON\Epson Scan 2\" }, # it's the only install on 32-bit
   @{Name = "FAX Utility"; TargetPath = "${env:ProgramFiles}\Epson Software\FAX Utility\FUFAXCNT.exe"; SystemLnk = "EPSON Software\" }, # it's the only install on 32-bit
@@ -1115,12 +1295,14 @@ $sys3rdPartyAppList = @(
   @{Name = $GIMP_32bit_Name; TargetPath = $GIMP_32bit_TargetPath; StartIn = "%USERPROFILE%"; Description = $GIMP_32bit_Name },
   # Google
   @{Name = "Google Chrome"; TargetPath = "${env:ProgramFiles}\Google\Chrome\Application\chrome.exe"; StartIn = "${env:ProgramFiles}\Google\Chrome\Application"; Description = "Access the Internet" },
-  @{Name = "Google Chrome (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\Google\Chrome\Application\chrome.exe"; StartIn = "${env:ProgramFiles(x86)}\Google\Chrome\Application"; Description = "Access the Internet" },
   @{Name = "Google Drive"; TargetPath = $GoogleDrive_TargetPath; Description = "Google Drive" },
   @{Name = "VPN by Google One"; TargetPath = $GoogleOneVPN_TargetPath; Description = "VPN by Google One" },
+  @{Name = "Google Chrome"; TargetPath = "${env:ProgramFiles(x86)}\Google\Chrome\Application\chrome.exe"; StartIn = "${env:ProgramFiles(x86)}\Google\Chrome\Application"; Description = "Access the Internet" },
+  @{Name = "Google Drive"; TargetPath = $GoogleDrive_32bit_TargetPath; Description = "Google Drive" },
+  @{Name = "VPN by Google One"; TargetPath = $GoogleOneVPN_32bit_TargetPath; Description = "VPN by Google One" },
   # GoTo
   @{Name = "GoTo Resolve Desktop Console (64-bit)"; TargetPath = "${env:ProgramFiles}\GoTo\GoTo Resolve Desktop Console\ra-technician-console.exe"; StartIn = "${env:ProgramFiles}\GoTo\GoTo Resolve Desktop Console\" },
-  @{Name = "GoTo Resolve Desktop Console (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\GoTo\GoTo Resolve Desktop Console\ra-technician-console.exe"; StartIn = "${env:ProgramFiles(x86)}\GoTo\GoTo Resolve Desktop Console\" },
+  @{Name = "GoTo Resolve Desktop Console"; TargetPath = "${env:ProgramFiles(x86)}\GoTo\GoTo Resolve Desktop Console\ra-technician-console.exe"; StartIn = "${env:ProgramFiles(x86)}\GoTo\GoTo Resolve Desktop Console\" },
   # KC Softwares
   @{Name = "SUMo"; TargetPath = "${env:ProgramFiles}\KC Softwares\SUMo\SUMo.exe"; SystemLnk = "KC Softwares\SUMo\"; StartIn = "${env:ProgramFiles}\KC Softwares\SUMo" }, # it's the only install on 32-bit
   @{Name = "Uninstall SUMo"; TargetPath = "${env:ProgramFiles}\KC Softwares\SUMo\unins000.exe"; SystemLnk = "KC Softwares\SUMo\"; StartIn = "${env:ProgramFiles}\KC Softwares\SUMo" }, # it's the only install on 32-bit
@@ -1128,18 +1310,18 @@ $sys3rdPartyAppList = @(
   @{Name = "Uninstall SUMo"; TargetPath = "${env:ProgramFiles(x86)}\KC Softwares\SUMo\unins000.exe"; SystemLnk = "KC Softwares\SUMo\"; StartIn = "${env:ProgramFiles(x86)}\KC Softwares\SUMo" }, # it's the only install on 64-bit
   # Kdenlive
   @{Name = "Kdenlive"; TargetPath = "${env:ProgramFiles}\kdenlive\bin\kdenlive.exe"; StartIn = "{workingDirectory}"; Description = "Libre Video Editor, by KDE community" },
-  @{Name = "Kdenlive (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\kdenlive\bin\kdenlive.exe"; StartIn = "{workingDirectory}"; Description = "Libre Video Editor, by KDE community" },
+  @{Name = "Kdenlive"; TargetPath = "${env:ProgramFiles(x86)}\kdenlive\bin\kdenlive.exe"; StartIn = "{workingDirectory}"; Description = "Libre Video Editor, by KDE community" },
   # KeePass
   @{Name = $KeePass_Name; TargetPath = $KeePass_TargetPath; StartIn = $KeePass_StartIn }, # new version 2+
-  @{Name = $KeePass_32bit_Name; TargetPath = $KeePass_32bit_TargetPath; StartIn = $KeePass_32bit_StartIn }, # new version 2+
   @{Name = "KeePass"; TargetPath = "${env:ProgramFiles}\KeePass Password Safe\KeePass.exe"; StartIn = "${env:ProgramFiles}\KeePass Password Safe" }, # old version 1.x; it's the only install on 32-bit
+  @{Name = $KeePass_32bit_Name; TargetPath = $KeePass_32bit_TargetPath; StartIn = $KeePass_32bit_StartIn }, # new version 2+
   @{Name = "KeePass"; TargetPath = "${env:ProgramFiles(x86)}\KeePass Password Safe\KeePass.exe"; StartIn = "${env:ProgramFiles(x86)}\KeePass Password Safe" }, # old version 1.x; it's the only install on 64-bit
   # Ledger Live
   @{Name = "Ledger Live"; TargetPath = "${env:ProgramFiles}\Ledger Live\Ledger Live.exe"; StartIn = "${env:ProgramFiles}\Ledger Live"; Description = "Ledger Live - Desktop" },
-  @{Name = "Ledger Live (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\Ledger Live\Ledger Live.exe"; StartIn = "${env:ProgramFiles(x86)}\Ledger Live"; Description = "Ledger Live - Desktop" },
+  @{Name = "Ledger Live"; TargetPath = "${env:ProgramFiles(x86)}\Ledger Live\Ledger Live.exe"; StartIn = "${env:ProgramFiles(x86)}\Ledger Live"; Description = "Ledger Live - Desktop" },
   # Local Administrator Password Solution
   @{Name = "LAPS UI"; TargetPath = "${env:ProgramFiles}\LAPS\AdmPwd.UI.exe"; SystemLnk = "LAPS\"; StartIn = "${env:ProgramFiles}\LAPS\" },
-  @{Name = "LAPS UI (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\LAPS\AdmPwd.UI.exe"; SystemLnk = "LAPS\"; StartIn = "${env:ProgramFiles(x86)}\LAPS\" },
+  @{Name = "LAPS UI"; TargetPath = "${env:ProgramFiles(x86)}\LAPS\AdmPwd.UI.exe"; SystemLnk = "LAPS\"; StartIn = "${env:ProgramFiles(x86)}\LAPS\" },
   # Maxon
   @{Name = $MaxonCinema4D_Commandline_Name; TargetPath = $MaxonCinema4D_Commandline_TargetPath; SystemLnk = "Maxon\${MaxonCinema4D_Name}\"; StartIn = $MaxonCinema4D_StartIn; Description = "Commandline" },
   @{Name = $MaxonCinema4D_Name; TargetPath = $MaxonCinema4D_TargetPath; SystemLnk = "Maxon\${MaxonCinema4D_Name}\"; StartIn = $MaxonCinema4D_StartIn; Description = "Maxon Cinema 4D" },
@@ -1148,13 +1330,13 @@ $sys3rdPartyAppList = @(
   # Mozilla
   @{Name = "Firefox"; TargetPath = "${env:ProgramFiles}\Mozilla Firefox\firefox.exe"; StartIn = "${env:ProgramFiles}\Mozilla Firefox" },
   @{Name = "Firefox Private Browsing"; TargetPath = "${env:ProgramFiles}\Mozilla Firefox\private_browsing.exe"; StartIn = "${env:ProgramFiles}\Mozilla Firefox"; Description = "Firefox Private Browsing" },
-  @{Name = "Firefox (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\Mozilla Firefox\firefox.exe"; StartIn = "${env:ProgramFiles(x86)}\Mozilla Firefox" },
-  @{Name = "Firefox Private Browsing (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\Mozilla Firefox\private_browsing.exe"; StartIn = "${env:ProgramFiles(x86)}\Mozilla Firefox"; Description = "Firefox Private Browsing" },
   @{Name = "Thunderbird"; TargetPath = "${env:ProgramFiles}\Mozilla Thunderbird\thunderbird.exe"; StartIn = "${env:ProgramFiles}\Mozilla Thunderbird" },
-  @{Name = "Thunderbird (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\Mozilla Thunderbird\thunderbird.exe"; StartIn = "${env:ProgramFiles(x86)}\Mozilla Thunderbird" },
+  @{Name = "Firefox"; TargetPath = "${env:ProgramFiles(x86)}\Mozilla Firefox\firefox.exe"; StartIn = "${env:ProgramFiles(x86)}\Mozilla Firefox" },
+  @{Name = "Firefox Private Browsing"; TargetPath = "${env:ProgramFiles(x86)}\Mozilla Firefox\private_browsing.exe"; StartIn = "${env:ProgramFiles(x86)}\Mozilla Firefox"; Description = "Firefox Private Browsing" },
+  @{Name = "Thunderbird"; TargetPath = "${env:ProgramFiles(x86)}\Mozilla Thunderbird\thunderbird.exe"; StartIn = "${env:ProgramFiles(x86)}\Mozilla Thunderbird" },
   # Notepad++
   @{Name = "Notepad++"; TargetPath = "${env:ProgramFiles}\Notepad++\notepad++.exe"; StartIn = "${env:ProgramFiles}\Notepad++" },
-  @{Name = "Notepad++ (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\Notepad++\notepad++.exe"; StartIn = "${env:ProgramFiles(x86)}\Notepad++" },
+  @{Name = "Notepad++"; TargetPath = "${env:ProgramFiles(x86)}\Notepad++\notepad++.exe"; StartIn = "${env:ProgramFiles(x86)}\Notepad++" },
   # OpenVPN
   @{Name = "OpenVPN"; TargetPath = "${env:ProgramFiles}\OpenVPN\bin\openvpn-gui.exe"; SystemLnk = "OpenVPN\OpenVPN GUI"; StartIn = "${env:ProgramFiles}\OpenVPN\bin\" },
   @{Name = "OpenVPN Manual Page"; TargetPath = "${env:ProgramFiles}\OpenVPN\doc\openvpn.8.html"; SystemLnk = "OpenVPN\Documentation\"; StartIn = "${env:ProgramFiles}\OpenVPN\doc\" },
@@ -1164,21 +1346,21 @@ $sys3rdPartyAppList = @(
   @{Name = "OpenVPN Sample Configuration Files"; TargetPath = "${env:ProgramFiles}\OpenVPN\sample-config"; SystemLnk = "OpenVPN\Shortcuts\"; StartIn = "${env:ProgramFiles}\OpenVPN\sample-config\" },
   @{Name = "Add a new TAP-Windows6 virtual network adapter"; TargetPath = "${env:ProgramFiles}\OpenVPN\bin\tapctl.exe"; Arguments = "create --hwid root\tap0901"; SystemLnk = "OpenVPN\Utilities\"; StartIn = "${env:ProgramFiles}\OpenVPN\bin\" },
   @{Name = "Add a new Wintun virtual network adapter"; TargetPath = "${env:ProgramFiles}\OpenVPN\bin\tapctl.exe"; Arguments = "create --hwid wintun"; SystemLnk = "OpenVPN\Utilities\"; StartIn = "${env:ProgramFiles}\OpenVPN\bin\" },
-  @{Name = "OpenVPN (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\OpenVPN\bin\openvpn-gui.exe"; SystemLnk = "OpenVPN\OpenVPN GUI"; StartIn = "${env:ProgramFiles(x86)}\OpenVPN\bin\" },
+  @{Name = "OpenVPN"; TargetPath = "${env:ProgramFiles(x86)}\OpenVPN\bin\openvpn-gui.exe"; SystemLnk = "OpenVPN\OpenVPN GUI"; StartIn = "${env:ProgramFiles(x86)}\OpenVPN\bin\" },
   @{Name = "OpenVPN Manual Page"; TargetPath = "${env:ProgramFiles(x86)}\OpenVPN\doc\openvpn.8.html"; SystemLnk = "OpenVPN\Documentation\"; StartIn = "${env:ProgramFiles(x86)}\OpenVPN\doc\" },
   @{Name = "OpenVPN Windows Notes"; TargetPath = "${env:ProgramFiles(x86)}\OpenVPN\doc\INSTALL-win32.txt"; SystemLnk = "OpenVPN\Documentation\"; StartIn = "${env:ProgramFiles(x86)}\OpenVPN\doc\" },
   @{Name = "OpenVPN Configuration File Directory"; TargetPath = "${env:ProgramFiles(x86)}\OpenVPN\config"; SystemLnk = "OpenVPN\Shortcuts\"; StartIn = "${env:ProgramFiles(x86)}\OpenVPN\config\" },
   @{Name = "OpenVPN Log File Directory"; TargetPath = "${env:ProgramFiles(x86)}\OpenVPN\log"; SystemLnk = "OpenVPN\Shortcuts\"; StartIn = "${env:ProgramFiles(x86)}\OpenVPN\log\" },
   @{Name = "OpenVPN Sample Configuration Files"; TargetPath = "${env:ProgramFiles(x86)}\OpenVPN\sample-config"; SystemLnk = "OpenVPN\Shortcuts\"; StartIn = "${env:ProgramFiles(x86)}\OpenVPN\sample-config\" },
-  @{Name = "Add a new TAP-Windows6 virtual network adapter (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\OpenVPN\bin\tapctl.exe"; Arguments = "create --hwid root\tap0901"; SystemLnk = "OpenVPN\Utilities\"; StartIn = "${env:ProgramFiles(x86)}\OpenVPN\bin\" },
-  @{Name = "Add a new Wintun virtual network adapter (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\OpenVPN\bin\tapctl.exe"; Arguments = "create --hwid wintun"; SystemLnk = "OpenVPN\Utilities\"; StartIn = "${env:ProgramFiles(x86)}\OpenVPN\bin\" },
+  @{Name = "Add a new TAP-Windows6 virtual network adapter"; TargetPath = "${env:ProgramFiles(x86)}\OpenVPN\bin\tapctl.exe"; Arguments = "create --hwid root\tap0901"; SystemLnk = "OpenVPN\Utilities\"; StartIn = "${env:ProgramFiles(x86)}\OpenVPN\bin\" },
+  @{Name = "Add a new Wintun virtual network adapter"; TargetPath = "${env:ProgramFiles(x86)}\OpenVPN\bin\tapctl.exe"; Arguments = "create --hwid wintun"; SystemLnk = "OpenVPN\Utilities\"; StartIn = "${env:ProgramFiles(x86)}\OpenVPN\bin\" },
   # Oracle
   @{Name = "License (English)"; TargetPath = "${env:ProgramFiles}\Oracle\VirtualBox\License_en_US.rtf"; SystemLnk = "Oracle VM VirtualBox\"; StartIn = "${env:ProgramFiles}\Oracle\VirtualBox\"; Description = "License" },
   @{Name = "Oracle VM VirtualBox"; TargetPath = "${env:ProgramFiles}\Oracle\VirtualBox\VirtualBox.exe"; SystemLnk = "Oracle VM VirtualBox\"; StartIn = "${env:ProgramFiles}\Oracle\VirtualBox\"; Description = "Oracle VM VirtualBox" },
   @{Name = "User manual (CHM, English)"; TargetPath = "${env:ProgramFiles}\Oracle\VirtualBox\VirtualBox.chm"; SystemLnk = "Oracle VM VirtualBox\"; Description = "User manual" },
   @{Name = "User manual (PDF, English)"; TargetPath = "${env:ProgramFiles}\Oracle\VirtualBox\doc\UserManual.pdf"; SystemLnk = "Oracle VM VirtualBox\"; Description = "User manual" },
   @{Name = "License (English)"; TargetPath = "${env:ProgramFiles(x86)}\Oracle\VirtualBox\License_en_US.rtf"; SystemLnk = "Oracle VM VirtualBox\"; StartIn = "${env:ProgramFiles(x86)}\Oracle\VirtualBox\"; Description = "License" },
-  @{Name = "Oracle VM VirtualBox (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\Oracle\VirtualBox\VirtualBox.exe"; SystemLnk = "Oracle VM VirtualBox\"; StartIn = "${env:ProgramFiles(x86)}\Oracle\VirtualBox\"; Description = "Oracle VM VirtualBox" },
+  @{Name = "Oracle VM VirtualBox"; TargetPath = "${env:ProgramFiles(x86)}\Oracle\VirtualBox\VirtualBox.exe"; SystemLnk = "Oracle VM VirtualBox\"; StartIn = "${env:ProgramFiles(x86)}\Oracle\VirtualBox\"; Description = "Oracle VM VirtualBox" },
   @{Name = "User manual (CHM, English)"; TargetPath = "${env:ProgramFiles(x86)}\Oracle\VirtualBox\VirtualBox.chm"; SystemLnk = "Oracle VM VirtualBox\"; Description = "User manual" },
   @{Name = "User manual (PDF, English)"; TargetPath = "${env:ProgramFiles(x86)}\Oracle\VirtualBox\doc\UserManual.pdf"; SystemLnk = "Oracle VM VirtualBox\"; Description = "User manual" },
   # OSFMount
@@ -1186,16 +1368,16 @@ $sys3rdPartyAppList = @(
   @{Name = "OSFMount on the Web"; TargetPath = "${env:ProgramFiles}\OSFMount\OSFMount.url"; SystemLnk = "OSFMount\"; StartIn = "${env:ProgramFiles}\OSFMount" },
   @{Name = "OSFMount"; TargetPath = "${env:ProgramFiles}\OSFMount\OSFMount.exe"; SystemLnk = "OSFMount\"; StartIn = "${env:ProgramFiles}\OSFMount" },
   @{Name = "Uninstall OSFMount"; TargetPath = "${env:ProgramFiles}\OSFMount\unins000.exe"; SystemLnk = "OSFMount\"; StartIn = "${env:ProgramFiles}\OSFMount" },
-  @{Name = "OSFMount Documentation (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\OSFMount\osfmount_Help.exe"; SystemLnk = "OSFMount\"; StartIn = "${env:ProgramFiles(x86)}\OSFMount" },
+  @{Name = "OSFMount Documentation"; TargetPath = "${env:ProgramFiles(x86)}\OSFMount\osfmount_Help.exe"; SystemLnk = "OSFMount\"; StartIn = "${env:ProgramFiles(x86)}\OSFMount" },
   @{Name = "OSFMount on the Web"; TargetPath = "${env:ProgramFiles(x86)}\OSFMount\OSFMount.url"; SystemLnk = "OSFMount\"; StartIn = "${env:ProgramFiles(x86)}\OSFMount" },
-  @{Name = "OSFMount (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\OSFMount\OSFMount.exe"; SystemLnk = "OSFMount\"; StartIn = "${env:ProgramFiles(x86)}\OSFMount" },
-  @{Name = "Uninstall OSFMount (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\OSFMount\unins000.exe"; SystemLnk = "OSFMount\"; StartIn = "${env:ProgramFiles(x86)}\OSFMount" },
+  @{Name = "OSFMount"; TargetPath = "${env:ProgramFiles(x86)}\OSFMount\OSFMount.exe"; SystemLnk = "OSFMount\"; StartIn = "${env:ProgramFiles(x86)}\OSFMount" },
+  @{Name = "Uninstall OSFMount"; TargetPath = "${env:ProgramFiles(x86)}\OSFMount\unins000.exe"; SystemLnk = "OSFMount\"; StartIn = "${env:ProgramFiles(x86)}\OSFMount" },
   # paint.net
   @{Name = "paint.net"; TargetPath = "${env:ProgramFiles}\paint.net\paintdotnet.exe"; StartIn = "${env:ProgramFiles}\paint.net"; Description = "Create, edit, scan, and print images and photographs." },
-  @{Name = "paint.net (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\paint.net\paintdotnet.exe"; StartIn = "${env:ProgramFiles(x86)}\paint.net"; Description = "Create, edit, scan, and print images and photographs." },
+  @{Name = "paint.net"; TargetPath = "${env:ProgramFiles(x86)}\paint.net\paintdotnet.exe"; StartIn = "${env:ProgramFiles(x86)}\paint.net"; Description = "Create, edit, scan, and print images and photographs." },
   # Pulse Secure
-  @{Name="Pulse Secure"; TargetPath="C:\Program Files\Common Files\Pulse Secure\JamUI\Pulse.exe"; Arguments="-show"; SystemLnk="Pulse Secure\"; Description="Pulse Secure Desktop Client" },  # it's the only install on 32-bit
-  @{Name="Pulse Secure"; TargetPath="C:\Program Files (x86)\Common Files\Pulse Secure\JamUI\Pulse.exe"; Arguments="-show"; SystemLnk="Pulse Secure\"; Description="Pulse Secure Desktop Client" }, # it's the only install on 64-bit
+  @{Name = "Pulse Secure"; TargetPath = "${env:ProgramFiles}\Common Files\Pulse Secure\JamUI\Pulse.exe"; Arguments = "-show"; SystemLnk = "Pulse Secure\"; Description = "Pulse Secure Desktop Client" }, # it's the only install on 32-bit
+  @{Name = "Pulse Secure"; TargetPath = "${env:ProgramFiles(x86)}\Common Files\Pulse Secure\JamUI\Pulse.exe"; Arguments = "-show"; SystemLnk = "Pulse Secure\"; Description = "Pulse Secure Desktop Client" }, # it's the only install on 64-bit
   # PuTTY
   @{Name = "Pageant"; TargetPath = "${env:ProgramFiles}\PuTTY\pageant.exe"; SystemLnk = "PuTTY (64-bit)\"; StartIn = "${env:ProgramFiles}\PuTTY\" },
   @{Name = "PSFTP"; TargetPath = "${env:ProgramFiles}\PuTTY\psftp.exe"; SystemLnk = "PuTTY (64-bit)\"; StartIn = "${env:ProgramFiles}\PuTTY\" },
@@ -1211,25 +1393,25 @@ $sys3rdPartyAppList = @(
   @{Name = "PuTTYgen"; TargetPath = "${env:ProgramFiles(x86)}\PuTTY\puttygen.exe"; SystemLnk = "PuTTY\"; StartIn = "${env:ProgramFiles(x86)}\PuTTY\" },
   # RealVNC
   @{Name = "VNC Server"; TargetPath = "${env:ProgramFiles}\RealVNC\VNC Server\vncguihelper.exe"; Arguments = "vncserver.exe -_fromGui -start -showstatus"; SystemLnk = "RealVNC\"; StartIn = "${env:ProgramFiles}\RealVNC\VNC Server\" },
-  @{Name = "VNC Server (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\RealVNC\VNC Server\vncguihelper.exe"; Arguments = "vncserver.exe -_fromGui -start -showstatus"; SystemLnk = "RealVNC\"; StartIn = "${env:ProgramFiles(x86)}\RealVNC\VNC Server\" },
   @{Name = "VNC Viewer"; TargetPath = "${env:ProgramFiles}\RealVNC\VNC Viewer\vncviewer.exe"; SystemLnk = "RealVNC\"; StartIn = "${env:ProgramFiles}\RealVNC\VNC Viewer\" },
-  @{Name = "VNC Viewer (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\RealVNC\VNC Viewer\vncviewer.exe"; SystemLnk = "RealVNC\"; StartIn = "${env:ProgramFiles(x86)}\RealVNC\VNC Viewer\" },
+  @{Name = "VNC Server"; TargetPath = "${env:ProgramFiles(x86)}\RealVNC\VNC Server\vncguihelper.exe"; Arguments = "vncserver.exe -_fromGui -start -showstatus"; SystemLnk = "RealVNC\"; StartIn = "${env:ProgramFiles(x86)}\RealVNC\VNC Server\" },
+  @{Name = "VNC Viewer"; TargetPath = "${env:ProgramFiles(x86)}\RealVNC\VNC Viewer\vncviewer.exe"; SystemLnk = "RealVNC\"; StartIn = "${env:ProgramFiles(x86)}\RealVNC\VNC Viewer\" },
   # Samsung
   @{Name = "Samsung DeX"; TargetPath = "${env:ProgramFiles}\Samsung\Samsung DeX\SamsungDeX.exe"; StartIn = "${env:ProgramFiles}\Samsung\Samsung DeX\" }, # it's the only install on 32-bit
   @{Name = "Samsung DeX"; TargetPath = "${env:ProgramFiles(x86)}\Samsung\Samsung DeX\SamsungDeX.exe"; StartIn = "${env:ProgramFiles(x86)}\Samsung\Samsung DeX\" }, # it's the only install on 64-bit
   # SonicWall Global VPN Client
   @{Name = "Global VPN Client"; TargetPath = "${env:ProgramFiles}\SonicWALL\Global VPN Client\SWGVC.exe"; StartIn = "${env:ProgramFiles}\SonicWall\Global VPN Client\"; Description = "Launch the Global VPN Client" },
-  @{Name = "Global VPN Client (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\SonicWALL\Global VPN Client\SWGVC.exe"; StartIn = "${env:ProgramFiles(x86)}\SonicWall\Global VPN Client\"; Description = "Launch the Global VPN Client" },
   @{Name = "Global VPN Client"; TargetPath = "${env:ProgramFiles}\Dell SonicWALL\Global VPN Client\SWGVC.exe"; StartIn = "${env:ProgramFiles}\Dell SonicWall\Global VPN Client\"; Description = "Launch the Global VPN Client" },
-  @{Name = "Global VPN Client (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\Dell SonicWALL\Global VPN Client\SWGVC.exe"; StartIn = "${env:ProgramFiles(x86)}\Dell SonicWall\Global VPN Client\"; Description = "Launch the Global VPN Client" },
+  @{Name = "Global VPN Client"; TargetPath = "${env:ProgramFiles(x86)}\SonicWALL\Global VPN Client\SWGVC.exe"; StartIn = "${env:ProgramFiles(x86)}\SonicWall\Global VPN Client\"; Description = "Launch the Global VPN Client" },
+  @{Name = "Global VPN Client"; TargetPath = "${env:ProgramFiles(x86)}\Dell SonicWALL\Global VPN Client\SWGVC.exe"; StartIn = "${env:ProgramFiles(x86)}\Dell SonicWall\Global VPN Client\"; Description = "Launch the Global VPN Client" },
   # SoundSwitch
   @{Name = "SoundSwitch"; TargetPath = "${env:ProgramFiles}\SoundSwitch\SoundSwitch.exe"; SystemLnk = "SoundSwitch\"; StartIn = "${env:ProgramFiles}\SoundSwitch" },
-  @{Name = "SoundSwitch (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\SoundSwitch\SoundSwitch.exe"; SystemLnk = "SoundSwitch\"; StartIn = "${env:ProgramFiles(x86)}\SoundSwitch" },
   @{Name = "Uninstall SoundSwitch"; TargetPath = "${env:ProgramFiles}\SoundSwitch\unins000.exe"; SystemLnk = "SoundSwitch\"; StartIn = "${env:ProgramFiles}\SoundSwitch" },
-  @{Name = "Uninstall SoundSwitch (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\SoundSwitch\unins000.exe"; SystemLnk = "SoundSwitch\"; StartIn = "${env:ProgramFiles(x86)}\SoundSwitch" },
+  @{Name = "SoundSwitch"; TargetPath = "${env:ProgramFiles(x86)}\SoundSwitch\SoundSwitch.exe"; SystemLnk = "SoundSwitch\"; StartIn = "${env:ProgramFiles(x86)}\SoundSwitch" },
+  @{Name = "Uninstall SoundSwitch"; TargetPath = "${env:ProgramFiles(x86)}\SoundSwitch\unins000.exe"; SystemLnk = "SoundSwitch\"; StartIn = "${env:ProgramFiles(x86)}\SoundSwitch" },
   # USB Redirector TS Edition
   @{Name = "USB Redirector TS Edition - Workstation"; TargetPath = "${env:ProgramFiles}\USB Redirector TS Edition - Workstation\usbredirectortsw.exe"; SystemLnk = "USB Redirector TS Edition - Workstation\" },
-  @{Name = "USB Redirector TS Edition - Workstation (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\USB Redirector TS Edition - Workstation\usbredirectortsw.exe"; SystemLnk = "USB Redirector TS Edition - Workstation\" },
+  @{Name = "USB Redirector TS Edition - Workstation"; TargetPath = "${env:ProgramFiles(x86)}\USB Redirector TS Edition - Workstation\usbredirectortsw.exe"; SystemLnk = "USB Redirector TS Edition - Workstation\" },
   # VideoLAN
   @{Name = "Documentation"; TargetPath = "${env:ProgramFiles}\VideoLAN\VLC\Documentation.url"; SystemLnk = "VideoLAN\"; StartIn = "${env:ProgramFiles}\VideoLAN\VLC" },
   @{Name = "Release Notes"; TargetPath = "${env:ProgramFiles}\VideoLAN\VLC\NEWS.txt"; SystemLnk = "VideoLAN\"; StartIn = "${env:ProgramFiles}\VideoLAN\VLC" },
@@ -1237,12 +1419,12 @@ $sys3rdPartyAppList = @(
   @{Name = "VLC media player - reset preferences and cache files"; TargetPath = "${env:ProgramFiles}\VideoLAN\VLC\vlc.exe"; Arguments = "--reset-config --reset-plugins-cache vlc://quit"; SystemLnk = "VideoLAN\"; StartIn = "${env:ProgramFiles}\VideoLAN\VLC" },
   @{Name = "VLC media player skinned"; TargetPath = "${env:ProgramFiles}\VideoLAN\VLC\vlc.exe"; Arguments = "-Iskins"; SystemLnk = "VideoLAN\"; StartIn = "${env:ProgramFiles}\VideoLAN\VLC" },
   @{Name = "VLC media player"; TargetPath = "${env:ProgramFiles}\VideoLAN\VLC\vlc.exe"; SystemLnk = "VideoLAN\"; StartIn = "${env:ProgramFiles}\VideoLAN\VLC" },
-  @{Name = "Documentation"; TargetPath = "${env:ProgramFiles} x86\VideoLAN\VLC\Documentation.url"; SystemLnk = "VideoLAN\"; StartIn = "${env:ProgramFiles} x86\VideoLAN\VLC" },
-  @{Name = "Release Notes"; TargetPath = "${env:ProgramFiles} x86\VideoLAN\VLC\NEWS.txt"; SystemLnk = "VideoLAN\"; StartIn = "${env:ProgramFiles} x86\VideoLAN\VLC" },
-  @{Name = "VideoLAN Website"; TargetPath = "${env:ProgramFiles} x86\VideoLAN\VLC\VideoLAN Website.url"; SystemLnk = "VideoLAN\"; StartIn = "${env:ProgramFiles} x86\VideoLAN\VLC" },
-  @{Name = "VLC media player - reset preferences and cache files (32-bit)"; TargetPath = "${env:ProgramFiles} x86\VideoLAN\VLC\vlc.exe"; Arguments = "--reset-config --reset-plugins-cache vlc://quit"; SystemLnk = "VideoLAN\"; StartIn = "${env:ProgramFiles} x86\VideoLAN\VLC" },
-  @{Name = "VLC media player skinned (32-bit)"; TargetPath = "${env:ProgramFiles} x86\VideoLAN\VLC\vlc.exe"; Arguments = "-Iskins"; SystemLnk = "VideoLAN\"; StartIn = "${env:ProgramFiles} x86\VideoLAN\VLC" },
-  @{Name = "VLC media player (32-bit)"; TargetPath = "${env:ProgramFiles} x86\VideoLAN\VLC\vlc.exe"; SystemLnk = "VideoLAN\"; StartIn = "${env:ProgramFiles} x86\VideoLAN\VLC" },
+  @{Name = "Documentation"; TargetPath = "${env:ProgramFiles(x86)}\VideoLAN\VLC\Documentation.url"; SystemLnk = "VideoLAN\"; StartIn = "${env:ProgramFiles(x86)}\VideoLAN\VLC" },
+  @{Name = "Release Notes"; TargetPath = "${env:ProgramFiles(x86)}\VideoLAN\VLC\NEWS.txt"; SystemLnk = "VideoLAN\"; StartIn = "${env:ProgramFiles(x86)}\VideoLAN\VLC" },
+  @{Name = "VideoLAN Website"; TargetPath = "${env:ProgramFiles(x86)}\VideoLAN\VLC\VideoLAN Website.url"; SystemLnk = "VideoLAN\"; StartIn = "${env:ProgramFiles(x86)}\VideoLAN\VLC" },
+  @{Name = "VLC media player - reset preferences and cache files"; TargetPath = "${env:ProgramFiles(x86)}\VideoLAN\VLC\vlc.exe"; Arguments = "--reset-config --reset-plugins-cache vlc://quit"; SystemLnk = "VideoLAN\"; StartIn = "${env:ProgramFiles(x86)}\VideoLAN\VLC" },
+  @{Name = "VLC media player skinned"; TargetPath = "${env:ProgramFiles(x86)}\VideoLAN\VLC\vlc.exe"; Arguments = "-Iskins"; SystemLnk = "VideoLAN\"; StartIn = "${env:ProgramFiles(x86)}\VideoLAN\VLC" },
+  @{Name = "VLC media player"; TargetPath = "${env:ProgramFiles(x86)}\VideoLAN\VLC\vlc.exe"; SystemLnk = "VideoLAN\"; StartIn = "${env:ProgramFiles(x86)}\VideoLAN\VLC" },
   # VMware
   @{Name = "Command Prompt for vctl"; TargetPath = $CommandPromptforvctl_Path; Arguments = "/k set PATH=${env:ProgramFiles}\VMware\VMware Player\;%PATH% && vctl.exe -h"; SystemLnk = "VMware\"; StartIn = "${env:ProgramFiles}\VMware\VMware Player\bin\" }, # it's the only install on 32-bit
   @{Name = $VMwareWorkstationPlayer_Name; TargetPath = $VMwareWorkstationPlayer_TargetPath; SystemLnk = "VMware\"; StartIn = "${env:ProgramFiles}\VMware\VMware Player\" }, # it's the only install on 32-bit
@@ -1258,7 +1440,7 @@ $sys3rdPartyAppList = @(
   @{Name = "Winaero Tweaker"; TargetPath = "${env:ProgramFiles}\Winaero Tweaker\WinaeroTweaker.exe"; SystemLnk = "Winaero Tweaker\"; StartIn = "${env:ProgramFiles}\Winaero Tweaker" },
   @{Name = "Winaero Website"; TargetPath = "${env:ProgramFiles}\Winaero Tweaker\Winaero.url"; SystemLnk = "Winaero Tweaker\"; StartIn = "${env:ProgramFiles}\Winaero Tweaker"; Description = "Winaero is about Windows 10 / 8 / 7 and covers all topics that will interest every Windows user." },
   @{Name = "EULA"; TargetPath = "${env:ProgramFiles(x86)}\Winaero Tweaker\Winaero EULA.txt"; SystemLnk = "Winaero Tweaker\"; StartIn = "${env:ProgramFiles(x86)}\Winaero Tweaker"; Description = "Read the license agreement" },
-  @{Name = "Winaero Tweaker (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\Winaero Tweaker\WinaeroTweaker.exe"; SystemLnk = "Winaero Tweaker\"; StartIn = "${env:ProgramFiles(x86)}\Winaero Tweaker" },
+  @{Name = "Winaero Tweaker"; TargetPath = "${env:ProgramFiles(x86)}\Winaero Tweaker\WinaeroTweaker.exe"; SystemLnk = "Winaero Tweaker\"; StartIn = "${env:ProgramFiles(x86)}\Winaero Tweaker" },
   @{Name = "Winaero Website"; TargetPath = "${env:ProgramFiles(x86)}\Winaero Tweaker\Winaero.url"; SystemLnk = "Winaero Tweaker\"; StartIn = "${env:ProgramFiles(x86)}\Winaero Tweaker"; Description = "Winaero is about Windows 10 / 8 / 7 and covers all topics that will interest every Windows user." },
   # WinSCP
   @{Name = "WinSCP"; TargetPath = "${env:ProgramFiles}\WinSCP\WinSCP.exe"; StartIn = "${env:ProgramFiles}\WinSCP"; Description = "WinSCP: SFTP, FTP, WebDAV and SCP client" }, # it's the only install on 32-bit
@@ -1356,30 +1538,42 @@ for ($i = 0; $i -lt $Users.length; $i++) {
   $GitHubDesktop_FindFolder = if (Test-Path -Path $GitHubDesktop_StartIn) { Get-ChildItem -Directory -Path $GitHubDesktop_StartIn | Where-Object { $_.Name -match '^app\-[.0-9]+$' } | Sort-Object -Descending }
   $GitHubDesktop_FindFolder = if ($GitHubDesktop_FindFolder.length -ge 1) { $GitHubDesktop_FindFolder[0].name } else { $NOT_INSTALLED }
   $GitHubDesktop_StartIn += $GitHubDesktop_FindFolder
+  # GoTo
+  $GoToResolveDesktopConsole_StartIn = "${USERS_FOLDER}\GoTo\GoTo Resolve Desktop Console\"
+  $GoToResolveDesktopConsole_Exe = $GoToResolveDesktopConsole_StartIn + "ra-technician-console.exe"
+  $GoToResolveDesktopConsole_Arch = if (Test-Path -Path $GoToResolveDesktopConsole_TargetPath) { Get-BinaryType $GoToResolveDesktopConsole_TargetPath }
+  $GoToResolveDesktopConsole_TargetPath = if ($GoToResolveDesktopConsole_Arch -And ($GoToResolveDesktopConsole_Arch -eq "BIT64")) { $GoToResolveDesktopConsole_Exe } else { $GoToResolveDesktopConsole_StartIn + $NOT_INSTALLED }
+  $GoToResolveDesktopConsole_32bit_TargetPath = if ($GoToResolveDesktopConsole_Arch -And ($GoToResolveDesktopConsole_Arch -eq "BIT32")) { $GoToResolveDesktopConsole_Exe } else { $GoToResolveDesktopConsole_StartIn + $NOT_INSTALLED }
   # Microsoft
   $AzureIoTExplorerPreview_TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\azure-iot-explorer\Azure IoT Explorer Preview.exe"
   $AzureIoTExplorer_TargetPath = if (Test-Path -Path $AzureIoTExplorerPreview_TargetPath -PathType Leaf) { $AzureIoTExplorerPreview_TargetPath } else { "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\azure-iot-explorer\Azure IoT Explorer.exe" }
-  $AzureIoTExplorer_Name = "Azure IoT Explorer" + $(if (Test-Path -Path $AzureIoTExplorerPreview_TargetPath -PathType Leaf) { " Preview" })
   # Python
   $Python_StartIn = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\Python\"
   $Python_FindFolder = if (Test-Path -Path $Python_StartIn) { Get-ChildItem -Directory -Path $Python_StartIn | Where-Object { $_.Name -match '^Python[.0-9]+$' } | Sort-Object -Descending }
   $Python_FindFolder = if ($Python_FindFolder.length -ge 1) { $Python_FindFolder[0].name } else { $NOT_INSTALLED }
   $Python_StartIn += "${Python_FindFolder}\"
   $PythonIDLE_TargetPath = $Python_StartIn + "Lib\idlelib\idle.pyw"
+  $PythonManuals_TargetPath = $Python_StartIn + "Doc\html\index.html"
   $Python_TargetPath = $Python_StartIn + "python.exe"
   $Python_FileVersionRaw = if (Test-Path -Path $Python_TargetPath -PathType Leaf) { (Get-Item $Python_TargetPath).VersionInfo.FileVersionRaw }
   $Python_Version = if ($Python_FileVersionRaw) { [string]($Python_FileVersionRaw.Major) + '.' + [string]($Python_FileVersionRaw.Minor) } else { $NOT_INSTALLED }
-  $PythonIDLE_Description = "Launches IDLE, the interactive environment for Python ${Python_Version}."
-  $Python_Description = "Launches the Python ${Python_Version} interpreter."
-  $PythonModuleDocs_Description = "Start the Python ${Python_Version} documentation server."
   $Python_SystemLnk = "Python ${Python_Version}\"
-  $Python_Info = if (Test-Path -Path $Python_TargetPath -PathType Leaf) { (& "${Python_TargetPath}" -VV) }
-  $Python_Arch = if ($Python_Info) { if ($Python_Info | Select-String "\[[^\[\]]+32 bit[^\[\]]+\]") { 32 } elseif ($Python_Info | Select-String "\[[^\[\]]+64 bit[^\[\]]+\]") { 64 } else { "unknown" } } else { $NOT_INSTALLED }
-  $PythonIDLE_Name = "IDLE (Python ${Python_Version} ${Python_Arch}-bit)"
-  $Python_Name = "Python ${Python_Version} (${Python_Arch}-bit)"
-  $PythonModuleDocs_Name = "Python ${Python_Version} Module Docs (${Python_Arch}-bit)"
   
   # User app names dependant on OS or app version
+
+  # Microsoft
+  $AzureIoTExplorer_Name = "Azure IoT Explorer" + $(if (Test-Path -Path $AzureIoTExplorerPreview_TargetPath -PathType Leaf) { " Preview" })
+  # Python
+  $PythonIDLE_Description = "Launches IDLE, the interactive environment for Python ${Python_Version}."
+  $Python_Description = "Launches the Python ${Python_Version} interpreter."
+  $PythonManuals_Description = "View the Python ${Python_Version} documentation."
+  $PythonModuleDocs_Description = "Start the Python ${Python_Version} documentation server."
+  $Python_Arch = if (Test-Path -Path $Python_TargetPath) { Get-BinaryType $Python_TargetPath }
+  $Python_Arch = if ($Python_Arch -And ($Python_Arch -eq "BIT64")) { 64 } else { 32 }
+  $PythonIDLE_Name = "IDLE (Python ${Python_Version} ${Python_Arch}-bit)"
+  $Python_Name = "Python ${Python_Version} (${Python_Arch}-bit)"
+  $PythonManuals_Name = "Python ${Python_Version} Manuals (${Python_Arch}-bit)"
+  $PythonModuleDocs_Name = "Python ${Python_Version} Module Docs (${Python_Arch}-bit)"
 
   $userAppList = @( # all instances of "${aUser}" get's replaced with the username
     # 1Password
@@ -1387,6 +1581,16 @@ for ($i = 0; $i -lt $Users.length; $i++) {
     # Adobe
     @{Name = $AdobeDigitalEditions_Name; TargetPath = $AdobeDigitalEditions_TargetPath; StartIn = $AdobeDigitalEditions_StartIn },
     @{Name = $AdobeDigitalEditions_32bit_Name; TargetPath = $AdobeDigitalEditions_32bit_TargetPath; StartIn = $AdobeDigitalEditions_StartIn },
+    # AutoHotkey V2
+    @{Name = "AutoHotkey Window Spy"; TargetPath = "${USERS_FOLDER}\AutoHotkey\UX\AutoHotkeyUX.exe"; Arguments = "`"${USERS_FOLDER}\AutoHotkey\UX\WindowSpy.ahk`""; Description = "AutoHotkey Window Spy" },
+    @{Name = "AutoHotkey"; TargetPath = "${USERS_FOLDER}\AutoHotkey\UX\AutoHotkeyUX.exe"; Arguments = "`"${USERS_FOLDER}\AutoHotkey\UX\ui-dash.ahk`""; Description = "AutoHotkey Dash" },
+    # AutoHotkey
+    @{Name = "AutoHotkey Help File"; TargetPath = "${USERS_FOLDER}\AutoHotkey\AutoHotkey.chm"; SystemLnk = "AutoHotkey\" },
+    @{Name = "AutoHotkey Setup"; TargetPath = "${USERS_FOLDER}\AutoHotkey\Installer.ahk"; SystemLnk = "AutoHotkey\" },
+    @{Name = "AutoHotkey"; TargetPath = "${USERS_FOLDER}\AutoHotkey\AutoHotkey.exe"; SystemLnk = "AutoHotkey\" },
+    @{Name = "Convert .ahk to .exe"; TargetPath = "${USERS_FOLDER}\AutoHotkey\Compiler\Ahk2Exe.exe"; SystemLnk = "AutoHotkey\" },
+    @{Name = "Website"; TargetPath = "${USERS_FOLDER}\AutoHotkey\AutoHotkey Website.url"; SystemLnk = "AutoHotkey\" },
+    @{Name = "Window Spy"; TargetPath = "${USERS_FOLDER}\AutoHotkey\WindowSpy.ahk"; SystemLnk = "AutoHotkey\" },
     # balenaEtcher
     @{Name = "balenaEtcher"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\balena-etcher\balenaEtcher.exe"; StartIn = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\balena-etcher"; Description = "Flash OS images to SD cards and USB drives, safely and easily." },
     # Blender
@@ -1398,17 +1602,20 @@ for ($i = 0; $i -lt $Users.length; $i++) {
     @{Name = "GitHub Desktop"; TargetPath = $GitHubDesktop_TargetPath; SystemLnk = "GitHub, Inc\"; StartIn = $GitHubDesktop_StartIn; Description = "Simple collaboration from your desktop" },
     # Google
     @{Name = "Google Chrome"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Google\Chrome\Application\chrome.exe"; StartIn = "${USERS_FOLDER}\${aUser}\AppData\Local\Google\Chrome\Application"; Description = "Access the Internet" },
+    # GoTo
+    @{Name = "GoTo Resolve Desktop Console (64-bit)"; TargetPath = $GoToResolveDesktopConsole_TargetPath; StartIn = $GoToResolveDesktopConsole_StartIn },
+    @{Name = "GoTo Resolve Desktop Console"; TargetPath = $GoToResolveDesktopConsole_32bit_TargetPath; StartIn = $GoToResolveDesktopConsole_StartIn },
     # Inkscape
     @{Name = "Inkscape"; TargetPath = "${env:ProgramFiles}\Inkscape\bin\inkscape.exe"; SystemLnk = "Inkscape\"; StartIn = "${env:ProgramFiles}\Inkscape\bin\" },
-    @{Name = "Inkscape (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\Inkscape\bin\inkscape.exe"; SystemLnk = "Inkscape\"; StartIn = "${env:ProgramFiles(x86)}\Inkscape\bin\" },
     @{Name = "Inkview"; TargetPath = "${env:ProgramFiles}\Inkscape\bin\inkview.exe"; SystemLnk = "Inkscape\"; StartIn = "${env:ProgramFiles}\Inkscape\bin\" },
-    @{Name = "Inkview (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\Inkscape\bin\inkview.exe"; SystemLnk = "Inkscape\"; StartIn = "${env:ProgramFiles(x86)}\Inkscape\bin\" },
+    @{Name = "Inkscape"; TargetPath = "${env:ProgramFiles(x86)}\Inkscape\bin\inkscape.exe"; SystemLnk = "Inkscape\"; StartIn = "${env:ProgramFiles(x86)}\Inkscape\bin\" },
+    @{Name = "Inkview"; TargetPath = "${env:ProgramFiles(x86)}\Inkscape\bin\inkview.exe"; SystemLnk = "Inkscape\"; StartIn = "${env:ProgramFiles(x86)}\Inkscape\bin\" },
     # Microsoft
     @{Name = "Azure Data Studio"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\Azure Data Studio\azuredatastudio.exe"; SystemLnk = "Azure Data Studio\"; StartIn = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\Azure Data Studio" },
     @{Name = $AzureIoTExplorer_Name; TargetPath = $AzureIoTExplorer_TargetPath; StartIn = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\azure-iot-explorer\" },
     @{Name = "Visual Studio Code"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\Microsoft VS Code\Code.exe"; SystemLnk = "Visual Studio Code\"; StartIn = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\Microsoft VS Code" },
-    @{Name = "OneDrive"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Microsoft\OneDrive\OneDrive.exe"; Description = "Keep your most important files with you wherever you go, on any device." },
     @{Name = $MicrosoftTeams_Name; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Microsoft\Teams\Update.exe"; Arguments = "--processStart `"Teams.exe`""; StartIn = "${USERS_FOLDER}\${aUser}\AppData\Local\Microsoft\Teams" },
+    @{Name = "OneDrive"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Microsoft\OneDrive\OneDrive.exe"; Description = "Keep your most important files with you wherever you go, on any device." },
     # Mozilla
     @{Name = "Firefox"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Mozilla Firefox\firefox.exe"; StartIn = "${USERS_FOLDER}\${aUser}\AppData\Local\Mozilla Firefox" },
     # NVIDIA Corporation
@@ -1416,6 +1623,7 @@ for ($i = 0; $i -lt $Users.length; $i++) {
     # Python
     @{Name = $PythonIDLE_Name; TargetPath = $PythonIDLE_TargetPath; SystemLnk = $Python_SystemLnk; StartIn = $Python_StartIn; Description = $PythonIDLE_Description },
     @{Name = $Python_Name; TargetPath = $Python_TargetPath; SystemLnk = $Python_SystemLnk; StartIn = $Python_StartIn; Description = $Python_Description },
+    @{Name = $PythonManuals_Name; TargetPath = $PythonManuals_TargetPath; SystemLnk = $Python_SystemLnk; StartIn = $Python_StartIn; Description = $PythonManuals_Description },
     @{Name = $PythonModuleDocs_Name; TargetPath = $Python_TargetPath; Arguments = "-m pydoc -b"; SystemLnk = $Python_SystemLnk; StartIn = $Python_StartIn; Description = $PythonModuleDocs_Description },
     # Raspberry Pi Imager
     @{Name = "Raspberry Pi Imager"; TargetPath = "${env:ProgramFiles}\Raspberry Pi Imager\rpi-imager.exe"; StartIn = "${env:ProgramFiles}\Raspberry Pi Imager" }, # it's the only install on 32-bit
