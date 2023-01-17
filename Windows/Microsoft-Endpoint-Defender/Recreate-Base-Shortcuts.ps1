@@ -1631,6 +1631,8 @@ for ($i = 0; $i -lt $Users.length; $i++) {
     @{Name = "Visual Studio Code"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\Microsoft VS Code\Code.exe"; SystemLnk = "Visual Studio Code\"; StartIn = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\Microsoft VS Code" },
     @{Name = $MicrosoftTeams_Name; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Microsoft\Teams\Update.exe"; Arguments = "--processStart `"Teams.exe`""; StartIn = "${USERS_FOLDER}\${aUser}\AppData\Local\Microsoft\Teams" },
     @{Name = "OneDrive"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Microsoft\OneDrive\OneDrive.exe"; Description = "Keep your most important files with you wherever you go, on any device." },
+    # Windows
+    @{Name = "Windows Tools"; TargetPath = "%windir%\system32\control.exe"; Arguments = "/name Microsoft.AdministrativeTools"; Description = "Windows Tools" },
     # Mozilla
     @{Name = "Firefox"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Mozilla Firefox\firefox.exe"; StartIn = "${USERS_FOLDER}\${aUser}\AppData\Local\Mozilla Firefox" },
     # NVIDIA Corporation
