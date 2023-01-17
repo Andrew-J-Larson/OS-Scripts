@@ -1221,6 +1221,9 @@ $sys3rdPartyAppList = @(
   @{Name = "Altair Monarch 2020"; TargetPath = "${env:ProgramFiles}\Altair Monarch 2020\DWMonarch.exe"; SystemLnk = "Altair Monarch 2020\" },
   @{Name = "Altair Monarch 2021"; TargetPath = "${env:ProgramFiles(x86)}\Altair Monarch 2021\DWMonarch.exe"; SystemLnk = "Altair Monarch 2021\" },
   @{Name = "Altair Monarch 2020"; TargetPath = "${env:ProgramFiles(x86)}\Altair Monarch 2020\DWMonarch.exe"; SystemLnk = "Altair Monarch 2020\" },
+  # Amazon
+  @{Name = "AWS VPN Client"; TargetPath = "${env:ProgramFiles}\Amazon\AWS VPN Client\AWSVPNClient.exe"; SystemLnk = "AWS VPN Client\"; StartIn = "${env:ProgramFiles}\Amazon\AWS VPN Client\"; Description = "Client application for AWS Client VPN service" },
+  @{Name = "AWS VPN Client"; TargetPath = "${env:ProgramFiles(x86)}\Amazon\AWS VPN Client\AWSVPNClient.exe"; SystemLnk = "AWS VPN Client\"; StartIn = "${env:ProgramFiles(x86)}\Amazon\AWS VPN Client\"; Description = "Client application for AWS Client VPN service" },
   # AmbiBox
   @{Name = "AmbiBox Web Site"; TargetPath = "${env:ProgramFiles}\AmbiBox\www.ambibox.ru.url"; SystemLnk = "AmbiBox\"; StartIn = "${env:ProgramFiles}\AmbiBox" }, # it's the only install on 32-bit
   @{Name = "AmbiBox"; TargetPath = "${env:ProgramFiles}\AmbiBox\AmbiBox.exe"; SystemLnk = "AmbiBox\"; StartIn = "${env:ProgramFiles}\AmbiBox" }, # it's the only install on 32-bit
