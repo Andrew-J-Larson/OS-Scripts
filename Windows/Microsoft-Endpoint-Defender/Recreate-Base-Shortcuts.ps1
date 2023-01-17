@@ -20,7 +20,7 @@
 
 
 
-Start-Transcript -Path "${env:HOMEDRIVE}\Recreate-Base-Shortcuts.log"
+Start-Transcript -Path "${env:SystemDrive}\Recreate-Base-Shortcuts.log"
 Write-Host "" # Makes log look better
 
 # Constants
@@ -457,44 +457,44 @@ $sysAppList = @(
   @{Name = "Visual Studio Installer"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\setup.exe"; WorkingDirectory = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer" }, # it's the only install on 64-bit
   # Windows (note: these following CMD variables are not a mistake)
   # Windows Accessibility
-  @{Name = "Windows Speech Recognition"; TargetPath = "%windir%\Speech\Common\sapisvr.exe"; Arguments = "-SpeechUX"; SystemLnk = "Accessibility\"; WorkingDirectory = "%windir%\system32\Speech\SpeechUX"; Description = "Dictate text and control your computer by voice." },
+  @{Name = "Speech Recognition"; TargetPath = "${env:windir}\Speech\Common\sapisvr.exe"; Arguments = "-SpeechUX"; SystemLnk = "Accessibility\"; WorkingDirectory = "%windir%\system32\Speech\SpeechUX"; Description = "Dictate text and control your computer by voice."; IconLocation = "%windir%\system32\Speech\SpeechUX\sapi.cpl,5" },
   # Windows Accessories
-  @{Name = "Remote Desktop Connection"; TargetPath = "%windir%\system32\mstsc.exe"; SystemLnk = "Accessories\"; WorkingDirectory = "%windir%\system32\"; Description = "Use your computer to connect to a computer that is located elsewhere and run programs or access files." },
-  @{Name = "Steps Recorder"; TargetPath = "%windir%\system32\psr.exe"; SystemLnk = "Accessories\"; Description = "Capture steps with screenshots to save or share." },
-  @{Name = "Windows Fax and Scan"; TargetPath = "%windir%\system32\WFS.exe"; SystemLnk = "Accessories\"; Description = "Send and receive faxes or scan pictures and documents." },
-  @{Name = $WindowsMediaPlayerOld_Name; TargetPath = "%ProgramFiles%\Windows Media Player\wmplayer.exe"; Arguments = "/prefetch:1"; SystemLnk = "Accessories\"; WorkingDirectory = "%ProgramFiles%\Windows Media Player" }, # it's the only install on 32-bit
-  @{Name = $WindowsMediaPlayerOld_Name; TargetPath = "%ProgramFiles(x86)%\Windows Media Player\wmplayer.exe"; Arguments = "/prefetch:1"; SystemLnk = "Accessories\"; WorkingDirectory = "%ProgramFiles(x86)%\Windows Media Player" }, # it's the only install on 64-bit
-  @{Name = "WordPad"; TargetPath = "%ProgramFiles%\Windows NT\Accessories\wordpad.exe"; SystemLnk = "Accessories\"; Description = "Creates and edits text documents with complex formatting." },
-  @{Name = "Character Map"; TargetPath = "%windir%\system32\charmap.exe"; SystemLnk = "Accessories\System Tools\"; Description = "Selects special characters and copies them to your document." },
+  @{Name = "Remote Desktop Connection"; TargetPath = "${env:windir}\system32\mstsc.exe"; SystemLnk = "Accessories\"; WorkingDirectory = "%windir%\system32\"; Description = "Use your computer to connect to a computer that is located elsewhere and run programs or access files."; IconLocation = "%windir%\system32\mstsc.exe,0" },
+  @{Name = "Steps Recorder"; TargetPath = "${env:windir}\system32\psr.exe"; SystemLnk = "Accessories\"; Description = "Capture steps with screenshots to save or share."; IconLocation = "%windir%\system32\psr.exe,0" },
+  @{Name = "Windows Fax and Scan"; TargetPath = "${env:windir}\system32\WFS.exe"; SystemLnk = "Accessories\"; Description = "Send and receive faxes or scan pictures and documents."; IconLocation = "%windir%\system32\WFSR.dll,0" },
+  @{Name = $WindowsMediaPlayerOld_Name; TargetPath = "${env:ProgramFiles}\Windows Media Player\wmplayer.exe"; Arguments = "/prefetch:1"; SystemLnk = "Accessories\"; WorkingDirectory = "%ProgramFiles%\Windows Media Player"; IconLocation = "%ProgramFiles(x86)%\Windows Media Player\wmplayer.exe,0" }, # it's the only install on 32-bit
+  @{Name = $WindowsMediaPlayerOld_Name; TargetPath = "${env:ProgramFiles(x86)}\Windows Media Player\wmplayer.exe"; Arguments = "/prefetch:1"; SystemLnk = "Accessories\"; WorkingDirectory = "%ProgramFiles(x86)%\Windows Media Player"; IconLocation = "%ProgramFiles(x86)%\Windows Media Player\wmplayer.exe,0" }, # it's the only install on 64-bit
+  @{Name = "Wordpad"; TargetPath = "${env:ProgramFiles}\Windows NT\Accessories\wordpad.exe"; SystemLnk = "Accessories\"; Description = "Creates and edits text documents with complex formatting."; IconLocation = "%ProgramFiles%\Windows NT\Accessories\wordpad.exe,0" },
+  @{Name = "Character Map"; TargetPath = "${env:windir}\system32\charmap.exe"; SystemLnk = "Accessories\System Tools\"; Description = "Selects special characters and copies them to your document."; IconLocation = "%windir%\system32\charmap.exe,0" },
   # Windows Administrative Tools
-  @{Name = "Component Services"; TargetPath = "${env:windir}\system32\comexp.msc"; SystemLnk = "Administrative Tools\" },
-  @{Name = "Computer Management"; TargetPath = "${env:windir}\system32\compmgmt.msc"; Arguments = "/s"; SystemLnk = "Administrative Tools\"; WorkingDirectory = "%HOMEDRIVE%%HOMEPATH%" },
-  @{Name = "dfrgui"; TargetPath = "${env:windir}\system32\dfrgui.exe"; SystemLnk = "Administrative Tools\"; WorkingDirectory = "%systemroot%\system32" },
-  @{Name = "Disk Cleanup"; TargetPath = "${env:windir}\system32\cleanmgr.exe"; SystemLnk = "Administrative Tools\" },
-  @{Name = "Event Viewer"; TargetPath = "${env:windir}\system32\eventvwr.msc"; Arguments = "/s"; SystemLnk = "Administrative Tools\"; WorkingDirectory = "%windir%\system32" },
-  @{Name = "Hyper-V Manager"; TargetPath = "${env:windir}\System32\mmc.exe"; Arguments = "`"%windir%\System32\virtmgmt.msc`""; SystemLnk = "Administrative Tools\"; WorkingDirectory = "%ProgramFiles%\Hyper-V\" },
-  @{Name = "iSCSI Initiator"; TargetPath = "${env:windir}\system32\iscsicpl.exe"; SystemLnk = "Administrative Tools\"; WorkingDirectory = "%windir%\system32" },
-  @{Name = "Memory Diagnostics Tool"; TargetPath = "${env:windir}\system32\MdSched.exe"; SystemLnk = "Administrative Tools\"; WorkingDirectory = "%windir%\system32" },
-  @{Name = $ODBCDataSources_Name; TargetPath = "${env:windir}\system32\odbcad32.exe"; SystemLnk = "Administrative Tools\"; WorkingDirectory = "%windir%\system32" },
-  @{Name = "ODBC Data Sources (32-bit)"; TargetPath = "${env:windir}\syswow64\odbcad32.exe"; SystemLnk = "Administrative Tools\"; WorkingDirectory = "%windir%\syswow64" },
-  @{Name = "Performance Monitor"; TargetPath = "${env:windir}\system32\perfmon.msc"; Arguments = "/s"; SystemLnk = "Administrative Tools\" },
-  @{Name = "Print Management"; TargetPath = "${env:windir}\system32\printmanagement.msc"; SystemLnk = "Administrative Tools\" },
-  @{Name = "RecoveryDrive"; TargetPath = "${env:windir}\system32\RecoveryDrive.exe"; SystemLnk = "Administrative Tools\" },
-  @{Name = "Registry Editor"; TargetPath = "${env:windir}\regedit.exe"; SystemLnk = "Administrative Tools\"; WorkingDirectory = "%windir%" },
-  @{Name = "Resource Monitor"; TargetPath = "${env:windir}\system32\perfmon.exe"; Arguments = "/res"; SystemLnk = "Administrative Tools\" },
-  @{Name = "Security Configuration Management"; TargetPath = "${env:windir}\system32\secpol.msc"; Arguments = "/s"; SystemLnk = "Administrative Tools\" },
-  @{Name = "services"; TargetPath = "${env:windir}\system32\services.msc"; SystemLnk = "Administrative Tools\"; WorkingDirectory = "%HOMEDRIVE%%HOMEPATH%" },
-  @{Name = "System Configuration"; TargetPath = "${env:windir}\system32\msconfig.exe"; SystemLnk = "Administrative Tools\" },
-  @{Name = "System Information"; TargetPath = "${env:windir}\system32\msinfo32.exe"; SystemLnk = "Administrative Tools\" },
-  @{Name = "Task Scheduler"; TargetPath = "${env:windir}\system32\taskschd.msc"; Arguments = "/s"; SystemLnk = "Administrative Tools\" },
-  @{Name = "VMCreate"; TargetPath = "C:\Program Files\Hyper-V\VMCreate.exe"; SystemLnk = "Administrative Tools\" },
-  @{Name = "Windows Defender Firewall with Advanced Security"; TargetPath = "${env:windir}\system32\WF.msc"; SystemLnk = "Administrative Tools\"; WorkingDirectory = "%windir%\system32" },
+  @{Name = "Component Services"; TargetPath = "${env:windir}\system32\comexp.msc"; SystemLnk = "${env:ALLUSERSPROFILE}\Microsoft\Windows\Start Menu\Programs\Administrative Tools\"; Description = "Manage COM+ applications, COM and DCOM system configuration, and the Distributed Transaction Coordinator."; IconLocation = "%systemroot%\system32\comres.dll,0" },
+  @{Name = "Computer Management"; TargetPath = "${env:windir}\system32\compmgmt.msc"; Arguments = "/s"; SystemLnk = "${env:ALLUSERSPROFILE}\Microsoft\Windows\Start Menu\Programs\Administrative Tools\"; WorkingDirectory = "%HOMEDRIVE%%HOMEPATH%"; Description = "Manages disks and provides access to other tools to manage local and remote computers."; IconLocation = "%windir%\system32\Mycomput.dll,2" },
+  @{Name = "dfrgui"; TargetPath = "${env:windir}\system32\dfrgui.exe"; SystemLnk = "${env:ALLUSERSPROFILE}\Microsoft\Windows\Start Menu\Programs\Administrative Tools\"; WorkingDirectory = "%systemroot%\system32"; Description = "Optimizes files and fragments on your volumes so that your computer runs faster and more efficiently."; IconLocation = "%systemroot%\system32\dfrgui.exe,0" },
+  @{Name = "Disk Cleanup"; TargetPath = "${env:windir}\system32\cleanmgr.exe"; SystemLnk = "${env:ALLUSERSPROFILE}\Microsoft\Windows\Start Menu\Programs\Administrative Tools\"; Description = "Enables you to clear your disk of unnecessary files."; IconLocation = "%windir%\system32\cleanmgr.exe,0" },
+  @{Name = "Event Viewer"; TargetPath = "${env:windir}\system32\eventvwr.msc"; Arguments = "/s"; SystemLnk = "${env:ALLUSERSPROFILE}\Microsoft\Windows\Start Menu\Programs\Administrative Tools\"; WorkingDirectory = "%windir%\system32"; Description = "View monitoring and troubleshooting messages from Windows and other programs."; IconLocation = "%windir%\system32\miguiresource.dll,0" },
+  @{Name = "Hyper-V Manager"; TargetPath = "${env:windir}\System32\mmc.exe"; Arguments = "`"%windir%\System32\virtmgmt.msc`""; SystemLnk = "${env:ALLUSERSPROFILE}\Microsoft\Windows\Start Menu\Programs\Administrative Tools\"; WorkingDirectory = "%ProgramFiles%\Hyper-V\"; Description = "Hyper-V Manager provides management access to your virtualization platform."; IconLocation = "%ProgramFiles%\Hyper-V\SnapInAbout.dll,0" },
+  @{Name = "iSCSI Initiator"; TargetPath = "${env:windir}\system32\iscsicpl.exe"; SystemLnk = "${env:ALLUSERSPROFILE}\Microsoft\Windows\Start Menu\Programs\Administrative Tools\"; WorkingDirectory = "%windir%\system32"; Description = "Connect to remote iSCSI targets and configure connection settings."; IconLocation = "%windir%\system32\iscsicpl.dll,-1" },
+  @{Name = "Memory Diagnostics Tool"; TargetPath = "${env:windir}\system32\MdSched.exe"; SystemLnk = "${env:ALLUSERSPROFILE}\Microsoft\Windows\Start Menu\Programs\Administrative Tools\"; WorkingDirectory = "%windir%\system32"; Description = "Check your computer for memory problems."; IconLocation = "%windir%\system32\MdSched.exe,0" },
+  @{Name = $ODBCDataSources_Name; TargetPath = "${env:windir}\system32\odbcad32.exe"; SystemLnk = "${env:ALLUSERSPROFILE}\Microsoft\Windows\Start Menu\Programs\Administrative Tools\"; WorkingDirectory = "%windir%\system32"; Description = "Maintains ODBC data sources and drivers."; IconLocation = "%windir%\system32\odbcint.dll,-1439" },
+  @{Name = "ODBC Data Sources (32-bit)"; TargetPath = "${env:windir}\syswow64\odbcad32.exe"; SystemLnk = "${env:ALLUSERSPROFILE}\Microsoft\Windows\Start Menu\Programs\Administrative Tools\"; WorkingDirectory = "%windir%\syswow64"; IconLocation = "%windir%\syswow64\odbcint.dll,-1439" },
+  @{Name = "Performance Monitor"; TargetPath = "${env:windir}\system32\perfmon.msc"; Arguments = "/s"; SystemLnk = "${env:ALLUSERSPROFILE}\Microsoft\Windows\Start Menu\Programs\Administrative Tools\"; Description = "Diagnose performance issues and collect performance data."; IconLocation = "%windir%\system32\wdc.dll,-108" },
+  @{Name = "Print Management"; TargetPath = "${env:windir}\system32\printmanagement.msc"; SystemLnk = "${env:ALLUSERSPROFILE}\Microsoft\Windows\Start Menu\Programs\Administrative Tools\"; Description = "Manages local printers and remote print servers."; IconLocation = "%systemroot%\system32\pmcsnap.dll,-14" },
+  @{Name = "RecoveryDrive"; TargetPath = "${env:windir}\system32\RecoveryDrive.exe"; SystemLnk = "${env:ALLUSERSPROFILE}\Microsoft\Windows\Start Menu\Programs\Administrative Tools\"; Description = "Create a recovery drive"; IconLocation = "%windir%\system32\RecoveryDrive.exe,-100" },
+  @{Name = "Registry Editor"; TargetPath = "${env:windir}\regedit.exe"; SystemLnk = "${env:ALLUSERSPROFILE}\Microsoft\Windows\Start Menu\Programs\Administrative Tools\"; WorkingDirectory = "%windir%"; Description = "Registry Editor"; IconLocation = "%windir%\regedit.exe,-100" },
+  @{Name = "Resource Monitor"; TargetPath = "${env:windir}\system32\perfmon.exe"; Arguments = "/res"; SystemLnk = "${env:ALLUSERSPROFILE}\Microsoft\Windows\Start Menu\Programs\Administrative Tools\"; Description = "Monitor the usage and performance of the following resources in real time: CPU, Disk, Network and Memory."; IconLocation = "%windir%\system32\wdc.dll,-108" },
+  @{Name = "Security Configuration Management"; TargetPath = "${env:windir}\system32\secpol.msc"; Arguments = "/s"; SystemLnk = "${env:ALLUSERSPROFILE}\Microsoft\Windows\Start Menu\Programs\Administrative Tools\"; Description = "View and modify local security policy, such as user rights and audit policies."; IconLocation = "%windir%\system32\wsecedit.dll,0" },
+  @{Name = "services"; TargetPath = "${env:windir}\system32\services.msc"; SystemLnk = "${env:ALLUSERSPROFILE}\Microsoft\Windows\Start Menu\Programs\Administrative Tools\"; WorkingDirectory = "%HOMEDRIVE%%HOMEPATH%"; Description = "Starts, stops, and configures Windows services."; IconLocation = "%windir%\system32\filemgmt.dll,0" },
+  @{Name = "System Configuration"; TargetPath = "${env:windir}\system32\msconfig.exe"; SystemLnk = "${env:ALLUSERSPROFILE}\Microsoft\Windows\Start Menu\Programs\Administrative Tools\"; Description = "Perform advanced troubleshooting and system configuration"; IconLocation = "%windir%\system32\msconfig.exe,-3000" },
+  @{Name = "System Information"; TargetPath = "${env:windir}\system32\msinfo32.exe"; SystemLnk = "${env:ALLUSERSPROFILE}\Microsoft\Windows\Start Menu\Programs\Administrative Tools\"; Description = "Display detailed information about your computer."; IconLocation = "%windir%\system32\msinfo32.exe,0" },
+  @{Name = "Task Scheduler"; TargetPath = "${env:windir}\system32\taskschd.msc"; Arguments = "/s"; SystemLnk = "${env:ALLUSERSPROFILE}\Microsoft\Windows\Start Menu\Programs\Administrative Tools\"; Description = "Schedule computer tasks to run automatically."; IconLocation = "%windir%\system32\miguiresource.dll,1" },
+  @{Name = "VMCreate"; TargetPath = "${env:ProgramFiles}\Hyper-V\VMCreate.exe"; SystemLnk = "${env:ALLUSERSPROFILE}\Microsoft\Windows\Start Menu\Programs\Administrative Tools\"; Description = "Hyper-V Quick Create enables rapid creation of virtual machines from a gallery of curated virtual machine images."; IconLocation = ",0" },
+  @{Name = "Windows Defender Firewall with Advanced Security"; TargetPath = "${env:windir}\system32\WF.msc"; SystemLnk = "${env:ALLUSERSPROFILE}\Microsoft\Windows\Start Menu\Programs\Administrative Tools\"; WorkingDirectory = "%windir%\system32"; Description = "Configure policies that provide enhanced network security for Windows computers."; IconLocation = "%SystemRoot%\System32\AuthFWGP.dll,-101" },
   # Windows Powershell
-  @{Name = "Windows PowerShell ISE"; TargetPath = "%windir%\system32\WindowsPowerShell\v1.0\PowerShell_ISE.exe"; SystemLnk = "Windows PowerShell\"; WorkingDirectory = "%HOMEDRIVE%%HOMEPATH%"; Description = "Windows PowerShell Integrated Scripting Environment. Performs object-based (command-line) functions" },
-  @{Name = "Windows PowerShell ISE (x86)"; TargetPath = "%windir%\syswow64\WindowsPowerShell\v1.0\PowerShell_ISE.exe"; SystemLnk = "Windows PowerShell\"; Description = "Windows PowerShell Integrated Scripting Environment. Performs object-based (command-line) functions" },
+  @{Name = "Windows PowerShell ISE"; TargetPath = "${env:windir}\system32\WindowsPowerShell\v1.0\PowerShell_ISE.exe"; SystemLnk = "Windows PowerShell\"; WorkingDirectory = "%HOMEDRIVE%%HOMEPATH%"; Description = "Windows PowerShell Integrated Scripting Environment. Performs object-based (command-line) functions"; IconLocation = "%SystemRoot%\system32\WindowsPowerShell\v1.0\powershell_ise.exe,0" },
+  @{Name = "Windows PowerShell ISE (x86)"; TargetPath = "${env:windir}\syswow64\WindowsPowerShell\v1.0\PowerShell_ISE.exe"; SystemLnk = "Windows PowerShell\"; Description = "Windows PowerShell Integrated Scripting Environment. Performs object-based (command-line) functions"; IconLocation = "%SystemRoot%\system32\WindowsPowerShell\v1.0\powershell_ise.exe,0" },
   # Windows System Tools
-  @{Name = "Create USB Recovery"; TargetPath = "${env:windir}\System32\RecoveryDrive.exe"; SystemLnk = "System Tools\"; WorkingDirectory = "${env:windir}\system32" },
-  @{Name = "Task Manager"; TargetPath = "%windir%\system32\taskmgr.exe"; Arguments = "/7"; SystemLnk = "System Tools\"; Description = "Manage running apps and view system performance" }
+  @{Name = "Create USB Recovery"; TargetPath = "${env:windir}\System32\RecoveryDrive.exe"; SystemLnk = "System Tools\"; WorkingDirectory = "${env:windir}\system32"; IconLocation = ",0" },
+  @{Name = "Task Manager"; TargetPath = "${env:windir}\system32\taskmgr.exe"; Arguments = "/7"; SystemLnk = "System Tools\"; Description = "Manage running apps and view system performance"; IconLocation = "%windir%\system32\Taskmgr.exe,-30651" }
   #@{Name = ""; TargetPath = ""; Arguments = ""; SystemLnk = ""; WorkingDirectory = ""; Description = ""; IconLocation = ""; RunAsAdmin = ($true -Or $false) },
 )
 
@@ -567,11 +567,11 @@ for ($i = 0; $i -lt $oemSysAppList.length; $i++) {
 $EgnyteDesktopApp_Uninstall_GUID = $UninstallList | Where-Object { $_.Name -match "Egnyte Desktop App" }
 $EgnyteDesktopApp_Uninstall_GUID = if ($EgnyteDesktopApp_Uninstall_GUID.length -ge 1) { $EgnyteDesktopApp_Uninstall_GUID[0].GUID } else { $null }
 $EgnyteDesktopApp_Uninstall_Arguments = if ($EgnyteDesktopApp_Uninstall_GUID) { "/x ${EgnyteDesktopApp_Uninstall_GUID}" } else { "" }
-$EgnyteDesktopApp_Uninstall_TargetPath = if ($EgnyteDesktopApp_Uninstall_GUID) { "${env:HOMEDRIVE}\Windows\System32\msiexec.exe" } else { "${env:HOMEDRIVE}\${NOT_INSTALLED}\${NOT_INSTALLED}\${NOT_INSTALLED}.exe" }
+$EgnyteDesktopApp_Uninstall_TargetPath = if ($EgnyteDesktopApp_Uninstall_GUID) { "${env:SystemDrive}\Windows\System32\msiexec.exe" } else { "${env:SystemDrive}\${NOT_INSTALLED}\${NOT_INSTALLED}\${NOT_INSTALLED}.exe" }
 $EgnyteDesktopApp_Uninstall_32bit_GUID = $UninstallList_32bit | Where-Object { $_.Name -match "Egnyte Desktop App" }
 $EgnyteDesktopApp_Uninstall_32bit_GUID = if ($EgnyteDesktopApp_Uninstall_32bit_GUID.length -ge 1) { $EgnyteDesktopApp_Uninstall_32bit_GUID[0].GUID } else { $null }
 $EgnyteDesktopApp_Uninstall_32bit_Arguments = if ($EgnyteDesktopApp_Uninstall_32bit_GUID) { "/x ${EgnyteDesktopApp_Uninstall_32bit_GUID}" } else { "" }
-$EgnyteDesktopApp_Uninstall_32bit_TargetPath = if ($EgnyteDesktopApp_Uninstall_32bit_GUID) { "${env:HOMEDRIVE}\Windows\System32\msiexec.exe" } else { "${env:HOMEDRIVE}\${NOT_INSTALLED}\${NOT_INSTALLED}\${NOT_INSTALLED}.exe" }
+$EgnyteDesktopApp_Uninstall_32bit_TargetPath = if ($EgnyteDesktopApp_Uninstall_32bit_GUID) { "${env:SystemDrive}\Windows\System32\msiexec.exe" } else { "${env:SystemDrive}\${NOT_INSTALLED}\${NOT_INSTALLED}\${NOT_INSTALLED}.exe" }
 
 # App paths dependant on app version
 
@@ -1157,9 +1157,9 @@ $MaxonCinema4D_TeamRenderClient_TargetPath = $MaxonCinema4D_WorkingDirectory + "
 $MaxonCinema4D_TeamRenderServer_TargetPath = $MaxonCinema4D_WorkingDirectory + "\Cinema 4D Team Render Server.exe"
 # VMware
 $VMwareWorkstationPlayer_TargetPath = "${env:ProgramFiles}\VMware\VMware Player\vmplayer.exe"
-$CommandPromptforvctl_Path = if (Test-Path -Path $VMwareWorkstationPlayer_TargetPath -PathType Leaf) { "${env:HOMEDRIVE}\Windows\System32\cmd.exe" } else { "${env:ProgramFiles}\${NOT_INSTALLED}\${NOT_INSTALLED}\${NOT_INSTALLED}.exe" }
+$CommandPromptforvctl_Path = if (Test-Path -Path $VMwareWorkstationPlayer_TargetPath -PathType Leaf) { "${env:SystemDrive}\Windows\System32\cmd.exe" } else { "${env:ProgramFiles}\${NOT_INSTALLED}\${NOT_INSTALLED}\${NOT_INSTALLED}.exe" }
 $VMwareWorkstationPlayer_32bit_TargetPath = "${env:ProgramFiles(x86)}\VMware\VMware Player\vmplayer.exe"
-$CommandPromptforvctl_32bit_Path = if (Test-Path -Path $VMwareWorkstationPlayer_32bit_TargetPath -PathType Leaf) { "${env:HOMEDRIVE}\Windows\System32\cmd.exe" } else { "${env:ProgramFiles(x86)}\${NOT_INSTALLED}\${NOT_INSTALLED}\${NOT_INSTALLED}.exe" }
+$CommandPromptforvctl_32bit_Path = if (Test-Path -Path $VMwareWorkstationPlayer_32bit_TargetPath -PathType Leaf) { "${env:SystemDrive}\Windows\System32\cmd.exe" } else { "${env:ProgramFiles(x86)}\${NOT_INSTALLED}\${NOT_INSTALLED}\${NOT_INSTALLED}.exe" }
 
 # App names dependant on OS or app version
 
@@ -1665,17 +1665,17 @@ for ($i = 0; $i -lt $Users.length; $i++) {
     @{Name = $MicrosoftTeams_Name; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Microsoft\Teams\Update.exe"; Arguments = "--processStart `"Teams.exe`""; WorkingDirectory = "${USERS_FOLDER}\${aUser}\AppData\Local\Microsoft\Teams" },
     @{Name = "OneDrive"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Microsoft\OneDrive\OneDrive.exe"; Description = "Keep your most important files with you wherever you go, on any device." },
     # Windows
-    @{Name = "Windows Tools"; TargetPath = "%windir%\system32\control.exe"; Arguments = "/name Microsoft.AdministrativeTools"; Description = "Windows Tools" },
-    @{Name = "LiveCaptions"; TargetPath = "${env:windir}\system32\LiveCaptions.exe"; SystemLnk = "Accessibility\" },
-    @{Name = "Magnify"; TargetPath = "${env:windir}\system32\magnify.exe"; SystemLnk = "Accessibility\" },
-    @{Name = "Narrator"; TargetPath = "${env:windir}\system32\narrator.exe"; SystemLnk = "Accessibility\" },
-    @{Name = "On-Screen Keyboard"; TargetPath = "${env:windir}\system32\osk.exe"; SystemLnk = "Accessibility\" },
-    @{Name = "VoiceAccess"; TargetPath = "${env:windir}\system32\voiceaccess.exe"; SystemLnk = "Accessibility\" },
-    @{Name = "Command Prompt"; TargetPath = "${env:windir}\system32\cmd.exe"; SystemLnk = "System Tools\"; WorkingDirectory = "%HOMEDRIVE%%HOMEPATH%" },
-    @{Name = "Control Panel"; TargetPath = ""; SystemLnk = "System Tools\" },
-    @{Name = "Run"; TargetPath = ""; SystemLnk = "System Tools\" },
-    @{Name = "Windows PowerShell"; TargetPath = "${env:windir}\System32\WindowsPowerShell\v1.0\powershell.exe"; SystemLnk = "Windows PowerShell\"; WorkingDirectory = "%HOMEDRIVE%%HOMEPATH%" },
-    @{Name = "Windows PowerShell (x86)"; TargetPath = "${env:windir}\SysWOW64\WindowsPowerShell\v1.0\powershell.exe"; SystemLnk = "Windows PowerShell\"; WorkingDirectory = "%HOMEDRIVE%%HOMEPATH%" },
+    @{Name = "Administrative Tools"; TargetPath = "${env:windir}\system32\control.exe"; Arguments = "/name Microsoft.AdministrativeTools"; SystemLnk = ""; Description = "Windows Tools"; IconLocation = "%windir%\system32\imageres.dll,-114" },
+    @{Name = "LiveCaptions"; TargetPath = "${env:windir}\system32\LiveCaptions.exe"; SystemLnk = "Accessibility\"; Description = "Captions audio and video live on your screen."; IconLocation = "%windir%\system32\LiveCaptions.exe,-1" },
+    @{Name = "Magnify"; TargetPath = "${env:windir}\system32\magnify.exe"; SystemLnk = "Accessibility\"; Description = "Enlarges selected text and other on-screen items for easier viewing."; IconLocation = "%windir%\system32\magnify.exe,0" },
+    @{Name = "Narrator"; TargetPath = "${env:windir}\system32\narrator.exe"; SystemLnk = "Accessibility\"; Description = "Reads on-screen text, dialog boxes, menus, and buttons aloud if speakers or a sound output device is installed."; IconLocation = "%windir%\system32\narrator.exe,-1" },
+    @{Name = "On-Screen Keyboard"; TargetPath = "${env:windir}\system32\osk.exe"; SystemLnk = "Accessibility\"; Description = "Displays a keyboard that is controlled by a mouse or switch input device."; IconLocation = "%windir%\system32\osk.exe,-1" },
+    @{Name = "VoiceAccess"; TargetPath = "${env:windir}\system32\voiceaccess.exe"; SystemLnk = "Accessibility\"; Description = "Helps you to interact with your PC and dictate text with your voice."; IconLocation = "%windir%\system32\voiceaccess.exe,-1" },
+    @{Name = "Command Prompt"; TargetPath = "${env:windir}\system32\cmd.exe"; SystemLnk = "System Tools\"; WorkingDirectory = "%HOMEDRIVE%%HOMEPATH%"; Description = "Performs text-based (command-line) functions."; IconLocation = "%windir%\system32\cmd.exe,0" },
+    @{Name = "Control Panel"; TargetPath = ""; SystemLnk = "System Tools\"; IconLocation = "%windir%\system32\imageres.dll,-27" },
+    @{Name = "Run"; TargetPath = ""; SystemLnk = "System Tools\"; IconLocation = "%windir%\system32\shell32.dll,-25" },
+    @{Name = "Windows PowerShell"; TargetPath = "${env:windir}\System32\WindowsPowerShell\v1.0\powershell.exe"; SystemLnk = "Windows PowerShell\"; WorkingDirectory = "%HOMEDRIVE%%HOMEPATH%"; Description = "Performs object-based (command-line) functions"; IconLocation = "%SystemRoot%\system32\WindowsPowerShell\v1.0\powershell.exe,0" },
+    @{Name = "Windows PowerShell (x86)"; TargetPath = "${env:windir}\SysWOW64\WindowsPowerShell\v1.0\powershell.exe"; SystemLnk = "Windows PowerShell\"; WorkingDirectory = "%HOMEDRIVE%%HOMEPATH%"; Description = "Performs object-based (command-line) functions"; IconLocation = "%SystemRoot%\syswow64\WindowsPowerShell\v1.0\powershell.exe,0" },
     # Mozilla
     @{Name = "Firefox"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Mozilla Firefox\firefox.exe"; WorkingDirectory = "${USERS_FOLDER}\${aUser}\AppData\Local\Mozilla Firefox" },
     # NVIDIA Corporation
