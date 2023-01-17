@@ -319,6 +319,10 @@ if (-Not $isWin10orNewer) {
 
 # App paths dependant on app version
 
+# Hyper-V Manager
+$HyperVManager_TargetPath = "${env:windir}\System32\"
+$HyperVManager_Argument_virtmgmt = "%windir%\System32\virtmgmt.msc"
+$HyperVManager_TargetPath += if (Test-Path -Path $(cmd.exe /c "echo ${HyperVManager_Argument_virtmgmt}") -PathType leaf) { "mmc.exe" } else { "${NOT_INSTALLED}.exe" }
 # Powershell (7 or newer)
 $PowerShell_TargetPath = "${env:ProgramFiles}\PowerShell\"
 $PowerShell_Version = if (Test-Path -Path $PowerShell_TargetPath) { Get-ChildItem -Directory -Path $PowerShell_TargetPath | Where-Object { $_.Name -match '^[0-9]+$' } | Sort-Object -Descending }
@@ -337,24 +341,24 @@ $PowerToys_TargetPath = "${env:ProgramFiles}\PowerToys\PowerToys.exe"
 $O365_DatabaseCompare_Exe = "${env:ProgramFiles}\Microsoft Office\Office16\DCF\DATABASECOMPARE.EXE"
 $O365_DatabaseCompare_Arguments = "`"${O365_DatabaseCompare_Exe}`""
 $O365_DatabaseCompare_TargetPath = "${env:ProgramFiles}\Microsoft Office\root\Client\"
-$O365_DatabaseCompare_TargetPath += if (Test-Path -Path $O365_DatabaseCompare_Exe -PathType Leaf) { "AppVLP.exe" } else { "${NotInstalled}.exe" } 
+$O365_DatabaseCompare_TargetPath += if (Test-Path -Path $O365_DatabaseCompare_Exe -PathType leaf) { "AppVLP.exe" } else { "${NotInstalled}.exe" } 
 $O365_SpreadsheetCompare_Exe = "${env:ProgramFiles}\Microsoft Office\Office16\DCF\SPREADSHEETCOMPARE.EXE"
 $O365_SpreadsheetCompare_Arguments = "`"${O365_SpreadsheetCompare_Exe}`""
 $O365_SpreadsheetCompare_TargetPath = "${env:ProgramFiles}\Microsoft Office\root\Client\"
-$O365_SpreadsheetCompare_TargetPath += if (Test-Path -Path $O365_SpreadsheetCompare_Exe -PathType Leaf) { "AppVLP.exe" } else { "${NotInstalled}.exe" }
+$O365_SpreadsheetCompare_TargetPath += if (Test-Path -Path $O365_SpreadsheetCompare_Exe -PathType leaf) { "AppVLP.exe" } else { "${NotInstalled}.exe" }
 $O365_DatabaseCompare_32bit_Exe = "${env:ProgramFiles(x86)}\Microsoft Office\Office16\DCF\DATABASECOMPARE.EXE"
 $O365_DatabaseCompare_32bit_Arguments = "`"${O365_DatabaseCompare_32bit_Exe}`""
 $O365_DatabaseCompare_32bit_TargetPath = "${env:ProgramFiles}\Microsoft Office\root\Client\"
-$O365_DatabaseCompare_32bit_TargetPath += if (Test-Path -Path $O365_DatabaseCompare_32bit_Exe -PathType Leaf) { "AppVLP.exe" } else { "${NotInstalled}.exe" }
+$O365_DatabaseCompare_32bit_TargetPath += if (Test-Path -Path $O365_DatabaseCompare_32bit_Exe -PathType leaf) { "AppVLP.exe" } else { "${NotInstalled}.exe" }
 $O365_SpreadsheetCompare_32bit_Exe = "${env:ProgramFiles(x86)}\Microsoft Office\Office16\DCF\SPREADSHEETCOMPARE.EXE"
 $O365_SpreadsheetCompare_32bit_Arguments = "`"${O365_SpreadsheetCompare_32bit_Exe}`""
 $O365_SpreadsheetCompare_32bit_TargetPath += "${env:ProgramFiles}\Microsoft Office\root\Client\"
-$O365_SpreadsheetCompare_32bit_TargetPath = if (Test-Path -Path $O365_SpreadsheetCompare_32bit_Exe -PathType Leaf) { "AppVLP.exe" } else { "${NotInstalled}.exe" }
+$O365_SpreadsheetCompare_32bit_TargetPath = if (Test-Path -Path $O365_SpreadsheetCompare_32bit_Exe -PathType leaf) { "AppVLP.exe" } else { "${NotInstalled}.exe" }
 # PowerShell (7 or newer)
 $PowerShell_Name = "PowerShell " + $(if ($PowerShell_Version) { $PowerShell_Version } else { $NOT_INSTALLED }) + " (x64)"
 $PowerShell_32bit_Name = "PowerShell " + $(if ($PowerShell_32bit_Version) { $PowerShell_32bit_Version } else { $NOT_INSTALLED }) + " (x86)"
 # PowerToys
-$PowerToys_isPreview = if (Test-Path -Path $PowerToys_TargetPath -PathType Leaf) { (Get-Item $PowerToys_TargetPath).VersionInfo.FileVersionRaw.Major -eq 0 }
+$PowerToys_isPreview = if (Test-Path -Path $PowerToys_TargetPath -PathType leaf) { (Get-Item $PowerToys_TargetPath).VersionInfo.FileVersionRaw.Major -eq 0 }
 $PowerToys_Name = "PowerToys" + $(if ($PowerToys_isPreview) { " (Preview)" })
 # Windows
 $WindowsMediaPlayerOld_Name = "Windows Media Player" + $(if ($isWindows11) { " Legacy" })
@@ -472,7 +476,7 @@ $sysAppList = @(
   @{Name = "dfrgui"; TargetPath = "${env:windir}\system32\dfrgui.exe"; SystemLnk = "${env:ALLUSERSPROFILE}\Microsoft\Windows\Start Menu\Programs\Administrative Tools\"; WorkingDirectory = "%systemroot%\system32"; Description = "Optimizes files and fragments on your volumes so that your computer runs faster and more efficiently."; IconLocation = "%systemroot%\system32\dfrgui.exe,0" },
   @{Name = "Disk Cleanup"; TargetPath = "${env:windir}\system32\cleanmgr.exe"; SystemLnk = "${env:ALLUSERSPROFILE}\Microsoft\Windows\Start Menu\Programs\Administrative Tools\"; Description = "Enables you to clear your disk of unnecessary files."; IconLocation = "%windir%\system32\cleanmgr.exe,0" },
   @{Name = "Event Viewer"; TargetPath = "${env:windir}\system32\eventvwr.msc"; Arguments = "/s"; SystemLnk = "${env:ALLUSERSPROFILE}\Microsoft\Windows\Start Menu\Programs\Administrative Tools\"; WorkingDirectory = "%windir%\system32"; Description = "View monitoring and troubleshooting messages from Windows and other programs."; IconLocation = "%windir%\system32\miguiresource.dll,0" },
-  @{Name = "Hyper-V Manager"; TargetPath = "${env:windir}\System32\mmc.exe"; Arguments = "`"%windir%\System32\virtmgmt.msc`""; SystemLnk = "${env:ALLUSERSPROFILE}\Microsoft\Windows\Start Menu\Programs\Administrative Tools\"; WorkingDirectory = "%ProgramFiles%\Hyper-V\"; Description = "Hyper-V Manager provides management access to your virtualization platform."; IconLocation = "%ProgramFiles%\Hyper-V\SnapInAbout.dll,0" },
+  @{Name = "Hyper-V Manager"; TargetPath = $HyperVManager_TargetPath; Arguments = "`"${HyperVManager_Argument_virtmgmt}`""; SystemLnk = "${env:ALLUSERSPROFILE}\Microsoft\Windows\Start Menu\Programs\Administrative Tools\"; WorkingDirectory = "%ProgramFiles%\Hyper-V\"; Description = "Hyper-V Manager provides management access to your virtualization platform."; IconLocation = "%ProgramFiles%\Hyper-V\SnapInAbout.dll,0" },
   @{Name = "iSCSI Initiator"; TargetPath = "${env:windir}\system32\iscsicpl.exe"; SystemLnk = "${env:ALLUSERSPROFILE}\Microsoft\Windows\Start Menu\Programs\Administrative Tools\"; WorkingDirectory = "%windir%\system32"; Description = "Connect to remote iSCSI targets and configure connection settings."; IconLocation = "%windir%\system32\iscsicpl.dll,-1" },
   @{Name = "Memory Diagnostics Tool"; TargetPath = "${env:windir}\system32\MdSched.exe"; SystemLnk = "${env:ALLUSERSPROFILE}\Microsoft\Windows\Start Menu\Programs\Administrative Tools\"; WorkingDirectory = "%windir%\system32"; Description = "Check your computer for memory problems."; IconLocation = "%windir%\system32\MdSched.exe,0" },
   @{Name = $ODBCDataSources_Name; TargetPath = "${env:windir}\system32\odbcad32.exe"; SystemLnk = "${env:ALLUSERSPROFILE}\Microsoft\Windows\Start Menu\Programs\Administrative Tools\"; WorkingDirectory = "%windir%\system32"; Description = "Maintains ODBC data sources and drivers."; IconLocation = "%windir%\system32\odbcint.dll,-1439" },
@@ -1157,24 +1161,24 @@ $MaxonCinema4D_TeamRenderClient_TargetPath = $MaxonCinema4D_WorkingDirectory + "
 $MaxonCinema4D_TeamRenderServer_TargetPath = $MaxonCinema4D_WorkingDirectory + "\Cinema 4D Team Render Server.exe"
 # VMware
 $VMwareWorkstationPlayer_TargetPath = "${env:ProgramFiles}\VMware\VMware Player\vmplayer.exe"
-$CommandPromptforvctl_Path = if (Test-Path -Path $VMwareWorkstationPlayer_TargetPath -PathType Leaf) { "${env:SystemDrive}\Windows\System32\cmd.exe" } else { "${env:ProgramFiles}\${NOT_INSTALLED}\${NOT_INSTALLED}\${NOT_INSTALLED}.exe" }
+$CommandPromptforvctl_Path = if (Test-Path -Path $VMwareWorkstationPlayer_TargetPath -PathType leaf) { "${env:SystemDrive}\Windows\System32\cmd.exe" } else { "${env:ProgramFiles}\${NOT_INSTALLED}\${NOT_INSTALLED}\${NOT_INSTALLED}.exe" }
 $VMwareWorkstationPlayer_32bit_TargetPath = "${env:ProgramFiles(x86)}\VMware\VMware Player\vmplayer.exe"
-$CommandPromptforvctl_32bit_Path = if (Test-Path -Path $VMwareWorkstationPlayer_32bit_TargetPath -PathType Leaf) { "${env:SystemDrive}\Windows\System32\cmd.exe" } else { "${env:ProgramFiles(x86)}\${NOT_INSTALLED}\${NOT_INSTALLED}\${NOT_INSTALLED}.exe" }
+$CommandPromptforvctl_32bit_Path = if (Test-Path -Path $VMwareWorkstationPlayer_32bit_TargetPath -PathType leaf) { "${env:SystemDrive}\Windows\System32\cmd.exe" } else { "${env:ProgramFiles(x86)}\${NOT_INSTALLED}\${NOT_INSTALLED}\${NOT_INSTALLED}.exe" }
 
 # App names dependant on OS or app version
 
 # GIMP
-$GIMP_ProductVersion = if (Test-Path -Path $GIMP_TargetPath -PathType Leaf) { (Get-Item $GIMP_TargetPath).VersionInfo.ProductVersion }
+$GIMP_ProductVersion = if (Test-Path -Path $GIMP_TargetPath -PathType leaf) { (Get-Item $GIMP_TargetPath).VersionInfo.ProductVersion }
 $GIMP_Version = if ($GIMP_ProductVersion) { $GIMP_ProductVersion } else { $NOT_INSTALLED }
 $GIMP_Name = "GIMP ${GIMP_Version}"
-$GIMP_32bit_ProductVersion = if (Test-Path -Path $GIMP_32bit_TargetPath -PathType Leaf) { (Get-Item $GIMP_32bit_TargetPath).VersionInfo.ProductVersion }
+$GIMP_32bit_ProductVersion = if (Test-Path -Path $GIMP_32bit_TargetPath -PathType leaf) { (Get-Item $GIMP_32bit_TargetPath).VersionInfo.ProductVersion }
 $GIMP_32bit_Version = if ($GIMP_32bit_ProductVersion) { $GIMP_32bit_ProductVersion } else { $NOT_INSTALLED }
 $GIMP_32bit_Name = "GIMP ${GIMP_32bit_Version}"
 # KeePass
-$KeePass_FileVersionRaw = if (Test-Path -Path $KeePass_TargetPath -PathType Leaf) { (Get-Item $KeePass_TargetPath).VersionInfo.FileVersionRaw }
+$KeePass_FileVersionRaw = if (Test-Path -Path $KeePass_TargetPath -PathType leaf) { (Get-Item $KeePass_TargetPath).VersionInfo.FileVersionRaw }
 $KeePass_Version = if ($KeePass_FileVersionRaw) { $KeePass_FileVersionRaw.Major } else { $NOT_INSTALLED }
 $KeePass_Name = "KeePass ${KeePass_Version}"
-$KeePass_32bit_FileVersionRaw = if (Test-Path -Path $KeePass_32bit_TargetPath -PathType Leaf) { (Get-Item $KeePass_32bit_TargetPath).VersionInfo.FileVersionRaw }
+$KeePass_32bit_FileVersionRaw = if (Test-Path -Path $KeePass_32bit_TargetPath -PathType leaf) { (Get-Item $KeePass_32bit_TargetPath).VersionInfo.FileVersionRaw }
 $KeePass_32bit_Version = if ($KeePass_32bit_FileVersionRaw) { $KeePass_32bit_FileVersionRaw.Major } else { $NOT_INSTALLED }
 $KeePass_32bit_Name = "KeePass ${KeePass_32bit_Version}"
 # Maxon
@@ -1183,10 +1187,10 @@ $MaxonCinema4D_Name = "Maxon Cinema 4D" + $(if ($MaxonCinema4D_Version) { " ${Ma
 $MaxonCinema4D_TeamRenderClient_Name = "Team Render Client" + $(if ($MaxonCinema4D_Version) { " ${MaxonCinema4D_Version}" })
 $MaxonCinema4D_TeamRenderServer_Name = "Team Render Server" + $(if ($MaxonCinema4D_Version) { " ${MaxonCinema4D_Version}" })
 # VMware
-$VMwareWorkstationPlayer_FileVersionRaw = if (Test-Path -Path $VMwareWorkstationPlayer_TargetPath -PathType Leaf) { (Get-Item $VMwareWorkstationPlayer_TargetPath).VersionInfo.FileVersionRaw }
+$VMwareWorkstationPlayer_FileVersionRaw = if (Test-Path -Path $VMwareWorkstationPlayer_TargetPath -PathType leaf) { (Get-Item $VMwareWorkstationPlayer_TargetPath).VersionInfo.FileVersionRaw }
 $VMwareWorkstationPlayer_Version = if ($VMwareWorkstationPlayer_FileVersionRaw) { $VMwareWorkstationPlayer_FileVersionRaw.VersionInfo.FileVersionRaw.Major } else { $NOT_INSTALLED }
 $VMwareWorkstationPlayer_Name = "VMware Workstation ${VMwareWorkstationPlayer_Version} Player"
-$VMwareWorkstationPlayer_32bit_FileVersionRaw = if (Test-Path -Path $VMwareWorkstationPlayer_32bit_TargetPath -PathType Leaf) { (Get-Item $VMwareWorkstationPlayer_32bit_TargetPath).VersionInfo.FileVersionRaw }
+$VMwareWorkstationPlayer_32bit_FileVersionRaw = if (Test-Path -Path $VMwareWorkstationPlayer_32bit_TargetPath -PathType leaf) { (Get-Item $VMwareWorkstationPlayer_32bit_TargetPath).VersionInfo.FileVersionRaw }
 $VMwareWorkstationPlayer_32bit_Version = if ($VMwareWorkstationPlayer_32bit_FileVersionRaw) { $VMwareWorkstationPlayer_32bit_FileVersionRaw.VersionInfo.FileVersionRaw.Major } else { $NOT_INSTALLED }
 $VMwareWorkstationPlayer_32bit_Name = "VMware Workstation ${VMwareWorkstationPlayer_32bit_Version} Player"
 
@@ -1546,10 +1550,10 @@ $Blender_32bit_TargetPath = $Blender_32bit_WorkingDirectory + "blender-launcher.
 # System app names dependant on OS or app version
 
 # Adobe
-$AdobeDigitalEditions_FileVersionRaw = if (Test-Path -Path $AdobeDigitalEditions_TargetPath -PathType Leaf) { (Get-Item $AdobeDigitalEditions_TargetPath).VersionInfo.FileVersionRaw }
+$AdobeDigitalEditions_FileVersionRaw = if (Test-Path -Path $AdobeDigitalEditions_TargetPath -PathType leaf) { (Get-Item $AdobeDigitalEditions_TargetPath).VersionInfo.FileVersionRaw }
 $AdobeDigitalEditions_Version = if ($AdobeDigitalEditions_FileVersionRaw) { [string]($AdobeDigitalEditions_FileVersionRaw.Major) + '.' + [string]($AdobeDigitalEditions_FileVersionRaw.Minor) } else { $NOT_INSTALLED }
 $AdobeDigitalEditions_Name = "Adobe Digital Editions ${AdobeDigitalEditions_Version}"
-$AdobeDigitalEditions_32bit_FileVersionRaw = if (Test-Path -Path $AdobeDigitalEditions_32bit_TargetPath -PathType Leaf) { (Get-Item $AdobeDigitalEditions_32bit_TargetPath).VersionInfo.FileVersionRaw }
+$AdobeDigitalEditions_32bit_FileVersionRaw = if (Test-Path -Path $AdobeDigitalEditions_32bit_TargetPath -PathType leaf) { (Get-Item $AdobeDigitalEditions_32bit_TargetPath).VersionInfo.FileVersionRaw }
 $AdobeDigitalEditions_32bit_Version = if ($AdobeDigitalEditions_32bit_FileVersionRaw) { [string]($AdobeDigitalEditions_32bit_FileVersionRaw.Major) + '.' + [string]($AdobeDigitalEditions_32bit_FileVersionRaw.Minor) } else { $NOT_INSTALLED }
 $AdobeDigitalEditions_32bit_Name = "Adobe Digital Editions ${AdobeDigitalEditions_32bit_Version}"
 
@@ -1591,7 +1595,7 @@ for ($i = 0; $i -lt $Users.length; $i++) {
   $GoToResolveDesktopConsole_32bit_TargetPath = if ($GoToResolveDesktopConsole_Arch -And ($GoToResolveDesktopConsole_Arch -eq "BIT32")) { $GoToResolveDesktopConsole_Exe } else { $GoToResolveDesktopConsole_WorkingDirectory + $NOT_INSTALLED }
   # Microsoft
   $AzureIoTExplorerPreview_TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\azure-iot-explorer\Azure IoT Explorer Preview.exe"
-  $AzureIoTExplorer_TargetPath = if (Test-Path -Path $AzureIoTExplorerPreview_TargetPath -PathType Leaf) { $AzureIoTExplorerPreview_TargetPath } else { "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\azure-iot-explorer\Azure IoT Explorer.exe" }
+  $AzureIoTExplorer_TargetPath = if (Test-Path -Path $AzureIoTExplorerPreview_TargetPath -PathType leaf) { $AzureIoTExplorerPreview_TargetPath } else { "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\azure-iot-explorer\Azure IoT Explorer.exe" }
   # Python
   $Python_WorkingDirectory = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\Python\"
   $Python_FindFolder = if (Test-Path -Path $Python_WorkingDirectory) { Get-ChildItem -Directory -Path $Python_WorkingDirectory | Where-Object { $_.Name -match '^Python[.0-9]+$' } | Sort-Object -Descending }
@@ -1600,7 +1604,7 @@ for ($i = 0; $i -lt $Users.length; $i++) {
   $PythonIDLE_TargetPath = $Python_WorkingDirectory + "Lib\idlelib\idle.pyw"
   $PythonManuals_TargetPath = $Python_WorkingDirectory + "Doc\html\index.html"
   $Python_TargetPath = $Python_WorkingDirectory + "python.exe"
-  $Python_FileVersionRaw = if (Test-Path -Path $Python_TargetPath -PathType Leaf) { (Get-Item $Python_TargetPath).VersionInfo.FileVersionRaw }
+  $Python_FileVersionRaw = if (Test-Path -Path $Python_TargetPath -PathType leaf) { (Get-Item $Python_TargetPath).VersionInfo.FileVersionRaw }
   $Python_Version = if ($Python_FileVersionRaw) { [string]($Python_FileVersionRaw.Major) + '.' + [string]($Python_FileVersionRaw.Minor) } else { $NOT_INSTALLED }
   $Python_SystemLnk = "Python ${Python_Version}\"
   # Slack
@@ -1613,7 +1617,7 @@ for ($i = 0; $i -lt $Users.length; $i++) {
   # User app names dependant on OS or app version
 
   # Microsoft
-  $AzureIoTExplorer_Name = "Azure IoT Explorer" + $(if (Test-Path -Path $AzureIoTExplorerPreview_TargetPath -PathType Leaf) { " Preview" })
+  $AzureIoTExplorer_Name = "Azure IoT Explorer" + $(if (Test-Path -Path $AzureIoTExplorerPreview_TargetPath -PathType leaf) { " Preview" })
   # Python
   $PythonIDLE_Description = "Launches IDLE, the interactive environment for Python ${Python_Version}."
   $Python_Description = "Launches the Python ${Python_Version} interpreter."
