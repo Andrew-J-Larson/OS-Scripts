@@ -1546,7 +1546,7 @@ for ($i = 0; $i -lt $Users.length; $i++) {
   $GitHubDesktop_FindFolder = if ($GitHubDesktop_FindFolder.length -ge 1) { $GitHubDesktop_FindFolder[0].name } else { $NOT_INSTALLED }
   $GitHubDesktop_StartIn += $GitHubDesktop_FindFolder
   # GoTo
-  $GoToResolveDesktopConsole_StartIn = "${USERS_FOLDER}\GoTo\GoTo Resolve Desktop Console\"
+  $GoToResolveDesktopConsole_StartIn = "${USERS_FOLDER}\${aUser}\GoTo\GoTo Resolve Desktop Console\"
   $GoToResolveDesktopConsole_Exe = $GoToResolveDesktopConsole_StartIn + "ra-technician-console.exe"
   $GoToResolveDesktopConsole_Arch = if (Test-Path -Path $GoToResolveDesktopConsole_TargetPath) { Get-BinaryType $GoToResolveDesktopConsole_TargetPath }
   $GoToResolveDesktopConsole_TargetPath = if ($GoToResolveDesktopConsole_Arch -And ($GoToResolveDesktopConsole_Arch -eq "BIT64")) { $GoToResolveDesktopConsole_Exe } else { $GoToResolveDesktopConsole_StartIn + $NOT_INSTALLED }
@@ -1589,15 +1589,15 @@ for ($i = 0; $i -lt $Users.length; $i++) {
     @{Name = $AdobeDigitalEditions_Name; TargetPath = $AdobeDigitalEditions_TargetPath; StartIn = $AdobeDigitalEditions_StartIn },
     @{Name = $AdobeDigitalEditions_32bit_Name; TargetPath = $AdobeDigitalEditions_32bit_TargetPath; StartIn = $AdobeDigitalEditions_StartIn },
     # AutoHotkey V2
-    @{Name = "AutoHotkey Window Spy"; TargetPath = "${USERS_FOLDER}\AutoHotkey\UX\AutoHotkeyUX.exe"; Arguments = "`"${USERS_FOLDER}\AutoHotkey\UX\WindowSpy.ahk`""; Description = "AutoHotkey Window Spy" },
-    @{Name = "AutoHotkey"; TargetPath = "${USERS_FOLDER}\AutoHotkey\UX\AutoHotkeyUX.exe"; Arguments = "`"${USERS_FOLDER}\AutoHotkey\UX\ui-dash.ahk`""; Description = "AutoHotkey Dash" },
+    @{Name = "AutoHotkey Window Spy"; TargetPath = "${USERS_FOLDER}\${aUser}\AutoHotkey\UX\AutoHotkeyUX.exe"; Arguments = "`"${USERS_FOLDER}\${aUser}\AutoHotkey\UX\WindowSpy.ahk`""; Description = "AutoHotkey Window Spy" },
+    @{Name = "AutoHotkey"; TargetPath = "${USERS_FOLDER}\${aUser}\AutoHotkey\UX\AutoHotkeyUX.exe"; Arguments = "`"${USERS_FOLDER}\${aUser}\AutoHotkey\UX\ui-dash.ahk`""; Description = "AutoHotkey Dash" },
     # AutoHotkey
-    @{Name = "AutoHotkey Help File"; TargetPath = "${USERS_FOLDER}\AutoHotkey\AutoHotkey.chm"; SystemLnk = "AutoHotkey\" },
-    @{Name = "AutoHotkey Setup"; TargetPath = "${USERS_FOLDER}\AutoHotkey\Installer.ahk"; SystemLnk = "AutoHotkey\" },
-    @{Name = "AutoHotkey"; TargetPath = "${USERS_FOLDER}\AutoHotkey\AutoHotkey.exe"; SystemLnk = "AutoHotkey\" },
-    @{Name = "Convert .ahk to .exe"; TargetPath = "${USERS_FOLDER}\AutoHotkey\Compiler\Ahk2Exe.exe"; SystemLnk = "AutoHotkey\" },
-    @{Name = "Website"; TargetPath = "${USERS_FOLDER}\AutoHotkey\AutoHotkey Website.url"; SystemLnk = "AutoHotkey\" },
-    @{Name = "Window Spy"; TargetPath = "${USERS_FOLDER}\AutoHotkey\WindowSpy.ahk"; SystemLnk = "AutoHotkey\" },
+    @{Name = "AutoHotkey Help File"; TargetPath = "${USERS_FOLDER}\${aUser}\AutoHotkey\AutoHotkey.chm"; SystemLnk = "AutoHotkey\" },
+    @{Name = "AutoHotkey Setup"; TargetPath = "${USERS_FOLDER}\${aUser}\AutoHotkey\Installer.ahk"; SystemLnk = "AutoHotkey\" },
+    @{Name = "AutoHotkey"; TargetPath = "${USERS_FOLDER}\${aUser}\AutoHotkey\AutoHotkey.exe"; SystemLnk = "AutoHotkey\" },
+    @{Name = "Convert .ahk to .exe"; TargetPath = "${USERS_FOLDER}\${aUser}\AutoHotkey\Compiler\Ahk2Exe.exe"; SystemLnk = "AutoHotkey\" },
+    @{Name = "Website"; TargetPath = "${USERS_FOLDER}\${aUser}\AutoHotkey\AutoHotkey Website.url"; SystemLnk = "AutoHotkey\" },
+    @{Name = "Window Spy"; TargetPath = "${USERS_FOLDER}\${aUser}\AutoHotkey\WindowSpy.ahk"; SystemLnk = "AutoHotkey\" },
     # balenaEtcher
     @{Name = "balenaEtcher"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\balena-etcher\balenaEtcher.exe"; StartIn = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\balena-etcher"; Description = "Flash OS images to SD cards and USB drives, safely and easily." },
     # Blender
