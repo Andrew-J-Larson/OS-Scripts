@@ -1421,6 +1421,8 @@ $sys3rdPartyAppList = @(
   # paint.net
   @{Name = "paint.net"; TargetPath = "${env:ProgramFiles}\paint.net\paintdotnet.exe"; WorkingDirectory = "${env:ProgramFiles}\paint.net"; Description = "Create, edit, scan, and print images and photographs." },
   @{Name = "paint.net"; TargetPath = "${env:ProgramFiles(x86)}\paint.net\paintdotnet.exe"; WorkingDirectory = "${env:ProgramFiles(x86)}\paint.net"; Description = "Create, edit, scan, and print images and photographs." },
+  # PRTG Desktop
+  @{Name = "PRTG Desktop"; TargetPath = "${env:ProgramFiles}\Paessler\PRTG Desktop\prtgdesktop.exe"; SystemLnk = "PRTG Desktop\"; WorkingDirectory = "${env:ProgramFiles}\Paessler"; Description = "Run PRTG Desktop" },
   # Pulse Secure
   @{Name = "Pulse Secure"; TargetPath = "${env:ProgramFiles}\Common Files\Pulse Secure\JamUI\Pulse.exe"; Arguments = "-show"; SystemLnk = "Pulse Secure\"; Description = "Pulse Secure Desktop Client" }, # it's the only install on 32-bit
   @{Name = "Pulse Secure"; TargetPath = "${env:ProgramFiles(x86)}\Common Files\Pulse Secure\JamUI\Pulse.exe"; Arguments = "-show"; SystemLnk = "Pulse Secure\"; Description = "Pulse Secure Desktop Client" }, # it's the only install on 64-bit
@@ -1442,6 +1444,8 @@ $sys3rdPartyAppList = @(
   @{Name = "VNC Viewer"; TargetPath = "${env:ProgramFiles}\RealVNC\VNC Viewer\vncviewer.exe"; SystemLnk = "RealVNC\"; WorkingDirectory = "${env:ProgramFiles}\RealVNC\VNC Viewer\" },
   @{Name = "VNC Server"; TargetPath = "${env:ProgramFiles(x86)}\RealVNC\VNC Server\vncguihelper.exe"; Arguments = "vncserver.exe -_fromGui -start -showstatus"; SystemLnk = "RealVNC\"; WorkingDirectory = "${env:ProgramFiles(x86)}\RealVNC\VNC Server\" },
   @{Name = "VNC Viewer"; TargetPath = "${env:ProgramFiles(x86)}\RealVNC\VNC Viewer\vncviewer.exe"; SystemLnk = "RealVNC\"; WorkingDirectory = "${env:ProgramFiles(x86)}\RealVNC\VNC Viewer\" },
+  # Remote Desktop
+  @{Name = "Remote Desktop"; TargetPath = "${env:ProgramFiles}\Remote Desktop\msrdcw.exe"; WorkingDirectory = "${env:ProgramFiles}\Remote Desktop\" Description = "Microsoft Remote Desktop Client" },
   # Samsung
   @{Name = "Samsung DeX"; TargetPath = "${env:ProgramFiles}\Samsung\Samsung DeX\SamsungDeX.exe"; WorkingDirectory = "${env:ProgramFiles}\Samsung\Samsung DeX\" }, # it's the only install on 32-bit
   @{Name = "Samsung DeX"; TargetPath = "${env:ProgramFiles(x86)}\Samsung\Samsung DeX\SamsungDeX.exe"; WorkingDirectory = "${env:ProgramFiles(x86)}\Samsung\Samsung DeX\" }, # it's the only install on 64-bit
@@ -1455,9 +1459,9 @@ $sys3rdPartyAppList = @(
   @{Name = "Uninstall SoundSwitch"; TargetPath = "${env:ProgramFiles}\SoundSwitch\unins000.exe"; SystemLnk = "SoundSwitch\"; WorkingDirectory = "${env:ProgramFiles}\SoundSwitch" },
   @{Name = "SoundSwitch"; TargetPath = "${env:ProgramFiles(x86)}\SoundSwitch\SoundSwitch.exe"; SystemLnk = "SoundSwitch\"; WorkingDirectory = "${env:ProgramFiles(x86)}\SoundSwitch" },
   @{Name = "Uninstall SoundSwitch"; TargetPath = "${env:ProgramFiles(x86)}\SoundSwitch\unins000.exe"; SystemLnk = "SoundSwitch\"; WorkingDirectory = "${env:ProgramFiles(x86)}\SoundSwitch" },
-  # Team Viewer
-  @{Name = "TeamViewer"; TargetPath = "${env:ProgramFiles}\TeamViewer\TeamViewer.exe"; WorkingDirectory = "${env:ProgramFiles}\TeamViewer" },
-  @{Name = "TeamViewer"; TargetPath = "${env:ProgramFiles(x86)}\TeamViewer\TeamViewer.exe"; WorkingDirectory = "${env:ProgramFiles}\TeamViewer" },
+  # TeamViewer
+  @{Name = "TeamViewer"; TargetPath = "${env:ProgramFiles}\TeamViewer\TeamViewer.exe"; WorkingDirectory = "${env:ProgramFiles}TeamViewer\" },
+  @{Name = "TeamViewer"; TargetPath = "${env:ProgramFiles(x86)}\TeamViewer\TeamViewer.exe"; WorkingDirectory = "${env:ProgramFiles}TeamViewer\" },
   # USB Redirector TS Edition
   @{Name = "USB Redirector TS Edition - Workstation"; TargetPath = "${env:ProgramFiles}\USB Redirector TS Edition - Workstation\usbredirectortsw.exe"; SystemLnk = "USB Redirector TS Edition - Workstation\" },
   @{Name = "USB Redirector TS Edition - Workstation"; TargetPath = "${env:ProgramFiles(x86)}\USB Redirector TS Edition - Workstation\usbredirectortsw.exe"; SystemLnk = "USB Redirector TS Edition - Workstation\" },
@@ -1494,6 +1498,9 @@ $sys3rdPartyAppList = @(
   # WinSCP
   @{Name = "WinSCP"; TargetPath = "${env:ProgramFiles}\WinSCP\WinSCP.exe"; WorkingDirectory = "${env:ProgramFiles}\WinSCP"; Description = "WinSCP: SFTP, FTP, WebDAV and SCP client" }, # it's the only install on 32-bit
   @{Name = "WinSCP"; TargetPath = "${env:ProgramFiles(x86)}\WinSCP\WinSCP.exe"; WorkingDirectory = "${env:ProgramFiles(x86)}\WinSCP"; Description = "WinSCP: SFTP, FTP, WebDAV and SCP client" } # it's the only install on 64-bit
+  # Zoom
+  @{Name = "Zoom"; TargetPath = "${env:ProgramFiles}\Zoom\bin\Zoom.exe"; Description = "Zoom" }, # it's the only install on 32-bit
+  @{Name = "Zoom"; TargetPath = "${env:ProgramFiles(x86)}\Zoom\bin\Zoom.exe"; Description = "Zoom" } # it's the only install on 64-bit
   #@{Name = ""; TargetPath = ""; Arguments = ""; SystemLnk = ""; WorkingDirectory = ""; Description = ""; IconLocation = ""; RunAsAdmin = ($true -Or $false) },
 )
 
