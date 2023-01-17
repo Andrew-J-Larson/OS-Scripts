@@ -20,12 +20,15 @@
 
 
 
-Start-Transcript -Path "C:\Recreate-Base-Shortcuts.log"
+Start-Transcript -Path "${env:HOMEDRIVE}\Recreate-Base-Shortcuts.log"
 Write-Host "" # Makes log look better
 
 # Constants
 
-Set-Variable NotInstalled -Option Constant -Value "NOT-INSTALLED"
+Set-Variable PROGRAM_SHORTCUTS_PIN_PATH -Option Constant -Value "%ALLUSERSPROFILE%\Microsoft\Windows\Start Menu\Programs"
+Set-Variable PROGRAM_SHORTCUTS_PIN_PATH -Option Constant -Value "%APPDATA%\Microsoft\Windows\Start Menu\Programs"
+Set-Variable USERS_FOLDER -Option Constant -Value "${env:HOMEDRIVE}\Users"
+Set-Variable NOT_INSTALLED -Option Constant -Value "NOT-INSTALLED"
 
 
 
@@ -80,16 +83,16 @@ function New-Shortcut {
   $warnMsg = @()
   $errorMsg = @()
 
-  Set-Variable ProgramShortcutsPath -Option Constant -Value "${env:ALLUSERSPROFILE}\Microsoft\Windows\Start Menu\Programs"
-  Set-Variable UserProgramShortcutsPath -Option Constant -Value "C:\Users\${sUser}\AppData\Roaming\Microsoft\Windows\Start Menu\Programs"
+  Set-Variable PROGRAM_SHORTCUTS_PATH -Option Constant -Value "${env:ALLUSERSPROFILE}\Microsoft\Windows\Start Menu\Programs"
+  Set-Variable PROGRAM_SHORTCUTS_USER_PATH -Option Constant -Value "${USERS_FOLDER}\${sUser}\AppData\Roaming\Microsoft\Windows\Start Menu\Programs"
 
   # validate name and target path
   if ($sName -And $sTargetPath -And (Test-Path $sTargetPath -PathType leaf)) {
     # if shortcut path not given, create one at default location with $sName
     if (-Not ($sSystemLnk)) { $sSystemLnk = $sName }
-    # if doesn't have $ProgramShortcutsPath or $UserProgramShortcutsPath (and not start with drive letter), it'll assume a path for it
-    if (-Not ($sSystemLnk -match '^[a-zA-Z]:\\.*' -Or $sSystemLnk -match ('^' + [Regex]::Escape($ProgramShortcutsPath) + '.*') -Or $sSystemLnk -match ('^' + [Regex]::Escape($UserProgramShortcutsPath) + '.*'))) {
-      $sSystemLnk = $(if ($sUser) { $UserProgramShortcutsPath } else { $ProgramShortcutsPath }) + '\' + $sSystemLnk
+    # if doesn't have $PROGRAM_SHORTCUTS_PATH or $PROGRAM_SHORTCUTS_USER_PATH (and not start with drive letter), it'll assume a path for it
+    if (-Not ($sSystemLnk -match '^[a-zA-Z]:\\.*' -Or $sSystemLnk -match ('^' + [Regex]::Escape($PROGRAM_SHORTCUTS_PATH) + '.*') -Or $sSystemLnk -match ('^' + [Regex]::Escape($PROGRAM_SHORTCUTS_USER_PATH) + '.*'))) {
+      $sSystemLnk = $(if ($sUser) { $PROGRAM_SHORTCUTS_USER_PATH } else { $PROGRAM_SHORTCUTS_PATH }) + '\' + $sSystemLnk
     }
     # if it ends with '\', then we append the name to the end
     if ($sSystemLnk.EndsWith('\')) { $sSystemLnk = $sSystemLnk + $sName }
@@ -113,7 +116,7 @@ function New-Shortcut {
 
       $newLNK.Save()
       $result = $?
-      [Runtime.InteropServices.Marshal]::ReleaseComObject($Shell) | Out-Null
+      [Runtime.InteropServices.Marshal]::ReleaseComObject($WScriptObj) | Out-Null
 
       if ($result) {
         $resultMsg += "Created shortcut at:`n${sSystemLnk}"
@@ -195,11 +198,11 @@ if (-Not $isWin10orNewer) {
 # Powershell (7 or newer)
 $PowerShell_TargetPath = "${env:ProgramFiles}\PowerShell\"
 $PowerShell_Version = if (Test-Path -Path $PowerShell_TargetPath) { Get-ChildItem -Directory -Path $PowerShell_TargetPath | Where-Object { $_.Name -match '^[0-9]+$' } | Sort-Object -Descending }
-$PowerShell_Version = if ($PowerShell_Version.length -ge 1) { $PowerShell_Version[0].name } else { $NotInstalled }
+$PowerShell_Version = if ($PowerShell_Version.length -ge 1) { $PowerShell_Version[0].name } else { $NOT_INSTALLED }
 $PowerShell_TargetPath += "${PowerShell_Version}\pwsh.exe"
 $PowerShell_32bit_TargetPath = "${env:ProgramFiles(x86)}\PowerShell\"
 $PowerShell_32bit_Version = if (Test-Path -Path $PowerShell_32bit_TargetPath) { Get-ChildItem -Directory -Path $PowerShell_32bit_TargetPath | Where-Object { $_.Name -match '^[0-9]+$' } | Sort-Object -Descending }
-$PowerShell_32bit_Version = if ($PowerShell_32bit_Version.length -ge 1) { $PowerShell_32bit_Version[0].name } else { $NotInstalled }
+$PowerShell_32bit_Version = if ($PowerShell_32bit_Version.length -ge 1) { $PowerShell_32bit_Version[0].name } else { $NOT_INSTALLED }
 $PowerShell_32bit_TargetPath += "${PowerShell32bit_Version}\pwsh.exe"
 # PowerToys
 $PowerToys_TargetPath = "${env:ProgramFiles}\PowerToys\PowerToys.exe"
@@ -207,8 +210,8 @@ $PowerToys_TargetPath = "${env:ProgramFiles}\PowerToys\PowerToys.exe"
 # App names dependant on OS or app version
 
 # PowerShell (7 or newer)
-$PowerShell_Name = "PowerShell " + $(if ($PowerShell_Version) { $PowerShell_Version } else { $NotInstalled }) + " (x64)"
-$PowerShell_32bit_Name = "PowerShell " + $(if ($PowerShell_32bit_Version) { $PowerShell_32bit_Version } else { $NotInstalled }) + " (x86)"
+$PowerShell_Name = "PowerShell " + $(if ($PowerShell_Version) { $PowerShell_Version } else { $NOT_INSTALLED }) + " (x64)"
+$PowerShell_32bit_Name = "PowerShell " + $(if ($PowerShell_32bit_Version) { $PowerShell_32bit_Version } else { $NOT_INSTALLED }) + " (x86)"
 # PowerToys
 $PowerToys_isPreview = if (Test-Path -Path $PowerToys_TargetPath -PathType Leaf) { (Get-Item $PowerToys_TargetPath).VersionInfo.FileVersionRaw.Major -eq 0 }
 $PowerToys_Name = "PowerToys" + $(if ($PowerToys_isPreview) { " (Preview)" })
@@ -362,7 +365,7 @@ for ($i = 0; $i -lt $oemSysAppList.length; $i++) {
 $EgnyteDesktopAppUninstallGUID = $UninstallList | Where-Object { $_.Name -match "Egnyte Desktop App" }
 $EgnyteDesktopAppUninstallGUID = if ($EgnyteDesktopAppUninstallGUID.length -ge 1) { $EgnyteDesktopAppUninstallGUID[0].GUID } else { $null }
 $EgnyteDesktopAppUninstall_Arguments = if ($EgnyteDesktopAppUninstallGUID) { "/x ${EgnyteDesktopAppUninstallGUID}" } else { "" }
-$EgnyteDesktopAppUninstall_TargetPath = if ($EgnyteDesktopAppUninstallGUID) { "C:\Windows\System32\msiexec.exe" } else { "C:\${NotInstalled}\${NotInstalled}\${NotInstalled}.exe" }
+$EgnyteDesktopAppUninstall_TargetPath = if ($EgnyteDesktopAppUninstallGUID) { "${env:HOMEDRIVE}\Windows\System32\msiexec.exe" } else { "${env:HOMEDRIVE}\${NOT_INSTALLED}\${NOT_INSTALLED}\${NOT_INSTALLED}.exe" }
 
 # App paths dependant on app version
 
@@ -897,42 +900,42 @@ $Substance3dStager_Beta_TargetPath = if (Test-Path -Path $Substance3dStager_Beta
 # GIMP
 $GIMP_TargetPath = "${env:ProgramFiles}\"
 $GIMP_FindFolder = Get-ChildItem -Directory -Path $GIMP_TargetPath | Where-Object { $_.Name -match '^GIMP' } | Sort-Object -Descending
-$GIMP_FindFolder = if ($GIMP_FindFolder.length -ge 1) { $GIMP_FindFolder[0].name } else { $NotInstalled }
+$GIMP_FindFolder = if ($GIMP_FindFolder.length -ge 1) { $GIMP_FindFolder[0].name } else { $NOT_INSTALLED }
 $GIMP_TargetPath += "${GIMP_FindFolder}\bin\"
 $GIMP_FindExe = if (Test-Path -Path $GIMP_TargetPath) { Get-ChildItem -File -Path $GIMP_TargetPath | Where-Object { $_.Name -match '^gimp\-[.0-9]+exe$' } | Sort-Object -Descending }
-$GIMP_FindExe = if ($GIMP_FindExe.length -ge 1) { $GIMP_FindExe[0].name } else { "${NotInstalled}.exe" }
+$GIMP_FindExe = if ($GIMP_FindExe.length -ge 1) { $GIMP_FindExe[0].name } else { "${NOT_INSTALLED}.exe" }
 $GIMP_TargetPath += $GIMP_FindExe
 $GIMP_32bit_TargetPath = "${env:ProgramFiles(x86)}\"
 $GIMP_32bit_FindFolder = Get-ChildItem -Directory -Path $GIMP_32bit_TargetPath | Where-Object { $_.Name -match '^GIMP' } | Sort-Object -Descending
-$GIMP_32bit_FindFolder = if ($GIMP_32bit_FindFolder.length -ge 1) { $GIMP_32bit_FindFolder[0].name } else { $NotInstalled }
+$GIMP_32bit_FindFolder = if ($GIMP_32bit_FindFolder.length -ge 1) { $GIMP_32bit_FindFolder[0].name } else { $NOT_INSTALLED }
 $GIMP_32bit_TargetPath += "${GIMP_32bit_FindFolder}\bin\"
 $GIMP_32bit_FindExe = if (Test-Path -Path $GIMP_32bit_TargetPath) { Get-ChildItem -File -Path $GIMP_32bit_TargetPath | Where-Object { $_.Name -match '^gimp\-[.0-9]+exe$' } | Sort-Object -Descending }
-$GIMP_32bit_FindExe = if ($GIMP_32bit_FindExe.length -ge 1) { $GIMP_32bit_FindExe[0].name } else { "${NotInstalled}.exe" }
+$GIMP_32bit_FindExe = if ($GIMP_32bit_FindExe.length -ge 1) { $GIMP_32bit_FindExe[0].name } else { "${NOT_INSTALLED}.exe" }
 $GIMP_32bit_TargetPath += $GIMP_32bit_FindExe
 # Google
 $GoogleDrive_TargetPath = "${env:ProgramFiles}\Google\Drive File Stream\"
 $GoogleDrive_Version = if (Test-Path -Path $GoogleDrive_TargetPath) { Get-ChildItem -Directory -Path $GoogleDrive_TargetPath | Where-Object { $_.Name -match '^[.0-9]+$' } | Sort-Object -Descending }
-$GoogleDrive_Version = if ($GoogleDrive_Version.length -ge 1) { $GoogleDrive_Version[0].name } else { $NotInstalled }
+$GoogleDrive_Version = if ($GoogleDrive_Version.length -ge 1) { $GoogleDrive_Version[0].name } else { $NOT_INSTALLED }
 $GoogleDrive_TargetPath += "${GoogleDrive_Version}\GoogleDriveFS.exe"
 $GoogleOneVPN_TargetPath = "${env:ProgramFiles}\Google\VPN by Google One\"
 $GoogleOneVPN_Version = if (Test-Path -Path $GoogleOneVPN_TargetPath) { Get-ChildItem -Directory -Path $GoogleOneVPN_TargetPath | Where-Object { $_.Name -match '^[.0-9]+$' } | Sort-Object -Descending }
-$GoogleOneVPN_Version = if ($GoogleOneVPN_Version.length -ge 1) { $GoogleOneVPN_Version[0].name } else { $NotInstalled }
+$GoogleOneVPN_Version = if ($GoogleOneVPN_Version.length -ge 1) { $GoogleOneVPN_Version[0].name } else { $NOT_INSTALLED }
 $GoogleOneVPN_TargetPath += "${GoogleOneVPN_Version}\googleone.exe"
 # KeePass
 $KeePass_StartIn = "${env:ProgramFiles}\"
 $KeePass_FindFolder = Get-ChildItem -Directory -Path $KeePass_StartIn | Where-Object { $_.Name -match '^KeePass Password Safe' } | Sort-Object -Descending
-$KeePass_FindFolder = if ($KeePass_FindFolder.length -ge 1) { $KeePass_FindFolder[0].name } else { $NotInstalled }
+$KeePass_FindFolder = if ($KeePass_FindFolder.length -ge 1) { $KeePass_FindFolder[0].name } else { $NOT_INSTALLED }
 $KeePass_TargetPath = "${KeePass_FindFolder}\KeePass.exe"
 $KeePass_32bit_StartIn = "${env:ProgramFiles(x86)}\"
 $KeePass_32bit_FindFolder = Get-ChildItem -Directory -Path $KeePass_32bit_StartIn | Where-Object { $_.Name -match '^KeePass Password Safe' } | Sort-Object -Descending
-$KeePass_32bit_FindFolder = if ($KeePass_32bit_FindFolder.length -ge 1) { $KeePass_32bit_FindFolder[0].name } else { $NotInstalled }
+$KeePass_32bit_FindFolder = if ($KeePass_32bit_FindFolder.length -ge 1) { $KeePass_32bit_FindFolder[0].name } else { $NOT_INSTALLED }
 $KeePass_32bit_TargetPath = "${KeePass_32bit_FindFolder}\KeePass.exe"
 # Maxon
 $MaxonCinema4D_StartIn = "${env:ProgramFiles}\"
 $MaxonCinema4D_FindFolder = Get-ChildItem -Directory -Path $MaxonCinema4D_StartIn | Where-Object { $_.Name -match '^Maxon Cinema 4D' } | Sort-Object -Descending
-$MaxonCinema4D_FindFolder = if ($MaxonCinema4D_FindFolder.length -ge 1) { $MaxonCinema4D_FindFolder[0].name } else { $NotInstalled }
+$MaxonCinema4D_FindFolder = if ($MaxonCinema4D_FindFolder.length -ge 1) { $MaxonCinema4D_FindFolder[0].name } else { $NOT_INSTALLED }
 $MaxonCinema4D_Version = $MaxonCinema4D_FindFolder | Select-String -pattern "\d\d\d\d$" -All
-$MaxonCinema4D_Version = if ($MaxonCinema4D_Version.length -ge 1) { $MaxonCinema4D_Version.Matches[-1].value } else { $NotInstalled }
+$MaxonCinema4D_Version = if ($MaxonCinema4D_Version.length -ge 1) { $MaxonCinema4D_Version.Matches[-1].value } else { $NOT_INSTALLED }
 $MaxonCinema4D_StartIn += $MaxonCinema4D_FindFolder
 $MaxonCinema4D_Commandline_TargetPath = $MaxonCinema4D_StartIn + "\Commandline.exe"
 $MaxonCinema4D_TargetPath = $MaxonCinema4D_StartIn + "\Cinema 4D.exe"
@@ -940,25 +943,25 @@ $MaxonCinema4D_TeamRenderClient_TargetPath = $MaxonCinema4D_StartIn + "\Cinema 4
 $MaxonCinema4D_TeamRenderServer_TargetPath = $MaxonCinema4D_StartIn + "\Cinema 4D Team Render Server.exe"
 # VMware
 $VMwareWorkstationPlayer_TargetPath = "${env:ProgramFiles}\VMware\VMware Player\vmplayer.exe"
-$CommandPromptforvctl_Path = if (Test-Path -Path $VMwareWorkstationPlayer_TargetPath -PathType Leaf) { "C:\Windows\System32\cmd.exe" } else { "${env:ProgramFiles}\${NotInstalled}\${NotInstalled}\${NotInstalled}.exe" }
+$CommandPromptforvctl_Path = if (Test-Path -Path $VMwareWorkstationPlayer_TargetPath -PathType Leaf) { "${env:HOMEDRIVE}\Windows\System32\cmd.exe" } else { "${env:ProgramFiles}\${NOT_INSTALLED}\${NOT_INSTALLED}\${NOT_INSTALLED}.exe" }
 $VMwareWorkstationPlayer_32bit_TargetPath = "${env:ProgramFiles(x86)}\VMware\VMware Player\vmplayer.exe"
-$CommandPromptforvctl_32bit_Path = if (Test-Path -Path $VMwareWorkstationPlayer_32bit_TargetPath -PathType Leaf) { "C:\Windows\System32\cmd.exe" } else { "${env:ProgramFiles(x86)}\${NotInstalled}\${NotInstalled}\${NotInstalled}.exe" }
+$CommandPromptforvctl_32bit_Path = if (Test-Path -Path $VMwareWorkstationPlayer_32bit_TargetPath -PathType Leaf) { "${env:HOMEDRIVE}\Windows\System32\cmd.exe" } else { "${env:ProgramFiles(x86)}\${NOT_INSTALLED}\${NOT_INSTALLED}\${NOT_INSTALLED}.exe" }
 
 # App names dependant on OS or app version
 
 # GIMP
 $GIMP_ProductVersion = if (Test-Path -Path $GIMP_TargetPath -PathType Leaf) { (Get-Item $GIMP_TargetPath).VersionInfo.ProductVersion }
-$GIMP_Version = if ($GIMP_ProductVersion) { $GIMP_ProductVersion } else { $NotInstalled }
+$GIMP_Version = if ($GIMP_ProductVersion) { $GIMP_ProductVersion } else { $NOT_INSTALLED }
 $GIMP_Name = "GIMP ${GIMP_Version}"
 $GIMP_32bit_ProductVersion = if (Test-Path -Path $GIMP_32bit_TargetPath -PathType Leaf) { (Get-Item $GIMP_32bit_TargetPath).VersionInfo.ProductVersion }
-$GIMP_32bit_Version = if ($GIMP_32bit_ProductVersion) { $GIMP_32bit_ProductVersion } else { $NotInstalled }
+$GIMP_32bit_Version = if ($GIMP_32bit_ProductVersion) { $GIMP_32bit_ProductVersion } else { $NOT_INSTALLED }
 $GIMP_32bit_Name = "GIMP ${GIMP_32bit_Version}"
 # KeePass
 $KeePass_FileVersionRaw = if (Test-Path -Path $KeePass_TargetPath -PathType Leaf) { (Get-Item $KeePass_TargetPath).VersionInfo.FileVersionRaw }
-$KeePass_Version = if ($KeePass_FileVersionRaw) { $KeePass_FileVersionRaw.Major } else { $NotInstalled }
+$KeePass_Version = if ($KeePass_FileVersionRaw) { $KeePass_FileVersionRaw.Major } else { $NOT_INSTALLED }
 $KeePass_Name = "KeePass ${KeePass_Version}"
 $KeePass_32bit_FileVersionRaw = if (Test-Path -Path $KeePass_32bit_TargetPath -PathType Leaf) { (Get-Item $KeePass_32bit_TargetPath).VersionInfo.FileVersionRaw }
-$KeePass_32bit_Version = if ($KeePass_32bit_FileVersionRaw) { $KeePass_32bit_FileVersionRaw.Major } else { $NotInstalled }
+$KeePass_32bit_Version = if ($KeePass_32bit_FileVersionRaw) { $KeePass_32bit_FileVersionRaw.Major } else { $NOT_INSTALLED }
 $KeePass_32bit_Name = "KeePass ${KeePass_32bit_Version}"
 # Maxon
 $MaxonCinema4D_Commandline_Name = "Commandline" + $(if ($MaxonCinema4D_Version) { " ${MaxonCinema4D_Version}" })
@@ -967,10 +970,10 @@ $MaxonCinema4D_TeamRenderClient_Name = "Team Render Client" + $(if ($MaxonCinema
 $MaxonCinema4D_TeamRenderServer_Name = "Team Render Server" + $(if ($MaxonCinema4D_Version) { " ${MaxonCinema4D_Version}" })
 # VMware
 $VMwareWorkstationPlayer_FileVersionRaw = if (Test-Path -Path $VMwareWorkstationPlayer_TargetPath -PathType Leaf) { (Get-Item $VMwareWorkstationPlayer_TargetPath).VersionInfo.FileVersionRaw }
-$VMwareWorkstationPlayer_Version = if ($VMwareWorkstationPlayer_FileVersionRaw) { $VMwareWorkstationPlayer_FileVersionRaw.VersionInfo.FileVersionRaw.Major } else { $NotInstalled }
+$VMwareWorkstationPlayer_Version = if ($VMwareWorkstationPlayer_FileVersionRaw) { $VMwareWorkstationPlayer_FileVersionRaw.VersionInfo.FileVersionRaw.Major } else { $NOT_INSTALLED }
 $VMwareWorkstationPlayer_Name = "VMware Workstation ${VMwareWorkstationPlayer_Version} Player"
 $VMwareWorkstationPlayer_32bit_FileVersionRaw = if (Test-Path -Path $VMwareWorkstationPlayer_32bit_TargetPath -PathType Leaf) { (Get-Item $VMwareWorkstationPlayer_32bit_TargetPath).VersionInfo.FileVersionRaw }
-$VMwareWorkstationPlayer_32bit_Version = if ($VMwareWorkstationPlayer_32bit_FileVersionRaw) { $VMwareWorkstationPlayer_32bit_FileVersionRaw.VersionInfo.FileVersionRaw.Major } else { $NotInstalled }
+$VMwareWorkstationPlayer_32bit_Version = if ($VMwareWorkstationPlayer_32bit_FileVersionRaw) { $VMwareWorkstationPlayer_32bit_FileVersionRaw.VersionInfo.FileVersionRaw.Major } else { $NOT_INSTALLED }
 $VMwareWorkstationPlayer_32bit_Name = "VMware Workstation ${VMwareWorkstationPlayer_32bit_Version} Player"
 
 $sys3rdPartyAppList = @(
@@ -1260,7 +1263,7 @@ for ($i = 0; $i -lt $sys3rdPartyAppList.length; $i++) {
 # User Applications (per user installed apps)
 
 # get all users 
-$Users = (Get-ChildItem -Directory -Path "C:\Users\" | ForEach-Object { if (($_.name -ne "Default") -And ($_.name -ne "Public")) { $_.name } })
+$Users = (Get-ChildItem -Directory -Path "${USERS_FOLDER}\" | ForEach-Object { if (($_.name -ne "Default") -And ($_.name -ne "Public")) { $_.name } })
 if ($Users -And ($Users[0].length -eq 1)) { $Users = @("$Users") } # if only one user, array needs to be recreated
 
 # System app arguments dependant on uninstall strings
@@ -1273,21 +1276,21 @@ if ($Users -And ($Users[0].length -eq 1)) { $Users = @("$Users") } # if only one
 # Adobe
 $AdobeDigitalEditions_TargetPath = "${env:ProgramFiles}\Adobe\"
 $AdobeDigitalEditions_FindFolders = if (Test-Path -Path $AdobeDigitalEditions_TargetPath) { (Get-ChildItem -Directory -Path $AdobeDigitalEditions_TargetPath | Where-Object { $_.Name -match '^Adobe Digital Editions' } | Sort-Object -Descending) }
-$AdobeDigitalEditions_FindFolder = if ($AdobeDigitalEditions_FindFolders.length -ge 1) { $AdobeDigitalEditions_FindFolders[0].name } else { $NotInstalled }
+$AdobeDigitalEditions_FindFolder = if ($AdobeDigitalEditions_FindFolders.length -ge 1) { $AdobeDigitalEditions_FindFolders[0].name } else { $NOT_INSTALLED }
 $AdobeDigitalEditions_TargetPath += "${AdobeDigitalEditions_FindFolder}\DigitalEditions.exe"
 $AdobeDigitalEditions_32bit_TargetPath = "${env:ProgramFiles(x86)}\Adobe\"
 $AdobeDigitalEditions_32bit_FindFolders = if (Test-Path -Path $AdobeDigitalEditions_32bit_TargetPath) { (Get-ChildItem -Directory -Path $AdobeDigitalEditions_32bit_TargetPath | Where-Object { $_.Name -match '^Adobe Digital Editions' } | Sort-Object -Descending) }
-$AdobeDigitalEditions_32bit_FindFolder = if ($AdobeDigitalEditions_32bit_FindFolders.length -ge 1) { $AdobeDigitalEditions_32bit_FindFolders[0].name } else { $NotInstalled }
+$AdobeDigitalEditions_32bit_FindFolder = if ($AdobeDigitalEditions_32bit_FindFolders.length -ge 1) { $AdobeDigitalEditions_32bit_FindFolders[0].name } else { $NOT_INSTALLED }
 $AdobeDigitalEditions_32bit_TargetPath += "${AdobeDigitalEditions_32bit_FindFolder}\DigitalEditions.exe"
 # Blender
 $Blender_TargetPath = "${env:ProgramFiles}\Blender Foundation\"
 $Blender_FindFolder = if (Test-Path -Path $Blender_TargetPath) { Get-ChildItem -Directory -Path $Blender_TargetPath | Where-Object { $_.Name -match '^Blender' } | Sort-Object -Descending }
-$Blender_FindFolder = if ($Blender_FindFolder.length -ge 1) { $Blender_FindFolder[0].name } else { $NotInstalled }
+$Blender_FindFolder = if ($Blender_FindFolder.length -ge 1) { $Blender_FindFolder[0].name } else { $NOT_INSTALLED }
 $Blender_StartIn = $Blender_TargetPath + "${Blender_FindFolder}\"
 $Blender_TargetPath = $Blender_StartIn + "blender-launcher.exe"
 $Blender_32bit_TargetPath = "${env:ProgramFiles(x86)}\Blender Foundation\"
 $Blender_32bit_FindFolder = if (Test-Path -Path $Blender_32bit_TargetPath) { Get-ChildItem -Directory -Path $Blender_32bit_TargetPath | Where-Object { $_.Name -match '^Blender' } | Sort-Object -Descending }
-$Blender_32bit_FindFolder = if ($Blender_32bit_FindFolder.length -ge 1) { $Blender_32bit_FindFolder[0].name } else { $NotInstalled }
+$Blender_32bit_FindFolder = if ($Blender_32bit_FindFolder.length -ge 1) { $Blender_32bit_FindFolder[0].name } else { $NOT_INSTALLED }
 $Blender_32bit_StartIn = $Blender_32bit_TargetPath + "${Blender_32bit_FindFolder}\"
 $Blender_32bit_TargetPath = $Blender_32bit_StartIn + "blender-launcher.exe"
 
@@ -1295,10 +1298,10 @@ $Blender_32bit_TargetPath = $Blender_32bit_StartIn + "blender-launcher.exe"
 
 # Adobe
 $AdobeDigitalEditions_FileVersionRaw = if (Test-Path -Path $AdobeDigitalEditions_TargetPath -PathType Leaf) { (Get-Item $AdobeDigitalEditions_TargetPath).VersionInfo.FileVersionRaw }
-$AdobeDigitalEditions_Version = if ($AdobeDigitalEditions_FileVersionRaw) { [string]($AdobeDigitalEditions_FileVersionRaw.Major) + '.' + [string]($AdobeDigitalEditions_FileVersionRaw.Minor) } else { $NotInstalled }
+$AdobeDigitalEditions_Version = if ($AdobeDigitalEditions_FileVersionRaw) { [string]($AdobeDigitalEditions_FileVersionRaw.Major) + '.' + [string]($AdobeDigitalEditions_FileVersionRaw.Minor) } else { $NOT_INSTALLED }
 $AdobeDigitalEditions_Name = "Adobe Digital Editions ${AdobeDigitalEditions_Version}"
 $AdobeDigitalEditions_32bit_FileVersionRaw = if (Test-Path -Path $AdobeDigitalEditions_32bit_TargetPath -PathType Leaf) { (Get-Item $AdobeDigitalEditions_32bit_TargetPath).VersionInfo.FileVersionRaw }
-$AdobeDigitalEditions_32bit_Version = if ($AdobeDigitalEditions_32bit_FileVersionRaw) { [string]($AdobeDigitalEditions_32bit_FileVersionRaw.Major) + '.' + [string]($AdobeDigitalEditions_32bit_FileVersionRaw.Minor) } else { $NotInstalled }
+$AdobeDigitalEditions_32bit_Version = if ($AdobeDigitalEditions_32bit_FileVersionRaw) { [string]($AdobeDigitalEditions_32bit_FileVersionRaw.Major) + '.' + [string]($AdobeDigitalEditions_32bit_FileVersionRaw.Minor) } else { $NOT_INSTALLED }
 $AdobeDigitalEditions_32bit_Name = "Adobe Digital Editions ${AdobeDigitalEditions_32bit_Version}"
 
 # App names dependant on OS or app version
@@ -1313,43 +1316,43 @@ for ($i = 0; $i -lt $Users.length; $i++) {
   # User app paths dependant on app version
 
   # 1Password
-  $OnePassword_TargetPath = "C:\Users\${aUser}\AppData\Local\1Password\app\"
+  $OnePassword_TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\1Password\app\"
   $OnePassword_FindFolder = if (Test-Path -Path $OnePassword_TargetPath) { Get-ChildItem -Directory -Path $OnePassword_TargetPath | Where-Object { $_.Name -match '^[.0-9]+$' } | Sort-Object -Descending }
-  $OnePassword_FindFolder = if ($OnePassword_FindFolder.length -ge 1) { $OnePassword_FindFolder[0].name } else { $NotInstalled }
+  $OnePassword_FindFolder = if ($OnePassword_FindFolder.length -ge 1) { $OnePassword_FindFolder[0].name } else { $NOT_INSTALLED }
   $OnePassword_TargetPath += "${OnePassword_FindFolder}\1Password.exe"
   # Adobe
-  $AdobeDigitalEditions_StartIn = "C:\Users\${aUser}\AppData\Local\Temp"
+  $AdobeDigitalEditions_StartIn = "${USERS_FOLDER}\${aUser}\AppData\Local\Temp"
   # Discord
-  $Discord_StartIn = "C:\Users\${aUser}\AppData\Local\Discord\"
+  $Discord_StartIn = "${USERS_FOLDER}\${aUser}\AppData\Local\Discord\"
   $Discord_TargetPath = $Discord_StartIn + "Update.exe"
   $Discord_FindFolder = if (Test-Path -Path $Discord_StartIn) { Get-ChildItem -Directory -Path $Discord_StartIn | Where-Object { $_.Name -match '^app\-[.0-9]+$' } | Sort-Object -Descending }
-  $Discord_FindFolder = if ($Discord_FindFolder.length -ge 1) { $Discord_FindFolder[0].name } else { $NotInstalled }
+  $Discord_FindFolder = if ($Discord_FindFolder.length -ge 1) { $Discord_FindFolder[0].name } else { $NOT_INSTALLED }
   $Discord_StartIn += $Discord_FindFolder
   # GitHub
-  $GitHubDesktop_StartIn = "C:\Users\${aUser}\AppData\Local\GitHubDesktop\"
+  $GitHubDesktop_StartIn = "${USERS_FOLDER}\${aUser}\AppData\Local\GitHubDesktop\"
   $GitHubDesktop_TargetPath = $GitHubDesktop_StartIn + "GitHubDesktop.exe"
   $GitHubDesktop_FindFolder = if (Test-Path -Path $GitHubDesktop_StartIn) { Get-ChildItem -Directory -Path $GitHubDesktop_StartIn | Where-Object { $_.Name -match '^app\-[.0-9]+$' } | Sort-Object -Descending }
-  $GitHubDesktop_FindFolder = if ($GitHubDesktop_FindFolder.length -ge 1) { $GitHubDesktop_FindFolder[0].name } else { $NotInstalled }
+  $GitHubDesktop_FindFolder = if ($GitHubDesktop_FindFolder.length -ge 1) { $GitHubDesktop_FindFolder[0].name } else { $NOT_INSTALLED }
   $GitHubDesktop_StartIn += $GitHubDesktop_FindFolder
   # Microsoft
-  $AzureIoTExplorerPreview_TargetPath = "C:\Users\${aUser}\AppData\Local\Programs\azure-iot-explorer\Azure IoT Explorer Preview.exe"
-  $AzureIoTExplorer_TargetPath = if (Test-Path -Path $AzureIoTExplorerPreview_TargetPath -PathType Leaf) { $AzureIoTExplorerPreview_TargetPath } else { "C:\Users\${aUser}\AppData\Local\Programs\azure-iot-explorer\Azure IoT Explorer.exe" }
+  $AzureIoTExplorerPreview_TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\azure-iot-explorer\Azure IoT Explorer Preview.exe"
+  $AzureIoTExplorer_TargetPath = if (Test-Path -Path $AzureIoTExplorerPreview_TargetPath -PathType Leaf) { $AzureIoTExplorerPreview_TargetPath } else { "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\azure-iot-explorer\Azure IoT Explorer.exe" }
   $AzureIoTExplorer_Name = "Azure IoT Explorer" + $(if (Test-Path -Path $AzureIoTExplorerPreview_TargetPath -PathType Leaf) { " Preview" })
   # Python
-  $Python_StartIn = "C:\Users\${aUser}\AppData\Local\Programs\Python\"
+  $Python_StartIn = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\Python\"
   $Python_FindFolder = if (Test-Path -Path $Python_StartIn) { Get-ChildItem -Directory -Path $Python_StartIn | Where-Object { $_.Name -match '^Python[.0-9]+$' } | Sort-Object -Descending }
-  $Python_FindFolder = if ($Python_FindFolder.length -ge 1) { $Python_FindFolder[0].name } else { $NotInstalled }
+  $Python_FindFolder = if ($Python_FindFolder.length -ge 1) { $Python_FindFolder[0].name } else { $NOT_INSTALLED }
   $Python_StartIn += "${Python_FindFolder}\"
   $PythonIDLE_TargetPath = $Python_StartIn + "Lib\idlelib\idle.pyw"
   $Python_TargetPath = $Python_StartIn + "python.exe"
   $Python_FileVersionRaw = if (Test-Path -Path $Python_TargetPath -PathType Leaf) { (Get-Item $Python_TargetPath).VersionInfo.FileVersionRaw }
-  $Python_Version = if ($Python_FileVersionRaw) { [string]($Python_FileVersionRaw.Major) + '.' + [string]($Python_FileVersionRaw.Minor) } else { $NotInstalled }
+  $Python_Version = if ($Python_FileVersionRaw) { [string]($Python_FileVersionRaw.Major) + '.' + [string]($Python_FileVersionRaw.Minor) } else { $NOT_INSTALLED }
   $PythonIDLE_Description = "Launches IDLE, the interactive environment for Python ${Python_Version}."
   $Python_Description = "Launches the Python ${Python_Version} interpreter."
   $PythonModuleDocs_Description = "Start the Python ${Python_Version} documentation server."
   $Python_SystemLnk = "Python ${Python_Version}\"
   $Python_Info = if (Test-Path -Path $Python_TargetPath -PathType Leaf) { (& "${Python_TargetPath}" -VV) }
-  $Python_Arch = if ($Python_Info) { if ($Python_Info | Select-String "\[[^\[\]]+32 bit[^\[\]]+\]") { 32 } elseif ($Python_Info | Select-String "\[[^\[\]]+64 bit[^\[\]]+\]") { 64 } else { "unknown" } } else { $NotInstalled }
+  $Python_Arch = if ($Python_Info) { if ($Python_Info | Select-String "\[[^\[\]]+32 bit[^\[\]]+\]") { 32 } elseif ($Python_Info | Select-String "\[[^\[\]]+64 bit[^\[\]]+\]") { 64 } else { "unknown" } } else { $NOT_INSTALLED }
   $PythonIDLE_Name = "IDLE (Python ${Python_Version} ${Python_Arch}-bit)"
   $Python_Name = "Python ${Python_Version} (${Python_Arch}-bit)"
   $PythonModuleDocs_Name = "Python ${Python_Version} Module Docs (${Python_Arch}-bit)"
@@ -1363,7 +1366,7 @@ for ($i = 0; $i -lt $Users.length; $i++) {
     @{Name = $AdobeDigitalEditions_Name; TargetPath = $AdobeDigitalEditions_TargetPath; StartIn = $AdobeDigitalEditions_StartIn },
     @{Name = $AdobeDigitalEditions_32bit_Name; TargetPath = $AdobeDigitalEditions_32bit_TargetPath; StartIn = $AdobeDigitalEditions_StartIn },
     # balenaEtcher
-    @{Name = "balenaEtcher"; TargetPath = "C:\Users\${aUser}\AppData\Local\Programs\balena-etcher\balenaEtcher.exe"; StartIn = "C:\Users\${aUser}\AppData\Local\Programs\balena-etcher"; Description = "Flash OS images to SD cards and USB drives, safely and easily." },
+    @{Name = "balenaEtcher"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\balena-etcher\balenaEtcher.exe"; StartIn = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\balena-etcher"; Description = "Flash OS images to SD cards and USB drives, safely and easily." },
     # Blender
     @{Name = "Blender"; TargetPath = $Blender_TargetPath; SystemLnk = "blender\"; StartIn = $Blender_StartIn },
     @{Name = "Blender"; TargetPath = $Blender_32bit_TargetPath; SystemLnk = "blender\"; StartIn = $Blender_32bit_StartIn },
@@ -1372,22 +1375,22 @@ for ($i = 0; $i -lt $Users.length; $i++) {
     # GitHub
     @{Name = "GitHub Desktop"; TargetPath = $GitHubDesktop_TargetPath; SystemLnk = "GitHub, Inc\"; StartIn = $GitHubDesktop_StartIn; Description = "Simple collaboration from your desktop" },
     # Google
-    @{Name = "Google Chrome"; TargetPath = "C:\Users\${aUser}\AppData\Local\Google\Chrome\Application\chrome.exe"; StartIn = "C:\Users\${aUser}\AppData\Local\Google\Chrome\Application"; Description = "Access the Internet" },
+    @{Name = "Google Chrome"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Google\Chrome\Application\chrome.exe"; StartIn = "${USERS_FOLDER}\${aUser}\AppData\Local\Google\Chrome\Application"; Description = "Access the Internet" },
     # Inkscape
     @{Name = "Inkscape"; TargetPath = "${env:ProgramFiles}\Inkscape\bin\inkscape.exe"; SystemLnk = "Inkscape\"; StartIn = "${env:ProgramFiles}\Inkscape\bin\" },
     @{Name = "Inkscape (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\Inkscape\bin\inkscape.exe"; SystemLnk = "Inkscape\"; StartIn = "${env:ProgramFiles(x86)}\Inkscape\bin\" },
     @{Name = "Inkview"; TargetPath = "${env:ProgramFiles}\Inkscape\bin\inkview.exe"; SystemLnk = "Inkscape\"; StartIn = "${env:ProgramFiles}\Inkscape\bin\" },
     @{Name = "Inkview (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\Inkscape\bin\inkview.exe"; SystemLnk = "Inkscape\"; StartIn = "${env:ProgramFiles(x86)}\Inkscape\bin\" },
     # Microsoft
-    @{Name = "Azure Data Studio"; TargetPath = "C:\Users\${aUser}\AppData\Local\Programs\Azure Data Studio\azuredatastudio.exe"; SystemLnk = "Azure Data Studio\"; StartIn = "C:\Users\${aUser}\AppData\Local\Programs\Azure Data Studio" },
-    @{Name = $AzureIoTExplorer_Name; TargetPath = $AzureIoTExplorer_TargetPath; StartIn = "C:\Users\${aUser}\AppData\Local\Programs\azure-iot-explorer\" },
-    @{Name = "Visual Studio Code"; TargetPath = "C:\Users\${aUser}\AppData\Local\Programs\Microsoft VS Code\Code.exe"; SystemLnk = "Visual Studio Code\"; StartIn = "C:\Users\${aUser}\AppData\Local\Programs\Microsoft VS Code" },
-    @{Name = "OneDrive"; TargetPath = "C:\Users\${aUser}\AppData\Local\Microsoft\OneDrive\OneDrive.exe"; Description = "Keep your most important files with you wherever you go, on any device." },
-    @{Name = $MicrosoftTeams_Name; TargetPath = "C:\Users\${aUser}\AppData\Local\Microsoft\Teams\Update.exe"; Arguments = "--processStart `"Teams.exe`""; StartIn = "C:\Users\${aUser}\AppData\Local\Microsoft\Teams" },
+    @{Name = "Azure Data Studio"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\Azure Data Studio\azuredatastudio.exe"; SystemLnk = "Azure Data Studio\"; StartIn = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\Azure Data Studio" },
+    @{Name = $AzureIoTExplorer_Name; TargetPath = $AzureIoTExplorer_TargetPath; StartIn = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\azure-iot-explorer\" },
+    @{Name = "Visual Studio Code"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\Microsoft VS Code\Code.exe"; SystemLnk = "Visual Studio Code\"; StartIn = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\Microsoft VS Code" },
+    @{Name = "OneDrive"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Microsoft\OneDrive\OneDrive.exe"; Description = "Keep your most important files with you wherever you go, on any device." },
+    @{Name = $MicrosoftTeams_Name; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Microsoft\Teams\Update.exe"; Arguments = "--processStart `"Teams.exe`""; StartIn = "${USERS_FOLDER}\${aUser}\AppData\Local\Microsoft\Teams" },
     # Mozilla
-    @{Name = "Firefox"; TargetPath = "C:\Users\${aUser}\AppData\Local\Mozilla Firefox\firefox.exe"; StartIn = "C:\Users\${aUser}\AppData\Local\Mozilla Firefox" },
+    @{Name = "Firefox"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Mozilla Firefox\firefox.exe"; StartIn = "${USERS_FOLDER}\${aUser}\AppData\Local\Mozilla Firefox" },
     # NVIDIA Corporation
-    @{Name = "NVIDIA GeForce NOW"; TargetPath = "C:\Users\${aUser}\AppData\Local\NVIDIA Corporation\GeForceNOW\CEF\GeForceNOW.exe"; StartIn = "C:\Users\${aUser}\AppData\Local\NVIDIA Corporation\GeForceNOW\CEF" },
+    @{Name = "NVIDIA GeForce NOW"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\NVIDIA Corporation\GeForceNOW\CEF\GeForceNOW.exe"; StartIn = "${USERS_FOLDER}\${aUser}\AppData\Local\NVIDIA Corporation\GeForceNOW\CEF" },
     # Python
     @{Name = $PythonIDLE_Name; TargetPath = $PythonIDLE_TargetPath; SystemLnk = $Python_SystemLnk; StartIn = $Python_StartIn; Description = $PythonIDLE_Description },
     @{Name = $Python_Name; TargetPath = $Python_TargetPath; SystemLnk = $Python_SystemLnk; StartIn = $Python_StartIn; Description = $Python_Description },
@@ -1396,9 +1399,9 @@ for ($i = 0; $i -lt $Users.length; $i++) {
     @{Name = "Raspberry Pi Imager"; TargetPath = "${env:ProgramFiles}\Raspberry Pi Imager\rpi-imager.exe"; StartIn = "${env:ProgramFiles}\Raspberry Pi Imager" }, # it's the only install on 32-bit
     @{Name = "Raspberry Pi Imager"; TargetPath = "${env:ProgramFiles(x86)}\Raspberry Pi Imager\rpi-imager.exe"; StartIn = "${env:ProgramFiles(x86)}\Raspberry Pi Imager" }, # it's the only install on 64-bit
     # RingCentral
-    @{Name = "RingCentral"; TargetPath = "C:\Users\${aUser}\AppData\Local\Programs\RingCentral\RingCentral.exe"; StartIn = "C:\Users\${aUser}\AppData\Local\Programs\RingCentral"; Description = "RingCentral" },
-    @{Name = "RingCentral Meetings"; TargetPath = "C:\Users\${aUser}\AppData\Roaming\RingCentralMeetings\bin\RingCentralMeetings.exe"; SystemLnk = "RingCentral Meetings\"; Description = "RingCentral Meetings" },
-    @{Name = "Uninstall RingCentral Meetings"; TargetPath = "C:\Users\${aUser}\AppData\Roaming\RingCentralMeetings\uninstall\Installer.exe"; Arguments = "/uninstall"; SystemLnk = "RingCentral Meetings\"; Description = "Uninstall RingCentral Meetings" },
+    @{Name = "RingCentral"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\RingCentral\RingCentral.exe"; StartIn = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\RingCentral"; Description = "RingCentral" },
+    @{Name = "RingCentral Meetings"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Roaming\RingCentralMeetings\bin\RingCentralMeetings.exe"; SystemLnk = "RingCentral Meetings\"; Description = "RingCentral Meetings" },
+    @{Name = "Uninstall RingCentral Meetings"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Roaming\RingCentralMeetings\uninstall\Installer.exe"; Arguments = "/uninstall"; SystemLnk = "RingCentral Meetings\"; Description = "Uninstall RingCentral Meetings" },
     # WinDirStat
     @{Name = "Help (ENG)"; TargetPath = "${env:ProgramFiles}\WinDirStat\windirstat.chm"; SystemLnk = "WinDirStat\"; StartIn = "${env:ProgramFiles}\WinDirStat" }, # it's the only install on 32-bit
     @{Name = "Uninstall WinDirStat"; TargetPath = "${env:ProgramFiles}\WinDirStat\Uninstall.exe"; SystemLnk = "WinDirStat\"; StartIn = "${env:ProgramFiles}\WinDirStat" }, # it's the only install on 32-bit
