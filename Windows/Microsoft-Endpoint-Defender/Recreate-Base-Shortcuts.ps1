@@ -1565,6 +1565,12 @@ for ($i = 0; $i -lt $Users.length; $i++) {
   $Python_FileVersionRaw = if (Test-Path -Path $Python_TargetPath -PathType Leaf) { (Get-Item $Python_TargetPath).VersionInfo.FileVersionRaw }
   $Python_Version = if ($Python_FileVersionRaw) { [string]($Python_FileVersionRaw.Major) + '.' + [string]($Python_FileVersionRaw.Minor) } else { $NOT_INSTALLED }
   $Python_SystemLnk = "Python ${Python_Version}\"
+  # Slack
+  $Slack_StartIn = "${USERS_FOLDER}\${aUser}\AppData\Local\slack\"
+  $Slack_TargetPath = $Slack_StartIn + "slack.exe"
+  $Slack_FindFolder = if (Test-Path -Path $Slack_StartIn) { Get-ChildItem -Directory -Path $Slack_StartIn | Where-Object { $_.Name -match '^app\-[.0-9]+$' } | Sort-Object -Descending }
+  $Slack_FindFolder = if ($Slack_FindFolder.length -ge 1) { $Slack_FindFolder[0].name } else { $NOT_INSTALLED }
+  $Slack_StartIn += $Slack_FindFolder
   
   # User app names dependant on OS or app version
 
@@ -1632,6 +1638,8 @@ for ($i = 0; $i -lt $Users.length; $i++) {
     @{Name = $Python_Name; TargetPath = $Python_TargetPath; SystemLnk = $Python_SystemLnk; StartIn = $Python_StartIn; Description = $Python_Description },
     @{Name = $PythonManuals_Name; TargetPath = $PythonManuals_TargetPath; SystemLnk = $Python_SystemLnk; StartIn = $Python_StartIn; Description = $PythonManuals_Description },
     @{Name = $PythonModuleDocs_Name; TargetPath = $Python_TargetPath; Arguments = "-m pydoc -b"; SystemLnk = $Python_SystemLnk; StartIn = $Python_StartIn; Description = $PythonModuleDocs_Description },
+    # Slack
+    @{Name = "Slack"; TargetPath = $Slack_TargetPath; SystemLnk = "Slack Technologies Inc\"; StartIn = $Slack_StartIn; Description = "Slack Desktop" },
     # Raspberry Pi Imager
     @{Name = "Raspberry Pi Imager"; TargetPath = "${env:ProgramFiles}\Raspberry Pi Imager\rpi-imager.exe"; StartIn = "${env:ProgramFiles}\Raspberry Pi Imager" }, # it's the only install on 32-bit
     @{Name = "Raspberry Pi Imager"; TargetPath = "${env:ProgramFiles(x86)}\Raspberry Pi Imager\rpi-imager.exe"; StartIn = "${env:ProgramFiles(x86)}\Raspberry Pi Imager" }, # it's the only install on 64-bit
