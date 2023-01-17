@@ -224,9 +224,11 @@ $sysAppList = @(
   # Edge
   @{Name = "Microsoft Edge"; TargetPath = "${env:ProgramFiles}\Microsoft\Edge\Application\msedge.exe"; StartIn = "${env:ProgramFiles}\Microsoft\Edge\Application"; Description = "Browse the web" }, # it's the only install on 32-bit
   @{Name = "Microsoft Edge"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft\Edge\Application\msedge.exe"; StartIn = "${env:ProgramFiles(x86)}\Microsoft\Edge\Application"; Description = "Browse the web" }, # it's the only install on 64-bit
-  # Intune Management Extension
+  # Intune 
   @{Name = "Microsoft Intune Management Extension"; TargetPath = "${env:ProgramFiles}\Microsoft Intune Management Extension\AgentExecutor.exe"; SystemLnk = "Microsoft Intune Management Extension\"; Description = "Microsoft Intune Management Extension" }, # it's the only install on 32-bit
   @{Name = "Microsoft Intune Management Extension"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Intune Management Extension\AgentExecutor.exe"; SystemLnk = "Microsoft Intune Management Extension\"; Description = "Microsoft Intune Management Extension" }, # it's the only install on 64-bit
+  @{Name = "Remote help"; TargetPath = "${env:ProgramFiles}\Remote help\RemoteHelp.exe"; SystemLnk = "Remote help\"; StartIn = "${env:ProgramFiles}\Remote help\"; Description = "Remote help" },
+  @{Name = "Remote help (32-bit)"; TargetPath = "${env:ProgramFiles(x86)}\Remote help\RemoteHelp.exe"; SystemLnk = "Remote help\"; StartIn = "${env:ProgramFiles(x86)}\Remote help\"; Description = "Remote help" },
   # Office
   @{Name = "Access"; TargetPath = "${env:ProgramFiles}\Microsoft Office\root\Office16\MSACCESS.EXE"; Description = "Build a professional app quickly to manage data." },
   @{Name = "Excel"; TargetPath = "${env:ProgramFiles}\Microsoft Office\root\Office16\EXCEL.EXE"; Description = "Easily discover, visualize, and share insights from your data." },
