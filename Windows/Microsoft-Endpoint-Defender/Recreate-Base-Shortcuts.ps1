@@ -1617,6 +1617,8 @@ for ($i = 0; $i -lt $Users.length; $i++) {
   # User app names dependant on OS or app version
 
   # Microsoft
+  $WindowsTools_TargetPath = "${env:windir}\system32\"
+  $WindowsTools_TargetPath += if ($isWindows11) { "control.exe" } else { "${NOT_INSTALLED}.exe" }
   $AzureIoTExplorer_Name = "Azure IoT Explorer" + $(if (Test-Path -Path $AzureIoTExplorerPreview_TargetPath -PathType leaf) { " Preview" })
   # Python
   $PythonIDLE_Description = "Launches IDLE, the interactive environment for Python ${Python_Version}."
@@ -1672,7 +1674,7 @@ for ($i = 0; $i -lt $Users.length; $i++) {
     @{Name = $MicrosoftTeams_Name; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Microsoft\Teams\Update.exe"; Arguments = "--processStart `"Teams.exe`""; WorkingDirectory = "${USERS_FOLDER}\${aUser}\AppData\Local\Microsoft\Teams" },
     @{Name = "OneDrive"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Microsoft\OneDrive\OneDrive.exe"; Description = "Keep your most important files with you wherever you go, on any device." },
     # Windows
-    @{Name = "Administrative Tools"; TargetPath = "${env:windir}\system32\control.exe"; Arguments = "/name Microsoft.AdministrativeTools"; Description = "Windows Tools"; IconLocation = "%windir%\system32\imageres.dll,-114" },
+    @{Name = "Administrative Tools"; TargetPath = $WindowsTools_TargetPath; Arguments = "/name Microsoft.AdministrativeTools"; Description = "Windows Tools"; IconLocation = "%windir%\system32\imageres.dll,-114" },
     @{Name = "LiveCaptions"; TargetPath = "${env:windir}\system32\LiveCaptions.exe"; SystemLnk = "Accessibility\"; Description = "Captions audio and video live on your screen."; IconLocation = "%windir%\system32\LiveCaptions.exe,-1" },
     @{Name = "Magnify"; TargetPath = "${env:windir}\system32\magnify.exe"; SystemLnk = "Accessibility\"; Description = "Enlarges selected text and other on-screen items for easier viewing."; IconLocation = "%windir%\system32\magnify.exe,0" },
     @{Name = "Narrator"; TargetPath = "${env:windir}\system32\narrator.exe"; SystemLnk = "Accessibility\"; Description = "Reads on-screen text, dialog boxes, menus, and buttons aloud if speakers or a sound output device is installed."; IconLocation = "%windir%\system32\narrator.exe,-1" },
