@@ -358,7 +358,7 @@ $PowerToys_isPreview = if (Test-Path -Path $PowerToys_TargetPath -PathType Leaf)
 $PowerToys_Name = "PowerToys" + $(if ($PowerToys_isPreview) { " (Preview)" })
 # Windows
 $WindowsMediaPlayerOld_Name = "Windows Media Player" + $(if ($isWindows11) { " Legacy" })
-$ODBCDataSources_Name = "ODBC Data Sources" + $(if ([Environment]::Is64BitOperatingSystem) {" (64-bit)"})
+$ODBCDataSources_Name = "ODBC Data Sources" + $(if ([Environment]::Is64BitOperatingSystem) { " (64-bit)" })
 
 $sysAppList = @(
   # Azure
@@ -1666,6 +1666,16 @@ for ($i = 0; $i -lt $Users.length; $i++) {
     @{Name = "OneDrive"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Microsoft\OneDrive\OneDrive.exe"; Description = "Keep your most important files with you wherever you go, on any device." },
     # Windows
     @{Name = "Windows Tools"; TargetPath = "%windir%\system32\control.exe"; Arguments = "/name Microsoft.AdministrativeTools"; Description = "Windows Tools" },
+    @{Name = "LiveCaptions"; TargetPath = "${env:windir}\system32\LiveCaptions.exe"; SystemLnk = "Accessibility\" },
+    @{Name = "Magnify"; TargetPath = "${env:windir}\system32\magnify.exe"; SystemLnk = "Accessibility\" },
+    @{Name = "Narrator"; TargetPath = "${env:windir}\system32\narrator.exe"; SystemLnk = "Accessibility\" },
+    @{Name = "On-Screen Keyboard"; TargetPath = "${env:windir}\system32\osk.exe"; SystemLnk = "Accessibility\" },
+    @{Name = "VoiceAccess"; TargetPath = "${env:windir}\system32\voiceaccess.exe"; SystemLnk = "Accessibility\" },
+    @{Name = "Command Prompt"; TargetPath = "${env:windir}\system32\cmd.exe"; SystemLnk = "System Tools\"; WorkingDirectory = "%HOMEDRIVE%%HOMEPATH%" },
+    @{Name = "Control Panel"; TargetPath = ""; SystemLnk = "System Tools\" },
+    @{Name = "Run"; TargetPath = ""; SystemLnk = "System Tools\" },
+    @{Name = "Windows PowerShell"; TargetPath = "${env:windir}\System32\WindowsPowerShell\v1.0\powershell.exe"; SystemLnk = "Windows PowerShell\"; WorkingDirectory = "%HOMEDRIVE%%HOMEPATH%" },
+    @{Name = "Windows PowerShell (x86)"; TargetPath = "${env:windir}\SysWOW64\WindowsPowerShell\v1.0\powershell.exe"; SystemLnk = "Windows PowerShell\"; WorkingDirectory = "%HOMEDRIVE%%HOMEPATH%" },
     # Mozilla
     @{Name = "Firefox"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Mozilla Firefox\firefox.exe"; WorkingDirectory = "${USERS_FOLDER}\${aUser}\AppData\Local\Mozilla Firefox" },
     # NVIDIA Corporation
