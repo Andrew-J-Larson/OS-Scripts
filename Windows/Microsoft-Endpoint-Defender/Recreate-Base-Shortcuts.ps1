@@ -1590,9 +1590,9 @@ for ($i = 0; $i -lt $Users.length; $i++) {
   # GoTo
   $GoToResolveDesktopConsole_WorkingDirectory = "${USERS_FOLDER}\${aUser}\GoTo\GoTo Resolve Desktop Console\"
   $GoToResolveDesktopConsole_Exe = $GoToResolveDesktopConsole_WorkingDirectory + "ra-technician-console.exe"
-  $GoToResolveDesktopConsole_Arch = if (Test-Path -Path $GoToResolveDesktopConsole_TargetPath) { Get-BinaryType $GoToResolveDesktopConsole_TargetPath }
-  $GoToResolveDesktopConsole_TargetPath = if ($GoToResolveDesktopConsole_Arch -And ($GoToResolveDesktopConsole_Arch -eq "BIT64")) { $GoToResolveDesktopConsole_Exe } else { $GoToResolveDesktopConsole_WorkingDirectory + $NOT_INSTALLED }
-  $GoToResolveDesktopConsole_32bit_TargetPath = if ($GoToResolveDesktopConsole_Arch -And ($GoToResolveDesktopConsole_Arch -eq "BIT32")) { $GoToResolveDesktopConsole_Exe } else { $GoToResolveDesktopConsole_WorkingDirectory + $NOT_INSTALLED }
+  $GoToResolveDesktopConsole_Arch = if (Test-Path -Path $GoToResolveDesktopConsole_Exe) { Get-BinaryType $GoToResolveDesktopConsole_Exe }
+  $GoToResolveDesktopConsole_TargetPath = if ($GoToResolveDesktopConsole_Arch -And ($GoToResolveDesktopConsole_Arch -eq "BIT64")) { $GoToResolveDesktopConsole_Exe } else { $GoToResolveDesktopConsole_WorkingDirectory + "${NOT_INSTALLED}.exe" }
+  $GoToResolveDesktopConsole_32bit_TargetPath = if ($GoToResolveDesktopConsole_Arch -And ($GoToResolveDesktopConsole_Arch -eq "BIT32")) { $GoToResolveDesktopConsole_Exe } else { $GoToResolveDesktopConsole_WorkingDirectory + "${NOT_INSTALLED}.exe" }
   # Microsoft
   $AzureIoTExplorerPreview_TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\azure-iot-explorer\Azure IoT Explorer Preview.exe"
   $AzureIoTExplorer_TargetPath = if (Test-Path -Path $AzureIoTExplorerPreview_TargetPath -PathType leaf) { $AzureIoTExplorerPreview_TargetPath } else { "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\azure-iot-explorer\Azure IoT Explorer.exe" }
