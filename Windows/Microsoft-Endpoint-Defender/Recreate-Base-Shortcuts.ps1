@@ -28,7 +28,7 @@ Write-Host "" # Makes log look better
 # TODO: FOR LATER ... this will aid in repairing the taskbar (duplicate pinned apps issue)
 #Set-Variable PROGRAM_SHORTCUTS_PIN_PATH -Option Constant -Value "%ALLUSERSPROFILE%\Microsoft\Windows\Start Menu\Programs"
 #Set-Variable PROGRAM_SHORTCUTS_USER_PIN_PATH -Option Constant -Value "%APPDATA%\Microsoft\Windows\Start Menu\Programs"
-Set-Variable USERS_FOLDER -Option Constant -Value "${env:HOMEDRIVE}\Users"
+Set-Variable USERS_FOLDER -Option Constant -Value "${env:SystemDrive}\Users"
 Set-Variable NOT_INSTALLED -Option Constant -Value "NOT-INSTALLED"
 
 
