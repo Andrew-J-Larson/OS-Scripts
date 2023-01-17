@@ -379,6 +379,7 @@ $sysAppList = @(
   @{Name = "PowerPoint"; TargetPath = "${env:ProgramFiles}\Microsoft Office\root\Office16\POWERPNT.EXE"; Description = "Design and deliver beautiful presentations with ease and confidence." },
   @{Name = "Project"; TargetPath = "${env:ProgramFiles}\Microsoft Office\root\Office16\WINPROJ.EXE"; Description = "Easily collaborate with others to quickly start and deliver winning projects." },
   @{Name = "Publisher"; TargetPath = "${env:ProgramFiles}\Microsoft Office\root\Office16\MSPUB.EXE"; Description = "Create professional-grade publications that make an impact." },
+  @{Name = "Skype for Business"; TargetPath = "${env:ProgramFiles}\Microsoft Office\root\Office16\LYNC.EXE"; Description = "Connect with people everywhere through voice and video calls, Skype Meetings, and IM." },
   @{Name = "Visio"; TargetPath = "${env:ProgramFiles}\Microsoft Office\root\Office16\VISIO.EXE"; Description = "Create professional and versatile diagrams that simplify complex information." },
   @{Name = "Word"; TargetPath = "${env:ProgramFiles}\Microsoft Office\root\Office16\WINWORD.EXE"; Description = "Create beautiful documents, easily work with others, and enjoy the read." },
   @{Name = "Database Compare"; TargetPath = $O365_DatabaseCompare_TargetPath; Arguments = $O365_DatabaseCompare_Arguments; SystemLnk = "Microsoft Office Tools\"; Description = "Compare versions of an Access database." }, # it's the only install on 32-bit
@@ -394,6 +395,7 @@ $sysAppList = @(
   @{Name = "PowerPoint"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Office\root\Office16\POWERPNT.EXE"; Description = "Design and deliver beautiful presentations with ease and confidence." },
   @{Name = "Project"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Office\root\Office16\WINPROJ.EXE"; Description = "Easily collaborate with others to quickly start and deliver winning projects." },
   @{Name = "Publisher"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Office\root\Office16\MSPUB.EXE"; Description = "Create professional-grade publications that make an impact." },
+  @{Name = "Skype for Business"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Office\root\Office16\LYNC.EXE"; Description = "Connect with people everywhere through voice and video calls, Skype Meetings, and IM." },
   @{Name = "Visio"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Office\root\Office16\VISIO.EXE"; Description = "Create professional and versatile diagrams that simplify complex information." },
   @{Name = "Word"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Office\root\Office16\WINWORD.EXE"; Description = "Create beautiful documents, easily work with others, and enjoy the read." },
   @{Name = "Database Compare"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft Office\root\Client\AppVLP.exe"; Arguments = "`"${env:ProgramFiles(x86)}\Microsoft Office\Office16\DCF\DATABASECOMPARE.EXE`""; SystemLnk = "Microsoft Office Tools\"; Description = "Compare versions of an Access database." },
