@@ -1427,6 +1427,9 @@ $sys3rdPartyAppList = @(
   # paint.net
   @{Name = "paint.net"; TargetPath = "${env:ProgramFiles}\paint.net\paintdotnet.exe"; WorkingDirectory = "${env:ProgramFiles}\paint.net"; Description = "Create, edit, scan, and print images and photographs." },
   @{Name = "paint.net"; TargetPath = "${env:ProgramFiles(x86)}\paint.net\paintdotnet.exe"; WorkingDirectory = "${env:ProgramFiles(x86)}\paint.net"; Description = "Create, edit, scan, and print images and photographs." },
+  # Parallels
+  @{Name = "Parallels Client"; TargetPath = "${env:ProgramFiles}\Parallels\Client\APPServerClient.exe"; WorkingDirectory = "${env:ProgramFiles}\Parallels\Client\" },
+  @{Name = "Parallels Client"; TargetPath = "${env:ProgramFiles(x86)}\Parallels\Client\APPServerClient.exe"; WorkingDirectory = "${env:ProgramFiles(x86)}\Parallels\Client\" },
   # Pulse Secure
   @{Name = "Pulse Secure"; TargetPath = "${env:ProgramFiles}\Common Files\Pulse Secure\JamUI\Pulse.exe"; Arguments = "-show"; SystemLnk = "Pulse Secure\"; Description = "Pulse Secure Desktop Client" }, # it's the only install on 32-bit
   @{Name = "Pulse Secure"; TargetPath = "${env:ProgramFiles(x86)}\Common Files\Pulse Secure\JamUI\Pulse.exe"; Arguments = "-show"; SystemLnk = "Pulse Secure\"; Description = "Pulse Secure Desktop Client" }, # it's the only install on 64-bit
