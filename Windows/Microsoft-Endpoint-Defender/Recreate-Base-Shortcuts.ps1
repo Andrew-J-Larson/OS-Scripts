@@ -99,7 +99,7 @@ function Get-BinaryType {
       ValueFromPipelineByPropertyName = $true
     )]
     [ValidateNotNullOrEmpty()]
-    [ValidateScript({ Test-Path $_.FullName })]
+    [ValidateScript({ Test-Path -Path $_.FullName })]
     [IO.FileInfo[]]
     $Path,
 
@@ -211,7 +211,7 @@ function New-Shortcut {
   Set-Variable PROGRAM_SHORTCUTS_USER_PATH -Option Constant -Value "${USERS_FOLDER}\${sUser}\AppData\Roaming\Microsoft\Windows\Start Menu\Programs"
 
   # validate name and target path
-  if ($sName -And $sTargetPath -And (Test-Path $sTargetPath -PathType leaf)) {
+  if ($sName -And $sTargetPath -And (Test-Path -Path $sTargetPath -PathType leaf)) {
     # if shortcut path not given, create one at default location with $sName
     if (-Not ($sSystemLnk)) { $sSystemLnk = $sName }
     # if doesn't have $PROGRAM_SHORTCUTS_PATH or $PROGRAM_SHORTCUTS_USER_PATH (and not start with drive letter), it'll assume a path for it
@@ -222,13 +222,15 @@ function New-Shortcut {
     if ($sSystemLnk.EndsWith('\')) { $sSystemLnk = $sSystemLnk + $sName }
     # if doesn't end with .lnk, add it
     if (-Not ($sSystemLnk -match '.*\.lnk$')) { $sSystemLnk = $sSystemLnk + '.lnk' }
+    # needed for validating path where shortcut is being made at
+    $sSystemLnkPWD = $sSystemLnk.Substring(0, $sSystemLnk.lastIndexOf('\'))
 
-    # only create shortcut if it doesn't already exist
-    if (Test-Path $sSystemLnk -PathType leaf) {
+    # only create shortcut if path is valid, and it doesn't already exist
+    if ((Test-Path -Path $sSystemLnkPWD) -And (Test-Path -Path $sSystemLnk -PathType leaf)) {
       $resultMsg += "A shortcut already exists at:`n${sSystemLnk}"
       $result = $false
     }
-    else {
+    elseif (Test-Path -Path $sSystemLnkPWD) {
       $WScriptObj = New-Object -ComObject WScript.Shell
       $newLNK = $WscriptObj.CreateShortcut($sSystemLnk)
 
@@ -251,11 +253,15 @@ function New-Shortcut {
           $bytes[0x15] = $bytes[0x15] -bor 0x20 #set byte 21 (0x15) bit 6 (0x20) ON
           [System.IO.File]::WriteAllBytes($sSystemLnk, $bytes)
           $result = $?
-          if ($result) { $resultMsg += "Shortcut set to Run as Admin, at: ${sSystemLnk}" }
-          else { $errorMsg += "Failed to set shortcut to Run as Admin, at: ${sSystemLnk}" }
+          if ($result) { $resultMsg += "Shortcut set to Run as Admin, at:`n${sSystemLnk}" }
+          else { $errorMsg += "Failed to set shortcut to Run as Admin, at:`n${sSystemLnk}" }
         }
       }
-      else { $errorMsg += "Failed to create shortcut, with target at: ${sTargetPath}" }
+      else { $errorMsg += "Failed to create shortcut, with target at:`n${sTargetPath}`nand shortcut path at:`n${sSystemLnk}" }
+    }
+    else {
+      $warnMsg += "Failed to create shortcut, with shortcut path at:`n${sSystemLnk}"
+      $result = $false
     }
   }
   elseif (-Not ($sName -Or $sTargetPath)) {
