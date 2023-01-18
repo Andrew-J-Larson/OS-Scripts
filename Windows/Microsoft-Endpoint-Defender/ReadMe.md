@@ -1,0 +1,104 @@
+## Supported Applications
+
+### Here's a list of all of the current supported applications (that shortcuts will be recreated for):
+ - Microsoft
+   - Azure Data Studio
+   - Azure IoT Explorer
+   - Edge
+   - Microsoft Intune Management Extension
+   - Office (entire suite)
+   - OneDrive
+   - Teams
+   - Power BI Desktop
+   - PowerShell 7 (or whatever is the newest installed on your machine)
+   - PowerToys
+   - Remote help
+   - Visual Studio Code
+   - Visual Studio 2022 / 2019 / 2017
+     - Python installs through Visual Studio **NOT** supported!
+   - Visual Studio Installer
+   - Windows Accessories (e.g. Remote Desktop)
+ - Adobe
+   - Creative Cloud (entire suite + Maxon Cinema 4D)
+   - Acrobat
+   - Acrobat Reader (old)
+   - Digital Editions 4.5 (or whatever is the newest installed on your machine)
+ - Google
+   - Chrome
+   - Google Drive
+   - VPN by GoogleOne
+ - Mozilla
+   - Firefox
+   - Thunderbird
+ - Dell
+   - Dell OS Recovery Tool
+   - SupportAssist Recovery Assistant
+ - NVIDIA
+   - GeForce Experience
+   - GeForce NOW
+ - RealVNC
+   - VNC Server
+   - VNC Viewer
+ - KeePass
+   - KeePass (2.x versions or newer)
+   - KeePass (1.x versions)
+ - RingCentral
+   - RingCentral App
+   - RingCentral Meetings
+ - Cisco
+   - Cisco AnyConnect Secure Mobility Client
+   - Cisco Jabber
+ - Altair
+   - Monarch 2021
+   - Monarch 2020
+ - Epson Software
+   - Epson Scan 2
+   - FAX Utility)
+ - Others
+   - 1Password
+   - 7-Zip
+   - AmbiBox
+   - Audacity
+   - AutoHotkey + AutoHotkey V2
+   - AWS VPN Client
+   - balenaEtcher
+   - BCUninstaller (Bulk Crap Uninstaller)
+   - Blender
+   - Bytello Share
+   - Citrix Workspace
+   - CodeTwo Active Directory Photos
+   - Discord
+   - Docker Desktop
+   - draw.io
+   - Egnyte Desktop App
+   - GIMP (GNU Image Manipulation Program)
+   - GitHub Desktop
+   - GoTo Resolve Desktop Console
+   - Inkscape
+   - KC Softwares SUMo
+   - Kdenlive
+   - LAPS UI (Local Administrator Password Solution)
+   - Ledger Live
+   - Notepad++
+   - OpenVPN
+   - OSFMount
+   - paint.net
+   - Parallels Client
+   - Pulse Secure
+   - PuTTY
+   - Python 3.11 (or whatever is the newest installed on your machine)
+   - Raspberry Pi Imager
+   - Samsung DeX
+   - Slack
+   - SonicWall Global VPN Client
+   - SoundSwitch
+   - Team Viewer
+   - USB Redirector TS Edition - Workstation
+   - VirtualBox
+   - VLC media player
+   - VMware Workstation 16 Player
+   - Win32DiskImager
+   - Winaero
+   - WinDirStat
+   - WinSCP
+   - Zoom
