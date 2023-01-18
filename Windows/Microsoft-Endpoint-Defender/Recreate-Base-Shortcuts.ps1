@@ -226,7 +226,7 @@ function New-Shortcut {
     $sSystemLnkPWD = $sSystemLnk.Substring(0, $sSystemLnk.lastIndexOf('\'))
 
     # only create shortcut if path is valid, and it doesn't already exist
-    if ((Test-Path -Path $sSystemLnkPWD) -And (Test-Path -Path $sSystemLnk -PathType leaf)) {
+    if (Test-Path -Path $sSystemLnk -PathType leaf) {
       $resultMsg += "A shortcut already exists at:`n${sSystemLnk}"
       $result = $false
     }
