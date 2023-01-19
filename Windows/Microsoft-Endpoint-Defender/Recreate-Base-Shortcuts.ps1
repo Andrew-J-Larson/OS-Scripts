@@ -1,5 +1,5 @@
 #Requires -RunAsAdministrator
-<# Recreate Base Shortcuts v0.9.004 - https://github.com/TheAlienDrew/OS-Scripts/blob/master/Windows/Microsoft-Endpoint-Defender/Recreate-Base-Shortcuts.ps1
+<# Recreate Base Shortcuts v0.9.005 - https://github.com/TheAlienDrew/OS-Scripts/blob/master/Windows/Microsoft-Endpoint-Defender/Recreate-Base-Shortcuts.ps1
    Script only recreates shortcuts to applications it knows are installed, and also works for user profile installed applications.
    If a program you use isn't in any of the lists here, either fork/edit/push, or create an issue at:
    https://github.com/TheAlienDrew/OS-Scripts/issues/new?title=%5BAdd%20App%5D%20Recreate-Base-Shortcuts.ps1&body=%3C%21--%20Please%20enter%20the%20app%20you%20need%20added%20below%2C%20and%20a%20link%20to%20the%20installer%20--%3E%0A%0A
@@ -1234,6 +1234,12 @@ for ($i = 0; $i -lt $sysAppList.length; $i++) {
 
 $oemSysAppList = @(
   # Dell
+  @{
+    Name             = "Dell Display Manager 2.0"
+    TargetPath       = "${env:ProgramFiles}\Dell\Dell Display Manager 2.0\DDM.exe"
+    SystemLnk        = "Dell\"
+    WorkingDirectory = "${env:ProgramFiles}\Dell\Dell Display Manager 2.0\Prerequisites" 
+  },
   @{ # it's the only install on 32-bit
     Name             = "Dell OS Recovery Tool"
     TargetPath       = "${env:ProgramFiles}\Dell\OS Recovery Tool\DellOSRecoveryTool.exe"
@@ -1241,15 +1247,33 @@ $oemSysAppList = @(
     WorkingDirectory = "${env:ProgramFiles}\Dell\OS Recovery Tool\" 
   },
   @{
+    Name             = "Dell Peripheral Manager"
+    TargetPath       = "${env:ProgramFiles}\Dell\Dell Peripheral Manager\DPM.exe"
+    SystemLnk        = "Dell\"
+    WorkingDirectory = "${env:ProgramFiles}\Dell\Dell Peripheral Manager" 
+  },
+  @{
     Name       = "SupportAssist Recovery Assistant"
     TargetPath = "${env:ProgramFiles}\Dell\SARemediation\postosri\osrecoveryagent.exe"
     SystemLnk  = "Dell\SupportAssist\"
+  },
+  @{
+    Name             = "Dell Display Manager 2.0"
+    TargetPath       = "${env:ProgramFiles(x86)}\Dell\Dell Display Manager 2.0\DDM.exe"
+    SystemLnk        = "Dell\"
+    WorkingDirectory = "${env:ProgramFiles(x86)}\Dell\Dell Display Manager 2.0\Prerequisites" 
   },
   @{ # it's the only install on 64-bit
     Name             = "Dell OS Recovery Tool"
     TargetPath       = "${env:ProgramFiles(x86)}\Dell\OS Recovery Tool\DellOSRecoveryTool.exe"
     SystemLnk        = "Dell\"
     WorkingDirectory = "${env:ProgramFiles(x86)}\Dell\OS Recovery Tool\" 
+  },
+  @{
+    Name             = "Dell Peripheral Manager"
+    TargetPath       = "${env:ProgramFiles(x86)}\Dell\Dell Peripheral Manager\DPM.exe"
+    SystemLnk        = "Dell\"
+    WorkingDirectory = "${env:ProgramFiles(x86)}\Dell\Dell Peripheral Manager" 
   },
   @{
     Name       = "SupportAssist Recovery Assistant"
@@ -1262,6 +1286,12 @@ $oemSysAppList = @(
     TargetPath       = "${env:ProgramFiles}\NVIDIA Corporation\NVIDIA GeForce Experience\NVIDIA GeForce Experience.exe"
     SystemLnk        = "NVIDIA Corporation\"
     WorkingDirectory = "${env:ProgramFiles}\NVIDIA Corporation\NVIDIA GeForce Experience" 
+  }
+  @{
+    Name             = "GeForce Experience"
+    TargetPath       = "${env:ProgramFiles(x86)}\NVIDIA Corporation\NVIDIA GeForce Experience\NVIDIA GeForce Experience.exe"
+    SystemLnk        = "NVIDIA Corporation\"
+    WorkingDirectory = "${env:ProgramFiles(x86)}\NVIDIA Corporation\NVIDIA GeForce Experience" 
   }
   <#
 
