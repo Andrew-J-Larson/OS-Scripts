@@ -1,9 +1,9 @@
 #Requires -RunAsAdministrator
-# Recreate Base Shortcuts (Intune) v1.0.0 - https://github.com/TheAlienDrew/OS-Scripts/blob/master/Windows/Microsoft-Endpoint-Defender/Recreate-Base-Shortcuts-INTUNE.ps1
-# This is just a wrapper script made only for Intune, to download and run the full script (to bypass the script being too large for Intune), the full script can be found at: https://github.com/TheAlienDrew/OS-Scripts/blob/master/Windows/Microsoft-Endpoint-Defender/Recreate-Base-Shortcuts.ps1
+<# Recreate Base Shortcuts (Intune) v1.0.0 - https://github.com/TheAlienDrew/OS-Scripts/blob/master/Windows/Microsoft-Endpoint-Defender/Recreate-Base-Shortcuts-INTUNE.ps1
+   This is just a wrapper script made only for Intune, to download and run the full script (to bypass the script being too large for Intune), the full script can be found at: https://github.com/TheAlienDrew/OS-Scripts/blob/master/Windows/Microsoft-Endpoint-Defender/Recreate-Base-Shortcuts.ps1
 
-# About the issue: https://www.bleepingcomputer.com/news/microsoft/buggy-microsoft-defender-asr-rule-deletes-windows-app-shortcuts/
-
+   About the issue: https://www.bleepingcomputer.com/news/microsoft/buggy-microsoft-defender-asr-rule-deletes-windows-app-shortcuts/
+#>
 
 
 # Constants
