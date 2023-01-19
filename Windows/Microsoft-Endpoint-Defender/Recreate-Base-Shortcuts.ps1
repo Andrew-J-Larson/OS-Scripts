@@ -1,5 +1,5 @@
 #Requires -RunAsAdministrator
-# Recreate Base Shortcuts v0.9.0 - https://github.com/TheAlienDrew/OS-Scripts/blob/master/Windows/Microsoft-Endpoint-Defender/Recreate-Base-Shortcuts.ps1
+# Recreate Base Shortcuts v0.9.001 - https://github.com/TheAlienDrew/OS-Scripts/blob/master/Windows/Microsoft-Endpoint-Defender/Recreate-Base-Shortcuts.ps1
 # Script only recreates shortcuts to applications it knows are installed, and also works for user profile installed applications.
 # If a program you use isn't in any of the lists here, either fork/edit/push, or create an issue at:
 # https://github.com/TheAlienDrew/OS-Scripts/issues/new?title=%5BAdd%20App%5D%20Recreate-Base-Shortcuts.ps1&body=%3C%21--%20Please%20enter%20the%20app%20you%20need%20added%20below%2C%20and%20a%20link%20to%20the%20installer%20--%3E%0A%0A
@@ -147,12 +147,12 @@ function Get-BinaryType {
   process {
     foreach ($Item in $Path) {
       $ReturnedType = -1
-      Write-Verbose "Attempting to get type for file: $($Item.FullName)"
+      Write-Verbose "Attempting to get type for file: `"$($Item.FullName)`""
       $Result = [Win32Utils.BinaryType]::GetBinaryType($Item.FullName, [ref] $ReturnedType)
 
       #if the function returned $false, indicating an error, or the binary type wasn't returned
       if (!$Result -or ($ReturnedType -eq -1)) {
-        Write-Error "Failed to get binary type for file $($Item.FullName)"
+        Write-Error "Failed to get binary type for file: `"$($Item.FullName)`""
       }
       else {
         $ToReturn = [BinaryType]$ReturnedType
@@ -227,7 +227,7 @@ function New-Shortcut {
 
     # only create shortcut if path is valid, and it doesn't already exist
     if (Test-Path -Path $sSystemLnk -PathType leaf) {
-      $resultMsg += "A shortcut already exists at:`n${sSystemLnk}"
+      $resultMsg += "A shortcut already exists at:`n`"${sSystemLnk}`""
       $result = $false
     }
     elseif (Test-Path -Path $sSystemLnkPWD) {
@@ -245,7 +245,7 @@ function New-Shortcut {
       [Runtime.InteropServices.Marshal]::ReleaseComObject($WScriptObj) | Out-Null
 
       if ($result) {
-        $resultMsg += "Created shortcut at:`n${sSystemLnk}"
+        $resultMsg += "Created shortcut at:`n`"${sSystemLnk}`""
 
         # set to run as admin if needed
         if ($sRunAsAdmin) {
@@ -253,14 +253,14 @@ function New-Shortcut {
           $bytes[0x15] = $bytes[0x15] -bor 0x20 #set byte 21 (0x15) bit 6 (0x20) ON
           [System.IO.File]::WriteAllBytes($sSystemLnk, $bytes)
           $result = $?
-          if ($result) { $resultMsg += "Shortcut set to Run as Admin, at:`n${sSystemLnk}" }
-          else { $errorMsg += "Failed to set shortcut to Run as Admin, at:`n${sSystemLnk}" }
+          if ($result) { $resultMsg += "Shortcut set to Run as Admin, at:`n`"${sSystemLnk}`"" }
+          else { $errorMsg += "Failed to set shortcut to Run as Admin, at:`n`"${sSystemLnk}`"" }
         }
       }
-      else { $errorMsg += "Failed to create shortcut, with target at:`n${sTargetPath}`nand shortcut path at:`n${sSystemLnk}" }
+      else { $errorMsg += "Failed to create shortcut, with target at:`n`"${sTargetPath}`"`nand shortcut path at:`n`"${sSystemLnk}`"" }
     }
     else {
-      $warnMsg += "Failed to create shortcut, with shortcut path at:`n${sSystemLnk}"
+      $warnMsg += "Failed to create shortcut, with shortcut path at:`n`"${sSystemLnk}`""
       $result = $false
     }
   }
@@ -275,7 +275,7 @@ function New-Shortcut {
     $result = $false
   }
   else {
-    $warnMsg += "Target invalid! Doesn't exist or is spelled wrong:`n${sTargetPath}"
+    $warnMsg += "Target invalid! Doesn't exist or is spelled wrong:`n`"${sTargetPath}`""
 
     $result = $false
   }
