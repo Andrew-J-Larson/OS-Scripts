@@ -24,12 +24,18 @@ If you wish to contribute, either look at the code and add in entries manually, 
    - Power BI Desktop
    - PowerShell 7 (or whatever is the newest installed on your machine)
    - PowerToys
+   - Remote Desktop (Azure Virtual Desktop)
    - Remote help
    - Visual Studio Code
    - Visual Studio 2022 / 2019 / 2017
      - Python installs through Visual Studio **NOT** supported!
    - Visual Studio Installer
-   - Windows Accessories (e.g. Remote Desktop)
+   - Windows
+     - Accessibility (e.g. Narrator)
+     - Accessories (e.g. Remote Desktop Connection)
+     - Administrative Tools (e.g. Computer Management)
+     - PowerShell (the one built into Windows)
+     - System Tools (e.g. Command Prompt)
  - Adobe
    - Creative Cloud (entire suite + Maxon Cinema 4D)
    - Acrobat

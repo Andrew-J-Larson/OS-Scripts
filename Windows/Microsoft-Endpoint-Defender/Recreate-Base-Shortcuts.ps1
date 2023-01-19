@@ -902,7 +902,7 @@ $sysAppList = @(
     TargetPath       = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\setup.exe"
     WorkingDirectory = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer" 
   },
-  # Windows (note: these following CMD variables are not a mistake)
+  # Windows (note: these following CMD variables are not a mistake, also some names may not match as per file real name vs. localized name)
   # Windows Accessibility
   @{
     Name             = "Speech Recognition"
