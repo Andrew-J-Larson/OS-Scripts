@@ -1,5 +1,5 @@
 #Requires -RunAsAdministrator
-# Recreate Base Shortcuts v0.9.003 - https://github.com/TheAlienDrew/OS-Scripts/blob/master/Windows/Microsoft-Endpoint-Defender/Recreate-Base-Shortcuts.ps1
+# Recreate Base Shortcuts v0.9.004 - https://github.com/TheAlienDrew/OS-Scripts/blob/master/Windows/Microsoft-Endpoint-Defender/Recreate-Base-Shortcuts.ps1
 # Script only recreates shortcuts to applications it knows are installed, and also works for user profile installed applications.
 # If a program you use isn't in any of the lists here, either fork/edit/push, or create an issue at:
 # https://github.com/TheAlienDrew/OS-Scripts/issues/new?title=%5BAdd%20App%5D%20Recreate-Base-Shortcuts.ps1&body=%3C%21--%20Please%20enter%20the%20app%20you%20need%20added%20below%2C%20and%20a%20link%20to%20the%20installer%20--%3E%0A%0A
@@ -36,7 +36,7 @@ Set-Variable NOT_INSTALLED -Option Constant -Value "NOT-INSTALLED"
 # Variables
 
 $isWindows11 = ((Get-WMIObject win32_operatingsystem).Caption).StartsWith("Microsoft Windows 11")
-$isWindows10 = ((Get-WMIObject win32_operatingsystem).Caption).StartsWith("Microsoft Windows 10")
+#$isWindows10 = ((Get-WMIObject win32_operatingsystem).Caption).StartsWith("Microsoft Windows 10")
 $isWin10orNewer = [System.Environment]::OSVersion.Version.Major -ge 10
 $UninstallKeys = "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall"
 $UninstallList = foreach ($UninstallKey in $UninstallKeys) {
@@ -207,6 +207,9 @@ function New-Shortcut {
   $warnMsg = @()
   $errorMsg = @()
 
+  Set-Variable RESULT_SUCCESS -Option Constant -Value 1
+  Set-Variable RESULT_WARNING -Option Constant -Value 2
+  Set-Variable RESULT_FAILURE -Option Constant -Value 0
   Set-Variable PROGRAM_SHORTCUTS_PATH -Option Constant -Value "${env:ALLUSERSPROFILE}\Microsoft\Windows\Start Menu\Programs"
   Set-Variable PROGRAM_SHORTCUTS_USER_PATH -Option Constant -Value "${USERS_FOLDER}\${sUser}\AppData\Roaming\Microsoft\Windows\Start Menu\Programs"
 
@@ -228,7 +231,7 @@ function New-Shortcut {
     # only create shortcut if path is valid, and it doesn't already exist
     if (Test-Path -Path $sSystemLnk -PathType leaf) {
       $resultMsg += "A shortcut already exists at:`n`"${sSystemLnk}`""
-      $result = $false
+      $result = if ($result) {$RESULT_WARNING}
     }
     elseif (Test-Path -Path $sSystemLnkPWD) {
       $WScriptObj = New-Object -ComObject WScript.Shell
@@ -241,7 +244,7 @@ function New-Shortcut {
       if ($sIconLocation) { $newLNK.IconLocation = $sIconLocation }
 
       $newLNK.Save()
-      $result = $?
+      $result = if ($? -And $result) {$RESULT_SUCCESS} else {$RESULT_FAILURE}
       [Runtime.InteropServices.Marshal]::ReleaseComObject($WScriptObj) | Out-Null
 
       if ($result) {
@@ -252,7 +255,7 @@ function New-Shortcut {
           $bytes = [System.IO.File]::ReadAllBytes($sSystemLnk)
           $bytes[0x15] = $bytes[0x15] -bor 0x20 #set byte 21 (0x15) bit 6 (0x20) ON
           [System.IO.File]::WriteAllBytes($sSystemLnk, $bytes)
-          $result = $?
+          $result = if ($? -And $result) {$RESULT_SUCCESS} else {$RESULT_FAILURE}
           if ($result) { $resultMsg += "Shortcut set to Run as Admin, at:`n`"${sSystemLnk}`"" }
           else { $errorMsg += "Failed to set shortcut to Run as Admin, at:`n`"${sSystemLnk}`"" }
         }
@@ -261,10 +264,11 @@ function New-Shortcut {
     }
     else {
       $warnMsg += "Failed to create shortcut, with shortcut path at:`n`"${sSystemLnk}`""
-      $result = $false
+      $result = $RESULT_FAILURE
     }
   }
   elseif (-Not ($sName -Or $sTargetPath)) {
+    # Should never end up here due to PowerShell throwing errors upon using empty strings for parameters
     if (-Not $sName) {
       $errorMsg += "Error! Name is missing!"
     }
@@ -272,10 +276,10 @@ function New-Shortcut {
       $errorMsg += "Error! Target is missing!"
     }
 
-    $result = $false
+    $result = $RESULT_FAILURE
   }
   else {
-    $warnMsg += "Target invalid! Doesn't exist or is spelled wrong:`n`"${sTargetPath}`""
+    $warnMsg += "Target invalid! Doesn't exist or is spelled wrong."
   }
 
   Write-Host "`"${sName}`"" -ForegroundColor $(if ($result) {if ($warnMsg) {"Yellow"} else {"Green"}} else {"Red"})
@@ -293,8 +297,8 @@ function New-Shortcut {
     for ($msgNum = 0; $msgNum -lt $warnMsg.length; $msgNum++) {
       Write-Warning $warnMsg[$msgNum]
     }
+    $result = if ($? -And $result) {$RESULT_SUCCESS} else {$RESULT_FAILURE}
   }
-  Write-Host ""
 
   return $result
 }
@@ -517,7 +521,10 @@ for ($i = 0; $i -lt $sysAppList.length; $i++) {
   $aIconLocation = if ($app.IconLocation) { $app.IconLocation } else { "" }
   $aRunAsAdmin = if ($app.RunAsAdmin) { $app.RunAsAdmin } else { $false }
 
-  $ScriptResults = New-Shortcut -n $aName -tp $aTargetPath -a $aArguments -sl $aSystemLnk -wd $aWorkingDirectory -d $aDescription -il $aIconLocation -r $aRunAsAdmin
+  $AttemptRecreation = New-Shortcut -n $aName -tp $aTargetPath -a $aArguments -sl $aSystemLnk -wd $aWorkingDirectory -d $aDescription -il $aIconLocation -r $aRunAsAdmin
+  if ($ScriptResults -And ($AttemptRecreation -ne 1)) {$ScriptResults = $AttemptRecreation}
+  if ($AttemptRecreation -eq 2) {Write-Warning "Entry at `$sysAppList[$i] prompted this warning."}
+  Write-Host ""
 }
 
 
@@ -562,7 +569,10 @@ for ($i = 0; $i -lt $oemSysAppList.length; $i++) {
   $aIconLocation = if ($app.IconLocation) { $app.IconLocation } else { "" }
   $aRunAsAdmin = if ($app.RunAsAdmin) { $app.RunAsAdmin } else { $false }
 
-  $ScriptResults = New-Shortcut -n $aName -tp $aTargetPath -a $aArguments -sl $aSystemLnk -wd $aWorkingDirectory -d $aDescription -il $aIconLocation -r $aRunAsAdmin
+  $AttemptRecreation = New-Shortcut -n $aName -tp $aTargetPath -a $aArguments -sl $aSystemLnk -wd $aWorkingDirectory -d $aDescription -il $aIconLocation -r $aRunAsAdmin
+  if ($ScriptResults -And ($AttemptRecreation -ne 1)) {$ScriptResults = $AttemptRecreation}
+  if ($AttemptRecreation -eq 2) {Write-Warning "Entry at `$sysAppList[$i] prompted this warning."}
+  Write-Host ""
 }
 
 
@@ -1515,7 +1525,10 @@ for ($i = 0; $i -lt $sys3rdPartyAppList.length; $i++) {
   $aIconLocation = if ($app.IconLocation) { $app.IconLocation } else { "" }
   $aRunAsAdmin = if ($app.RunAsAdmin) { $app.RunAsAdmin } else { $false }
 
-  $ScriptResults = New-Shortcut -n $aName -tp $aTargetPath -a $aArguments -sl $aSystemLnk -wd $aWorkingDirectory -d $aDescription -il $aIconLocation -r $aRunAsAdmin
+  $AttemptRecreation = New-Shortcut -n $aName -tp $aTargetPath -a $aArguments -sl $aSystemLnk -wd $aWorkingDirectory -d $aDescription -il $aIconLocation -r $aRunAsAdmin
+  if ($ScriptResults -And ($AttemptRecreation -ne 1)) {$ScriptResults = $AttemptRecreation}
+  if ($AttemptRecreation -eq 2) {Write-Warning "Entry at `$sysAppList[$i] prompted this warning."}
+  Write-Host ""
 }
 
 
@@ -1738,11 +1751,15 @@ for ($i = 0; $i -lt $Users.length; $i++) {
     $aIconLocation = if ($app.IconLocation) { $app.IconLocation } else { "" }
     $aRunAsAdmin = if ($app.RunAsAdmin) { $app.RunAsAdmin } else { $false }
 
-    $ScriptResults = New-Shortcut -n $aName -tp $aTargetPath -a $aArguments -sl $aSystemLnk -wd $aWorkingDirectory -d $aDescription -il $aIconLocation -r $aRunAsAdmin -u $aUser
+    $AttemptRecreation = New-Shortcut -n $aName -tp $aTargetPath -a $aArguments -sl $aSystemLnk -wd $aWorkingDirectory -d $aDescription -il $aIconLocation -r $aRunAsAdmin -u $aUser
+    if ($ScriptResults -And ($AttemptRecreation -ne 1)) {$ScriptResults = $AttemptRecreation}
+    if ($AttemptRecreation -eq 2) {Write-Warning "Entry at `$sysAppList[$i] prompted this warning."}
+    Write-Host ""
   }
 }
 
-Stop-Transcript
+if ($ScriptResults -eq 1) { Write-Host "Script completed successfully." }
+elseif ($ScriptResults -eq 2) { Write-Warning "Script completed with some warnings." }
+else {Write-Error "Script completed with some errors."}
 
-if ($ScriptResults) { Write-Host "Script completed successfully." }
-else { Write-Warning "Script completed with warnings and/or errors." }
+Stop-Transcript
