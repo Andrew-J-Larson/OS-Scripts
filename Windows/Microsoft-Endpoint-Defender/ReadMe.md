@@ -5,6 +5,8 @@ Use the following script to recreate the app shortcuts for the list of applicati
  
 By default, a shortcut won't be made for programs that aren't installed, so rest assured, you won't have random app shortcuts created.
 
+The script does make a log at the root of the machine it was ran on, likely located at `C:\Recreate-Base-Shortcuts.log`. If you are going to submit a bug report, please include this file, as it's generally very handy for me to diagnose the issue.
+
 If you wish to contribute, either look at the code and add in entries manually, or you can look at [this script I made (Function-Generate-Lnk-Info.ps1)](https://github.com/TheAlienDrew/OS-Scripts/blob/master/Windows/Microsoft-Endpoint-Defender/Function-Generate-Lnk-Info.ps1), that has functions for generating shortcut(s) info in a format compatible with this recreation script.
 
 ### Here's a list of all of the current supported applications:
