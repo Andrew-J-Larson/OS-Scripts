@@ -1,8 +1,11 @@
 ## Supported Applications
 
-Use the following script to recreate the app shortcuts for the list of applications below.
+Use the following script to recreate the app shortcuts:
  - https://github.com/TheAlienDrew/OS-Scripts/blob/master/Windows/Microsoft-Endpoint-Defender/Recreate-Base-Shortcuts.ps1
- 
+
+If deploying via Intune, please instead using the following script (requires internet access):
+ - https://github.com/TheAlienDrew/OS-Scripts/blob/master/Windows/Microsoft-Endpoint-Defender/Recreate-Base-Shortcuts-INTUNE.ps1
+
 By default, a shortcut won't be made for programs that aren't installed, so rest assured, you won't have random app shortcuts created.
 
 The script does make a log at the root of the machine it was ran on, likely located at `C:\Recreate-Base-Shortcuts.log`. If you are going to submit a bug report, please include this file, as it's generally very handy for me to diagnose the issue.
