@@ -373,7 +373,9 @@ $ODBCDataSources_Name = "ODBC Data Sources" + $(if ([Environment]::Is64BitOperat
 $sysAppList = @(
   # Azure
   @{Name = "Azure Data Studio"; TargetPath = "${env:ProgramFiles}\Azure Data Studio\azuredatastudio.exe"; SystemLnk = "Azure Data Studio\"; WorkingDirectory = "${env:ProgramFiles}\Azure Data Studio" },
+  @{Name = "Remote Desktop"; TargetPath = "${env:ProgramFiles}\Remote Desktop\msrdcw.exe"; WorkingDirectory = "${env:ProgramFiles}\Remote Desktop\"; Description = "Microsoft Remote Desktop Client" },
   @{Name = "Azure Data Studio"; TargetPath = "${env:ProgramFiles(x86)}\Azure Data Studio\azuredatastudio.exe"; SystemLnk = "Azure Data Studio\"; WorkingDirectory = "${env:ProgramFiles(x86)}\Azure Data Studio" },
+  @{Name = "Remote Desktop"; TargetPath = "${env:ProgramFiles(x86)}\Remote Desktop\msrdcw.exe"; WorkingDirectory = "${env:ProgramFiles(x86)}\Remote Desktop\"; Description = "Microsoft Remote Desktop Client" },
   # Edge
   @{Name = "Microsoft Edge"; TargetPath = "${env:ProgramFiles}\Microsoft\Edge\Application\msedge.exe"; WorkingDirectory = "${env:ProgramFiles}\Microsoft\Edge\Application"; Description = "Browse the web" }, # it's the only install on 32-bit
   @{Name = "Microsoft Edge"; TargetPath = "${env:ProgramFiles(x86)}\Microsoft\Edge\Application\msedge.exe"; WorkingDirectory = "${env:ProgramFiles(x86)}\Microsoft\Edge\Application"; Description = "Browse the web" }, # it's the only install on 64-bit
@@ -1574,39 +1576,44 @@ $MicrosoftTeams_Name = "Microsoft Teams" + $(if ($isWindows11) { " (work or scho
 for ($i = 0; $i -lt $Users.length; $i++) {
   # get user
   $aUser = $Users[$i]
+  $aUserFolder = "${USERS_FOLDER}\${aUser}"
+  $UsersAppData = "${aUserFolder}\AppData"
+  $UsersAppDataLocal = "${UsersAppData}\Local"
+  $UsersAppDataRoaming = "${UsersAppData}\Roaming"
+  $UsersProgramFiles = "${UsersAppDataLocal}\Programs"
 
   # User app paths dependant on app version
 
   # 1Password
-  $OnePassword_TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\1Password\app\"
+  $OnePassword_TargetPath = "${UsersAppDataLocal}\1Password\app\"
   $OnePassword_FindFolder = if (Test-Path -Path $OnePassword_TargetPath) { Get-ChildItem -Directory -Path $OnePassword_TargetPath | Where-Object { $_.Name -match '^[.0-9]+$' } | Sort-Object -Descending }
   $OnePassword_FindFolder = if ($OnePassword_FindFolder.length -ge 1) { $OnePassword_FindFolder[0].name } else { $NOT_INSTALLED }
   $OnePassword_TargetPath += "${OnePassword_FindFolder}\1Password.exe"
   # Adobe
-  $AdobeDigitalEditions_WorkingDirectory = "${USERS_FOLDER}\${aUser}\AppData\Local\Temp"
+  $AdobeDigitalEditions_WorkingDirectory = "${UsersAppDataLocal}\Temp"
   # Discord
-  $Discord_WorkingDirectory = "${USERS_FOLDER}\${aUser}\AppData\Local\Discord\"
+  $Discord_WorkingDirectory = "${UsersAppDataLocal}\Discord\"
   $Discord_TargetPath = $Discord_WorkingDirectory + "Update.exe"
   $Discord_FindFolder = if (Test-Path -Path $Discord_WorkingDirectory) { Get-ChildItem -Directory -Path $Discord_WorkingDirectory | Where-Object { $_.Name -match '^app\-[.0-9]+$' } | Sort-Object -Descending }
   $Discord_FindFolder = if ($Discord_FindFolder.length -ge 1) { $Discord_FindFolder[0].name } else { $NOT_INSTALLED }
   $Discord_WorkingDirectory += $Discord_FindFolder
   # GitHub
-  $GitHubDesktop_WorkingDirectory = "${USERS_FOLDER}\${aUser}\AppData\Local\GitHubDesktop\"
+  $GitHubDesktop_WorkingDirectory = "${UsersAppDataLocal}\GitHubDesktop\"
   $GitHubDesktop_TargetPath = $GitHubDesktop_WorkingDirectory + "GitHubDesktop.exe"
   $GitHubDesktop_FindFolder = if (Test-Path -Path $GitHubDesktop_WorkingDirectory) { Get-ChildItem -Directory -Path $GitHubDesktop_WorkingDirectory | Where-Object { $_.Name -match '^app\-[.0-9]+$' } | Sort-Object -Descending }
   $GitHubDesktop_FindFolder = if ($GitHubDesktop_FindFolder.length -ge 1) { $GitHubDesktop_FindFolder[0].name } else { $NOT_INSTALLED }
   $GitHubDesktop_WorkingDirectory += $GitHubDesktop_FindFolder
   # GoTo
-  $GoToResolveDesktopConsole_WorkingDirectory = "${USERS_FOLDER}\${aUser}\GoTo\GoTo Resolve Desktop Console\"
+  $GoToResolveDesktopConsole_WorkingDirectory = "${aUserFolder}\GoTo\GoTo Resolve Desktop Console\"
   $GoToResolveDesktopConsole_Exe = $GoToResolveDesktopConsole_WorkingDirectory + "ra-technician-console.exe"
   $GoToResolveDesktopConsole_Arch = if (Test-Path -Path $GoToResolveDesktopConsole_Exe) { Get-BinaryType $GoToResolveDesktopConsole_Exe }
   $GoToResolveDesktopConsole_TargetPath = if ($GoToResolveDesktopConsole_Arch -And ($GoToResolveDesktopConsole_Arch -eq "BIT64")) { $GoToResolveDesktopConsole_Exe } else { $GoToResolveDesktopConsole_WorkingDirectory + "${NOT_INSTALLED}.exe" }
   $GoToResolveDesktopConsole_32bit_TargetPath = if ($GoToResolveDesktopConsole_Arch -And ($GoToResolveDesktopConsole_Arch -eq "BIT32")) { $GoToResolveDesktopConsole_Exe } else { $GoToResolveDesktopConsole_WorkingDirectory + "${NOT_INSTALLED}.exe" }
   # Microsoft
-  $AzureIoTExplorerPreview_TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\azure-iot-explorer\Azure IoT Explorer Preview.exe"
-  $AzureIoTExplorer_TargetPath = if (Test-Path -Path $AzureIoTExplorerPreview_TargetPath -PathType leaf) { $AzureIoTExplorerPreview_TargetPath } else { "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\azure-iot-explorer\Azure IoT Explorer.exe" }
+  $AzureIoTExplorerPreview_TargetPath = "${UsersProgramFiles}\azure-iot-explorer\Azure IoT Explorer Preview.exe"
+  $AzureIoTExplorer_TargetPath = if (Test-Path -Path $AzureIoTExplorerPreview_TargetPath -PathType leaf) { $AzureIoTExplorerPreview_TargetPath } else { "${UsersProgramFiles}\azure-iot-explorer\Azure IoT Explorer.exe" }
   # Python
-  $Python_WorkingDirectory = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\Python\"
+  $Python_WorkingDirectory = "${UsersProgramFiles}\Python\"
   $Python_FindFolder = if (Test-Path -Path $Python_WorkingDirectory) { Get-ChildItem -Directory -Path $Python_WorkingDirectory | Where-Object { $_.Name -match '^Python[.0-9]+$' } | Sort-Object -Descending }
   $Python_FindFolder = if ($Python_FindFolder.length -ge 1) { $Python_FindFolder[0].name } else { $NOT_INSTALLED }
   $Python_WorkingDirectory += "${Python_FindFolder}\"
@@ -1617,7 +1624,7 @@ for ($i = 0; $i -lt $Users.length; $i++) {
   $Python_Version = if ($Python_FileVersionRaw) { [string]($Python_FileVersionRaw.Major) + '.' + [string]($Python_FileVersionRaw.Minor) } else { $NOT_INSTALLED }
   $Python_SystemLnk = "Python ${Python_Version}\"
   # Slack
-  $Slack_WorkingDirectory = "${USERS_FOLDER}\${aUser}\AppData\Local\slack\"
+  $Slack_WorkingDirectory = "${UsersAppDataLocal}\slack\"
   $Slack_TargetPath = $Slack_WorkingDirectory + "slack.exe"
   $Slack_FindFolder = if (Test-Path -Path $Slack_WorkingDirectory) { Get-ChildItem -Directory -Path $Slack_WorkingDirectory | Where-Object { $_.Name -match '^app\-[.0-9]+$' } | Sort-Object -Descending }
   $Slack_FindFolder = if ($Slack_FindFolder.length -ge 1) { $Slack_FindFolder[0].name } else { $NOT_INSTALLED }
@@ -1648,17 +1655,17 @@ for ($i = 0; $i -lt $Users.length; $i++) {
     @{Name = $AdobeDigitalEditions_Name; TargetPath = $AdobeDigitalEditions_TargetPath; WorkingDirectory = $AdobeDigitalEditions_WorkingDirectory },
     @{Name = $AdobeDigitalEditions_32bit_Name; TargetPath = $AdobeDigitalEditions_32bit_TargetPath; WorkingDirectory = $AdobeDigitalEditions_WorkingDirectory },
     # AutoHotkey V2
-    @{Name = "AutoHotkey Window Spy"; TargetPath = "${USERS_FOLDER}\${aUser}\AutoHotkey\UX\AutoHotkeyUX.exe"; Arguments = "`"${USERS_FOLDER}\${aUser}\AutoHotkey\UX\WindowSpy.ahk`""; Description = "AutoHotkey Window Spy" },
-    @{Name = "AutoHotkey"; TargetPath = "${USERS_FOLDER}\${aUser}\AutoHotkey\UX\AutoHotkeyUX.exe"; Arguments = "`"${USERS_FOLDER}\${aUser}\AutoHotkey\UX\ui-dash.ahk`""; Description = "AutoHotkey Dash" },
+    @{Name = "AutoHotkey Window Spy"; TargetPath = "${aUserFolder}\AutoHotkey\UX\AutoHotkeyUX.exe"; Arguments = "`"${aUserFolder}\AutoHotkey\UX\WindowSpy.ahk`""; Description = "AutoHotkey Window Spy" },
+    @{Name = "AutoHotkey"; TargetPath = "${aUserFolder}\AutoHotkey\UX\AutoHotkeyUX.exe"; Arguments = "`"${aUserFolder}\AutoHotkey\UX\ui-dash.ahk`""; Description = "AutoHotkey Dash" },
     # AutoHotkey
-    @{Name = "AutoHotkey Help File"; TargetPath = "${USERS_FOLDER}\${aUser}\AutoHotkey\AutoHotkey.chm"; SystemLnk = "AutoHotkey\" },
-    @{Name = "AutoHotkey Setup"; TargetPath = "${USERS_FOLDER}\${aUser}\AutoHotkey\Installer.ahk"; SystemLnk = "AutoHotkey\" },
-    @{Name = "AutoHotkey"; TargetPath = "${USERS_FOLDER}\${aUser}\AutoHotkey\AutoHotkey.exe"; SystemLnk = "AutoHotkey\" },
-    @{Name = "Convert .ahk to .exe"; TargetPath = "${USERS_FOLDER}\${aUser}\AutoHotkey\Compiler\Ahk2Exe.exe"; SystemLnk = "AutoHotkey\" },
-    @{Name = "Website"; TargetPath = "${USERS_FOLDER}\${aUser}\AutoHotkey\AutoHotkey Website.url"; SystemLnk = "AutoHotkey\" },
-    @{Name = "Window Spy"; TargetPath = "${USERS_FOLDER}\${aUser}\AutoHotkey\WindowSpy.ahk"; SystemLnk = "AutoHotkey\" },
+    @{Name = "AutoHotkey Help File"; TargetPath = "${aUserFolder}\AutoHotkey\AutoHotkey.chm"; SystemLnk = "AutoHotkey\" },
+    @{Name = "AutoHotkey Setup"; TargetPath = "${aUserFolder}\AutoHotkey\Installer.ahk"; SystemLnk = "AutoHotkey\" },
+    @{Name = "AutoHotkey"; TargetPath = "${aUserFolder}\AutoHotkey\AutoHotkey.exe"; SystemLnk = "AutoHotkey\" },
+    @{Name = "Convert .ahk to .exe"; TargetPath = "${aUserFolder}\AutoHotkey\Compiler\Ahk2Exe.exe"; SystemLnk = "AutoHotkey\" },
+    @{Name = "Website"; TargetPath = "${aUserFolder}\AutoHotkey\AutoHotkey Website.url"; SystemLnk = "AutoHotkey\" },
+    @{Name = "Window Spy"; TargetPath = "${aUserFolder}\AutoHotkey\WindowSpy.ahk"; SystemLnk = "AutoHotkey\" },
     # balenaEtcher
-    @{Name = "balenaEtcher"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\balena-etcher\balenaEtcher.exe"; WorkingDirectory = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\balena-etcher"; Description = "Flash OS images to SD cards and USB drives, safely and easily." },
+    @{Name = "balenaEtcher"; TargetPath = "${UsersProgramFiles}\balena-etcher\balenaEtcher.exe"; WorkingDirectory = "${UsersProgramFiles}\balena-etcher"; Description = "Flash OS images to SD cards and USB drives, safely and easily." },
     # Blender
     @{Name = "Blender"; TargetPath = $Blender_TargetPath; SystemLnk = "blender\"; WorkingDirectory = $Blender_WorkingDirectory },
     @{Name = "Blender"; TargetPath = $Blender_32bit_TargetPath; SystemLnk = "blender\"; WorkingDirectory = $Blender_32bit_WorkingDirectory },
@@ -1667,21 +1674,22 @@ for ($i = 0; $i -lt $Users.length; $i++) {
     # GitHub
     @{Name = "GitHub Desktop"; TargetPath = $GitHubDesktop_TargetPath; SystemLnk = "GitHub, Inc\"; WorkingDirectory = $GitHubDesktop_WorkingDirectory; Description = "Simple collaboration from your desktop" },
     # Google
-    @{Name = "Google Chrome"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Google\Chrome\Application\chrome.exe"; WorkingDirectory = "${USERS_FOLDER}\${aUser}\AppData\Local\Google\Chrome\Application"; Description = "Access the Internet" },
+    @{Name = "Google Chrome"; TargetPath = "${UsersAppDataLocal}\Google\Chrome\Application\chrome.exe"; WorkingDirectory = "${UsersAppDataLocal}\Google\Chrome\Application"; Description = "Access the Internet" },
     # GoTo
     @{Name = "GoTo Resolve Desktop Console (64-bit)"; TargetPath = $GoToResolveDesktopConsole_TargetPath; WorkingDirectory = $GoToResolveDesktopConsole_WorkingDirectory },
     @{Name = "GoTo Resolve Desktop Console"; TargetPath = $GoToResolveDesktopConsole_32bit_TargetPath; WorkingDirectory = $GoToResolveDesktopConsole_WorkingDirectory },
-    # Inkscape
+    # Inkscape (note: these paths are not a mistake, this is how it installs its shortcuts)
     @{Name = "Inkscape"; TargetPath = "${env:ProgramFiles}\Inkscape\bin\inkscape.exe"; SystemLnk = "Inkscape\"; WorkingDirectory = "${env:ProgramFiles}\Inkscape\bin\" },
     @{Name = "Inkview"; TargetPath = "${env:ProgramFiles}\Inkscape\bin\inkview.exe"; SystemLnk = "Inkscape\"; WorkingDirectory = "${env:ProgramFiles}\Inkscape\bin\" },
     @{Name = "Inkscape"; TargetPath = "${env:ProgramFiles(x86)}\Inkscape\bin\inkscape.exe"; SystemLnk = "Inkscape\"; WorkingDirectory = "${env:ProgramFiles(x86)}\Inkscape\bin\" },
     @{Name = "Inkview"; TargetPath = "${env:ProgramFiles(x86)}\Inkscape\bin\inkview.exe"; SystemLnk = "Inkscape\"; WorkingDirectory = "${env:ProgramFiles(x86)}\Inkscape\bin\" },
     # Microsoft
-    @{Name = "Azure Data Studio"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\Azure Data Studio\azuredatastudio.exe"; SystemLnk = "Azure Data Studio\"; WorkingDirectory = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\Azure Data Studio" },
-    @{Name = $AzureIoTExplorer_Name; TargetPath = $AzureIoTExplorer_TargetPath; WorkingDirectory = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\azure-iot-explorer\" },
-    @{Name = "Visual Studio Code"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\Microsoft VS Code\Code.exe"; SystemLnk = "Visual Studio Code\"; WorkingDirectory = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\Microsoft VS Code" },
-    @{Name = $MicrosoftTeams_Name; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Microsoft\Teams\Update.exe"; Arguments = "--processStart `"Teams.exe`""; WorkingDirectory = "${USERS_FOLDER}\${aUser}\AppData\Local\Microsoft\Teams" },
-    @{Name = "OneDrive"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Microsoft\OneDrive\OneDrive.exe"; Description = "Keep your most important files with you wherever you go, on any device." },
+    @{Name = "Azure Data Studio"; TargetPath = "${UsersProgramFiles}\Azure Data Studio\azuredatastudio.exe"; SystemLnk = "Azure Data Studio\"; WorkingDirectory = "${UsersProgramFiles}\Azure Data Studio" },
+    @{Name = $AzureIoTExplorer_Name; TargetPath = $AzureIoTExplorer_TargetPath; WorkingDirectory = "${UsersProgramFiles}\azure-iot-explorer\" },
+    @{Name = $MicrosoftTeams_Name; TargetPath = "${UsersAppDataLocal}\Microsoft\Teams\Update.exe"; Arguments = "--processStart `"Teams.exe`""; WorkingDirectory = "${UsersAppDataLocal}\Microsoft\Teams" },
+    @{Name = "OneDrive"; TargetPath = "${UsersAppDataLocal}\Microsoft\OneDrive\OneDrive.exe"; Description = "Keep your most important files with you wherever you go, on any device." },
+    @{Name = "Remote Desktop"; TargetPath = "${UsersProgramFiles}\Remote Desktop\msrdcw.exe"; WorkingDirectory = "${UsersProgramFiles}\Remote Desktop\"; Description = "Microsoft Remote Desktop Client" },
+    @{Name = "Visual Studio Code"; TargetPath = "${UsersProgramFiles}\Microsoft VS Code\Code.exe"; SystemLnk = "Visual Studio Code\"; WorkingDirectory = "${UsersProgramFiles}\Microsoft VS Code" },
     # Windows
     @{Name = "Administrative Tools"; TargetPath = $WindowsTools_TargetPath; Arguments = "/name Microsoft.AdministrativeTools"; Description = "Windows Tools"; IconLocation = "%windir%\system32\imageres.dll,-114" },
     @{Name = "LiveCaptions"; TargetPath = "${env:windir}\system32\LiveCaptions.exe"; SystemLnk = "Accessibility\"; Description = "Captions audio and video live on your screen."; IconLocation = "%windir%\system32\LiveCaptions.exe,-1" },
@@ -1693,9 +1701,9 @@ for ($i = 0; $i -lt $Users.length; $i++) {
     @{Name = "Windows PowerShell"; TargetPath = "${env:windir}\System32\WindowsPowerShell\v1.0\powershell.exe"; SystemLnk = "Windows PowerShell\"; WorkingDirectory = "%HOMEDRIVE%%HOMEPATH%"; Description = "Performs object-based (command-line) functions"; IconLocation = "%SystemRoot%\system32\WindowsPowerShell\v1.0\powershell.exe,0" },
     @{Name = "Windows PowerShell (x86)"; TargetPath = "${env:windir}\SysWOW64\WindowsPowerShell\v1.0\powershell.exe"; SystemLnk = "Windows PowerShell\"; WorkingDirectory = "%HOMEDRIVE%%HOMEPATH%"; Description = "Performs object-based (command-line) functions"; IconLocation = "%SystemRoot%\syswow64\WindowsPowerShell\v1.0\powershell.exe,0" },
     # Mozilla
-    @{Name = "Firefox"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Mozilla Firefox\firefox.exe"; WorkingDirectory = "${USERS_FOLDER}\${aUser}\AppData\Local\Mozilla Firefox" },
+    @{Name = "Firefox"; TargetPath = "${UsersAppDataLocal}\Mozilla Firefox\firefox.exe"; WorkingDirectory = "${UsersAppDataLocal}\Mozilla Firefox" },
     # NVIDIA Corporation
-    @{Name = "NVIDIA GeForce NOW"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\NVIDIA Corporation\GeForceNOW\CEF\GeForceNOW.exe"; WorkingDirectory = "${USERS_FOLDER}\${aUser}\AppData\Local\NVIDIA Corporation\GeForceNOW\CEF" },
+    @{Name = "NVIDIA GeForce NOW"; TargetPath = "${UsersAppDataLocal}\NVIDIA Corporation\GeForceNOW\CEF\GeForceNOW.exe"; WorkingDirectory = "${UsersAppDataLocal}\NVIDIA Corporation\GeForceNOW\CEF" },
     # Python
     @{Name = $PythonIDLE_Name; TargetPath = $PythonIDLE_TargetPath; SystemLnk = $Python_SystemLnk; WorkingDirectory = $Python_WorkingDirectory; Description = $PythonIDLE_Description },
     @{Name = $Python_Name; TargetPath = $Python_TargetPath; SystemLnk = $Python_SystemLnk; WorkingDirectory = $Python_WorkingDirectory; Description = $Python_Description },
@@ -1703,14 +1711,14 @@ for ($i = 0; $i -lt $Users.length; $i++) {
     @{Name = $PythonModuleDocs_Name; TargetPath = $Python_TargetPath; Arguments = "-m pydoc -b"; SystemLnk = $Python_SystemLnk; WorkingDirectory = $Python_WorkingDirectory; Description = $PythonModuleDocs_Description },
     # Slack
     @{Name = "Slack"; TargetPath = $Slack_TargetPath; SystemLnk = "Slack Technologies Inc\"; WorkingDirectory = $Slack_WorkingDirectory; Description = "Slack Desktop" },
-    # Raspberry Pi Imager
+    # Raspberry Pi Imager (note: these paths are not a mistake, this is how it installs its shortcuts)
     @{Name = "Raspberry Pi Imager"; TargetPath = "${env:ProgramFiles}\Raspberry Pi Imager\rpi-imager.exe"; WorkingDirectory = "${env:ProgramFiles}\Raspberry Pi Imager" }, # it's the only install on 32-bit
     @{Name = "Raspberry Pi Imager"; TargetPath = "${env:ProgramFiles(x86)}\Raspberry Pi Imager\rpi-imager.exe"; WorkingDirectory = "${env:ProgramFiles(x86)}\Raspberry Pi Imager" }, # it's the only install on 64-bit
     # RingCentral
-    @{Name = "RingCentral"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\RingCentral\RingCentral.exe"; WorkingDirectory = "${USERS_FOLDER}\${aUser}\AppData\Local\Programs\RingCentral"; Description = "RingCentral" },
-    @{Name = "RingCentral Meetings"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Roaming\RingCentralMeetings\bin\RingCentralMeetings.exe"; SystemLnk = "RingCentral Meetings\"; Description = "RingCentral Meetings" },
-    @{Name = "Uninstall RingCentral Meetings"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Roaming\RingCentralMeetings\uninstall\Installer.exe"; Arguments = "/uninstall"; SystemLnk = "RingCentral Meetings\"; Description = "Uninstall RingCentral Meetings" },
-    # WinDirStat
+    @{Name = "RingCentral"; TargetPath = "${UsersProgramFiles}\RingCentral\RingCentral.exe"; WorkingDirectory = "${UsersProgramFiles}\RingCentral"; Description = "RingCentral" },
+    @{Name = "RingCentral Meetings"; TargetPath = "${UsersAppDataRoaming}\RingCentralMeetings\bin\RingCentralMeetings.exe"; SystemLnk = "RingCentral Meetings\"; Description = "RingCentral Meetings" },
+    @{Name = "Uninstall RingCentral Meetings"; TargetPath = "${UsersAppDataRoaming}\RingCentralMeetings\uninstall\Installer.exe"; Arguments = "/uninstall"; SystemLnk = "RingCentral Meetings\"; Description = "Uninstall RingCentral Meetings" },
+    # WinDirStat (note: these paths are not a mistake, this is how it installs its shortcuts)
     @{Name = "Help (ENG)"; TargetPath = "${env:ProgramFiles}\WinDirStat\windirstat.chm"; SystemLnk = "WinDirStat\"; WorkingDirectory = "${env:ProgramFiles}\WinDirStat" }, # it's the only install on 32-bit
     @{Name = "Uninstall WinDirStat"; TargetPath = "${env:ProgramFiles}\WinDirStat\Uninstall.exe"; SystemLnk = "WinDirStat\"; WorkingDirectory = "${env:ProgramFiles}\WinDirStat" }, # it's the only install on 32-bit
     @{Name = "WinDirStat"; TargetPath = "${env:ProgramFiles}\WinDirStat\windirstat.exe"; SystemLnk = "WinDirStat\"; WorkingDirectory = "${env:ProgramFiles}\WinDirStat" }, # it's the only install on 32-bit
@@ -1718,8 +1726,8 @@ for ($i = 0; $i -lt $Users.length; $i++) {
     @{Name = "Uninstall WinDirStat"; TargetPath = "${env:ProgramFiles(x86)}\WinDirStat\Uninstall.exe"; SystemLnk = "WinDirStat\"; WorkingDirectory = "${env:ProgramFiles(x86)}\WinDirStat" }, # it's the only install on 64-bit
     @{Name = "WinDirStat"; TargetPath = "${env:ProgramFiles(x86)}\WinDirStat\windirstat.exe"; SystemLnk = "WinDirStat\"; WorkingDirectory = "${env:ProgramFiles(x86)}\WinDirStat" }, # it's the only install on 64-bit
     # Zoom
-    @{Name = "Uninstall Zoom"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Roaming\Zoom\uninstall\Installer.exe"; Arguments = "/uninstall"; SystemLnk = "Zoom\"; Description = "Uninstall Zoom" },
-    @{Name = "Zoom"; TargetPath = "${USERS_FOLDER}\${aUser}\AppData\Roaming\Zoom\bin\Zoom.exe"; SystemLnk = "Zoom\"; Description = "Zoom UMX" }
+    @{Name = "Uninstall Zoom"; TargetPath = "${UsersAppDataRoaming}\Zoom\uninstall\Installer.exe"; Arguments = "/uninstall"; SystemLnk = "Zoom\"; Description = "Uninstall Zoom" },
+    @{Name = "Zoom"; TargetPath = "${UsersAppDataRoaming}\Zoom\bin\Zoom.exe"; SystemLnk = "Zoom\"; Description = "Zoom UMX" }
     #@{Name = ""; TargetPath = ""; Arguments = ""; SystemLnk = ""; WorkingDirectory = ""; Description = ""; IconLocation = ""; RunAsAdmin = ($true -Or $false) },
   )
 
