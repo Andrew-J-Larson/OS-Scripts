@@ -1,4 +1,7 @@
-﻿$USERNAME = ((Get-WMIObject -ClassName Win32_ComputerSystem | select username).username).split('\')[1]
+﻿#Requires -RunAsAdministrator
+# admin required since vbscript requires admin to read shortcut properties
+
+$USERNAME = ((Get-WMIObject -ClassName Win32_ComputerSystem | Select-Object username).username).split('\')[1]
 
 # USE THIS FUNCTION ON .LNK FILES
 function genLnkInfo {
@@ -17,7 +20,7 @@ function genLnkInfo {
     [Runtime.InteropServices.Marshal]::ReleaseComObject($WshShell) | Out-Null
 
     $bytes = [System.IO.File]::ReadAllBytes($shortcutFile.FullName)
-    $RunAsAdmin = if ($bytes[0x15] -eq 32) {'$true'}
+    $RunAsAdmin = if ($bytes[0x15] -eq 32) { '$true' }
 
     $Name = $shortcutFile.BaseName
     $lnkFile = $Name + ".lnk"
@@ -47,7 +50,7 @@ function genLnkInfo {
     $SystemLnk = ($SystemLnk -ireplace [regex]::Escape("${env:HOMEDRIVE}\USERS\${USERNAME}"), '${env:HOMEDRIVE}\USERS\${aUser}')
     $SystemLnk = ($SystemLnk -ireplace [regex]::Escape("${env:HOMEDRIVE}\USERS"), '${USERS_FOLDER}')
     $SystemLnk = ($SystemLnk -ireplace [regex]::Escape("${env:windir}"), '${env:windir}')
-    if ($SystemLnk) {$Entry += "SystemLnk = `"${SystemLnk}`"; "}
+    if ($SystemLnk) { $Entry += "SystemLnk = `"${SystemLnk}`"; " }
     if ($WorkingDirectory) {
         $WorkingDirectory = ($WorkingDirectory -ireplace [regex]::Escape("${env:ProgramFiles(x86)}"), '${env:ProgramFiles(x86)}')
         $WorkingDirectory = ($WorkingDirectory -ireplace [regex]::Escape("${env:ProgramFiles}"), '${env:ProgramFiles}')
@@ -92,7 +95,8 @@ function genLnkRecurseInfo {
         for ($i = 0; $i -lt $args.length; $i++) {
             GEN_LNK_INFO_BASE $args[$i]
         }
-    } else {
+    }
+    else {
         GEN_LNK_INFO_BASE $PWD
     }
 }
