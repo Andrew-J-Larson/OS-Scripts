@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Recreate Base Shortcuts v0.9.007
+  Recreate Base Shortcuts v0.9.008
 
   .DESCRIPTION
   Script only recreates shortcuts to applications it knows are installed, and also works for user profile installed applications.
@@ -66,9 +66,12 @@ if ($Help.IsPresent) {
 }
 
 
+# Logging
 
 Start-Transcript -Path "${env:SystemDrive}\Recreate-Base-Shortcuts.log"
 Write-Host "" # Makes log look better
+
+
 
 # Constants
 
@@ -4155,4 +4158,7 @@ if ($ScriptResults -eq 1) { Write-Host "Script completed successfully." }
 elseif ($ScriptResults -eq 2) { Write-Warning "Script completed with some warnings." }
 else { Write-Error "Script completed with some errors." }
 
+
+
+# Logging
 Stop-Transcript

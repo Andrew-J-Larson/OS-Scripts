@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Recreate Base Shortcuts (Intune) v1.0.1
+  Recreate Base Shortcuts (Intune) v1.0.2
 
   .DESCRIPTION
   This is just a wrapper script (made for Intune), to download and run the full script (bypasses the "script is too large" issue for Intune).
@@ -20,7 +20,7 @@
   If there is no internet access to download the rest of the script, then it'll also return $false.
 
   .EXAMPLE
-  .\Recreate-Base-Shortcuts.ps1
+  .\Recreate-Base-Shortcuts-INTUNE.ps1
 
   .NOTES
   Requires admin! Because VBscript (used to create shortcuts) requires admin to create shortcuts in system folders.
@@ -60,15 +60,16 @@
 #Requires -RunAsAdministrator
 
 param(
-    [Alias("h")]
-    [switch]$Help
+  [Alias("h")]
+  [switch]$Help
 )
 
 # check for parameters and execute accordingly
 if ($Help.IsPresent) {
-    Get-Help $MyInvocation.MyCommand.Path
-    exit
+  Get-Help $MyInvocation.MyCommand.Path
+  exit
 }
+
 
 
 # Constants
@@ -81,8 +82,8 @@ Set-Variable REMOTE_SCRIPT_LOCATION -Option Constant -Value "https://github.com/
 
 # Make sure we have internet access
 if (-Not (Get-NetRoute | Where-Object DestinationPrefix -eq '0.0.0.0/0' | Get-NetIPInterface | Where-Object ConnectionState -eq 'Connected')) {
-    Write-Error "This wrapper script requires internet access to start."
-    exit 1
+  Write-Error "This wrapper script requires internet access to start."
+  exit 1
 }
 
 # Download and execute script code
