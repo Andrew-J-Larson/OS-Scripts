@@ -1,24 +1,69 @@
-#Requires -RunAsAdministrator
-<# Recreate Base Shortcuts v0.9.005 - https://github.com/TheAlienDrew/OS-Scripts/blob/master/Windows/Microsoft-Endpoint-Defender/Recreate-Base-Shortcuts.ps1
-   Script only recreates shortcuts to applications it knows are installed, and also works for user profile installed applications.
-   If a program you use isn't in any of the lists here, either fork/edit/push, or create an issue at:
-   https://github.com/TheAlienDrew/OS-Scripts/issues/new?title=%5BAdd%20App%5D%20Recreate-Base-Shortcuts.ps1&body=%3C%21--%20Please%20enter%20the%20app%20you%20need%20added%20below%2C%20and%20a%20link%20to%20the%20installer%20--%3E%0A%0A
+<#
+  .SYNOPSIS
+  Recreate Base Shortcuts v0.9.007
 
-   About the issue: https://www.bleepingcomputer.com/news/microsoft/buggy-microsoft-defender-asr-rule-deletes-windows-app-shortcuts/
+  .DESCRIPTION
+  Script only recreates shortcuts to applications it knows are installed, and also works for user profile installed applications.
+  
+  If a program you use isn't in any of the lists here, either fork/edit/push, or create with the "Need an app added?" link below.
+  
+  If you are looking to use this in Intune, there is a secondary script for the to avoid the "script is too big" issue.
 
-   Application objects are setup like so:
+  .PARAMETER Help
+  Brings up this help page, but won't run script.
 
-   @{
-     Name = "[name of shortcut here]";
-     TargetPath = "[path to exe/url/folder here]";
-     Arguments = "[any arguments that an app starts with here]";
-     SystemLnk = "[path to lnk or name of app here]";
-     WorkingDirectory = "[start in path, if needed, here]";
-     Description = "[comment, that shows up in tooltip, here]";
-     IconLocation = "[path to ico|exe|ico w/ index]";
-     RunAsAdmin = "[true or false, if needed]"
-   }
+  .INPUTS
+  None.
+
+  .OUTPUTS
+  Creates shortcuts (if they don't already exist).
+  Successes, warnings, and errors log to the console (this also logs to the file at `${env:SystemDrive}\Recreate-Base-Shortcuts.log`).
+  
+  Returns $true or $false if script ran successfully.
+
+  .EXAMPLE
+  .\Recreate-Base-Shortcuts.ps1
+
+  .NOTES
+  Requires admin! Because VBscript (used to create shortcuts) requires admin to create shortcuts in system folders.
+  
+  If you're going to edit the script to manually include more apps, then here's how the application objects are setup:
+  
+  @{
+    Name = "[name of shortcut here]"
+    TargetPath = "[path to exe/url/folder here]"
+    Arguments = "[any arguments that an app starts with here]"
+    SystemLnk = "[path to lnk or name of app here]"
+    WorkingDirectory = "[start in path, if needed, here]"
+    Description = "[comment, that shows up in tooltip, here]"
+    IconLocation = "[path to ico|exe|ico w/ index]"
+    RunAsAdmin = "[true or false, if needed]"
+  }
+
+  .LINK
+  About the issue: https://www.bleepingcomputer.com/news/microsoft/buggy-microsoft-defender-asr-rule-deletes-windows-app-shortcuts/
+
+  .LINK
+  Intune version of script: https://github.com/TheAlienDrew/OS-Scripts/blob/master/Windows/Microsoft-Endpoint-Defender/Recreate-Base-Shortcuts-INTUNE.ps1
+
+  .LINK
+  Need an app added?: https://github.com/TheAlienDrew/OS-Scripts/issues/new?title=%5BAdd%20App%5D%20Recreate-Base-Shortcuts.ps1&body=%3C%21--%20Please%20enter%20the%20app%20you%20need%20added%20below%2C%20and%20a%20link%20to%20the%20installer%20--%3E%0A%0A
+
+  .LINK
+  Script from: https://github.com/TheAlienDrew/OS-Scripts/blob/master/Windows/Microsoft-Endpoint-Defender/Recreate-Base-Shortcuts.ps1
 #>
+#Requires -RunAsAdministrator
+
+param(
+  [Alias("h")]
+  [switch]$Help
+)
+
+# check for parameters and execute accordingly
+if ($Help.IsPresent) {
+  Get-Help $MyInvocation.MyCommand.Path
+  exit
+}
 
 
 
@@ -83,7 +128,7 @@ function Get-BinaryType {
       Inspiration: http://pinvoke.net/default.aspx/kernel32/GetBinaryType.html
     .LINK
       http://wonkysoftware.appspot.com
-  #> 
+  #>
 
   [CmdletBinding(  
     SupportsShouldProcess = $false,
@@ -203,7 +248,7 @@ function New-Shortcut {
       Author: TheAlienDrew
     .LINK
       https://github.com/TheAlienDrew/OS-Scripts/tree/master/Windows
-  #> 
+  #>
   #Requires -RunAsAdministrator
 
   param(

@@ -1,7 +1,65 @@
-﻿#Requires -RunAsAdministrator
-# admin required since vbscript requires admin to read shortcut properties
+﻿<#
+  .SYNOPSIS
+  Generate Shortcuts (Functions) v1.0.0
 
-$USERNAME = ((Get-WMIObject -ClassName Win32_ComputerSystem | Select-Object username).username).split('\')[1]
+  .DESCRIPTION
+  Script only enables the functions genLnkInfo and genLnkRecurseInfo.
+
+  .PARAMETER Help
+  Brings up this help page, but won't run script.
+
+  .INPUTS
+  Script: None. You cannot pipe objects to this script.
+  Functions: See notes.
+
+  .OUTPUTS
+  Script: None.
+  Functions: See notes.
+
+  .EXAMPLE
+  .\Function-Generate-Lnk-Info.ps1
+
+  .NOTES
+  Requires admin! Because VBscript (used to read shortcuts) requires admin to read some shortcut attributes.
+
+  After running the script you should have access to functions:
+   - genLnkInfo : creates LNK info for shortcut
+    - e.g. `PS > genLnkInfo "C:\path\to\shortcut.lnk"`
+   - genLnkRecurseInfo : creates LNK info for all shortcuts in folder
+    - e.g. `PS > genLnkRecurseInfo "C:\path\to\shortcuts\folder"`
+    - e.g. `PS > genLnkRecurseInfo "C:\folder\one" "C:\another\folder"`
+    - `genLnkRecurseInfo` is same as `genLnkRecurseInfo $PWD`
+  
+  Pairs well when piping commands to `Set-Clipboard` or `Out-File`.
+  
+  Format of output that these commands create
+   - @{Name = "..."; TargetPath = "..."; Arguments = "..."; SystemLnk = "..."; WorkingDirectory = "..."; Description = "..."; IconLocation = "..."; RunAsAdmin = ($true -Or $false) },
+
+  .LINK
+  Script from: https://github.com/TheAlienDrew/OS-Scripts/blob/master/Windows/Microsoft-Endpoint-Defender/Function-Generate-Lnk-Info.ps1
+#>
+#Requires -RunAsAdministrator
+
+param(
+    [Alias("h")]
+    [switch]$Help
+)
+
+# check for parameters and execute accordingly
+if ($Help.IsPresent) {
+    Get-Help $MyInvocation.MyCommand.Path
+    exit
+}
+
+
+
+# Constants
+
+Set-Variable USERNAME -Option Constant -Value "$(((Get-WMIObject -ClassName Win32_ComputerSystem | Select-Object username).username).split('\')[1])"
+
+
+
+# Functions
 
 # USE THIS FUNCTION ON .LNK FILES
 function genLnkInfo {
@@ -100,17 +158,8 @@ function genLnkRecurseInfo {
     }
 }
 
-# genLnkRecurseInfo
-<# OR #>
-# genLnkRecurseInfo [path or paths in quotes]
 
-<# e.g. #>
-# genLnkRecurseInfo ; <# is same as #> ; genLnkRecurseInfo $PWD
-# genLnkRecurseInfo "C:\ProgramData\Microsoft\Windows\Start Menu\Programs"
-# genLnkRecurseInfo "C:\ProgramData\Microsoft\Windows\Start Menu\Programs" "C:\Users\${USERNAME}\AppData\Roaming\Microsoft\Windows\Start Menu\Programs"
 
-<# creates output ready to be put directly into script, with all or fewer fields #>
-# @{Name = "..."; TargetPath = "..."; Arguments = "..."; SystemLnk = "..."; WorkingDirectory = "..."; Description = "..."; IconLocation = "..."; RunAsAdmin = ($true -Or $false) },
+# MAIN
 
-<# copy to clipboard #>
-# genLnkRecurseInfo | Set-Clipboard
+# there is nothing here
