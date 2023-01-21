@@ -95,8 +95,7 @@ function genLnkRecurseInfo {
         for ($i = 0; $i -lt $args.length; $i++) {
             GEN_LNK_INFO_BASE $args[$i]
         }
-    }
-    else {
+    } else {
         GEN_LNK_INFO_BASE $PWD
     }
 }
