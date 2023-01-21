@@ -125,8 +125,7 @@ function Get-BinaryType {
           OS216 = 5, // A 16-bit OS/2-based application,              SCS_OS216_BINARY
           BIT64 = 6  // A 64-bit Windows-based application,           SCS_64BIT_BINARY
         }"
-    }
-    catch {} #type already been loaded, do nothing
+    } catch {} #type already been loaded, do nothing
 
     try {
       # create the win32 signature
@@ -142,8 +141,7 @@ function Get-BinaryType {
       Add-Type -MemberDefinition $Signature `
         -Name                 BinaryType `
         -Namespace             Win32Utils
-    }
-    catch {} #type already been loaded, do nothing
+    } catch {} #type already been loaded, do nothing
   }
 
   process {
@@ -155,15 +153,13 @@ function Get-BinaryType {
       #if the function returned $false, indicating an error, or the binary type wasn't returned
       if (!$Result -or ($ReturnedType -eq -1)) {
         Write-Error "Failed to get binary type for file: `"$($Item.FullName)`""
-      }
-      else {
+      } else {
         $ToReturn = [BinaryType]$ReturnedType
         if ($PassThrough) {
           #get the file object, attach a property indicating the type, and passthru to pipeline
           Get-Item $Item.FullName -Force |
           Add-Member -MemberType noteproperty -Name BinaryType -Value $ToReturn -Force -PassThru 
-        }
-        else { 
+        } else { 
           #Put enum object directly into pipeline
           $ToReturn 
         }
@@ -173,6 +169,43 @@ function Get-BinaryType {
 }
 
 function New-Shortcut {
+  <#
+    .SYNOPSIS
+      Creates shortcut files that show up in users start menus.
+    .DESCRIPTION
+      Heavily uses vbscript to create the shortcuts and a little bit of byte manipulation (for "Run as admin" option).
+    .PARAMETER sName
+      Required: name that the shortcut .LNK will use
+    .PARAMETER sTargetPath
+      Required: path to the program/script file that shortcut will point to
+    .PARAMETER sArguments
+      Optional: arguments that are used to run the target (for special shortcuts)
+    .PARAMETER sSystemLnk
+      Optional: path to where the shortcut .LNK will be made (for if name/path of the .LNK is different from normal)
+        - If not used, the default path is the system's start menu programs folder
+    .PARAMETER sWorkingDirectory
+      Optional: path where the program/script file will start in
+                (e.g. like setting the directory that CMD opens in when opening the short cut)
+    .PARAMETER sDescription
+      Optional: sets the comment text for the shortcut (this shows up in the tooltip when hovering over shortcut)
+    .PARAMETER sIconLocation
+      Optional: path and index of exe/dll to use a custom icon (e.g. "example.dll, 0" uses the 1st icon)
+    .PARAMETER sRunAsAdmin
+      Optional: turns on the shortcut option "Run as Admin"
+    .PARAMETER sUser
+      Optional: username of the user
+        - If sSystemLnk is not used, then the default path is the user's start menu programs folder
+    .EXAMPLE
+      # Create shortcut to CMD that is set to run as admin, start in the path of Jerry's profile,
+      # place shortcut on Jerry's desktop, and use the default CMD icon
+      New-Shortcut -n "CMD (Admin)" -tp "%windir%\system32\cmd.exe" -a "/k `"echo This is an example.`"" -sl "${env:SystemDrive}\Users\Jerry\Desktop\" -wd "${env:SystemDrive}\Users\Jerry" -d "Performs text-based (command-line) functions." -il "%windir%\system32\cmd.exe, 0" -r $true -u "Jerry"
+    .NOTES
+      Author: TheAlienDrew
+    .LINK
+      https://github.com/TheAlienDrew/OS-Scripts/tree/master/Windows
+  #> 
+  #Requires -RunAsAdministrator
+
   param(
     [Parameter(Mandatory = $true)]
     [Alias("name", "n")]
@@ -182,31 +215,24 @@ function New-Shortcut {
     [Alias("targetpath", "tp")]
     [string]$sTargetPath,
 
-    # Optional (for special shortcuts)
     [Alias("arguments", "a")]
     [string]$sArguments,
 
-    # Optional (for if name / path is different from normal)
     [Alias("systemlnk", "sl")]
     [string]$sSystemLnk,
 
-    # Optional (for special shortcuts)
     [Alias("workingdirectory", "wd")]
     [string]$sWorkingDirectory,
 
-    # Optional (some shortcuts have comments for tooltips)
     [Alias("description", "d")]
     [string]$sDescription,
 
-    # Optional (some shortcuts have a custom icon)
     [Alias("iconlocation", "il")]
     [string]$sIconLocation,
-    
-    # Optional (if the shortcut should be ran as admin)
+
     [Alias("runasadmin", "r")]
     [bool]$sRunAsAdmin,
 
-    # Optional (username of the user to install shortcut to)
     [Alias("user", "u")]
     [string]$sUser
   )
@@ -241,8 +267,7 @@ function New-Shortcut {
     if (Test-Path -Path $sSystemLnk -PathType leaf) {
       $resultMsg += "A shortcut already exists at:`n`"${sSystemLnk}`""
       $result = if ($result) { $RESULT_WARNING }
-    }
-    elseif (Test-Path -Path $sSystemLnkPWD) {
+    } elseif (Test-Path -Path $sSystemLnkPWD) {
       $WScriptObj = New-Object -ComObject WScript.Shell
       $newLNK = $WscriptObj.CreateShortcut($sSystemLnk)
 
@@ -268,26 +293,21 @@ function New-Shortcut {
           if ($result) { $resultMsg += "Shortcut set to Run as Admin, at:`n`"${sSystemLnk}`"" }
           else { $errorMsg += "Failed to set shortcut to Run as Admin, at:`n`"${sSystemLnk}`"" }
         }
-      }
-      else { $errorMsg += "Failed to create shortcut, with target at:`n`"${sTargetPath}`"`nand shortcut path at:`n`"${sSystemLnk}`"" }
-    }
-    else {
+      } else { $errorMsg += "Failed to create shortcut, with target at:`n`"${sTargetPath}`"`nand shortcut path at:`n`"${sSystemLnk}`"" }
+    } else {
       $warnMsg += "Failed to create shortcut, with shortcut path at:`n`"${sSystemLnk}`""
       $result = $RESULT_FAILURE
     }
-  }
-  elseif (-Not ($sName -Or $sTargetPath)) {
+  } elseif (-Not ($sName -Or $sTargetPath)) {
     # Should never end up here due to PowerShell throwing errors upon using empty strings for parameters
     if (-Not $sName) {
       $errorMsg += "Error! Name is missing!"
-    }
-    if (-Not $sTargetPath) {
+    } if (-Not $sTargetPath) {
       $errorMsg += "Error! Target is missing!"
     }
 
     $result = $RESULT_FAILURE
-  }
-  else {
+  } else {
     $warnMsg += "Target invalid! Doesn't exist or is spelled wrong."
   }
 
@@ -296,13 +316,11 @@ function New-Shortcut {
     for ($msgNum = 0; $msgNum -lt $resultMsg.length; $msgNum++) {
       Write-Host $resultMsg[$msgNum]
     }
-  }
-  elseif ($errorMsg) {
+  } elseif ($errorMsg) {
     for ($msgNum = 0; $msgNum -lt $errorMsg.length; $msgNum++) {
       Write-Error $errorMsg[$msgNum]
     }
-  }
-  if ($warnMsg) {
+  } if ($warnMsg) {
     for ($msgNum = 0; $msgNum -lt $warnMsg.length; $msgNum++) {
       Write-Warning $warnMsg[$msgNum]
     }
