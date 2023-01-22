@@ -69,6 +69,9 @@ If you wish to contribute, either look at the code and add in entries manually, 
  - Altair
    - Monarch 2021
    - Monarch 2020
+ - Eaton
+   - 9000XDrive
+   - 9000XLoad
  - Epson Software
    - Epson Scan 2
    - FAX Utility)
@@ -119,4 +122,5 @@ If you wish to contribute, either look at the code and add in entries manually, 
    - Winaero
    - WinDirStat
    - WinSCP
+   - Yaskawa DriveWizard Industrial
    - Zoom

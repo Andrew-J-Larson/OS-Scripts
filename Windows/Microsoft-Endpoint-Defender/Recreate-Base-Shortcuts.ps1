@@ -3594,6 +3594,21 @@ $sys3rdPartyAppList = @(
     TargetPath       = "${env:ProgramFiles(x86)}\WinSCP\WinSCP.exe"
     WorkingDirectory = "${env:ProgramFiles(x86)}\WinSCP"
     Description      = "WinSCP: SFTP, FTP, WebDAV and SCP client" 
+  },
+  # Yaskawa
+  @{ # it's the only install on 32-bit
+    Name             = "DriveWizard Industrial"
+    TargetPath       = "${env:ProgramFiles}\Yaskawa\DriveWizard Industrial\YDWI.exe"
+    SystemLnk        = "Yaskawa\"
+    WorkingDirectory = "${env:ProgramFiles}\Yaskawa\DriveWizard Industrial"
+    Description      = "Yaskawa DriveWizard Industrial" 
+  },
+  @{ # it's the only install on 64-bit
+    Name             = "DriveWizard Industrial"
+    TargetPath       = "${env:ProgramFiles(x86)}\Yaskawa\DriveWizard Industrial\YDWI.exe"
+    SystemLnk        = "Yaskawa\"
+    WorkingDirectory = "${env:ProgramFiles(x86)}\Yaskawa\DriveWizard Industrial"
+    Description      = "Yaskawa DriveWizard Industrial" 
   }
   <#
 
@@ -3849,6 +3864,19 @@ for ($i = 0; $i -lt $Users.length; $i++) {
       SystemLnk        = "Discord Inc\"
       WorkingDirectory = $Discord_WorkingDirectory
       Description      = "Discord - https://discord.com"
+    },
+    # Eaton
+    @{
+      Name             = "9000XDrive"
+      TargetPath       = "${env:SystemDrive}\AFEngine\AFTools\9000XDrive\9000XDrive.exe"
+      SystemLnk        = "AFEngine\"
+      WorkingDirectory = "${env:SystemDrive}\AFEngine\AFTools\9000XDrive"
+    },
+    @{
+      Name             = "9000XLoad"
+      TargetPath       = "${env:SystemDrive}\AFEngine\AFTools\9000XLoad\9000XLoad.exe"
+      SystemLnk        = "AFEngine\"
+      WorkingDirectory = "${env:SystemDrive}\AFEngine\AFTools\9000XLoad"
     },
     # GitHub
     @{
