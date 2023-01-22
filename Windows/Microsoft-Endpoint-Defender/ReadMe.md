@@ -40,9 +40,47 @@ If you wish to contribute, either look at the code and add in entries manually, 
    - Creative Cloud (entire suite + Maxon Cinema 4D)
    - Acrobat
    - Acrobat Reader (old)
-   - Digital Editions 4.5 (or whatever is the newest installed on your machine)
+   - Digital Editions 4.5 (or whatever is the newest installed on your machine; but only includes user shortcuts)
  - Autodesk
+   - 3ds Max 2023
+   - Alias Concept 2023.0.1
+   - AutoCAD 2023
+     - Advance Steel 2023
+     - Civil 3D 2023
+   - AutoCAD LT 2023
+   - Autodesk Desktop Connector
+   - CAMplete TruePath 2023
+   - CFD 2023
+   - DWG TrueView 2023
+   - EAGLE
+   - Fabrication CADmep 2023
+   - FeatureCAM 2023
+   - Fusion 360
+   - InfraWorks
+   - Inventor 2023 (excludes shortcut "Supplier Content Center 2023")
+   - Manufacturing Data Exchange Utility 2023
+   - Manufacturing Post Processor Utility 2023 (excludes shortcut "Make Manufacturing Post Processor Utility 2023 the Current Version")
+   - Maya 2023
+   - Maya Creative 2023
    - Meshmixer
+   - MotionBuilder 2023
+   - Mudbox 2023
+   - Navisworks Manage 2023
+   - Netfabb Premium 2023
+   - PartMaker 2023
+   - Point Layout 2023
+   - PostComparer 2023
+   - PowerInspect 2023
+   - PowerShape 2023
+   - PowerMill 2023
+   - ReCap
+   - Revit 2023
+   - Revit LT 2023
+   - Robot Structural Analysis Professional 2023
+   - ShotGrid (formerly Shotgun)
+   - ShotGrid Create
+   - Subassembly Composer 2023
+   - VREDDesign 2023
  - Google
    - Chrome
    - Google Drive

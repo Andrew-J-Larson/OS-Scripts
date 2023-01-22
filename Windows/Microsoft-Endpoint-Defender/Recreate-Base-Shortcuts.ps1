@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Recreate Base Shortcuts v0.9.012
+  Recreate Base Shortcuts v0.9.013
 
   .DESCRIPTION
   Script only recreates shortcuts to applications it knows are installed, and also works for user profile installed applications.
@@ -1423,11 +1423,11 @@ for ($i = 0; $i -lt $oemSysAppList.length; $i++) {
 $EgnyteDesktopApp_Uninstall_GUID = $UninstallList | Where-Object { $_.Name -match "Egnyte Desktop App" }
 $EgnyteDesktopApp_Uninstall_GUID = if ($EgnyteDesktopApp_Uninstall_GUID) { $EgnyteDesktopApp_Uninstall_GUID[0].GUID } else { $null }
 $EgnyteDesktopApp_Uninstall_Arguments = if ($EgnyteDesktopApp_Uninstall_GUID) { "/x ${EgnyteDesktopApp_Uninstall_GUID}" } else { "" }
-$EgnyteDesktopApp_Uninstall_TargetPath = if ($EgnyteDesktopApp_Uninstall_GUID) { "${env:SystemDrive}\Windows\System32\msiexec.exe" } else { "${env:SystemDrive}\${NOT_INSTALLED}\${NOT_INSTALLED}\${NOT_INSTALLED}.exe" }
+$EgnyteDesktopApp_Uninstall_TargetPath = "${env:windir}\System32\" + $(if ($EgnyteDesktopApp_Uninstall_GUID) { "msiexec.exe" } else { "${NOT_INSTALLED}.exe" })
 $EgnyteDesktopApp_Uninstall_32bit_GUID = $UninstallList_32bit | Where-Object { $_.Name -match "Egnyte Desktop App" }
 $EgnyteDesktopApp_Uninstall_32bit_GUID = if ($EgnyteDesktopApp_Uninstall_32bit_GUID) { $EgnyteDesktopApp_Uninstall_32bit_GUID[0].GUID } else { $null }
 $EgnyteDesktopApp_Uninstall_32bit_Arguments = if ($EgnyteDesktopApp_Uninstall_32bit_GUID) { "/x ${EgnyteDesktopApp_Uninstall_32bit_GUID}" } else { "" }
-$EgnyteDesktopApp_Uninstall_32bit_TargetPath = if ($EgnyteDesktopApp_Uninstall_32bit_GUID) { "${env:SystemDrive}\Windows\System32\msiexec.exe" } else { "${env:SystemDrive}\${NOT_INSTALLED}\${NOT_INSTALLED}\${NOT_INSTALLED}.exe" }
+$EgnyteDesktopApp_Uninstall_32bit_TargetPath = "${env:windir}\System32\" + $(if ($EgnyteDesktopApp_Uninstall_32bit_GUID) { "msiexec.exe" } else { "${NOT_INSTALLED}.exe" })
 
 # App paths dependant on app version
 
@@ -2003,6 +2003,20 @@ $Substance3dStager_Beta_TargetPathAlt2 = $Substance3dStager_Beta_WorkingDirector
 $Substance3dStager_Beta_TargetPath = if (Test-Path -Path $Substance3dStager_Beta_TargetPathExeAlt -PathType leaf) { $Substance3dStager_Beta_TargetPathExeAlt } elseif (Test-Path -Path $Substance3dStager_Beta_TargetPathAltExeAlt -PathType leaf) { $Substance3dStager_Beta_TargetPathAltExeAlt } `
   elseif (Test-Path -Path $Substance3dStager_Beta_TargetPathAlt2ExeAlt -PathType leaf) { $Substance3dStager_Beta_TargetPathAlt2ExeAlt } elseif (Test-Path -Path $Substance3dStager_Beta_TargetPath -PathType leaf) { $Substance3dStager_Beta_TargetPath } `
   elseif (Test-Path -Path $Substance3dStager_Beta_TargetPathAlt -PathType leaf) { $Substance3dStager_Beta_TargetPathAlt } else { $Substance3dStager_Beta_TargetPathAlt2 }
+# Autodesk
+$Civil3d2023_Base_Arguments_DBX = "${env:ProgramFiles}\Autodesk\AutoCAD 2023\AecBase.dbx"
+$Civil3d2013_Base_TargetPath = "${env:ProgramFiles}\Autodesk\AutoCAD 2023\" + $(if (Test-Path -Path $Civil3d2023_Base_Arguments_DBX -PathType leaf) { "acad.exe" } else { "${NOT_INSTALLED}.exe" })
+$Civil3d2023Imperial_Arguments = "/ld `"${Civil3d2023_Base_Arguments_DBX}`" /p `"&lt;&lt;C3D_Imperial&gt;&gt;`" /product C3D /language en-US"
+$Civil3d2023Imperial_TargetPath = $Civil3d2013_Base_TargetPath
+$Civil3d2023Metric_Arguments = "/ld `"${Civil3d2023_Base_Arguments_DBX}`" /p `"&lt;&lt;C3D_Metric&gt;&gt;`" /product C3D /language en-US"
+$Civil3d2023Metric_TargetPath = $Civil3d2013_Base_TargetPath
+$PostComparer2023_EXE = "${env:ProgramFiles}\Autodesk\Manufacturing Post Processor Utility 2023\PostComparer.exe"
+$PostComparer2023_MakeCurrent_Arguments = "add `"HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\PostComparer.exe`" /f /ve /d `"${PostComparer2023_EXE}`""
+$PostComparer2023_MakeCurrent_TargetPath = "${env:windir}\System32\" + $(if (Test-Path -Path $PostComparer2023_EXE -PathType leaf) { "reg.exe" } else { "${NOT_INSTALLED}.exe" })
+$EAGLE_WorkingDirectory = "${env:SystemDrive}\" # "C:\EAGLE 9.6.2"
+$EAGLE_FindFolder = Get-ChildItem -Directory -Path $EAGLE_WorkingDirectory | Where-Object { $_.Name -match '^EAGLE [.0-9]+$' } | Sort-Object -Property LastWriteTime -Top 1
+$EAGLE_WorkingDirectory += if ($EAGLE_FindFolder) { $EAGLE_FindFolder } else { $NOT_INSTALLED }
+$EAGLE_TargetPath = "${EAGLE_WorkingDirectory}\eagle.exe"
 # GIMP
 $GIMP_TargetPath = "${env:ProgramFiles}\"
 $GIMP_FindFolder = Get-ChildItem -Directory -Path $GIMP_TargetPath | Where-Object { $_.Name -match '^GIMP' } | Sort-Object -Property LastWriteTime -Top 1
@@ -2057,9 +2071,9 @@ $MaxonCinema4D_TeamRenderClient_TargetPath = $MaxonCinema4D_WorkingDirectory + "
 $MaxonCinema4D_TeamRenderServer_TargetPath = $MaxonCinema4D_WorkingDirectory + "\Cinema 4D Team Render Server.exe"
 # VMware
 $VMwareWorkstationPlayer_TargetPath = "${env:ProgramFiles}\VMware\VMware Player\vmplayer.exe"
-$CommandPromptforvctl_Path = if (Test-Path -Path $VMwareWorkstationPlayer_TargetPath -PathType leaf) { "${env:SystemDrive}\Windows\System32\cmd.exe" } else { "${env:ProgramFiles}\${NOT_INSTALLED}\${NOT_INSTALLED}\${NOT_INSTALLED}.exe" }
+$CommandPromptforvctl_Path = "${env:windir}\System32\" + $(if (Test-Path -Path $VMwareWorkstationPlayer_TargetPath -PathType leaf) { "cmd.exe" } else { "${NOT_INSTALLED}.exe" })
 $VMwareWorkstationPlayer_32bit_TargetPath = "${env:ProgramFiles(x86)}\VMware\VMware Player\vmplayer.exe"
-$CommandPromptforvctl_32bit_Path = if (Test-Path -Path $VMwareWorkstationPlayer_32bit_TargetPath -PathType leaf) { "${env:SystemDrive}\Windows\System32\cmd.exe" } else { "${env:ProgramFiles(x86)}\${NOT_INSTALLED}\${NOT_INSTALLED}\${NOT_INSTALLED}.exe" }
+$CommandPromptforvctl_32bit_Path = "${env:windir}\System32\" + $(if (Test-Path -Path $VMwareWorkstationPlayer_32bit_TargetPath -PathType leaf) { "cmd.exe" } else { "${NOT_INSTALLED}.exe" })
 
 # App names dependant on OS or app version
 
@@ -2481,6 +2495,1203 @@ $sys3rdPartyAppList = @(
     Name             = "Audacity"
     TargetPath       = "${env:ProgramFiles(x86)}\Audacity\Audacity.exe"
     WorkingDirectory = "${env:ProgramFiles(x86)}\Audacity"
+  },
+  # Autodesk
+  @{
+    Name             = "3ds Max 2023 - Brazilian Portuguese"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\3ds Max 2023\3dsmax.exe"
+    Arguments        = "/Language=PTB"
+    SystemLnk        = "Autodesk\Autodesk 3ds Max 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\3ds Max 2023\"
+  },
+  @{
+    Name             = "3ds Max 2023 - English"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\3ds Max 2023\3dsmax.exe"
+    Arguments        = "/Language=ENU"
+    SystemLnk        = "Autodesk\Autodesk 3ds Max 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\3ds Max 2023\"
+  },
+  @{
+    Name             = "3ds Max 2023 - French"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\3ds Max 2023\3dsmax.exe"
+    Arguments        = "/Language=FRA"
+    SystemLnk        = "Autodesk\Autodesk 3ds Max 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\3ds Max 2023\"
+  },
+  @{
+    Name             = "3ds Max 2023 - German"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\3ds Max 2023\3dsmax.exe"
+    Arguments        = "/Language=DEU"
+    SystemLnk        = "Autodesk\Autodesk 3ds Max 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\3ds Max 2023\"
+  },
+  @{
+    Name             = "3ds Max 2023 - Japanese"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\3ds Max 2023\3dsmax.exe"
+    Arguments        = "/Language=JPN"
+    SystemLnk        = "Autodesk\Autodesk 3ds Max 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\3ds Max 2023\"
+  },
+  @{
+    Name             = "3ds Max 2023 - Korean"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\3ds Max 2023\3dsmax.exe"
+    Arguments        = "/Language=KOR"
+    SystemLnk        = "Autodesk\Autodesk 3ds Max 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\3ds Max 2023\"
+  },
+  @{
+    Name             = "3ds Max 2023 - Simplified Chinese"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\3ds Max 2023\3dsmax.exe"
+    Arguments        = "/Language=CHS"
+    SystemLnk        = "Autodesk\Autodesk 3ds Max 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\3ds Max 2023\"
+  },
+  @{
+    Name             = "3ds Max 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\3ds Max 2023\3dsmax.exe"
+    SystemLnk        = "Autodesk\Autodesk 3ds Max 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\3ds Max 2023\"
+  },
+  @{
+    Name             = "Change Graphics Mode - 3ds Max 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\3ds Max 2023\3dsmax.exe"
+    Arguments        = "-h"
+    SystemLnk        = "Autodesk\Autodesk 3ds Max 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\3ds Max 2023\"
+  },
+  @{
+    Name             = "MaxFind 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\3ds Max 2023\MaxFind.exe"
+    SystemLnk        = "Autodesk\Autodesk 3ds Max 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\3ds Max 2023\"
+  },
+  @{
+    Name             = "VREDDesign 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\VREDDesign-15.0\bin\WIN64\VREDDesign.exe"
+    SystemLnk        = "Autodesk VREDDesign 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\VREDDesign-15.0\bin\WIN64"
+    Description      = "VREDDesign 2023"
+  },
+  @{
+    Name             = "Activate Cluster Service"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\VREDDesign-15.0\bin\installClusterServiceAsAdmin.bat"
+    SystemLnk        = "Autodesk VREDDesign 2023\Install\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\VREDDesign-15.0\bin"
+    Description      = "Activate Cluster Service"
+  },
+  @{
+    Name             = "Autodesk VREDDesign Readme"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\VREDDesign-15.0\Autodesk VREDDesign Readme.html"
+    SystemLnk        = "Autodesk VREDDesign 2023\Install\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\VREDDesign-15.0"
+    Description      = "Autodesk VREDPro Readme"
+  },
+  @{
+    Name             = "Data Files"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\VREDDesign-15.0\bin\WIN64\datafiles.exe"
+    SystemLnk        = "Autodesk VREDDesign 2023\Install\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\VREDDesign-15.0\bin\WIN64"
+    Description      = "Data Files"
+  },
+  @{
+    Name             = "Deactivate Cluster Service"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\VREDDesign-15.0\bin\uninstallClusterServiceAsAdmin.bat"
+    SystemLnk        = "Autodesk VREDDesign 2023\Install\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\VREDDesign-15.0\bin"
+    Description      = "Deactivate Cluster Service"
+  },
+  @{
+    Name             = "Disable Outbound Communication"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\VREDDesign-15.0\bin\disableOutboundCommunication.bat"
+    SystemLnk        = "Autodesk VREDDesign 2023\Install\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\VREDDesign-15.0\bin"
+    Description      = "Disable Outbound Communication"
+  },
+  @{
+    Name             = "Enable Outbound Communication"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\VREDDesign-15.0\bin\enableOutboundCommunication.bat"
+    SystemLnk        = "Autodesk VREDDesign 2023\Install\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\VREDDesign-15.0\bin"
+    Description      = "Enable Outbound Communication"
+  },
+  @{
+    Name             = "Log Files"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\VREDDesign-15.0\bin\WIN64\logfiles.exe"
+    SystemLnk        = "Autodesk VREDDesign 2023\Install\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\VREDDesign-15.0\bin\WIN64"
+    Description      = "Log Files"
+  },
+  @{
+    Name             = "Autodesk Inventor Professional 2023 - English"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\Inventor 2023\Bin\Inventor.exe"
+    Arguments        = "/language=ENU"
+    SystemLnk        = "Autodesk Inventor 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\Inventor 2023\Bin\"
+  },
+  @{
+    Name             = "Design Assistant 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\Inventor 2023\Bin\DtDv.exe"
+    SystemLnk        = "Autodesk Inventor 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\Inventor 2023\Bin\"
+    Description      = "Design Assistant for Autodesk Inventor"
+  },
+  @{
+    Name             = "Inventor Read-only Mode 2023 - English"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\Inventor 2023\Bin\InvRO.exe"
+    Arguments        = "/language=ENU"
+    SystemLnk        = "Autodesk Inventor 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\Inventor 2023\Bin\"
+    Description      = "Autodesk Inventor Read-only Mode"
+  },
+  @{
+    Name             = "Add-In Manager 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\Inventor 2023\Bin\AddInMgr.exe"
+    SystemLnk        = "Autodesk Inventor 2023\Tools\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\Inventor 2023\Bin\"
+    Description      = "Autodesk Inventor Add-In Manager"
+  },
+  @{
+    Name             = "Autodesk App Manager"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\Inventor 2023\Bin\AppManager.exe"
+    Arguments        = "Inventor /u  http://apps.exchange.autodesk.com/apps/v1/homepage?productline=INVPROSA&utm_source=inproduct&utm_medium=appmanager"
+    SystemLnk        = "Autodesk Inventor 2023\Tools\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\Inventor 2023\Bin\"
+    Description      = "Launch App Manager"
+  },
+  @{
+    Name             = "Drawing Resource Transfer Wizard 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\Inventor 2023\Bin\Drawing Resource Transfer Wizard.exe"
+    SystemLnk        = "Autodesk Inventor 2023\Tools\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\Inventor 2023\Bin\"
+    Description      = "Drawing Resource Transfer Wizard"
+  },
+  @{
+    Name             = "Inventor Reset Utility"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\Inventor 2023\Bin\InventorReset.exe"
+    SystemLnk        = "Autodesk Inventor 2023\Tools\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\Inventor 2023\Bin\"
+    Description      = "Inventor Reset Utility"
+  },
+  @{
+    Name             = "Project Editor 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\Inventor 2023\Bin\Ipj.exe"
+    SystemLnk        = "Autodesk Inventor 2023\Tools\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\Inventor 2023\Bin\"
+    Description      = "Autodesk Inventor Project Manager Utility"
+  },
+  @{
+    Name             = "Property Mapping for Imported CAD Data"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\Inventor 2023\Bin\AnyCADPropertyMappingTool.exe"
+    SystemLnk        = "Autodesk Inventor 2023\Tools\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\Inventor 2023\Bin\"
+  },
+  @{
+    Name             = "Style Library Manager 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\Inventor 2023\Bin\Style Library Manager.exe"
+    SystemLnk        = "Autodesk Inventor 2023\Tools\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\Inventor 2023\Bin\"
+    Description      = "Autodesk Inventor Style Library Manager"
+  },
+  @{
+    Name             = "Task Scheduler 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\Inventor 2023\Bin\TaskScheduler.exe"
+    SystemLnk        = "Autodesk Inventor 2023\Tools\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\Inventor 2023\Bin\"
+    Description      = "Autodesk Inventor Task Scheduler"
+  },
+  @{
+    Name             = "Advance Steel 2023 - Migrate Content - English"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\AutoCAD 2023\ADVS\ASMigrator.exe"
+    Arguments        = " /`"en-US`""
+    SystemLnk        = "Advance Steel 2023 - English\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\AutoCAD 2023\ADVS\"
+    Description      = "Migrate Advance Steel Content & Settings from a Previous Release"
+  },
+  @{
+    Name             = "Attach Digital Signatures - Advance Steel 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\AutoCAD 2023\AcSignApply.exe"
+    SystemLnk        = "Advance Steel 2023 - English\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\AutoCAD 2023\UserDataCache\"
+    Description      = "Attach Digital Signatures"
+  },
+  @{
+    Name             = "AutoCAD - English - Advance Steel 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\AutoCAD 2023\acad.exe"
+    Arguments        = " /language `"en-US`" /product `"ADVS`" /p `"&lt;&lt;VANILLA&gt;&gt;`""
+    SystemLnk        = "Advance Steel 2023 - English\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\AutoCAD 2023\UserDataCache\"
+    Description      = "Launch acad.exe"
+  },
+  @{
+    Name             = "Batch Standards Checker - Advance Steel 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\AutoCAD 2023\DwgCheckStandards.exe"
+    SystemLnk        = "Advance Steel 2023 - English\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\AutoCAD 2023\"
+    Description      = "Launch DwgCheckStandards.exe"
+  },
+  @{
+    Name             = "Reference Manager - Advance Steel 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\AutoCAD 2023\AdRefMan.exe"
+    SystemLnk        = "Advance Steel 2023 - English\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\AutoCAD 2023\UserDataCache\"
+    Description      = "Reference Manager"
+  },
+  @{
+    Name             = "Reset Settings to Default - Advance Steel 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\AutoCAD 2023\AdMigrator.exe"
+    Arguments        = "/reset /product ADVS /language `"en-US`""
+    SystemLnk        = "Advance Steel 2023 - English\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\AutoCAD 2023\"
+    Description      = "Reset Settings to Default"
+  },
+  @{
+    Name             = "Advance Steel 2023 - English"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\AutoCAD 2023\acad.exe"
+    Arguments        = " /language `"en-US`" /product `"ADVS`" /p `"&lt;&lt;ADVS&gt;&gt;`""
+    SystemLnk        = "Advance Steel 2023 - English\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\AutoCAD 2023\UserDataCache\"
+    Description      = "Launch Advance Steel 2023 - English"
+  },
+  @{
+    Name             = "Export AutoCAD Settings - Advance Steel 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\AutoCAD 2023\AdMigrator.exe"
+    Arguments        = "/e /product ADVS /language `"en-US`""
+    SystemLnk        = "Advance Steel 2023 - English\Migrate Custom Settings\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\AutoCAD 2023\"
+    Description      = "AutoCAD 2023 Settings"
+  },
+  @{
+    Name             = "Import AutoCAD Settings - Advance Steel 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\AutoCAD 2023\AdMigrator.exe"
+    Arguments        = "/i /product ADVS /language `"en-US`""
+    SystemLnk        = "Advance Steel 2023 - English\Migrate Custom Settings\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\AutoCAD 2023\"
+    Description      = "Import AutoCAD 2023 Settings"
+  },
+  @{
+    Name             = "Migrate From a Previous Release"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\AutoCAD 2023\AdMigrator.exe"
+    Arguments        = "/product ADVS /language `"en-US`""
+    SystemLnk        = "Advance Steel 2023 - English\Migrate Custom Settings\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\AutoCAD 2023\"
+    Description      = "Migrate from a Previous Release"
+  },
+  @{
+    Name             = "Alias Concept 2023.0.1"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\AliasConcept2023.0.1\bin\Alias.exe"
+    Arguments        = "-a cs"
+    SystemLnk        = "Autodesk Alias Concept 2023.0.1\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\AliasConcept2023.0.1\"
+  },
+  @{
+    Name             = "Exchange App Manager"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\AliasConcept2023.0.1\bin\AppManager.exe"
+    Arguments        = "Alias /u http://apps.exchange.autodesk.com/apps/v1/homepage?productline=ALSCPT&release=2014&utm_source=inproduct&utm_medium=appmanager"
+    SystemLnk        = "Autodesk Alias Concept 2023.0.1\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\AliasConcept2023.0.1\"
+  },
+  @{
+    Name             = "Fcheck"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\AliasConcept2023.0.1\bin\fcheck.exe"
+    SystemLnk        = "Autodesk Alias Concept 2023.0.1\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\AliasConcept2023.0.1\"
+    Description      = "Fcheck"
+  },
+  @{
+    Name             = "Save And Exit"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\AliasConcept2023.0.1\bin\MsaveAndExit.exe"
+    SystemLnk        = "Autodesk Alias Concept 2023.0.1\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\AliasConcept2023.0.1\"
+    Description      = "Save And Exit"
+  },
+  @{
+    Name             = "Attach Digital Signatures"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\AutoCAD 2023\AcSignApply.exe"
+    SystemLnk        = "AutoCAD 2023 - English\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\AutoCAD 2023\UserDataCache\"
+    Description      = "Attach Digital Signatures"
+  },
+  @{
+    Name             = "AutoCAD 2023 - English"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\AutoCAD 2023\acad.exe"
+    Arguments        = " /product ACAD /language `"en-US`""
+    SystemLnk        = "AutoCAD 2023 - English\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\AutoCAD 2023\UserDataCache\"
+    Description      = "Launch acad.exe"
+  },
+  @{
+    Name             = "Batch Standards Checker"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\AutoCAD 2023\DwgCheckStandards.exe"
+    SystemLnk        = "AutoCAD 2023 - English\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\AutoCAD 2023\"
+    Description      = "Launch DwgCheckStandards.exe"
+  },
+  @{
+    Name             = "Reference Manager"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\AutoCAD 2023\AdRefMan.exe"
+    SystemLnk        = "AutoCAD 2023 - English\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\AutoCAD 2023\UserDataCache\"
+    Description      = "Reference Manager"
+  },
+  @{
+    Name             = "Reset Settings to Default"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\AutoCAD 2023\AdMigrator.exe"
+    Arguments        = "/reset /product ACAD /language `"en-US`""
+    SystemLnk        = "AutoCAD 2023 - English\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\AutoCAD 2023\"
+    Description      = "Reset Settings to Default"
+  },
+  @{
+    Name             = "Export AutoCAD 2023 Settings"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\AutoCAD 2023\AdMigrator.exe"
+    Arguments        = "/e /product ACAD /language `"en-US`""
+    SystemLnk        = "AutoCAD 2023 - English\Migrate Custom Settings\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\AutoCAD 2023\"
+    Description      = "AutoCAD 2023 Settings"
+  },
+  @{
+    Name             = "Import AutoCAD 2023 Settings"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\AutoCAD 2023\AdMigrator.exe"
+    Arguments        = "/i /product ACAD /language `"en-US`""
+    SystemLnk        = "AutoCAD 2023 - English\Migrate Custom Settings\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\AutoCAD 2023\"
+    Description      = "Import AutoCAD 2023 Settings"
+  },
+  @{
+    Name             = "Migrate From a Previous Release"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\AutoCAD 2023\AdMigrator.exe"
+    Arguments        = "/product ACAD /language `"en-US`""
+    SystemLnk        = "AutoCAD 2023 - English\Migrate Custom Settings\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\AutoCAD 2023\"
+    Description      = "Migrate from a Previous Release"
+  },
+  @{
+    Name             = "Attach Digital Signatures"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\AutoCAD 2023\AcSignApply.exe"
+    SystemLnk        = "Autodesk Civil 3D 2023 - English\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\AutoCAD 2023\UserDataCache\"
+    Description      = "Attach Digital Signatures"
+  },
+  @{
+    Name             = "Autodesk Content Browser"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\AutoCAD 2023\ACA\AecCB.exe"
+    Arguments        = "/Product `"C3D`" /Language `"en-US`""
+    SystemLnk        = "Autodesk Civil 3D 2023 - English\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\AutoCAD 2023\"
+    Description      = "Launch Autodesk Content Browser"
+  },
+  @{
+    Name             = "Batch Standards Checker"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\AutoCAD 2023\DwgCheckStandards.exe"
+    SystemLnk        = "Autodesk Civil 3D 2023 - English\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\AutoCAD 2023\"
+    Description      = "Launch DwgCheckStandards.exe"
+  },
+  @{
+    Name             = "Civil 3D 2023 Imperial"
+    TargetPath       = $Civil3d2023Imperial_TargetPath
+    Arguments        = $Civil3d2023Imperial_Arguments
+    SystemLnk        = "Autodesk Civil 3D 2023 - English\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\AutoCAD 2023\"
+    Description      = "Start menu shortcut Civil 3D 2023 Imperial"
+  },
+  @{
+    Name             = "Civil 3D 2023 Metric"
+    TargetPath       = $Civil3d2023Metric_TargetPath
+    Arguments        = $Civil3d2023Metric_Arguments
+    SystemLnk        = "Autodesk Civil 3D 2023 - English\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\AutoCAD 2023\"
+    Description      = "Start menu shortcut Civil 3D 2023 Metric"
+  },
+  @{
+    Name             = "Content Catalog Editor"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\AutoCAD 2023\C3D\Autodesk.Aec.Content.CatalogEditor.exe"
+    SystemLnk        = "Autodesk Civil 3D 2023 - English\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\AutoCAD 2023\"
+    Description      = "AutoCAD Civil 3D Content Catalog Editor"
+  },
+  @{
+    Name             = "Data Shortcuts Editor"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\AutoCAD 2023\C3D\ShortcutEditor.exe"
+    SystemLnk        = "Autodesk Civil 3D 2023 - English\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\AutoCAD 2023\C3D\"
+    Description      = "AutoCAD Civil 3D Data Shortcuts Editor"
+  },
+  @{
+    Name             = "Reference Manager"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\AutoCAD 2023\AdRefMan.exe"
+    SystemLnk        = "Autodesk Civil 3D 2023 - English\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\AutoCAD 2023\UserDataCache\"
+    Description      = "Reference Manager"
+  },
+  @{
+    Name             = "Reset Settings to Default"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\AutoCAD 2023\AdMigrator.exe"
+    Arguments        = "/reset /product C3D /language `"en-US`""
+    SystemLnk        = "Autodesk Civil 3D 2023 - English\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\AutoCAD 2023\"
+    Description      = "Reset Settings to Default"
+  },
+  @{
+    Name             = "Autodesk Batch Save Utility (Standalone)"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\Batch Save Utility (Standalone)\C3D_BatchSave.exe"
+    SystemLnk        = "Autodesk\Autodesk Batch Save Utility (Standalone)\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\Batch Save Utility (Standalone)\"
+    Description      = "Autodesk Batch Save Utility (Standalone)"
+  },
+  @{
+    Name             = "Attach Digital Signatures"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\AutoCAD LT 2023\AcSignApply.exe"
+    SystemLnk        = "AutoCAD LT 2023 - English\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\AutoCAD LT 2023\UserDataCache\"
+    Description      = "Attach Digital Signatures"
+  },
+  @{
+    Name             = "AutoCAD LT 2023 - English"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\AutoCAD LT 2023\acadlt.exe"
+    Arguments        = "/language `"en-US`""
+    SystemLnk        = "AutoCAD LT 2023 - English\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\AutoCAD LT 2023\UserDataCache\"
+    Description      = "Launch acadlt.exe"
+  },
+  @{
+    Name             = "Reset Settings to Default"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\AutoCAD LT 2023\AdMigrator.exe"
+    Arguments        = "/reset /language `"en-US`""
+    SystemLnk        = "AutoCAD LT 2023 - English\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\AutoCAD LT 2023\"
+    Description      = "Reset Settings to Default"
+  },
+  @{
+    Name             = "Export AutoCAD LT 2023 Settings"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\AutoCAD LT 2023\AdMigrator.exe"
+    Arguments        = "/e /language `"en-US`""
+    SystemLnk        = "AutoCAD LT 2023 - English\Migrate Custom Settings\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\AutoCAD LT 2023\"
+    Description      = "Export AutoCAD LT 2023 Settings"
+  },
+  @{
+    Name             = "Import AutoCAD LT 2023 Settings"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\AutoCAD LT 2023\AdMigrator.exe"
+    Arguments        = "/i /language `"en-US`""
+    SystemLnk        = "AutoCAD LT 2023 - English\Migrate Custom Settings\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\AutoCAD LT 2023\"
+    Description      = "Import AutoCAD LT 2023 Settings"
+  },
+  @{
+    Name             = "Migrate From a Previous Release"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\AutoCAD LT 2023\AdMigrator.exe"
+    Arguments        = "/language `"en-US`""
+    SystemLnk        = "AutoCAD LT 2023 - English\Migrate Custom Settings\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\AutoCAD LT 2023\"
+    Description      = "Migrate from a Previous Release"
+  },
+  @{
+    Name             = "Autodesk CAMplete TruePath 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\CAMplete TruePath 2023\CAMpleteTruePath.exe"
+    SystemLnk        = "Autodesk CAMplete TruePath 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\CAMplete TruePath 2023\"
+    Description      = "Autodesk CAMplete TruePath 2023"
+  },
+  @{
+    Name             = "Autodesk Desktop Connector"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\Desktop Connector\DesktopConnector.Applications.Tray.exe"
+    SystemLnk        = "Autodesk\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\Desktop Connector\"
+  },
+  @{
+    Name             = "Autodesk Subassembly Composer 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\Subassembly Composer 2023\SubassemblyComposer.exe"
+    SystemLnk        = "Autodesk\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\Subassembly Composer 2023\"
+    Description      = "Autodesk Subassembly Composer 2023"
+  },
+  @{
+    Name             = "Autodesk Exchange App Manager"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\CFD 2023\AppManager.exe"
+    Arguments        = "SimCFD /U http://apps.exchange.autodesk.com/apps/v1/homepage?productline=SCFD&release=2023&language=en&utm_source=inproduct&utm_medium=appstore"
+    SystemLnk        = "Autodesk\CFD 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\CFD 2023\"
+    Description      = "Autodesk Exchange App Manager"
+  },
+  @{
+    Name             = "CFD 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\CFD 2023\CFD.exe"
+    SystemLnk        = "Autodesk\CFD 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\CFD 2023\"
+    Description      = "CFD 2023"
+  },
+  @{
+    Name             = "CFD Viewer 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\CFD Viewer 2023\AutodeskCFDViewer.exe"
+    SystemLnk        = "Autodesk\CFD 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\CFD Viewer 2023\"
+    Description      = "Launch CFD Viewer 2023"
+  },
+  @{
+    Name             = "Autodesk Fabrication Migration Tool"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\Fabrication 2023\CADmep\fabmigrate.exe"
+    SystemLnk        = "Fabrication CADmep 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\Fabrication 2023\CADmep\"
+    Description      = "Migrate Settings and Convert existing Configurations"
+  },
+  @{
+    Name             = "CADmep 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\Fabrication 2023\CADmep\CADmepLauncher.exe"
+    SystemLnk        = "Fabrication CADmep 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\Fabrication 2023\CADmep\"
+    Description      = "Autodesk Fabrication CADmep 2023"
+  },
+  @{
+    Name             = "Configure Users"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\Fabrication 2023\CADmep\mapuser.exe"
+    SystemLnk        = "Fabrication CADmep 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\Fabrication 2023\CADmep\"
+    Description      = "Multi-User Configuration"
+  },
+  @{
+    Name             = "Dictionary Editor"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\Fabrication 2023\CADmep\maptext.exe"
+    SystemLnk        = "Fabrication CADmep 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\Fabrication 2023\CADmep\"
+    Description      = "Translate Application Text"
+  },
+  @{
+    Name             = "Edit Configuration"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\Fabrication 2023\CADmep\editmap.exe"
+    SystemLnk        = "Fabrication CADmep 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\Fabrication 2023\CADmep\"
+    Description      = "Application Settings Editor"
+  },
+  @{
+    Name             = "Product Information Editor"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\Fabrication 2023\CADmep\mapprod.exe"
+    Arguments        = "/L=#0"
+    SystemLnk        = "Fabrication CADmep 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\Fabrication 2023\CADmep\"
+    Description      = "Edit Product Information"
+  },
+  @{
+    Name             = "Product Information Viewer"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\Fabrication 2023\CADmep\prodview.exe"
+    Arguments        = "/L=#0"
+    SystemLnk        = "Fabrication CADmep 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\Fabrication 2023\CADmep\"
+    Description      = "View Product Information"
+  },
+  @{
+    Name             = "Review 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\Fabrication 2023\CADmep\FABreview.exe"
+    SystemLnk        = "Fabrication CADmep 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\Fabrication 2023\CADmep\"
+    Description      = "Review 2023"
+  },
+  @{
+    Name             = "Autodesk InfraWorks"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\InfraWorks\InfraWorks.exe"
+    SystemLnk        = "Autodesk\Autodesk InfraWorks\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\InfraWorks\"
+    Description      = "Autodesk InfraWorks"
+  },
+  @{
+    Name             = "Autodesk Manufacturing Data Exchange Utility 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\Manufacturing Data Exchange Utility 2023\sys\exec64\sdx.exe"
+    SystemLnk        = "Autodesk Manufacturing Data Exchange Utility 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\Manufacturing Data Exchange Utility 2023\"
+  },
+  @{
+    Name             = "COM Register Autodesk Manufacturing Data Exchange Utility 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\Manufacturing Data Exchange Utility 2023\sys\exec64\sdx_com_reg.vbs"
+    Arguments        = "`"${env:ProgramFiles}\Autodesk\Manufacturing Data Exchange Utility 2023\\sys\exec64\sdx.exe`""
+    SystemLnk        = "Autodesk Manufacturing Data Exchange Utility 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\Manufacturing Data Exchange Utility 2023\"
+  },
+  @{
+    Name             = "Help"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\Manufacturing Data Exchange Utility 2023\file\help\sdxdoc.chm"
+    SystemLnk        = "Autodesk Manufacturing Data Exchange Utility 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\Manufacturing Data Exchange Utility 2023\"
+  },
+  @{
+    Name             = "Autodesk Manufacturing Post Processor Utility 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\Manufacturing Post Processor Utility 2023\pmpost.exe"
+    SystemLnk        = "Autodesk Manufacturing Post Processor Utility 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\Manufacturing Post Processor Utility 2023\"
+    Description      = "Autodesk Manufacturing Post Processor Utility 2023"
+  },
+  @{
+    Name             = "PostComparer 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\Manufacturing Post Processor Utility 2023\PostComparer.exe"
+    SystemLnk        = "Autodesk Manufacturing Post Processor Utility 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\Manufacturing Post Processor Utility 2023\"
+    Description      = "Option file comparer 2023"
+  },
+  @{
+    Name        = "Make PostComparer 2023 the Current Version"
+    TargetPath  = $PostComparer2023_MakeCurrent_TargetPath
+    Arguments   = $PostComparer2023_MakeCurrent_Arguments
+    SystemLnk   = "Autodesk Manufacturing Post Processor Utility 2023\"
+    Description = "Register PostComparer 2023 as Current Version"
+  },
+  @{
+    Name       = "Autodesk Netfabb Premium 2023"
+    TargetPath = "${env:ProgramFiles}\Autodesk\Netfabb Premium 2023\netfabb.exe"
+    SystemLnk  = "Autodesk\Autodesk Netfabb Premium 2023\"
+  },
+  @{
+    Name             = "Autodesk Point Layout 2023 Plugin"
+    TargetPath       = "${env:SystemDrive}\ProgramData\Autodesk\ApplicationPlugins\Autodesk_Point_Layout_2023.bundle\APL_Addon_Register.exe"
+    SystemLnk        = "Autodesk\Point Layout 2023\"
+    WorkingDirectory = "${env:SystemDrive}\ProgramData\Microsoft\Windows\Start Menu\Programs\Autodesk\Point Layout 2023"
+  },
+  @{
+    Name             = "Autodesk Point Layout 2023 Preview Guide"
+    TargetPath       = "${env:SystemDrive}\ProgramData\Autodesk\ApplicationPlugins\Autodesk_Point_Layout_2023.bundle\Autodesk Point Layout Preview Guide.pdf"
+    SystemLnk        = "Autodesk\Point Layout 2023\"
+    WorkingDirectory = "${env:SystemDrive}\ProgramData\Microsoft\Windows\Start Menu\Programs\Autodesk\Point Layout 2023"
+  },
+  @{
+    Name             = "Uninstall Autodesk Point Layout 2023"
+    TargetPath       = "${env:SystemDrive}\ProgramData\Autodesk\ApplicationPlugins\Autodesk_Point_Layout_2023.bundle\Uninstall.exe"
+    SystemLnk        = "Autodesk\Point Layout 2023\"
+    WorkingDirectory = "${env:SystemDrive}\ProgramData\Microsoft\Windows\Start Menu\Programs\Autodesk\Point Layout 2023"
+  },
+  @{
+    Name             = "Autodesk PowerInspect Ultimate 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\PowerInspect 2023\sys\exec64\PowerINSPECT.exe"
+    Arguments        = "-license Ultimate"
+    SystemLnk        = "Autodesk PowerInspect 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\PowerInspect 2023\"
+  },
+  @{
+    Name             = "Autodesk PowerInspect Ultimate Dual 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\PowerInspect 2023\sys\exec64\PowerINSPECT.exe"
+    Arguments        = "-license Ultimate -Dual"
+    SystemLnk        = "Autodesk PowerInspect 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\PowerInspect 2023\"
+  },
+  @{
+    Name             = "Autodesk PowerInspect Ultimate Manual 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\PowerInspect 2023\sys\exec64\PowerINSPECT.exe"
+    Arguments        = "-license Ultimate -Manual"
+    SystemLnk        = "Autodesk PowerInspect 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\PowerInspect 2023\"
+  },
+  @{
+    Name             = "Autodesk PowerInspect Ultimate Manual Dual 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\PowerInspect 2023\sys\exec64\PowerINSPECT.exe"
+    Arguments        = "-license Ultimate -Manual -Dual"
+    SystemLnk        = "Autodesk PowerInspect 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\PowerInspect 2023\"
+  },
+  @{
+    Name             = "Autodesk PowerInspect Ultimate OMV 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\PowerInspect 2023\sys\exec64\PowerINSPECT.exe"
+    Arguments        = "-license Ultimate -OMV"
+    SystemLnk        = "Autodesk PowerInspect 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\PowerInspect 2023\"
+  },
+  @{
+    Name       = "Batch Measurement 2023"
+    TargetPath = "${env:ProgramFiles}\Autodesk\PowerInspect 2023\sys\exec64\PIBatchMeas.exe"
+    SystemLnk  = "Autodesk PowerInspect 2023\"
+  },
+  @{
+    Name       = "Make Autodesk PowerInspect 2023 the Current Version"
+    TargetPath = "${env:ProgramFiles}\Autodesk\PowerInspect 2023\sys\exec64\PowerINSPECTRegistrarExe.exe"
+    Arguments  = "-file:components.txt -title:PowerInspect"
+    SystemLnk  = "Autodesk PowerInspect 2023\"
+  },
+  @{
+    Name       = "PowerInspect DRO 2023"
+    TargetPath = "${env:ProgramFiles}\Autodesk\PowerInspect 2023\sys\exec64\PowerINSPECT_DRO.exe"
+    SystemLnk  = "Autodesk PowerInspect 2023\"
+  },
+  @{
+    Name       = "Template Editor 2023"
+    TargetPath = "${env:ProgramFiles}\Autodesk\PowerInspect 2023\sys\exec64\TemplateEditor.exe"
+    SystemLnk  = "Autodesk PowerInspect 2023\"
+  },
+  @{
+    Name       = "VirtualCMM 2023"
+    TargetPath = "${env:ProgramFiles}\Autodesk\PowerInspect 2023\sys\exec64\VirtualCMM.exe"
+    SystemLnk  = "Autodesk PowerInspect 2023\"
+  },
+  @{
+    Name             = "Autodesk PowerMill Modeling 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\PowerShape 2023\sys\exec64\powershape.exe"
+    Arguments        = "-license Mill"
+    SystemLnk        = "Autodesk PowerShape 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\PowerShape 2023\"
+  },
+  @{
+    Name             = "Autodesk PowerShape Ultimate 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\PowerShape 2023\sys\exec64\powershape.exe"
+    Arguments        = "-license Ultimate"
+    SystemLnk        = "Autodesk PowerShape 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\PowerShape 2023\"
+  },
+  @{
+    Name             = "Autodesk PowerMill Ultimate 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\PowerMill 2023\sys\exec64\pmill.exe"
+    Arguments        = "-license Ultimate"
+    SystemLnk        = "Autodesk PowerMill 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\PowerMill 2023\"
+  },
+  @{
+    Name             = "Autodesk PowerMill Viewer 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\PowerMill 2023\sys\exec64\pmill.exe"
+    Arguments        = "-viewer"
+    SystemLnk        = "Autodesk PowerMill 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\PowerMill 2023\"
+  },
+  @{
+    Name             = "Register Tool Database Server"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\PowerMill 2023\sys\tooldb\ADODC.exe"
+    Arguments        = "-Regserver"
+    SystemLnk        = "Autodesk PowerMill 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\PowerMill 2023\"
+  },
+  @{
+    Name             = "Autodesk ReCap Photo"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\Autodesk ReCap Photo\recapphoto.exe"
+    SystemLnk        = "Autodesk ReCap\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\Autodesk ReCap Photo\"
+    Description      = "Autodesk ReCap Photo"
+  },
+  @{
+    Name             = "Autodesk ReCap"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\Autodesk ReCap\ReCap.exe"
+    SystemLnk        = "Autodesk ReCap\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\Autodesk ReCap\"
+    Description      = "Autodesk ReCap"
+  },
+  @{
+    Name             = "Calculation Engine – Component Registration"
+    TargetPath       = "${env:ProgramFiles}\Common Files\Autodesk Shared\Autodesk Robot Structural Analysis Engine 2023\System\Exe\rkernel.exe"
+    Arguments        = "/RegServer /Full"
+    SystemLnk        = "Autodesk Robot Structural Analysis Professional 2023\Tools\"
+    WorkingDirectory = "${env:ProgramFiles}\Common Files\Autodesk Shared\Autodesk Robot Structural Analysis Engine 2023\System\Exe\"
+  },
+  @{
+    Name             = "Delete prepared results"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\Robot Structural Analysis Professional 2023\Exe\Autodesk.Common.ABufferClean.exe"
+    SystemLnk        = "Autodesk Robot Structural Analysis Professional 2023\Tools\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\Robot Structural Analysis Professional 2023\Exe\"
+  },
+  @{
+    Name             = "Robot Structural Analysis Professional - Component Registration"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\Robot Structural Analysis Professional 2023\Exe\rsetup.EXE"
+    Arguments        = "/ReRegServer"
+    SystemLnk        = "Autodesk Robot Structural Analysis Professional 2023\Tools\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\Robot Structural Analysis Professional 2023\Exe\"
+  },
+  @{
+    Name             = "Calculation Manager"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\Robot Structural Analysis Professional 2023\Exe\ACalcRMngr.exe"
+    SystemLnk        = "Autodesk Robot Structural Analysis Professional 2023\Other programs\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\Robot Structural Analysis Professional 2023\Exe\"
+  },
+  @{
+    Name       = "Robot Structural Analysis Professional 2023"
+    TargetPath = "${env:ProgramFiles}\Autodesk\Robot Structural Analysis Professional 2023\Exe\robot.EXE"
+    SystemLnk  = "Autodesk Robot Structural Analysis Professional 2023\"
+  },
+  @{
+    Name             = "Robot Structural Analysis Professional SDK 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\Robot Structural Analysis Professional 2023\SDK\ROBOTSDK.html"
+    SystemLnk        = "Autodesk Robot Structural Analysis Professional 2023\SDK\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\Robot Structural Analysis Professional 2023\SDK\"
+  },
+  @{
+    Name             = "ConfigPost-EDM 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\PartMaker 2023\exec\conf-e.exe"
+    SystemLnk        = "Autodesk PartMaker 2023\"
+    WorkingDirectory = "${USERS_FOLDER}\Public\Documents\Autodesk\PartMaker\pm-edm\"
+  },
+  @{
+    Name             = "ConfigPost-Mill 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\PartMaker 2023\exec\conf-m.exe"
+    SystemLnk        = "Autodesk PartMaker 2023\"
+    WorkingDirectory = "${USERS_FOLDER}\Public\Documents\Autodesk\PartMaker\pm-mill\"
+  },
+  @{
+    Name             = "ConfigPost-SwissCAM 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\PartMaker 2023\exec\conf-sw.exe"
+    SystemLnk        = "Autodesk PartMaker 2023\"
+    WorkingDirectory = "${USERS_FOLDER}\Public\Documents\Autodesk\PartMaker\pm-swiss\"
+  },
+  @{
+    Name             = "ConfigPost-Turn 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\PartMaker 2023\exec\conf-t.exe"
+    SystemLnk        = "Autodesk PartMaker 2023\"
+    WorkingDirectory = "${USERS_FOLDER}\Public\Documents\Autodesk\PartMaker\pm-turn\"
+  },
+  @{
+    Name             = "ConfigPost-TurnMill 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\PartMaker 2023\exec\conf-tm.exe"
+    SystemLnk        = "Autodesk PartMaker 2023\"
+    WorkingDirectory = "${USERS_FOLDER}\Public\Documents\Autodesk\PartMaker\pm-tm\"
+  },
+  @{
+    Name             = "PartMaker Multi-Channel Editor 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\PartMaker 2023\exec\PM-MCE.exe"
+    SystemLnk        = "Autodesk PartMaker 2023\"
+    WorkingDirectory = "${USERS_FOLDER}\Public\Documents\Autodesk\PartMaker\pm-swiss\"
+  },
+  @{
+    Name             = "PartMaker-Mill 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\PartMaker 2023\exec\Pm-mill.exe"
+    SystemLnk        = "Autodesk PartMaker 2023\"
+    WorkingDirectory = "${USERS_FOLDER}\Public\Documents\Autodesk\PartMaker\pm-mill\"
+  },
+  @{
+    Name             = "PartMaker-SwissCAM 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\PartMaker 2023\exec\Pm-swiss.exe"
+    SystemLnk        = "Autodesk PartMaker 2023\"
+    WorkingDirectory = "${USERS_FOLDER}\Public\Documents\Autodesk\PartMaker\pm-swiss\"
+  },
+  @{
+    Name             = "PartMaker-Turn 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\PartMaker 2023\exec\Pm-turn.exe"
+    SystemLnk        = "Autodesk PartMaker 2023\"
+    WorkingDirectory = "${USERS_FOLDER}\Public\Documents\Autodesk\PartMaker\pm-turn\"
+  },
+  @{
+    Name             = "PartMaker-TurnMill 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\PartMaker 2023\exec\Pm-tm.exe"
+    SystemLnk        = "Autodesk PartMaker 2023\"
+    WorkingDirectory = "${USERS_FOLDER}\Public\Documents\Autodesk\PartMaker\pm-tm\"
+  },
+  @{
+    Name             = "PartMaker-WireEDM 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\PartMaker 2023\exec\Pm-edm.exe"
+    SystemLnk        = "Autodesk PartMaker 2023\"
+    WorkingDirectory = "${USERS_FOLDER}\Public\Documents\Autodesk\PartMaker\pm-edm\"
+  },
+  @{
+    Name             = "DWG TrueView 2023 - English"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\DWG TrueView 2023 - English\dwgviewr.exe"
+    Arguments        = "/language `"en-US`""
+    SystemLnk        = "DWG TrueView 2023 - English\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\DWG TrueView 2023 - English\UserDataCache\"
+    Description      = "Launch dwgviewr.exe"
+  },
+  @{
+    Name             = "EAGLE"
+    TargetPath       = $EAGLE_TargetPath
+    WorkingDirectory = $EAGLE_WorkingDirectory
+  },
+  @{
+    Name             = "FCheck"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\Maya2023\bin\fcheck.exe"
+    SystemLnk        = "Autodesk Maya 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\Maya2023\bin\"
+  },
+  @{
+    Name             = "Maya 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\Maya2023\bin\maya.exe"
+    SystemLnk        = "Autodesk Maya 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\Maya2023\"
+  },
+  @{
+    Name             = "FCheck"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\MayaCreative2023\bin\fcheck.exe"
+    SystemLnk        = "Autodesk Maya Creative 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\MayaCreative2023\bin\"
+  },
+  @{
+    Name             = "Maya Creative 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\MayaCreative2023\bin\maya.exe"
+    SystemLnk        = "Autodesk Maya Creative 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\MayaCreative2023\"
+  },
+  @{
+    Name             = "Uninstall"
+    TargetPath       = "${env:ProgramFiles}\Allegorithmic\Adobe Substance 3D for Maya\unins000.exe"
+    SystemLnk        = "Allegorithmic\Adobe Substance 3D for Maya\"
+    WorkingDirectory = "${env:ProgramFiles}\Allegorithmic\Adobe Substance 3D for Maya"
+  },
+  @{
+    Name             = "FeatureCAM 2023 InitDB"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\FeatureCAM 2023\program\initdb.exe"
+    SystemLnk        = "Autodesk FeatureCAM 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\FeatureCAM 2023\"
+  },
+  @{
+    Name             = "FeatureCAM 2023 Viewer"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\FeatureCAM 2023\program\ezfm.exe"
+    Arguments        = "-fcviewer"
+    SystemLnk        = "Autodesk FeatureCAM 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\FeatureCAM 2023\"
+  },
+  @{
+    Name             = "FeatureCAM 2023 Xbuild"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\FeatureCAM 2023\program\xbuild.exe"
+    SystemLnk        = "Autodesk FeatureCAM 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\FeatureCAM 2023\"
+  },
+  @{
+    Name             = "FeatureCAM Ultimate 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\FeatureCAM 2023\program\ezfm.exe"
+    Arguments        = "-license Ultimate"
+    SystemLnk        = "Autodesk FeatureCAM 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\FeatureCAM 2023\"
+  },
+  @{
+    Name       = "Manage 2023 (BIM 360)"
+    TargetPath = "${env:ProgramFiles}\Autodesk\Navisworks Manage 2023\Roamer.exe"
+    Arguments  = "-licensing BIM360"
+    SystemLnk  = "Autodesk Navisworks Manage 2023\"
+  },
+  @{
+    Name       = "Manage 2023"
+    TargetPath = "${env:ProgramFiles}\Autodesk\Navisworks Manage 2023\Roamer.exe"
+    Arguments  = "-licensing AdLM"
+    SystemLnk  = "Autodesk Navisworks Manage 2023\"
+  },
+  @{
+    Name       = "Options Editor (Manage 2023 Administrator mode)"
+    TargetPath = "${env:ProgramFiles}\Autodesk\Navisworks Manage 2023\OptionsEditor.exe"
+    Arguments  = "-l"
+    SystemLnk  = "Autodesk Navisworks Manage 2023\English\"
+  },
+  @{
+    Name       = "Options Editor (Manage 2023)"
+    TargetPath = "${env:ProgramFiles}\Autodesk\Navisworks Manage 2023\OptionsEditor.exe"
+    SystemLnk  = "Autodesk Navisworks Manage 2023\English\"
+  },
+  @{
+    Name       = "Options Editor Help (Manage 2023)"
+    TargetPath = "${env:ProgramFiles}\Autodesk\Navisworks Manage 2023\en-US\options.chm"
+    SystemLnk  = "Autodesk Navisworks Manage 2023\English\"
+  },
+  @{
+    Name             = "MotionBuilder 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\MotionBuilder 2023\bin\x64\motionbuilder.exe"
+    SystemLnk        = "Autodesk\Autodesk MotionBuilder 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\MotionBuilder 2023\"
+  },
+  @{
+    Name             = "MotionBuilder SDK Help"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\MotionBuilder 2023\MotionBuilder_SDK_Help.url"
+    SystemLnk        = "Autodesk\Autodesk MotionBuilder 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\MotionBuilder 2023\"
+    Description      = "Help for MotionBuilder SDK"
+  },
+  @{
+    Name             = "Mudbox 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\Mudbox 2023\mudbox.exe"
+    SystemLnk        = "Autodesk\Autodesk Mudbox 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\Mudbox 2023\"
+  },
+  @{
+    Name             = "Worksharing Monitor for Autodesk Revit 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\Worksharing Monitor for Revit 2023\WorksharingMonitor.exe"
+    SystemLnk        = "Autodesk\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\Worksharing Monitor for Revit 2023\"
+  },
+  @{
+    Name             = "Revit 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\Revit 2023\Revit.exe"
+    Arguments        = "/language ENU"
+    SystemLnk        = "Autodesk\Revit 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\Revit 2023\"
+  },
+  @{
+    Name             = "Revit Viewer 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\Revit 2023\Revit.exe"
+    Arguments        = "/viewer /language ENU"
+    SystemLnk        = "Autodesk\Revit 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\Revit 2023\"
+  },
+  @{
+    Name             = "Revit LT 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\Revit LT 2023\Revit.exe"
+    Arguments        = "/language ENU"
+    SystemLnk        = "Autodesk\Revit LT 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\Revit LT 2023\"
+  },
+  @{
+    Name             = "Revit LT Viewer 2023"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\Revit LT 2023\Revit.exe"
+    Arguments        = "/viewer /language ENU"
+    SystemLnk        = "Autodesk\Revit LT 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\Revit LT 2023\"
+  },
+  @{
+    Name             = "ShotGrid Create"
+    TargetPath       = "${env:ProgramFiles}\Autodesk\ShotGrid Create\bin\ShotGridCreate.exe"
+    SystemLnk        = "ShotGrid Create\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\ShotGrid Create\bin\"
+    Description      = "ShotGrid Create 2022.03.005.165"
+  },
+  @{
+    Name             = "Shotgun"
+    TargetPath       = "${env:ProgramFiles}\Shotgun\Shotgun.exe"
+    SystemLnk        = "Shotgun\"
+    WorkingDirectory = "${env:ProgramFiles}\Shotgun"
+  },
+  @{
+    Name             = "Uninstall"
+    TargetPath       = "${env:ProgramFiles}\Shotgun\Uninstall.exe"
+    SystemLnk        = "Shotgun\"
+    WorkingDirectory = "${env:ProgramFiles}\Shotgun"
+  },
+  @{
+    Name             = "License Transfer Utility - 3ds Max 2023"
+    TargetPath       = "${env:ProgramFiles(x86)}\Common Files\Autodesk Shared\AdLM\R24\LTU.exe"
+    Arguments        = "128O1 2023.0.0.F -d SA -l en_US"
+    SystemLnk        = "Autodesk\Autodesk 3ds Max 2023\"
+    WorkingDirectory = "${env:ProgramFiles}\Autodesk\3ds Max 2023\"
+  },
+  @{
+    Name             = "License Transfer Utility - VREDDesign 2023"
+    TargetPath       = "${env:ProgramFiles(x86)}\Common Files\Autodesk Shared\AdLM\R23\LTU.exe"
+    Arguments        = "886O1 2023.0.0.F -d SA -l en-US"
+    SystemLnk        = "Autodesk VREDDesign 2023\Install\"
+    WorkingDirectory = "${env:ProgramFiles(x86)}\Common Files\Autodesk Shared\AdLM\R23"
+    Description      = "License Transfer Utility - VREDDesign 2023"
+  },
+  @{
+    Name        = "License Transfer Utility - Inventor 2023"
+    TargetPath  = "${env:ProgramFiles(x86)}\Common Files\Autodesk Shared\AdLM\R25\LTU.exe"
+    Arguments   = "797O1 2023.0.0.F -d SA -l en-US"
+    SystemLnk   = "Autodesk Inventor 2023\"
+    Description = "License Transfer Utility"
+  },
+  @{
+    Name             = "License Transfer Utility - Advance Steel 2023"
+    TargetPath       = "${env:ProgramFiles(x86)}\Common Files\Autodesk Shared\Adlm\R25\LTU.exe"
+    Arguments        = "959O1 2023.0.0.F -d SA -l en-US"
+    SystemLnk        = "Advance Steel 2023 - English\"
+    WorkingDirectory = "${env:ProgramFiles(x86)}\Common Files\Autodesk Shared\Adlm\R25\"
+    Description      = "Launch License Transfer Utility"
+  },
+  @{
+    Name             = "License Transfer Utility - AutoCAD 2023"
+    TargetPath       = "${env:ProgramFiles(x86)}\Common Files\Autodesk Shared\Adlm\R25\LTU.exe"
+    Arguments        = "001O1 2023.0.0.F -d SA -l en-US"
+    SystemLnk        = "AutoCAD 2023 - English\"
+    WorkingDirectory = "${env:ProgramFiles(x86)}\Common Files\Autodesk Shared\Adlm\R25\"
+    Description      = "Launch License Transfer Utility"
+  },
+  @{
+    Name             = "License Transfer Utility - Civil 3D 2023"
+    TargetPath       = "${env:ProgramFiles(x86)}\Common Files\Autodesk Shared\Adlm\R25\LTU.exe"
+    Arguments        = "237O1 2023.0.0.F -d SA -l en-US"
+    SystemLnk        = "Autodesk Civil 3D 2023 - English\"
+    WorkingDirectory = "${env:ProgramFiles(x86)}\Common Files\Autodesk Shared\Adlm\R25\"
+    Description      = "Launch License Transfer Utility"
+  },
+  @{
+    Name             = "License Transfer Utility - AutoCAD LT 2023"
+    TargetPath       = "${env:ProgramFiles(x86)}\Common Files\Autodesk Shared\Adlm\R25\LTU.exe"
+    Arguments        = "057O1 2023.0.0.F -d SA -l en-US"
+    SystemLnk        = "AutoCAD LT 2023 - English\"
+    WorkingDirectory = "${env:ProgramFiles(x86)}\Common Files\Autodesk Shared\Adlm\R25\"
+    Description      = "Launch License Transfer Utility"
+  },
+  @{
+    Name             = "License Transfer Utility - PowerInspect Ultimate 2023"
+    TargetPath       = "${env:ProgramFiles(x86)}\Common Files\Autodesk Shared\AdLM\R25\LTU.exe"
+    Arguments        = "A9HO1 2023.0.0.F -d SA -l en-US"
+    SystemLnk        = "Autodesk PowerInspect 2023\"
+    WorkingDirectory = "${env:ProgramFiles(x86)}\Common Files\Autodesk Shared\AdLM\R25\"
+  },
+  @{
+    Name             = "License Transfer Utility - Autodesk PowerMill Modeling 2023"
+    TargetPath       = "${env:ProgramFiles(x86)}\Common Files\Autodesk Shared\Adlm\R25\LTU.exe"
+    Arguments        = "A9UO1 2023.0.0.F -d SA -l "
+    SystemLnk        = "Autodesk PowerShape 2023\"
+    WorkingDirectory = "${env:ProgramFiles(x86)}\Common Files\Autodesk Shared\AdLM\R25\"
+    Description      = "Launch License Transfer Utility"
+  },
+  @{
+    Name             = "License Transfer Utility - Autodesk PowerShape Ultimate 2023"
+    TargetPath       = "${env:ProgramFiles(x86)}\Common Files\Autodesk Shared\Adlm\R25\LTU.exe"
+    Arguments        = "A9LO1 2023.0.0.F -d SA -l en-US"
+    SystemLnk        = "Autodesk PowerShape 2023\"
+    WorkingDirectory = "${env:ProgramFiles(x86)}\Common Files\Autodesk Shared\AdLM\R25\"
+    Description      = "Launch License Transfer Utility"
+  },
+  @{
+    Name             = "License Transfer Utility - PowerMill Ultimate 2023"
+    TargetPath       = "${env:ProgramFiles(x86)}\Common Files\Autodesk Shared\AdLM\R25\LTU.exe"
+    Arguments        = "A9PO1 2023.0.0.F -d SA -l en-US"
+    SystemLnk        = "Autodesk PowerMill 2023\"
+    WorkingDirectory = "${env:ProgramFiles(x86)}\Common Files\Autodesk Shared\AdLM\R25\"
+  },
+  @{
+    Name             = "License Transfer Utility"
+    TargetPath       = "${env:ProgramFiles(x86)}\Common Files\Autodesk Shared\Adlm\R25\LTU.exe"
+    Arguments        = "657O1 2023.0.0.F -l en_US"
+    SystemLnk        = "Autodesk Maya 2023\"
+    WorkingDirectory = "${env:ProgramFiles(x86)}\Common Files\Autodesk Shared\AdLM\R25\"
+    Description      = "License Transfer Utility"
+  },
+  @{
+    Name             = "License Transfer Utility"
+    TargetPath       = "${env:ProgramFiles(x86)}\Common Files\Autodesk Shared\Adlm\R25\LTU.exe"
+    Arguments        = "C78O1 2023.0.0.F -l en_US"
+    SystemLnk        = "Autodesk Maya Creative 2023\"
+    WorkingDirectory = "${env:ProgramFiles(x86)}\Common Files\Autodesk Shared\AdLM\R25\"
+    Description      = "License Transfer Utility"
+  },
+  @{
+    Name       = "License Transfer Utility - FeatureCAM Ultimate 2023"
+    TargetPath = "${env:ProgramFiles(x86)}\Common Files\Autodesk Shared\AdLM\R23\LTU.exe"
+    Arguments  = "A9EO1 2023.0.0.F -d SA -l en-US"
+    SystemLnk  = "Autodesk FeatureCAM 2023\"
+  },
+  @{
+    Name        = "License Transfer Utility Navisworks Manage 2023"
+    TargetPath  = "${env:ProgramFiles(x86)}\Common Files\Autodesk Shared\Adlm\R25\LTU.exe"
+    Arguments   = "507O1 2023.0.0.F -d `"SA`""
+    SystemLnk   = "Autodesk Navisworks Manage 2023\"
+    Description = "License Transfer Utility Navisworks Manage 2023"
+  },
+  @{
+    Name             = "License Transfer Utility - MotionBuilder 2023"
+    TargetPath       = "${env:ProgramFiles(x86)}\Common Files\Autodesk Shared\AdLM\R17\LTU.exe"
+    Arguments        = "727O1 2023.0.0.F -l "
+    SystemLnk        = "Autodesk\Autodesk MotionBuilder 2023\"
+    WorkingDirectory = "${env:ProgramFiles(x86)}\Common Files\Autodesk Shared\AdLM\R17\"
+    Description      = "License Transfer Utility"
+  },
+  @{
+    Name             = "License Transfer Utility - Mudbox 2023"
+    TargetPath       = "${env:ProgramFiles(x86)}\Common Files\Autodesk Shared\AdLM\R17\LTU.exe"
+    Arguments        = "498O1 2023.0.0.F -l en-US"
+    SystemLnk        = "Autodesk\Autodesk Mudbox 2023\"
+    WorkingDirectory = "${env:ProgramFiles(x86)}\Common Files\Autodesk Shared\AdLM\R17\"
+    Description      = "License Transfer Utility - Mudbox 2023"
+  },
+  @{
+    Name             = "Autodesk Desktop App"
+    TargetPath       = "${env:ProgramFiles(x86)}\Autodesk\Autodesk Desktop App\AutodeskDesktopApp.exe"
+    SystemLnk        = "Autodesk\Autodesk Desktop App\"
+    WorkingDirectory = "${env:ProgramFiles(x86)}\Autodesk\Autodesk Desktop App"
+    Description      = "Autodesk Desktop App"
+  },
+  @{
+    Name             = "Autodesk Structural Bridge Design 2023"
+    TargetPath       = "${env:ProgramFiles(x86)}\Autodesk\Structural Bridge Design 2023\SBD.exe"
+    SystemLnk        = "Autodesk\Autodesk Structural Bridge Design 2023\"
+    WorkingDirectory = "${env:ProgramFiles(x86)}\Autodesk\Structural Bridge Design 2023\"
+    Description      = "Autodesk Structural Bridge Design 2023"
+  },
+  @{
+    Name       = "License Transfer Utility - Factory Design 2023"
+    TargetPath = "${env:ProgramFiles(x86)}\Common Files\Autodesk Shared\Adlm\R25\LTU.exe"
+    Arguments  = "P03O1 2023.0.0.F -d SA -l en-US"
+    SystemLnk  = "Autodesk\Factory Design 2023\"
+  },
+  @{
+    Name       = "License Transfer Utility - RSAPRO 2023"
+    TargetPath = "${env:ProgramFiles(x86)}\Common Files\Autodesk Shared\Adlm\R25\LTU.exe"
+    Arguments  = "547O1 2023.0.0.F -d SA -l en-US"
+    SystemLnk  = "Autodesk\Robot Structural Analysis Professional 2023\"
   },
   # AutoHotkey V2
   @{
@@ -3719,6 +4930,21 @@ for ($i = 0; $i -lt $Users.length; $i++) {
   $OnePassword_TargetPath += "${OnePassword_FindFolder}\1Password.exe"
   # Adobe
   $AdobeDigitalEditions_WorkingDirectory = "${UsersAppDataLocal}\Temp"
+  # Autodesk
+  $FusionLauncher_TargetPath = "${UsersAppDataLocal}\Autodesk\webdeploy\production\"
+  $FusionLauncher_FindFolder = $NOT_INSTALLED
+  if (Test-Path -Path $FusionLauncher_TargetPath) {
+    $FusionLauncher_FindFolder_Index = 0
+    $FusionLauncher_FindFolder_Folders = Get-ChildItem -Directory -Path $FusionLauncher_TargetPath
+    $FusionLauncher_FindFolder_Length = $FusionLauncher_FindFolder_Folders.length
+    while (($FusionLauncher_FindFolder_Index -lt $FusionLauncher_FindFolder_Length) -And ($FusionLauncher_FindFolder -eq $NOT_INSTALLED)) {
+      $FusionLauncher_FindFolder_Temp = $FusionLauncher_FindFolder_Folders[$FusionLauncher_FindFolder_Index]
+      $FusionLauncher_TargetPath_Temp = "${FusionLauncher_TargetPath}\${FusionLauncher_FindFolder_Temp}\FusionLauncher.exe"
+      if (Test-Path -Path $FusionLauncher_TargetPath_Temp -PathType leaf) { $FusionLauncher_FindFolder = $FusionLauncher_FindFolder_Temp }
+      $FusionLauncher_FindFolder_Index++
+    }
+  }
+  $FusionLauncher_TargetPath += "${FusionLauncher_FindFolder}\FusionLauncher.exe"
   # Discord
   $Discord_WorkingDirectory = "${UsersAppDataLocal}\Discord\"
   $Discord_TargetPath = $Discord_WorkingDirectory + "Update.exe"
@@ -3795,6 +5021,11 @@ for ($i = 0; $i -lt $Users.length; $i++) {
       WorkingDirectory = $AdobeDigitalEditions_WorkingDirectory
     },
     # Autodesk (note: these paths are not a mistake, this is how it installs its shortcuts)
+    @{
+      Name       = "Autodesk Fusion 360"
+      TargetPath = $FusionLauncher_TargetPath
+      SystemLnk  = "Autodesk\"
+    },
     @{
       Name             = "Meshmixer"
       TargetPath       = "${env:ProgramFiles}\Autodesk\Meshmixer\meshmixer.exe"
