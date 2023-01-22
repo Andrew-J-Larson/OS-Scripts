@@ -41,6 +41,8 @@ If you wish to contribute, either look at the code and add in entries manually, 
    - Acrobat
    - Acrobat Reader (old)
    - Digital Editions 4.5 (or whatever is the newest installed on your machine)
+ - Autodesk
+   - Meshmixer
  - Google
    - Chrome
    - Google Drive
