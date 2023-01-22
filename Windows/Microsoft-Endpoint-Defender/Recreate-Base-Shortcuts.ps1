@@ -3782,15 +3782,47 @@ for ($i = 0; $i -lt $Users.length; $i++) {
   $userAppList = @( # all instances of "${aUser}" get's replaced with the username
     # 1Password
     @{
-      Name = "1Password"
-      TargetPath = $OnePassword_TargetPath; Description = "1Password"
+      Name        = "1Password"
+      TargetPath  = $OnePassword_TargetPath
+      Description = "1Password"
     },
     # Adobe
     @{
-      Name = $AdobeDigitalEditions_Name; TargetPath = $AdobeDigitalEditions_TargetPath; WorkingDirectory = $AdobeDigitalEditions_WorkingDirectory
+      Name             = $AdobeDigitalEditions_Name
+      TargetPath       = $AdobeDigitalEditions_TargetPath
+      WorkingDirectory = $AdobeDigitalEditions_WorkingDirectory
     },
     @{
-      Name = $AdobeDigitalEditions_32bit_Name; TargetPath = $AdobeDigitalEditions_32bit_TargetPath; WorkingDirectory = $AdobeDigitalEditions_WorkingDirectory
+      Name             = $AdobeDigitalEditions_32bit_Name
+      TargetPath       = $AdobeDigitalEditions_32bit_TargetPath
+      WorkingDirectory = $AdobeDigitalEditions_WorkingDirectory
+    },
+    # Autodesk (note: these paths are not a mistake, this is how it installs its shortcuts)
+    @{
+      Name             = "Meshmixer"
+      TargetPath       = "${env:ProgramFiles}\Autodesk\Meshmixer\meshmixer.exe"
+      SystemLnk        = "Autodesk\"
+      WorkingDirectory = "${ProgramFiles}\Autodesk\Meshmixer"
+    },
+    @{
+      Name             = "Uninstall Meshmixer"
+      TargetPath       = "${env:ProgramFiles}\Autodesk\Meshmixer\Uninstall.exe"
+      SystemLnk        = "Autodesk\"
+      WorkingDirectory = "${ProgramFiles}\Autodesk\Meshmixer"
+      Description      = "Uninstall Autodesk Meshmixer"
+    },
+    @{
+      Name             = "Meshmixer"
+      TargetPath       = "${env:ProgramFiles(x86)}\Autodesk\Meshmixer\meshmixer.exe"
+      SystemLnk        = "Autodesk\"
+      WorkingDirectory = "${ProgramFiles(x86)}\Autodesk\Meshmixer"
+    },
+    @{
+      Name             = "Uninstall Meshmixer"
+      TargetPath       = "${env:ProgramFiles(x86)}\Autodesk\Meshmixer\Uninstall.exe"
+      SystemLnk        = "Autodesk\"
+      WorkingDirectory = "${ProgramFiles(x86)}\Autodesk\Meshmixer"
+      Description      = "Uninstall Autodesk Meshmixer"
     },
     # AutoHotkey V2
     @{
@@ -3865,7 +3897,7 @@ for ($i = 0; $i -lt $Users.length; $i++) {
       WorkingDirectory = $Discord_WorkingDirectory
       Description      = "Discord - https://discord.com"
     },
-    # Eaton
+    # Eaton (note: these paths are not a mistake, this is how it installs its shortcuts)
     @{
       Name             = "9000XDrive"
       TargetPath       = "${env:SystemDrive}\AFEngine\AFTools\9000XDrive\9000XDrive.exe"
