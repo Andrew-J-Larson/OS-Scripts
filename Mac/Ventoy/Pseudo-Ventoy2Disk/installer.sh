@@ -11,7 +11,7 @@
 # The aim is to simulate the `Ventoy2Disk.sh` script used on Linux.
 # (which isn't compatible with MacOS at the time of writing this, 5/26/2021)
 
-# Copyright (C) 2020  Andrew Larson (thealiendrew@gmail.com)
+# Copyright (C) 2023  Andrew Larson (thealiendrew@gmail.com)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by

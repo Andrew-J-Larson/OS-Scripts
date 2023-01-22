@@ -2,7 +2,7 @@
 # Only tested on Ubuntu
 # Requires curl to be installed
 
-# Copyright (C) 2020  Andrew Larson (thealiendrew@gmail.com)
+# Copyright (C) 2023  Andrew Larson (thealiendrew@gmail.com)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
