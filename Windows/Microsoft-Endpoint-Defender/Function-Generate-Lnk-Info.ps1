@@ -1,6 +1,6 @@
 ﻿<#
   .SYNOPSIS
-  Generate Shortcuts (Functions) v1.0.3
+  Generate Shortcuts (Functions) v1.0.4
 
   .DESCRIPTION
   Script only enables the functions genLnkInfo and genLnkRecurseInfo.
@@ -168,6 +168,7 @@ function genLnkRecurseInfo {
     if ($args.length -ge 1) {
         for ($i = 0; $i -lt $args.length; $i++) {
             GEN_LNK_INFO_BASE $args[$i]
+            Write-Output ""
         }
     } else {
         GEN_LNK_INFO_BASE $PWD
