@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Recreate Base Shortcuts v0.9.008
+  Recreate Base Shortcuts v0.9.011
 
   .DESCRIPTION
   Script only recreates shortcuts to applications it knows are installed, and also works for user profile installed applications.
@@ -357,10 +357,7 @@ function New-Shortcut {
           else { $errorMsg += "Failed to set shortcut to Run as Admin, at:`n`"${sSystemLnk}`"" }
         }
       } else { $errorMsg += "Failed to create shortcut, with target at:`n`"${sTargetPath}`"`nand shortcut path at:`n`"${sSystemLnk}`"" }
-    } else {
-      $warnMsg += "Failed to create shortcut, with shortcut path at:`n`"${sSystemLnk}`""
-      $result = $RESULT_FAILURE
-    }
+    } else { $warnMsg += "Can't create shortcut, when parent directory doesn't exist, at:`n`"${sSystemLnk}`"" }
   } elseif (-Not ($sName -Or $sTargetPath)) {
     # Should never end up here due to PowerShell throwing errors upon using empty strings for parameters
     if (-Not $sName) {
