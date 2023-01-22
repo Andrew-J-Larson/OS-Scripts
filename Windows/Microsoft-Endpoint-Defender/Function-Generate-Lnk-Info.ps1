@@ -1,6 +1,6 @@
 ﻿<#
   .SYNOPSIS
-  Generate Shortcuts (Functions) v1.0.1
+  Generate Shortcuts (Functions) v1.0.3
 
   .DESCRIPTION
   Script only enables the functions genLnkInfo and genLnkRecurseInfo.
@@ -78,7 +78,8 @@ Set-Variable USERNAME -Option Constant -Value "$(((Get-WMIObject -ClassName Win3
 
 # USE THIS FUNCTION ON .LNK FILES
 function genLnkInfo {
-    $shortcutFile = Get-ChildItem $args[0]
+    $shortcutFile = if ($args[0].FullName) { $args[0].FullName } else { $args[0] }
+    $shortcutFile = Get-ChildItem $shortcutFile
 
     $WshShell = New-Object -comObject WScript.Shell
     $shortcut = $WshShell.CreateShortcut($shortcutFile.FullName)
@@ -100,7 +101,7 @@ function genLnkInfo {
         
     $TargetPath = ($TargetPath -ireplace [regex]::Escape("${env:ProgramFiles(x86)}"), '${env:ProgramFiles(x86)}')
     $TargetPath = ($TargetPath -ireplace [regex]::Escape("${env:ProgramFiles}"), '${env:ProgramFiles}')
-    $TargetPath = ($TargetPath -ireplace [regex]::Escape("${env:SystemDrive}\USERS\${USERNAME}"), '${env:SystemDrive}\USERS\${aUser}')
+    $TargetPath = ($TargetPath -ireplace [regex]::Escape("${env:SystemDrive}\USERS\${USERNAME}"), '${USERS_FOLDER}\${aUser}')
     $TargetPath = ($TargetPath -ireplace [regex]::Escape("${env:SystemDrive}\USERS"), '${USERS_FOLDER}')
     $TargetPath = ($TargetPath -ireplace [regex]::Escape("${env:windir}"), '${env:windir}')
     $Entry = "@{Name = `"${Name}`"; TargetPath = `"${TargetPath}`"; "
@@ -110,7 +111,7 @@ function genLnkInfo {
         $Arguments = ($Arguments).replace('"', '`"')
         $Arguments = ($Arguments -ireplace [regex]::Escape("${env:ProgramFiles(x86)}"), '${env:ProgramFiles(x86)}')
         $Arguments = ($Arguments -ireplace [regex]::Escape("${env:ProgramFiles}"), '${env:ProgramFiles}')
-        $Arguments = ($Arguments -ireplace [regex]::Escape("${env:SystemDrive}\USERS\${USERNAME}"), '${env:SystemDrive}\USERS\${aUser}')
+        $Arguments = ($Arguments -ireplace [regex]::Escape("${env:SystemDrive}\USERS\${USERNAME}"), '${USERS_FOLDER}\${aUser}')
         $Arguments = ($Arguments -ireplace [regex]::Escape("${env:SystemDrive}\USERS"), '${USERS_FOLDER}')
         $Arguments = ($Arguments -ireplace [regex]::Escape("${env:windir}"), '${env:windir}')
         $Entry += "Arguments = `"${Arguments}`"; "
@@ -120,14 +121,14 @@ function genLnkInfo {
     $SystemLnk = ($SystemLnk -ireplace [regex]::Escape("${env:SystemDrive}\USERS\${USERNAME}\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\"), "")
     $SystemLnk = ($SystemLnk -ireplace [regex]::Escape("${env:ProgramFiles(x86)}"), '${env:ProgramFiles(x86)}')
     $SystemLnk = ($SystemLnk -ireplace [regex]::Escape("${env:ProgramFiles}"), '${env:ProgramFiles}')
-    $SystemLnk = ($SystemLnk -ireplace [regex]::Escape("${env:SystemDrive}\USERS\${USERNAME}"), '${env:SystemDrive}\USERS\${aUser}')
+    $SystemLnk = ($SystemLnk -ireplace [regex]::Escape("${env:SystemDrive}\USERS\${USERNAME}"), '${USERS_FOLDER}\${aUser}')
     $SystemLnk = ($SystemLnk -ireplace [regex]::Escape("${env:SystemDrive}\USERS"), '${USERS_FOLDER}')
     $SystemLnk = ($SystemLnk -ireplace [regex]::Escape("${env:windir}"), '${env:windir}')
     if ($SystemLnk) { $Entry += "SystemLnk = `"${SystemLnk}`"; " }
     if ($WorkingDirectory) {
         $WorkingDirectory = ($WorkingDirectory -ireplace [regex]::Escape("${env:ProgramFiles(x86)}"), '${env:ProgramFiles(x86)}')
         $WorkingDirectory = ($WorkingDirectory -ireplace [regex]::Escape("${env:ProgramFiles}"), '${env:ProgramFiles}')
-        $WorkingDirectory = ($WorkingDirectory -ireplace [regex]::Escape("${env:SystemDrive}\USERS\${USERNAME}"), '${env:SystemDrive}\USERS\${aUser}')
+        $WorkingDirectory = ($WorkingDirectory -ireplace [regex]::Escape("${env:SystemDrive}\USERS\${USERNAME}"), '${USERS_FOLDER}\${aUser}')
         $WorkingDirectory = ($WorkingDirectory -ireplace [regex]::Escape("${env:SystemDrive}\USERS"), '${USERS_FOLDER}')
         $WorkingDirectory = ($WorkingDirectory -ireplace [regex]::Escape("${env:windir}"), '${env:windir}')
         $Entry += "WorkingDirectory = `"${WorkingDirectory}`"; "
@@ -140,7 +141,7 @@ function genLnkInfo {
     if ($IconLocation) {
         $IconLocation = ($IconLocation -ireplace [regex]::Escape("${env:ProgramFiles(x86)}"), '${env:ProgramFiles(x86)}')
         $IconLocation = ($IconLocation -ireplace [regex]::Escape("${env:ProgramFiles}"), '${env:ProgramFiles}')
-        $IconLocation = ($IconLocation -ireplace [regex]::Escape("${env:SystemDrive}\USERS\${USERNAME}"), '${env:SystemDrive}\USERS\${aUser}')
+        $IconLocation = ($IconLocation -ireplace [regex]::Escape("${env:SystemDrive}\USERS\${USERNAME}"), '${USERS_FOLDER}\${aUser}')
         $IconLocation = ($IconLocation -ireplace [regex]::Escape("${env:SystemDrive}\USERS"), '${USERS_FOLDER}')
         $IconLocation = ($IconLocation -ireplace [regex]::Escape("${env:windir}"), '${env:windir}')
         $Entry += "IconLocation = `"${IconLocation}`"; "
