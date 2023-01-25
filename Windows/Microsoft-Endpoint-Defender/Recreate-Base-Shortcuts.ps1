@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Recreate Base Shortcuts v0.9.013
+  Recreate Base Shortcuts v0.9.014
 
   .DESCRIPTION
   Script only recreates shortcuts to applications it knows are installed, and also works for user profile installed applications.
@@ -2103,6 +2103,10 @@ $VMwareWorkstationPlayer_Name = "VMware Workstation ${VMwareWorkstationPlayer_Ve
 $VMwareWorkstationPlayer_32bit_FileVersionRaw = if (Test-Path -Path $VMwareWorkstationPlayer_32bit_TargetPath -PathType leaf) { (Get-Item $VMwareWorkstationPlayer_32bit_TargetPath).VersionInfo.FileVersionRaw }
 $VMwareWorkstationPlayer_32bit_Version = if ($VMwareWorkstationPlayer_32bit_FileVersionRaw) { $VMwareWorkstationPlayer_32bit_FileVersionRaw.VersionInfo.FileVersionRaw.Major } else { $NOT_INSTALLED }
 $VMwareWorkstationPlayer_32bit_Name = "VMware Workstation ${VMwareWorkstationPlayer_32bit_Version} Player"
+# WizTree
+$WizTree_64bit_TargetPath = "${env:ProgramFiles}\WizTree\WizTree64.exe"
+$WizTree_32bit_TargetPath = "${env:ProgramFiles}\WizTree\WizTree.exe"
+$WizTree_TargetPath = if (Test-Path -Path $WizTree_64bit_TargetPath -PathType leaf) { $WizTree_64bit_TargetPath } else { $WizTree_32bit_TargetPath }
 
 $sys3rdPartyAppList = @(
   # 7-Zip
@@ -4802,6 +4806,31 @@ $sys3rdPartyAppList = @(
     TargetPath       = "${env:ProgramFiles(x86)}\WinSCP\WinSCP.exe"
     WorkingDirectory = "${env:ProgramFiles(x86)}\WinSCP"
     Description      = "WinSCP: SFTP, FTP, WebDAV and SCP client" 
+  },
+  # WizTree
+  @{
+    Name             = "Uninstall WizTree"
+    TargetPath       = "${env:ProgramFiles}\WizTree\unins000.exe"
+    SystemLnk        = "WizTree\"
+    WorkingDirectory = "${env:ProgramFiles}\WizTree"
+  },
+  @{
+    Name             = "WizTree"
+    TargetPath       = $WizTree_TargetPath
+    SystemLnk        = "WizTree\"
+    WorkingDirectory = "${env:ProgramFiles}\WizTree"
+  },
+  @{
+    Name             = "Uninstall WizTree"
+    TargetPath       = "${env:ProgramFiles(x86)}\WizTree\unins000.exe"
+    SystemLnk        = "WizTree\"
+    WorkingDirectory = "${env:ProgramFiles(x86)}\WizTree"
+  },
+  @{
+    Name             = "WizTree"
+    TargetPath       = "${env:ProgramFiles(x86)}\WizTree\WizTree.exe"
+    SystemLnk        = "WizTree\"
+    WorkingDirectory = "${env:ProgramFiles(x86)}\WizTree"
   },
   # Yaskawa
   @{ # it's the only install on 32-bit
