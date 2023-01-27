@@ -3,7 +3,7 @@
   Script downloads and installs all extensions needed for viewing/editing HEIF/HEVC/HEIC file types.
 
   .DESCRIPTION
-  Version 2.0.7
+  Version 2.0.8
   
   Since old manufacturer installed Windows installations don't always include this support, this script is handy to turn
   on HEIC file support without needing admin access or even the Microsoft Store.
@@ -61,12 +61,12 @@ if ($Help.IsPresent) {
 }
 
 # Constants
-Set-Variable PHOTOS_APPX_PACKAGEFAMILYNAME -Option Constant -Value "Microsoft.Windows.Photos_8wekyb3d8bbwe" # ProductId = 9WZDNCRFJBH4
-Set-Variable PHOTOS_APPX_NAME -Option Constant -Value ${PHOTOS_APPX_PACKAGEFAMILYNAME}.split('_')[0]
-Set-Variable HEIF_APPX_PACKAGEFAMILYNAME -Option Constant -Value "Microsoft.HEIFImageExtension_8wekyb3d8bbwe" # ProductId = 9PMMSR1CGPWG
-Set-Variable HEIF_APPX_NAME -Option Constant -Value ${HEIF_APPX_PACKAGEFAMILYNAME}.split('_')[0]
-Set-Variable HEVC_APPX_PACKAGEFAMILYNAME -Option Constant -Value "Microsoft.HEVCVideoExtension_8wekyb3d8bbwe" # ProductId = 9N4WGH0Z6VHQ
-Set-Variable HEVC_APPX_NAME -Option Constant -Value ${HEVC_APPX_PACKAGEFAMILYNAME}.split('_')[0]
+Set-Variable -Name PHOTOS_APPX_PACKAGEFAMILYNAME -Option Constant -Value "Microsoft.Windows.Photos_8wekyb3d8bbwe" # ProductId = 9WZDNCRFJBH4
+Set-Variable -Name PHOTOS_APPX_NAME -Option Constant -Value ${PHOTOS_APPX_PACKAGEFAMILYNAME}.split('_')[0]
+Set-Variable -Name HEIF_APPX_PACKAGEFAMILYNAME -Option Constant -Value "Microsoft.HEIFImageExtension_8wekyb3d8bbwe" # ProductId = 9PMMSR1CGPWG
+Set-Variable -Name HEIF_APPX_NAME -Option Constant -Value ${HEIF_APPX_PACKAGEFAMILYNAME}.split('_')[0]
+Set-Variable -Name HEVC_APPX_PACKAGEFAMILYNAME -Option Constant -Value "Microsoft.HEVCVideoExtension_8wekyb3d8bbwe" # ProductId = 9N4WGH0Z6VHQ
+Set-Variable -Name HEVC_APPX_NAME -Option Constant -Value ${HEVC_APPX_PACKAGEFAMILYNAME}.split('_')[0]
 
 # Functions
 
@@ -82,18 +82,18 @@ function Download-AppxPackage {
   $versionRing = "Retail"
 
   $architecture = switch ($env:PROCESSOR_ARCHITECTURE) {
-    "x86" {"x86"}
-    { @("x64", "amd64") -contains $_ } {"x64"}
-    "arm" {"arm"}
-    "arm64" {"arm64"}
-    default {"neutral"} # should never get here
+    "x86" { "x86" }
+    { @("x64", "amd64") -contains $_ } { "x64" }
+    "arm" { "arm" }
+    "arm64" { "arm64" }
+    default { "neutral" } # should never get here
   }
 
   $AppxPackageFamilyName = $args[0]
   $AppxName = $AppxPackageFamilyName.split('_')[0]
 
   $downloadFolder = Join-Path $env:TEMP "StoreDownloads"
-  if(!(Test-Path $downloadFolder -PathType Container)) {
+  if (!(Test-Path $downloadFolder -PathType Container)) {
     [void](New-Item $downloadFolder -ItemType Directory -Force)
   }
 
@@ -108,7 +108,7 @@ function Download-AppxPackage {
   try {
     $raw = Invoke-RestMethod -Method Post -Uri $apiUrl -ContentType 'application/x-www-form-urlencoded' -Body $body
   } catch {
-    $errorMsg = "An error occurred: "+$_
+    $errorMsg = "An error occurred: " + $_
     Write-Host $errorMsg
     $errored = $true
     return $false
@@ -132,23 +132,23 @@ function Download-AppxPackage {
     $type = ($textSplitPeriod[$textSplitPeriod.length - 1]).ToLower()
 
     # create $name hash key hashtable, if it doesn't already exist
-    if (!($packageList.keys -match ('^'+[Regex]::escape($name)+'$'))) {
+    if (!($packageList.keys -match ('^' + [Regex]::escape($name) + '$'))) {
       $packageList["$name"] = @{}
     }
     # create $version hash key array, if it doesn't already exist
-    if (!(($packageList["$name"]).keys -match ('^'+[Regex]::escape($version)+'$'))) {
+    if (!(($packageList["$name"]).keys -match ('^' + [Regex]::escape($version) + '$'))) {
       ($packageList["$name"])["$version"] = @()
     }
  
     # add package to the array in the hashtable
     ($packageList["$name"])["$version"] += @{
-      url = $url
-      filename = $text
-      name = $name
-      version = $version
-      arch = $arch
+      url         = $url
+      filename    = $text
+      name        = $name
+      version     = $version
+      arch        = $arch
       publisherId = $publisherId
-      type = $type
+      type        = $type
     }
   }
 
@@ -157,14 +157,14 @@ function Download-AppxPackage {
   # grabs the most updated package for $name and puts it into $latestPackages
   $packageList.GetEnumerator() | % { ($_.value).GetEnumerator() | Select-Object -Last 1 } | % {
     $packagesByType = $_.value
-    $msixbundle = ($packagesByType | ? {$_.type -match "^msixbundle$"})
-    $appxbundle = ($packagesByType | ? {$_.type -match "^appxbundle$"})
-    $msix = ($packagesByType | ? {($_.type -match "^msix$") -And ($_.arch -match ('^'+[Regex]::Escape($architecture)+'$'))})
-    $appx = ($packagesByType | ? {($_.type -match "^appx$") -And ($_.arch -match ('^'+[Regex]::Escape($architecture)+'$'))})
-    if ($msixbundle) {$latestPackages += $msixbundle}
-    elseif ($appxbundle) {$latestPackages += $appxbundle}
-    elseif ($msix) {$latestPackages += $msix}
-    elseif ($appx) {$latestPackages += $appx}
+    $msixbundle = ($packagesByType | ? { $_.type -match "^msixbundle$" })
+    $appxbundle = ($packagesByType | ? { $_.type -match "^appxbundle$" })
+    $msix = ($packagesByType | ? { ($_.type -match "^msix$") -And ($_.arch -match ('^' + [Regex]::Escape($architecture) + '$')) })
+    $appx = ($packagesByType | ? { ($_.type -match "^appx$") -And ($_.arch -match ('^' + [Regex]::Escape($architecture) + '$')) })
+    if ($msixbundle) { $latestPackages += $msixbundle }
+    elseif ($appxbundle) { $latestPackages += $appxbundle }
+    elseif ($msix) { $latestPackages += $msix }
+    elseif ($appx) { $latestPackages += $appx }
   }
 
   # download packages
@@ -176,7 +176,7 @@ function Download-AppxPackage {
     $downloadFile = Join-Path $downloadFolder $filename
 
     # If file already exists, ask to replace it
-    if(Test-Path $downloadFile) {
+    if (Test-Path $downloadFile) {
       Write-Host "`"${filename}`" already exists at `"${downloadFile}`"."
       $confirmation = ''
       while (!(($confirmation -eq 'Y') -Or ($confirmation -eq 'N'))) {
@@ -197,18 +197,18 @@ function Download-AppxPackage {
         Invoke-WebRequest -Uri $url -OutFile $downloadFile
         $fileDownloaded = $?
       } catch {
-        $errorMsg = "An error occurred: "+$_
+        $errorMsg = "An error occurred: " + $_
         Write-Host $errorMsg
         $errored = $true
         break $false
       }
-      if ($fileDownloaded) {$DownloadedFiles += $downloadFile}
-      else {$allFilesDownloaded = $false}
+      if ($fileDownloaded) { $DownloadedFiles += $downloadFile }
+      else { $allFilesDownloaded = $false }
     }
   }
 
-  if ($errored) {Write-Host "Completed with some errors."}
-  if (-Not $allFilesDownloaded) {Write-Host "Warning: Not all packages could be downloaded."}
+  if ($errored) { Write-Host "Completed with some errors." }
+  if (-Not $allFilesDownloaded) { Write-Host "Warning: Not all packages could be downloaded." }
   return $DownloadedFiles
 }
 
@@ -232,12 +232,12 @@ function Install-AppxPackage {
         Write-Host "`"${appxPackageName}`" already installed."
       } else {
         Add-AppxPackage -Path $appxFilePath
-        if ($?) {Write-Host "`"${appxPackageName}`" installed successfully."}
-        else {throw "`"${appxPackageName}`" failed to install."}
+        if ($?) { Write-Host "`"${appxPackageName}`" installed successfully." }
+        else { throw "`"${appxPackageName}`" failed to install." }
       }
     }
   } catch {
-    $errorMsg = "An error occurred: "+$_
+    $errorMsg = "An error occurred: " + $_
     Write-Host $errorMsg
     $errored = $true
   }
@@ -271,7 +271,7 @@ try {
   } else {
     $installedApps++
     Write-Host 'Installing "Microsoft Photos"...'
-    if (-Not (Install-AppxPackage ${PHOTOS_APPX_PACKAGEFAMILYNAME})) {throw "Couldn't install `"Microsoft Photos`""}
+    if (-Not (Install-AppxPackage ${PHOTOS_APPX_PACKAGEFAMILYNAME})) { throw "Couldn't install `"Microsoft Photos`"" }
   }
   # Then, HEIF Image Extensions
   if (Get-AppxPackage -Name ${HEIF_APPX_NAME}) {
@@ -279,7 +279,7 @@ try {
   } else {
     $installedApps++
     Write-Host 'Installing "HEIF Image Extensions"...'
-    if (-Not (Install-AppxPackage ${HEIF_APPX_PACKAGEFAMILYNAME})) {throw "Couldn't install `"HEIF Image Extensions`""}
+    if (-Not (Install-AppxPackage ${HEIF_APPX_PACKAGEFAMILYNAME})) { throw "Couldn't install `"HEIF Image Extensions`"" }
   }
   # Lastly, HEVC Video Extensions from Device Manufacturer
   if (Get-AppxPackage -Name ${HEVC_APPX_NAME}) {
@@ -287,17 +287,17 @@ try {
   } else {
     $installedApps++
     Write-Host 'Installing "HEVC Video Extensions from Device Manufacturer"...'
-    if (-Not (Install-AppxPackage ${HEVC_APPX_PACKAGEFAMILYNAME})) {throw "Couldn't install `"HEVC Video Extensions from Device Manufacturer`""}
+    if (-Not (Install-AppxPackage ${HEVC_APPX_PACKAGEFAMILYNAME})) { throw "Couldn't install `"HEVC Video Extensions from Device Manufacturer`"" }
   }
 } catch {
-  $errorMsg = "An error occurred: "+$_
+  $errorMsg = "An error occurred: " + $_
   Write-Host $errorMsg
   exit 1
 }
 
 if (Get-AppxPackage -Name "Microsoft.HEVCVideoExtension") {
-  if ($installedApps -gt 0) {Write-Host "HEIC extension feature enabled successfully."}
-  else {Write-Host "HEIC extension feature was already enabled, no changes made."}
+  if ($installedApps -gt 0) { Write-Host "HEIC extension feature enabled successfully." }
+  else { Write-Host "HEIC extension feature was already enabled, no changes made." }
   exit 0
 } else {
   Write-Host "Something went wrong, HEIC extension feature NOT enabled."

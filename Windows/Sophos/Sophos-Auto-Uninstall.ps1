@@ -169,4 +169,4 @@ if (-Not (& "$SEDcliExe" -s | Select-String -Pattern "disabled" -SimpleMatch -Qu
 # finally, initiate Sophos uninstall
 
 & "$uninstallcliExe"
-if ($? -And $Restart) {Restart-Computer -Force}
+if ($? -And $Restart) { Restart-Computer -Force }

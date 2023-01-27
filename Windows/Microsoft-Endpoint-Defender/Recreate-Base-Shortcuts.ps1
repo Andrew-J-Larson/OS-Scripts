@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Recreate Base Shortcuts v0.9.014
+  Recreate Base Shortcuts v0.9.015
 
   .DESCRIPTION
   Script only recreates shortcuts to applications it knows are installed, and also works for user profile installed applications.
@@ -91,10 +91,10 @@ Write-Host "" # Makes log look better
 # Constants
 
 # TODO: FOR LATER ... this will aid in repairing the taskbar (duplicate pinned apps issue)
-#Set-Variable PROGRAM_SHORTCUTS_PIN_PATH -Option Constant -Value "%ALLUSERSPROFILE%\Microsoft\Windows\Start Menu\Programs"
-#Set-Variable PROGRAM_SHORTCUTS_USER_PIN_PATH -Option Constant -Value "%APPDATA%\Microsoft\Windows\Start Menu\Programs"
-Set-Variable USERS_FOLDER -Option Constant -Value "${env:SystemDrive}\Users"
-Set-Variable NOT_INSTALLED -Option Constant -Value "NOT-INSTALLED"
+#Set-Variable -Name PROGRAM_SHORTCUTS_PIN_PATH -Option Constant -Value "%ALLUSERSPROFILE%\Microsoft\Windows\Start Menu\Programs"
+#Set-Variable -Name PROGRAM_SHORTCUTS_USER_PIN_PATH -Option Constant -Value "%APPDATA%\Microsoft\Windows\Start Menu\Programs"
+Set-Variable -Name USERS_FOLDER -Option Constant -Value "${env:SystemDrive}\Users"
+Set-Variable -Name NOT_INSTALLED -Option Constant -Value "NOT-INSTALLED"
 
 
 
@@ -305,11 +305,11 @@ function New-Shortcut {
   $warnMsg = @()
   $errorMsg = @()
 
-  Set-Variable RESULT_SUCCESS -Option Constant -Value 1
-  Set-Variable RESULT_WARNING -Option Constant -Value 2
-  Set-Variable RESULT_FAILURE -Option Constant -Value 0
-  Set-Variable PROGRAM_SHORTCUTS_PATH -Option Constant -Value "${env:ALLUSERSPROFILE}\Microsoft\Windows\Start Menu\Programs"
-  Set-Variable PROGRAM_SHORTCUTS_USER_PATH -Option Constant -Value "${USERS_FOLDER}\${sUser}\AppData\Roaming\Microsoft\Windows\Start Menu\Programs"
+  Set-Variable -Name RESULT_SUCCESS -Option Constant -Value 1
+  Set-Variable -Name RESULT_WARNING -Option Constant -Value 2
+  Set-Variable -Name RESULT_FAILURE -Option Constant -Value 0
+  Set-Variable -Name PROGRAM_SHORTCUTS_PATH -Option Constant -Value "${env:ALLUSERSPROFILE}\Microsoft\Windows\Start Menu\Programs"
+  Set-Variable -Name PROGRAM_SHORTCUTS_USER_PATH -Option Constant -Value "${USERS_FOLDER}\${sUser}\AppData\Roaming\Microsoft\Windows\Start Menu\Programs"
 
   # validate name and target path
   if ($sName -And $sTargetPath -And (Test-Path -Path $sTargetPath -PathType leaf)) {

@@ -1,6 +1,6 @@
 ﻿<#
   .SYNOPSIS
-  Generate Shortcuts (Functions) v1.0.4
+  Generate Shortcuts (Functions) v1.0.5
 
   .DESCRIPTION
   Script only enables the functions genLnkInfo and genLnkRecurseInfo.
@@ -70,7 +70,7 @@ if ($Help.IsPresent) {
 
 # Constants
 
-Set-Variable USERNAME -Option Constant -Value "$(((Get-WMIObject -ClassName Win32_ComputerSystem | Select-Object username).username).split('\')[1])"
+Set-Variable -Name USERNAME -Option Constant -Value "$(((Get-WMIObject -ClassName Win32_ComputerSystem | Select-Object username).username).split('\')[1])"
 
 
 
