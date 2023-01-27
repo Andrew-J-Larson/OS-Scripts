@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Recreate Base Shortcuts v0.9.015
+  Recreate Base Shortcuts v0.9.016
 
   .DESCRIPTION
   Script only recreates shortcuts to applications it knows are installed, and also works for user profile installed applications.
@@ -418,12 +418,12 @@ $HyperVManager_Argument_virtmgmt = "%windir%\System32\virtmgmt.msc"
 $HyperVManager_TargetPath += if (Test-Path -Path $(cmd.exe /c "echo ${HyperVManager_Argument_virtmgmt}") -PathType leaf) { "mmc.exe" } else { "${NOT_INSTALLED}.exe" }
 # Powershell (7 or newer)
 $PowerShell_TargetPath = "${env:ProgramFiles}\PowerShell\"
-$PowerShell_Version = if (Test-Path -Path $PowerShell_TargetPath) { Get-ChildItem -Directory -Path $PowerShell_TargetPath | Where-Object { $_.Name -match '^[0-9]+$' } | Sort-Object -Property LastWriteTime -Top 1 }
-$PowerShell_Version = if ($PowerShell_Version) { $PowerShell_Version.name } else { $NOT_INSTALLED }
+$PowerShell_Version = if (Test-Path -Path $PowerShell_TargetPath) { Get-ChildItem -Directory -Path $PowerShell_TargetPath | Where-Object { $_.Name -match '^[0-9]+$' } | Sort-Object -Property LastWriteTime }
+$PowerShell_Version = if ($PowerShell_Version) { $PowerShell_Version[0].name } else { $NOT_INSTALLED }
 $PowerShell_TargetPath += "${PowerShell_Version}\pwsh.exe"
 $PowerShell_32bit_TargetPath = "${env:ProgramFiles(x86)}\PowerShell\"
-$PowerShell_32bit_Version = if (Test-Path -Path $PowerShell_32bit_TargetPath) { Get-ChildItem -Directory -Path $PowerShell_32bit_TargetPath | Where-Object { $_.Name -match '^[0-9]+$' } | Sort-Object -Property LastWriteTime -Top 1 }
-$PowerShell_32bit_Version = if ($PowerShell_32bit_Version) { $PowerShell_32bit_Version.name } else { $NOT_INSTALLED }
+$PowerShell_32bit_Version = if (Test-Path -Path $PowerShell_32bit_TargetPath) { Get-ChildItem -Directory -Path $PowerShell_32bit_TargetPath | Where-Object { $_.Name -match '^[0-9]+$' } | Sort-Object -Property LastWriteTime }
+$PowerShell_32bit_Version = if ($PowerShell_32bit_Version) { $PowerShell_32bit_Version[0].name } else { $NOT_INSTALLED }
 $PowerShell_32bit_TargetPath += "${PowerShell32bit_Version}\pwsh.exe"
 # PowerToys
 $PowerToys_TargetPath = "${env:ProgramFiles}\PowerToys\PowerToys.exe"
@@ -1433,8 +1433,8 @@ $EgnyteDesktopApp_Uninstall_32bit_TargetPath = "${env:windir}\System32\" + $(if 
 
 # Adobe Aero
 $Aero_TargetPath = "${env:ProgramFiles}\Adobe\"
-$Aero_Name = if (Test-Path -Path $Aero_TargetPath) { Get-ChildItem -Directory -Path $Aero_TargetPath | Where-Object { $_.Name -match '^.*Aero(?!.*\(Beta\)$)' } | Sort-Object -Property LastWriteTime -Top 1 }
-$Aero_Name = if ($Aero_Name) { $Aero_Name.name } else { "Adobe Aero" }
+$Aero_Name = if (Test-Path -Path $Aero_TargetPath) { Get-ChildItem -Directory -Path $Aero_TargetPath | Where-Object { $_.Name -match '^.*Aero(?!.*\(Beta\)$)' } | Sort-Object -Property LastWriteTime }
+$Aero_Name = if ($Aero_Name) { $Aero_Name[0].name } else { "Adobe Aero" }
 $Aero_WorkingDirectory = $Aero_TargetPath + $Aero_Name
 $Aero_WorkingDirectoryAlt = $Aero_WorkingDirectory + "\Support Files"
 $Aero_WorkingDirectoryAlt2 = $Aero_WorkingDirectoryAlt + "\Contents\Windows"
@@ -1443,8 +1443,8 @@ $Aero_TargetPathAlt = $Aero_WorkingDirectoryAlt + "\Aero.exe"
 $Aero_TargetPathAlt2 = $Aero_WorkingDirectoryAlt2 + "\Aero.exe"
 $Aero_TargetPath = if (Test-Path -Path $Aero_TargetPath -PathType leaf) { $Aero_TargetPath } elseif (Test-Path -Path $Aero_TargetPathAlt -PathType leaf) { $Aero_TargetPathAlt } else { $Aero_TargetPathAlt2 }
 $Aero_Beta_TargetPath = "${env:ProgramFiles}\Adobe\"
-$Aero_Beta_Name = if (Test-Path -Path $Aero_Beta_TargetPath) { Get-ChildItem -Directory -Path $Aero_Beta_TargetPath | Where-Object { $_.Name -match '^.*Aero.*\(Beta\)$' } | Sort-Object -Property LastWriteTime -Top 1 }
-$Aero_Beta_Name = if ($Aero_Beta_Name) { $Aero_Beta_Name.name } else { "Adobe Aero (Beta)" }
+$Aero_Beta_Name = if (Test-Path -Path $Aero_Beta_TargetPath) { Get-ChildItem -Directory -Path $Aero_Beta_TargetPath | Where-Object { $_.Name -match '^.*Aero.*\(Beta\)$' } | Sort-Object -Property LastWriteTime }
+$Aero_Beta_Name = if ($Aero_Beta_Name) { $Aero_Beta_Name[0].name } else { "Adobe Aero (Beta)" }
 $Aero_Beta_WorkingDirectory = $Aero_Beta_TargetPath + $Aero_Beta_Name
 $Aero_Beta_WorkingDirectoryAlt = $Aero_Beta_WorkingDirectory + "\Support Files"
 $Aero_Beta_WorkingDirectoryAlt2 = $Aero_Beta_WorkingDirectoryAlt + "\Contents\Windows"
@@ -1459,8 +1459,8 @@ $Aero_Beta_TargetPath = if (Test-Path -Path $Aero_Beta_TargetPathExeAlt -PathTyp
   else { $Aero_Beta_TargetPathAlt2 }
 # Adobe After Effects
 $AfterEffects_TargetPath = "${env:ProgramFiles}\Adobe\"
-$AfterEffects_Name = if (Test-Path -Path $AfterEffects_TargetPath) { Get-ChildItem -Directory -Path $AfterEffects_TargetPath | Where-Object { $_.Name -match '^.*After Effects(?!.*\(Beta\)$)' } | Sort-Object -Property LastWriteTime -Top 1 }
-$AfterEffects_Name = if ($AfterEffects_Name) { $AfterEffects_Name.name } else { "Adobe After Effects" }
+$AfterEffects_Name = if (Test-Path -Path $AfterEffects_TargetPath) { Get-ChildItem -Directory -Path $AfterEffects_TargetPath | Where-Object { $_.Name -match '^.*After Effects(?!.*\(Beta\)$)' } | Sort-Object -Property LastWriteTime }
+$AfterEffects_Name = if ($AfterEffects_Name) { $AfterEffects_Name[0].name } else { "Adobe After Effects" }
 $AfterEffects_WorkingDirectory = $AfterEffects_TargetPath + $AfterEffects_Name
 $AfterEffects_WorkingDirectoryAlt = $AfterEffects_WorkingDirectory + "\Support Files"
 $AfterEffects_WorkingDirectoryAlt2 = $AfterEffects_WorkingDirectoryAlt + "\Contents\Windows"
@@ -1469,8 +1469,8 @@ $AfterEffects_TargetPathAlt = $AfterEffects_WorkingDirectoryAlt + "\AfterFX.exe"
 $AfterEffects_TargetPathAlt2 = $AfterEffects_WorkingDirectoryAlt2 + "\AfterFX.exe"
 $AfterEffects_TargetPath = if (Test-Path -Path $AfterEffects_TargetPath -PathType leaf) { $AfterEffects_TargetPath } elseif (Test-Path -Path $AfterEffects_TargetPathAlt -PathType leaf) { $AfterEffects_TargetPathAlt } else { $AfterEffects_TargetPathAlt2 }
 $AfterEffects_Beta_TargetPath = "${env:ProgramFiles}\Adobe\"
-$AfterEffects_Beta_Name = if (Test-Path -Path $AfterEffects_Beta_TargetPath) { Get-ChildItem -Directory -Path $AfterEffects_Beta_TargetPath | Where-Object { $_.Name -match '^.*After Effects.*\(Beta\)$' } | Sort-Object -Property LastWriteTime -Top 1 }
-$AfterEffects_Beta_Name = if ($AfterEffects_Beta_Name) { $AfterEffects_Beta_Name.name } else { "Adobe After Effects (Beta)" }
+$AfterEffects_Beta_Name = if (Test-Path -Path $AfterEffects_Beta_TargetPath) { Get-ChildItem -Directory -Path $AfterEffects_Beta_TargetPath | Where-Object { $_.Name -match '^.*After Effects.*\(Beta\)$' } | Sort-Object -Property LastWriteTime }
+$AfterEffects_Beta_Name = if ($AfterEffects_Beta_Name) { $AfterEffects_Beta_Name[0].name } else { "Adobe After Effects (Beta)" }
 $AfterEffects_Beta_WorkingDirectory = $AfterEffects_Beta_TargetPath + $AfterEffects_Beta_Name
 $AfterEffects_Beta_WorkingDirectoryAlt = $AfterEffects_Beta_WorkingDirectory + "\Support Files"
 $AfterEffects_Beta_WorkingDirectoryAlt2 = $AfterEffects_Beta_WorkingDirectoryAlt + "\Contents\Windows"
@@ -1485,8 +1485,8 @@ $AfterEffects_Beta_TargetPath = if (Test-Path -Path $AfterEffects_Beta_TargetPat
   elseif (Test-Path -Path $AfterEffects_Beta_TargetPathAlt -PathType leaf) { $AfterEffects_Beta_TargetPathAlt } else { $AfterEffects_Beta_TargetPathAlt2 }
 # Adobe Animate
 $Animate_TargetPath = "${env:ProgramFiles}\Adobe\"
-$Animate_Name = if (Test-Path -Path $Animate_TargetPath) { Get-ChildItem -Directory -Path $Animate_TargetPath | Where-Object { $_.Name -match '^.*Animate(?!.*\(Beta\)$)' } | Sort-Object -Property LastWriteTime -Top 1 }
-$Animate_Name = if ($Animate_Name) { $Animate_Name.name } else { "Adobe Animate" }
+$Animate_Name = if (Test-Path -Path $Animate_TargetPath) { Get-ChildItem -Directory -Path $Animate_TargetPath | Where-Object { $_.Name -match '^.*Animate(?!.*\(Beta\)$)' } | Sort-Object -Property LastWriteTime }
+$Animate_Name = if ($Animate_Name) { $Animate_Name[0].name } else { "Adobe Animate" }
 $Animate_WorkingDirectory = $Animate_TargetPath + $Animate_Name
 $Animate_WorkingDirectoryAlt = $Animate_WorkingDirectory + "\Support Files"
 $Animate_WorkingDirectoryAlt2 = $Animate_WorkingDirectoryAlt + "\Contents\Windows"
@@ -1495,8 +1495,8 @@ $Animate_TargetPathAlt = $Animate_WorkingDirectoryAlt + "\Animate.exe"
 $Animate_TargetPathAlt2 = $Animate_WorkingDirectoryAlt2 + "\Animate.exe"
 $Animate_TargetPath = if (Test-Path -Path $Animate_TargetPath -PathType leaf) { $Animate_TargetPath } elseif (Test-Path -Path $Animate_TargetPathAlt -PathType leaf) { $Animate_TargetPathAlt } else { $Animate_TargetPathAlt2 }
 $Animate_Beta_TargetPath = "${env:ProgramFiles}\Adobe\"
-$Animate_Beta_Name = if (Test-Path -Path $Animate_Beta_TargetPath) { Get-ChildItem -Directory -Path $Animate_Beta_TargetPath | Where-Object { $_.Name -match '^.*Animate.*\(Beta\)$' } | Sort-Object -Property LastWriteTime -Top 1 }
-$Animate_Beta_Name = if ($Animate_Beta_Name) { $Animate_Beta_Name.name } else { "Adobe Animate (Beta)" }
+$Animate_Beta_Name = if (Test-Path -Path $Animate_Beta_TargetPath) { Get-ChildItem -Directory -Path $Animate_Beta_TargetPath | Where-Object { $_.Name -match '^.*Animate.*\(Beta\)$' } | Sort-Object -Property LastWriteTime }
+$Animate_Beta_Name = if ($Animate_Beta_Name) { $Animate_Beta_Name[0].name } else { "Adobe Animate (Beta)" }
 $Animate_Beta_WorkingDirectory = $Animate_Beta_TargetPath + $Animate_Beta_Name
 $Animate_Beta_WorkingDirectoryAlt = $Animate_Beta_WorkingDirectory + "\Support Files"
 $Animate_Beta_WorkingDirectoryAlt2 = $Animate_Beta_WorkingDirectoryAlt + "\Contents\Windows"
@@ -1511,8 +1511,8 @@ $Animate_Beta_TargetPath = if (Test-Path -Path $Animate_Beta_TargetPathExeAlt -P
   elseif (Test-Path -Path $Animate_Beta_TargetPathAlt -PathType leaf) { $Animate_Beta_TargetPathAlt } else { $Animate_Beta_TargetPathAlt2 }
 # Adobe Audition
 $Audition_TargetPath = "${env:ProgramFiles}\Adobe\"
-$Audition_Name = if (Test-Path -Path $Audition_TargetPath) { Get-ChildItem -Directory -Path $Audition_TargetPath | Where-Object { $_.Name -match '^.*Audition(?!.*\(Beta\)$)' } | Sort-Object -Property LastWriteTime -Top 1 }
-$Audition_Name = if ($Audition_Name) { $Audition_Name.name } else { "Adobe Audition" }
+$Audition_Name = if (Test-Path -Path $Audition_TargetPath) { Get-ChildItem -Directory -Path $Audition_TargetPath | Where-Object { $_.Name -match '^.*Audition(?!.*\(Beta\)$)' } | Sort-Object -Property LastWriteTime }
+$Audition_Name = if ($Audition_Name) { $Audition_Name[0].name } else { "Adobe Audition" }
 $Audition_WorkingDirectory = $Audition_TargetPath + $Audition_Name
 $Audition_WorkingDirectoryAlt = $Audition_WorkingDirectory + "\Support Files"
 $Audition_WorkingDirectoryAlt2 = $Audition_WorkingDirectoryAlt + "\Contents\Windows"
@@ -1521,8 +1521,8 @@ $Audition_TargetPathAlt = $Audition_WorkingDirectoryAlt + "\Adobe Audition.exe"
 $Audition_TargetPathAlt2 = $Audition_WorkingDirectoryAlt2 + "\Adobe Audition.exe"
 $Audition_TargetPath = if (Test-Path -Path $Audition_TargetPath -PathType leaf) { $Audition_TargetPath } elseif (Test-Path -Path $Audition_TargetPathAlt -PathType leaf) { $Audition_TargetPathAlt } else { $Audition_TargetPathAlt2 }
 $Audition_Beta_TargetPath = "${env:ProgramFiles}\Adobe\"
-$Audition_Beta_Name = if (Test-Path -Path $Audition_Beta_TargetPath) { Get-ChildItem -Directory -Path $Audition_Beta_TargetPath | Where-Object { $_.Name -match '^.*Audition.*\(Beta\)$' } | Sort-Object -Property LastWriteTime -Top 1 }
-$Audition_Beta_Name = if ($Audition_Beta_Name) { $Audition_Beta_Name.name } else { "Adobe Audition (Beta)" }
+$Audition_Beta_Name = if (Test-Path -Path $Audition_Beta_TargetPath) { Get-ChildItem -Directory -Path $Audition_Beta_TargetPath | Where-Object { $_.Name -match '^.*Audition.*\(Beta\)$' } | Sort-Object -Property LastWriteTime }
+$Audition_Beta_Name = if ($Audition_Beta_Name) { $Audition_Beta_Name[0].name } else { "Adobe Audition (Beta)" }
 $Audition_Beta_WorkingDirectory = $Audition_Beta_TargetPath + $Audition_Beta_Name
 $Audition_Beta_WorkingDirectoryAlt = $Audition_Beta_WorkingDirectory + "\Support Files"
 $Audition_Beta_WorkingDirectoryAlt2 = $Audition_Beta_WorkingDirectoryAlt + "\Contents\Windows"
@@ -1537,8 +1537,8 @@ $Audition_Beta_TargetPath = if (Test-Path -Path $Audition_Beta_TargetPathExeAlt 
   elseif (Test-Path -Path $Audition_Beta_TargetPathAlt -PathType leaf) { $Audition_Beta_TargetPathAlt } else { $Audition_Beta_TargetPathAlt2 }
 # Adobe Bridge
 $Bridge_TargetPath = "${env:ProgramFiles}\Adobe\"
-$Bridge_Name = if (Test-Path -Path $Bridge_TargetPath) { Get-ChildItem -Directory -Path $Bridge_TargetPath | Where-Object { $_.Name -match '^.*Bridge(?!.*\(Beta\)$)' } | Sort-Object -Property LastWriteTime -Top 1 }
-$Bridge_Name = if ($Bridge_Name) { $Bridge_Name.name } else { "Adobe Bridge" }
+$Bridge_Name = if (Test-Path -Path $Bridge_TargetPath) { Get-ChildItem -Directory -Path $Bridge_TargetPath | Where-Object { $_.Name -match '^.*Bridge(?!.*\(Beta\)$)' } | Sort-Object -Property LastWriteTime }
+$Bridge_Name = if ($Bridge_Name) { $Bridge_Name[0].name } else { "Adobe Bridge" }
 $Bridge_WorkingDirectory = $Bridge_TargetPath + $Bridge_Name
 $Bridge_WorkingDirectoryAlt = $Bridge_WorkingDirectory + "\Support Files"
 $Bridge_WorkingDirectoryAlt2 = $Bridge_WorkingDirectoryAlt + "\Contents\Windows"
@@ -1547,8 +1547,8 @@ $Bridge_TargetPathAlt = $Bridge_WorkingDirectoryAlt + "\Adobe Bridge.exe"
 $Bridge_TargetPathAlt2 = $Bridge_WorkingDirectoryAlt2 + "\Adobe Bridge.exe"
 $Bridge_TargetPath = if (Test-Path -Path $Bridge_TargetPath -PathType leaf) { $Bridge_TargetPath } elseif (Test-Path -Path $Bridge_TargetPathAlt -PathType leaf) { $Bridge_TargetPathAlt } else { $Bridge_TargetPathAlt2 }
 $Bridge_Beta_TargetPath = "${env:ProgramFiles}\Adobe\"
-$Bridge_Beta_Name = if (Test-Path -Path $Bridge_Beta_TargetPath) { Get-ChildItem -Directory -Path $Bridge_Beta_TargetPath | Where-Object { $_.Name -match '^.*Bridge.*\(Beta\)$' } | Sort-Object -Property LastWriteTime -Top 1 }
-$Bridge_Beta_Name = if ($Bridge_Beta_Name) { $Bridge_Beta_Name.name } else { "Adobe Bridge (Beta)" }
+$Bridge_Beta_Name = if (Test-Path -Path $Bridge_Beta_TargetPath) { Get-ChildItem -Directory -Path $Bridge_Beta_TargetPath | Where-Object { $_.Name -match '^.*Bridge.*\(Beta\)$' } | Sort-Object -Property LastWriteTime }
+$Bridge_Beta_Name = if ($Bridge_Beta_Name) { $Bridge_Beta_Name[0].name } else { "Adobe Bridge (Beta)" }
 $Bridge_Beta_WorkingDirectory = $Bridge_Beta_TargetPath + $Bridge_Beta_Name
 $Bridge_Beta_WorkingDirectoryAlt = $Bridge_Beta_WorkingDirectory + "\Support Files"
 $Bridge_Beta_WorkingDirectoryAlt2 = $Bridge_Beta_WorkingDirectoryAlt + "\Contents\Windows"
@@ -1563,8 +1563,8 @@ $Bridge_Beta_TargetPath = if (Test-Path -Path $Bridge_Beta_TargetPathExeAlt -Pat
   elseif (Test-Path -Path $Bridge_Beta_TargetPathAlt -PathType leaf) { $Bridge_Beta_TargetPathAlt } else { $Bridge_Beta_TargetPathAlt2 }
 # Adobe Character Animator
 $CharacterAnimator_TargetPath = "${env:ProgramFiles}\Adobe\"
-$CharacterAnimator_Name = if (Test-Path -Path $CharacterAnimator_TargetPath) { Get-ChildItem -Directory -Path $CharacterAnimator_TargetPath | Where-Object { $_.Name -match '^.*Character Animator(?!.*\(Beta\)$)' } | Sort-Object -Property LastWriteTime -Top 1 }
-$CharacterAnimator_Name = if ($CharacterAnimator_Name) { $CharacterAnimator_Name.name } else { "Adobe Character Animator" }
+$CharacterAnimator_Name = if (Test-Path -Path $CharacterAnimator_TargetPath) { Get-ChildItem -Directory -Path $CharacterAnimator_TargetPath | Where-Object { $_.Name -match '^.*Character Animator(?!.*\(Beta\)$)' } | Sort-Object -Property LastWriteTime }
+$CharacterAnimator_Name = if ($CharacterAnimator_Name) { $CharacterAnimator_Name[0].name } else { "Adobe Character Animator" }
 $CharacterAnimator_WorkingDirectory = $CharacterAnimator_TargetPath + $CharacterAnimator_Name
 $CharacterAnimator_WorkingDirectoryAlt = $CharacterAnimator_WorkingDirectory + "\Support Files"
 $CharacterAnimator_WorkingDirectoryAlt2 = $CharacterAnimator_WorkingDirectoryAlt + "\Contents\Windows"
@@ -1573,8 +1573,8 @@ $CharacterAnimator_TargetPathAlt = $CharacterAnimator_WorkingDirectoryAlt + "\Ad
 $CharacterAnimator_TargetPathAlt2 = $CharacterAnimator_WorkingDirectoryAlt2 + "\Adobe Character Animator.exe"
 $CharacterAnimator_TargetPath = if (Test-Path -Path $CharacterAnimator_TargetPath -PathType leaf) { $CharacterAnimator_TargetPath } elseif (Test-Path -Path $CharacterAnimator_TargetPathAlt -PathType leaf) { $CharacterAnimator_TargetPathAlt } else { $CharacterAnimator_TargetPathAlt2 }
 $CharacterAnimator_Beta_TargetPath = "${env:ProgramFiles}\Adobe\"
-$CharacterAnimator_Beta_Name = if (Test-Path -Path $CharacterAnimator_Beta_TargetPath) { Get-ChildItem -Directory -Path $CharacterAnimator_Beta_TargetPath | Where-Object { $_.Name -match '^.*Character Animator.*\(Beta\)$' } | Sort-Object -Property LastWriteTime -Top 1 }
-$CharacterAnimator_Beta_Name = if ($CharacterAnimator_Beta_Name) { $CharacterAnimator_Beta_Name.name } else { "Adobe Character Animator (Beta)" }
+$CharacterAnimator_Beta_Name = if (Test-Path -Path $CharacterAnimator_Beta_TargetPath) { Get-ChildItem -Directory -Path $CharacterAnimator_Beta_TargetPath | Where-Object { $_.Name -match '^.*Character Animator.*\(Beta\)$' } | Sort-Object -Property LastWriteTime }
+$CharacterAnimator_Beta_Name = if ($CharacterAnimator_Beta_Name) { $CharacterAnimator_Beta_Name[0].name } else { "Adobe Character Animator (Beta)" }
 $CharacterAnimator_Beta_WorkingDirectory = $CharacterAnimator_Beta_TargetPath + $CharacterAnimator_Beta_Name
 $CharacterAnimator_Beta_WorkingDirectoryAlt = $CharacterAnimator_Beta_WorkingDirectory + "\Support Files"
 $CharacterAnimator_Beta_WorkingDirectoryAlt2 = $CharacterAnimator_Beta_WorkingDirectoryAlt + "\Contents\Windows"
@@ -1589,8 +1589,8 @@ $CharacterAnimator_Beta_TargetPath = if (Test-Path -Path $CharacterAnimator_Beta
   elseif (Test-Path -Path $CharacterAnimator_Beta_TargetPathAlt -PathType leaf) { $CharacterAnimator_Beta_TargetPathAlt } else { $CharacterAnimator_Beta_TargetPathAlt2 }
 # Adobe Dimension
 $Dimension_TargetPath = "${env:ProgramFiles}\Adobe\"
-$Dimension_Name = if (Test-Path -Path $Dimension_TargetPath) { Get-ChildItem -Directory -Path $Dimension_TargetPath | Where-Object { $_.Name -match '^.*Dimension(?!.*\(Beta\)$)' } | Sort-Object -Property LastWriteTime -Top 1 }
-$Dimension_Name = if ($Dimension_Name) { $Dimension_Name.name } else { "Dimension" }
+$Dimension_Name = if (Test-Path -Path $Dimension_TargetPath) { Get-ChildItem -Directory -Path $Dimension_TargetPath | Where-Object { $_.Name -match '^.*Dimension(?!.*\(Beta\)$)' } | Sort-Object -Property LastWriteTime }
+$Dimension_Name = if ($Dimension_Name) { $Dimension_Name[0].name } else { "Dimension" }
 $Dimension_WorkingDirectory = $Dimension_TargetPath + $Dimension_Name
 $Dimension_WorkingDirectoryAlt = $Dimension_WorkingDirectory + "\Support Files"
 $Dimension_WorkingDirectoryAlt2 = $Dimension_WorkingDirectoryAlt + "\Contents\Windows"
@@ -1599,8 +1599,8 @@ $Dimension_TargetPathAlt = $Dimension_WorkingDirectoryAlt + "\Dimension.exe"
 $Dimension_TargetPathAlt2 = $Dimension_WorkingDirectoryAlt2 + "\Dimension.exe"
 $Dimension_TargetPath = if (Test-Path -Path $Dimension_TargetPath -PathType leaf) { $Dimension_TargetPath } elseif (Test-Path -Path $Dimension_TargetPathAlt -PathType leaf) { $Dimension_TargetPathAlt } else { $Dimension_TargetPathAlt2 }
 $Dimension_Beta_TargetPath = "${env:ProgramFiles}\Adobe\"
-$Dimension_Beta_Name = if (Test-Path -Path $Dimension_Beta_TargetPath) { Get-ChildItem -Directory -Path $Dimension_Beta_TargetPath | Where-Object { $_.Name -match '^.*Dimension.*\(Beta\)$' } | Sort-Object -Property LastWriteTime -Top 1 }
-$Dimension_Beta_Name = if ($Dimension_Beta_Name) { $Dimension_Beta_Name.name } else { "Dimension (Beta)" }
+$Dimension_Beta_Name = if (Test-Path -Path $Dimension_Beta_TargetPath) { Get-ChildItem -Directory -Path $Dimension_Beta_TargetPath | Where-Object { $_.Name -match '^.*Dimension.*\(Beta\)$' } | Sort-Object -Property LastWriteTime }
+$Dimension_Beta_Name = if ($Dimension_Beta_Name) { $Dimension_Beta_Name[0].name } else { "Dimension (Beta)" }
 $Dimension_Beta_WorkingDirectory = $Dimension_Beta_TargetPath + $Dimension_Beta_Name
 $Dimension_Beta_WorkingDirectoryAlt = $Dimension_Beta_WorkingDirectory + "\Support Files"
 $Dimension_Beta_WorkingDirectoryAlt2 = $Dimension_Beta_WorkingDirectoryAlt + "\Contents\Windows"
@@ -1615,8 +1615,8 @@ $Dimension_Beta_TargetPath = if (Test-Path -Path $Dimension_Beta_TargetPathExeAl
   elseif (Test-Path -Path $Dimension_Beta_TargetPathAlt -PathType leaf) { $Dimension_Beta_TargetPathAlt } else { $Dimension_Beta_TargetPathAlt2 }
 # Adobe Dreamweaver
 $Dreamweaver_TargetPath = "${env:ProgramFiles}\Adobe\"
-$Dreamweaver_Name = if (Test-Path -Path $Dreamweaver_TargetPath) { Get-ChildItem -Directory -Path $Dreamweaver_TargetPath | Where-Object { $_.Name -match '^.*Dreamweaver(?!.*\(Beta\)$)' } | Sort-Object -Property LastWriteTime -Top 1 }
-$Dreamweaver_Name = if ($Dreamweaver_Name) { $Dreamweaver_Name.name } else { "Adobe Dreamweaver" }
+$Dreamweaver_Name = if (Test-Path -Path $Dreamweaver_TargetPath) { Get-ChildItem -Directory -Path $Dreamweaver_TargetPath | Where-Object { $_.Name -match '^.*Dreamweaver(?!.*\(Beta\)$)' } | Sort-Object -Property LastWriteTime }
+$Dreamweaver_Name = if ($Dreamweaver_Name) { $Dreamweaver_Name[0].name } else { "Adobe Dreamweaver" }
 $Dreamweaver_WorkingDirectory = $Dreamweaver_TargetPath + $Dreamweaver_Name
 $Dreamweaver_WorkingDirectoryAlt = $Dreamweaver_WorkingDirectory + "\Support Files"
 $Dreamweaver_WorkingDirectoryAlt2 = $Dreamweaver_WorkingDirectoryAlt + "\Contents\Windows"
@@ -1625,8 +1625,8 @@ $Dreamweaver_TargetPathAlt = $Dreamweaver_WorkingDirectoryAlt + "\Dreamweaver.ex
 $Dreamweaver_TargetPathAlt2 = $Dreamweaver_WorkingDirectoryAlt2 + "\Dreamweaver.exe"
 $Dreamweaver_TargetPath = if (Test-Path -Path $Dreamweaver_TargetPath -PathType leaf) { $Dreamweaver_TargetPath } elseif (Test-Path -Path $Dreamweaver_TargetPathAlt -PathType leaf) { $Dreamweaver_TargetPathAlt } else { $Dreamweaver_TargetPathAlt2 }
 $Dreamweaver_Beta_TargetPath = "${env:ProgramFiles}\Adobe\"
-$Dreamweaver_Beta_Name = if (Test-Path -Path $Dreamweaver_Beta_TargetPath) { Get-ChildItem -Directory -Path $Dreamweaver_Beta_TargetPath | Where-Object { $_.Name -match '^.*Dreamweaver.*\(Beta\)$' } | Sort-Object -Property LastWriteTime -Top 1 }
-$Dreamweaver_Beta_Name = if ($Dreamweaver_Beta_Name) { $Dreamweaver_Beta_Name.name } else { "Adobe Dreamweaver (Beta)" }
+$Dreamweaver_Beta_Name = if (Test-Path -Path $Dreamweaver_Beta_TargetPath) { Get-ChildItem -Directory -Path $Dreamweaver_Beta_TargetPath | Where-Object { $_.Name -match '^.*Dreamweaver.*\(Beta\)$' } | Sort-Object -Property LastWriteTime }
+$Dreamweaver_Beta_Name = if ($Dreamweaver_Beta_Name) { $Dreamweaver_Beta_Name[0].name } else { "Adobe Dreamweaver (Beta)" }
 $Dreamweaver_Beta_WorkingDirectory = $Dreamweaver_Beta_TargetPath + $Dreamweaver_Beta_Name
 $Dreamweaver_Beta_WorkingDirectoryAlt = $Dreamweaver_Beta_WorkingDirectory + "\Support Files"
 $Dreamweaver_Beta_WorkingDirectoryAlt2 = $Dreamweaver_Beta_WorkingDirectoryAlt + "\Contents\Windows"
@@ -1641,8 +1641,8 @@ $Dreamweaver_Beta_TargetPath = if (Test-Path -Path $Dreamweaver_Beta_TargetPathE
   elseif (Test-Path -Path $Dreamweaver_Beta_TargetPathAlt -PathType leaf) { $Dreamweaver_Beta_TargetPathAlt } else { $Dreamweaver_Beta_TargetPathAlt2 }
 # Adobe Illustrator
 $Illustrator_TargetPath = "${env:ProgramFiles}\Adobe\"
-$Illustrator_Name = if (Test-Path -Path $Illustrator_TargetPath) { Get-ChildItem -Directory -Path $Illustrator_TargetPath | Where-Object { $_.Name -match '^.*Illustrator(?!.*\(Beta\)$)' } | Sort-Object -Property LastWriteTime -Top 1 }
-$Illustrator_Name = if ($Illustrator_Name) { $Illustrator_Name.name } else { "Adobe Illustrator" }
+$Illustrator_Name = if (Test-Path -Path $Illustrator_TargetPath) { Get-ChildItem -Directory -Path $Illustrator_TargetPath | Where-Object { $_.Name -match '^.*Illustrator(?!.*\(Beta\)$)' } | Sort-Object -Property LastWriteTime }
+$Illustrator_Name = if ($Illustrator_Name) { $Illustrator_Name[0].name } else { "Adobe Illustrator" }
 $Illustrator_WorkingDirectory = $Illustrator_TargetPath + $Illustrator_Name
 $Illustrator_WorkingDirectoryAlt = $Illustrator_WorkingDirectory + "\Support Files"
 $Illustrator_WorkingDirectoryAlt2 = $Illustrator_WorkingDirectoryAlt + "\Contents\Windows"
@@ -1651,8 +1651,8 @@ $Illustrator_TargetPathAlt = $Illustrator_WorkingDirectoryAlt + "\Illustrator.ex
 $Illustrator_TargetPathAlt2 = $Illustrator_WorkingDirectoryAlt2 + "\Illustrator.exe"
 $Illustrator_TargetPath = if (Test-Path -Path $Illustrator_TargetPath -PathType leaf) { $Illustrator_TargetPath } elseif (Test-Path -Path $Illustrator_TargetPathAlt -PathType leaf) { $Illustrator_TargetPathAlt } else { $Illustrator_TargetPathAlt2 }
 $Illustrator_Beta_TargetPath = "${env:ProgramFiles}\Adobe\"
-$Illustrator_Beta_Name = if (Test-Path -Path $Illustrator_Beta_TargetPath) { Get-ChildItem -Directory -Path $Illustrator_Beta_TargetPath | Where-Object { $_.Name -match '^.*Illustrator.*\(Beta\)$' } | Sort-Object -Property LastWriteTime -Top 1 }
-$Illustrator_Beta_Name = if ($Illustrator_Beta_Name) { $Illustrator_Beta_Name.name } else { "Adobe Illustrator (Beta)" }
+$Illustrator_Beta_Name = if (Test-Path -Path $Illustrator_Beta_TargetPath) { Get-ChildItem -Directory -Path $Illustrator_Beta_TargetPath | Where-Object { $_.Name -match '^.*Illustrator.*\(Beta\)$' } | Sort-Object -Property LastWriteTime }
+$Illustrator_Beta_Name = if ($Illustrator_Beta_Name) { $Illustrator_Beta_Name[0].name } else { "Adobe Illustrator (Beta)" }
 $Illustrator_Beta_WorkingDirectory = $Illustrator_Beta_TargetPath + $Illustrator_Beta_Name
 $Illustrator_Beta_WorkingDirectoryAlt = $Illustrator_Beta_WorkingDirectory + "\Support Files"
 $Illustrator_Beta_WorkingDirectoryAlt2 = $Illustrator_Beta_WorkingDirectoryAlt + "\Contents\Windows"
@@ -1667,8 +1667,8 @@ $Illustrator_Beta_TargetPath = if (Test-Path -Path $Illustrator_Beta_TargetPathE
   elseif (Test-Path -Path $Illustrator_Beta_TargetPathAlt -PathType leaf) { $Illustrator_Beta_TargetPathAlt } else { $Illustrator_Beta_TargetPathAlt2 }
 # Adobe InCopy
 $InCopy_TargetPath = "${env:ProgramFiles}\Adobe\"
-$InCopy_Name = if (Test-Path -Path $InCopy_TargetPath) { Get-ChildItem -Directory -Path $InCopy_TargetPath | Where-Object { $_.Name -match '^.*InCopy(?!.*\(Beta\)$)' } | Sort-Object -Property LastWriteTime -Top 1 }
-$InCopy_Name = if ($InCopy_Name) { $InCopy_Name.name } else { "Adobe InCopy" }
+$InCopy_Name = if (Test-Path -Path $InCopy_TargetPath) { Get-ChildItem -Directory -Path $InCopy_TargetPath | Where-Object { $_.Name -match '^.*InCopy(?!.*\(Beta\)$)' } | Sort-Object -Property LastWriteTime }
+$InCopy_Name = if ($InCopy_Name) { $InCopy_Name[0].name } else { "Adobe InCopy" }
 $InCopy_WorkingDirectory = $InCopy_TargetPath + $InCopy_Name
 $InCopy_WorkingDirectoryAlt = $InCopy_WorkingDirectory + "\Support Files"
 $InCopy_WorkingDirectoryAlt2 = $InCopy_WorkingDirectoryAlt + "\Contents\Windows"
@@ -1677,8 +1677,8 @@ $InCopy_TargetPathAlt = $InCopy_WorkingDirectoryAlt + "\InCopy.exe"
 $InCopy_TargetPathAlt2 = $InCopy_WorkingDirectoryAlt2 + "\InCopy.exe"
 $InCopy_TargetPath = if (Test-Path -Path $InCopy_TargetPath -PathType leaf) { $InCopy_TargetPath } elseif (Test-Path -Path $InCopy_TargetPathAlt -PathType leaf) { $InCopy_TargetPathAlt } else { $InCopy_TargetPathAlt2 }
 $InCopy_Beta_TargetPath = "${env:ProgramFiles}\Adobe\"
-$InCopy_Beta_Name = if (Test-Path -Path $InCopy_Beta_TargetPath) { Get-ChildItem -Directory -Path $InCopy_Beta_TargetPath | Where-Object { $_.Name -match '^.*InCopy.*\(Beta\)$' } | Sort-Object -Property LastWriteTime -Top 1 }
-$InCopy_Beta_Name = if ($InCopy_Beta_Name) { $InCopy_Beta_Name.name } else { "Adobe InCopy (Beta)" }
+$InCopy_Beta_Name = if (Test-Path -Path $InCopy_Beta_TargetPath) { Get-ChildItem -Directory -Path $InCopy_Beta_TargetPath | Where-Object { $_.Name -match '^.*InCopy.*\(Beta\)$' } | Sort-Object -Property LastWriteTime }
+$InCopy_Beta_Name = if ($InCopy_Beta_Name) { $InCopy_Beta_Name[0].name } else { "Adobe InCopy (Beta)" }
 $InCopy_Beta_WorkingDirectory = $InCopy_Beta_TargetPath + $InCopy_Beta_Name
 $InCopy_Beta_WorkingDirectoryAlt = $InCopy_Beta_WorkingDirectory + "\Support Files"
 $InCopy_Beta_WorkingDirectoryAlt2 = $InCopy_Beta_WorkingDirectoryAlt + "\Contents\Windows"
@@ -1693,8 +1693,8 @@ $InCopy_Beta_TargetPath = if (Test-Path -Path $InCopy_Beta_TargetPathExeAlt -Pat
   elseif (Test-Path -Path $InCopy_Beta_TargetPathAlt -PathType leaf) { $InCopy_Beta_TargetPathAlt } else { $InCopy_Beta_TargetPathAlt2 }
 # Adobe InDesign
 $InDesign_TargetPath = "${env:ProgramFiles}\Adobe\"
-$InDesign_Name = if (Test-Path -Path $InDesign_TargetPath) { Get-ChildItem -Directory -Path $InDesign_TargetPath | Where-Object { $_.Name -match '^.*InDesign(?!.*\(Beta\)$)' } | Sort-Object -Property LastWriteTime -Top 1 }
-$InDesign_Name = if ($InDesign_Name) { $InDesign_Name.name } else { "Adobe InDesign" }
+$InDesign_Name = if (Test-Path -Path $InDesign_TargetPath) { Get-ChildItem -Directory -Path $InDesign_TargetPath | Where-Object { $_.Name -match '^.*InDesign(?!.*\(Beta\)$)' } | Sort-Object -Property LastWriteTime }
+$InDesign_Name = if ($InDesign_Name) { $InDesign_Name[0].name } else { "Adobe InDesign" }
 $InDesign_WorkingDirectory = $InDesign_TargetPath + $InDesign_Name
 $InDesign_WorkingDirectoryAlt = $InDesign_WorkingDirectory + "\Support Files"
 $InDesign_WorkingDirectoryAlt2 = $InDesign_WorkingDirectoryAlt + "\Contents\Windows"
@@ -1703,8 +1703,8 @@ $InDesign_TargetPathAlt = $InDesign_WorkingDirectoryAlt + "\InDesign.exe"
 $InDesign_TargetPathAlt2 = $InDesign_WorkingDirectoryAlt2 + "\InDesign.exe"
 $InDesign_TargetPath = if (Test-Path -Path $InDesign_TargetPath -PathType leaf) { $InDesign_TargetPath } elseif (Test-Path -Path $InDesign_TargetPathAlt -PathType leaf) { $InDesign_TargetPathAlt } else { $InDesign_TargetPathAlt2 }
 $InDesign_Beta_TargetPath = "${env:ProgramFiles}\Adobe\"
-$InDesign_Beta_Name = if (Test-Path -Path $InDesign_Beta_TargetPath) { Get-ChildItem -Directory -Path $InDesign_Beta_TargetPath | Where-Object { $_.Name -match '^.*InDesign.*\(Beta\)$' } | Sort-Object -Property LastWriteTime -Top 1 }
-$InDesign_Beta_Name = if ($InDesign_Beta_Name) { $InDesign_Beta_Name.name } else { "Adobe InDesign (Beta)" }
+$InDesign_Beta_Name = if (Test-Path -Path $InDesign_Beta_TargetPath) { Get-ChildItem -Directory -Path $InDesign_Beta_TargetPath | Where-Object { $_.Name -match '^.*InDesign.*\(Beta\)$' } | Sort-Object -Property LastWriteTime }
+$InDesign_Beta_Name = if ($InDesign_Beta_Name) { $InDesign_Beta_Name[0].name } else { "Adobe InDesign (Beta)" }
 $InDesign_Beta_WorkingDirectory = $InDesign_Beta_TargetPath + $InDesign_Beta_Name
 $InDesign_Beta_WorkingDirectoryAlt = $InDesign_Beta_WorkingDirectory + "\Support Files"
 $InDesign_Beta_WorkingDirectoryAlt2 = $InDesign_Beta_WorkingDirectoryAlt + "\Contents\Windows"
@@ -1719,8 +1719,8 @@ $InDesign_Beta_TargetPath = if (Test-Path -Path $InDesign_Beta_TargetPathExeAlt 
   elseif (Test-Path -Path $InDesign_Beta_TargetPathAlt -PathType leaf) { $InDesign_Beta_TargetPathAlt } else { $InDesign_Beta_TargetPathAlt2 }
 # Adobe Lightroom
 $Lightroom_TargetPath = "${env:ProgramFiles}\Adobe\"
-$Lightroom_Name = if (Test-Path -Path $Lightroom_TargetPath) { Get-ChildItem -Directory -Path $Lightroom_TargetPath | Where-Object { $_.Name -match '^.*Lightroom(?!.*Classic)(?!.*\(Beta\)$)' } | Sort-Object -Property LastWriteTime -Top 1 }
-$Lightroom_Name = if ($Lightroom_Name) { $Lightroom_Name.name } else { "Adobe Lightroom" }
+$Lightroom_Name = if (Test-Path -Path $Lightroom_TargetPath) { Get-ChildItem -Directory -Path $Lightroom_TargetPath | Where-Object { $_.Name -match '^.*Lightroom(?!.*Classic)(?!.*\(Beta\)$)' } | Sort-Object -Property LastWriteTime }
+$Lightroom_Name = if ($Lightroom_Name) { $Lightroom_Name[0].name } else { "Adobe Lightroom" }
 $Lightroom_WorkingDirectory = $Lightroom_TargetPath + $Lightroom_Name
 $Lightroom_WorkingDirectoryAlt = $Lightroom_WorkingDirectory + "\Support Files"
 $Lightroom_WorkingDirectoryAlt2 = $Lightroom_WorkingDirectoryAlt + "\Contents\Windows"
@@ -1729,8 +1729,8 @@ $Lightroom_TargetPathAlt = $Lightroom_WorkingDirectoryAlt + "\lightroom.exe"
 $Lightroom_TargetPathAlt2 = $Lightroom_WorkingDirectoryAlt2 + "\lightroom.exe"
 $Lightroom_TargetPath = if (Test-Path -Path $Lightroom_TargetPath -PathType leaf) { $Lightroom_TargetPath } elseif (Test-Path -Path $Lightroom_TargetPathAlt -PathType leaf) { $Lightroom_TargetPathAlt } else { $Lightroom_TargetPathAlt2 }
 $Lightroom_Beta_TargetPath = "${env:ProgramFiles}\Adobe\"
-$Lightroom_Beta_Name = if (Test-Path -Path $Lightroom_Beta_TargetPath) { Get-ChildItem -Directory -Path $Lightroom_Beta_TargetPath | Where-Object { $_.Name -match '^.*Lightroom(?!.*Classic).*\(Beta\)$' } | Sort-Object -Property LastWriteTime -Top 1 }
-$Lightroom_Beta_Name = if ($Lightroom_Beta_Name) { $Lightroom_Beta_Name.name } else { "Adobe Lightroom (Beta)" }
+$Lightroom_Beta_Name = if (Test-Path -Path $Lightroom_Beta_TargetPath) { Get-ChildItem -Directory -Path $Lightroom_Beta_TargetPath | Where-Object { $_.Name -match '^.*Lightroom(?!.*Classic).*\(Beta\)$' } | Sort-Object -Property LastWriteTime }
+$Lightroom_Beta_Name = if ($Lightroom_Beta_Name) { $Lightroom_Beta_Name[0].name } else { "Adobe Lightroom (Beta)" }
 $Lightroom_Beta_WorkingDirectory = $Lightroom_Beta_TargetPath + $Lightroom_Beta_Name
 $Lightroom_Beta_WorkingDirectoryAlt = $Lightroom_Beta_WorkingDirectory + "\Support Files"
 $Lightroom_Beta_WorkingDirectoryAlt2 = $Lightroom_Beta_WorkingDirectoryAlt + "\Contents\Windows"
@@ -1745,8 +1745,8 @@ $Lightroom_Beta_TargetPath = if (Test-Path -Path $Lightroom_Beta_TargetPathExeAl
   elseif (Test-Path -Path $Lightroom_Beta_TargetPathAlt -PathType leaf) { $Lightroom_Beta_TargetPathAlt } else { $Lightroom_Beta_TargetPathAlt2 }
 # Adobe Lightroom Classic
 $LightroomClassic_TargetPath = "${env:ProgramFiles}\Adobe\"
-$LightroomClassic_Name = if (Test-Path -Path $LightroomClassic_TargetPath) { Get-ChildItem -Directory -Path $LightroomClassic_TargetPath | Where-Object { $_.Name -match '^.*Lightroom Classic(?!.*\(Beta\)$)' } | Sort-Object -Property LastWriteTime -Top 1 }
-$LightroomClassic_Name = if ($LightroomClassic_Name) { $LightroomClassic_Name.name } else { "Adobe Lightroom Classic" }
+$LightroomClassic_Name = if (Test-Path -Path $LightroomClassic_TargetPath) { Get-ChildItem -Directory -Path $LightroomClassic_TargetPath | Where-Object { $_.Name -match '^.*Lightroom Classic(?!.*\(Beta\)$)' } | Sort-Object -Property LastWriteTime }
+$LightroomClassic_Name = if ($LightroomClassic_Name) { $LightroomClassic_Name[0].name } else { "Adobe Lightroom Classic" }
 $LightroomClassic_WorkingDirectory = $LightroomClassic_TargetPath + $LightroomClassic_Name
 $LightroomClassic_WorkingDirectoryAlt = $LightroomClassic_WorkingDirectory + "\Support Files"
 $LightroomClassic_WorkingDirectoryAlt2 = $LightroomClassic_WorkingDirectoryAlt + "\Contents\Windows"
@@ -1755,8 +1755,8 @@ $LightroomClassic_TargetPathAlt = $LightroomClassic_WorkingDirectoryAlt + "\Ligh
 $LightroomClassic_TargetPathAlt2 = $LightroomClassic_WorkingDirectoryAlt2 + "\Lightroom.exe"
 $LightroomClassic_TargetPath = if (Test-Path -Path $LightroomClassic_TargetPath -PathType leaf) { $LightroomClassic_TargetPath } elseif (Test-Path -Path $LightroomClassic_TargetPathAlt -PathType leaf) { $LightroomClassic_TargetPathAlt } else { $LightroomClassic_TargetPathAlt2 }
 $LightroomClassic_Beta_TargetPath = "${env:ProgramFiles}\Adobe\"
-$LightroomClassic_Beta_Name = if (Test-Path -Path $LightroomClassic_Beta_TargetPath) { Get-ChildItem -Directory -Path $LightroomClassic_Beta_TargetPath | Where-Object { $_.Name -match '^.*Lightroom Classic.*\(Beta\)$' } | Sort-Object -Property LastWriteTime -Top 1 }
-$LightroomClassic_Beta_Name = if ($LightroomClassic_Beta_Name) { $LightroomClassic_Beta_Name.name } else { "Adobe Lightroom Classic (Beta)" }
+$LightroomClassic_Beta_Name = if (Test-Path -Path $LightroomClassic_Beta_TargetPath) { Get-ChildItem -Directory -Path $LightroomClassic_Beta_TargetPath | Where-Object { $_.Name -match '^.*Lightroom Classic.*\(Beta\)$' } | Sort-Object -Property LastWriteTime }
+$LightroomClassic_Beta_Name = if ($LightroomClassic_Beta_Name) { $LightroomClassic_Beta_Name[0].name } else { "Adobe Lightroom Classic (Beta)" }
 $LightroomClassic_Beta_WorkingDirectory = $LightroomClassic_Beta_TargetPath + $LightroomClassic_Beta_Name
 $LightroomClassic_Beta_WorkingDirectoryAlt = $LightroomClassic_Beta_WorkingDirectory + "\Support Files"
 $LightroomClassic_Beta_WorkingDirectoryAlt2 = $LightroomClassic_Beta_WorkingDirectoryAlt + "\Contents\Windows"
@@ -1771,8 +1771,8 @@ $LightroomClassic_Beta_TargetPath = if (Test-Path -Path $LightroomClassic_Beta_T
   elseif (Test-Path -Path $LightroomClassic_Beta_TargetPathAlt -PathType leaf) { $LightroomClassic_Beta_TargetPathAlt } else { $LightroomClassic_Beta_TargetPathAlt2 }
 # Adobe Media Encoder
 $MediaEncoder_TargetPath = "${env:ProgramFiles}\Adobe\"
-$MediaEncoder_Name = if (Test-Path -Path $MediaEncoder_TargetPath) { Get-ChildItem -Directory -Path $MediaEncoder_TargetPath | Where-Object { $_.Name -match '^.*Media Encoder(?!.*\(Beta\)$)' } | Sort-Object -Property LastWriteTime -Top 1 }
-$MediaEncoder_Name = if ($MediaEncoder_Name) { $MediaEncoder_Name.name } else { "Adobe Media Encoder" }
+$MediaEncoder_Name = if (Test-Path -Path $MediaEncoder_TargetPath) { Get-ChildItem -Directory -Path $MediaEncoder_TargetPath | Where-Object { $_.Name -match '^.*Media Encoder(?!.*\(Beta\)$)' } | Sort-Object -Property LastWriteTime }
+$MediaEncoder_Name = if ($MediaEncoder_Name) { $MediaEncoder_Name[0].name } else { "Adobe Media Encoder" }
 $MediaEncoder_WorkingDirectory = $MediaEncoder_TargetPath + $MediaEncoder_Name
 $MediaEncoder_WorkingDirectoryAlt = $MediaEncoder_WorkingDirectory + "\Support Files"
 $MediaEncoder_WorkingDirectoryAlt2 = $MediaEncoder_WorkingDirectoryAlt + "\Contents\Windows"
@@ -1781,8 +1781,8 @@ $MediaEncoder_TargetPathAlt = $MediaEncoder_WorkingDirectoryAlt + "\Adobe Media 
 $MediaEncoder_TargetPathAlt2 = $MediaEncoder_WorkingDirectoryAlt2 + "\Adobe Media Encoder.exe"
 $MediaEncoder_TargetPath = if (Test-Path -Path $MediaEncoder_TargetPath -PathType leaf) { $MediaEncoder_TargetPath } elseif (Test-Path -Path $MediaEncoder_TargetPathAlt -PathType leaf) { $MediaEncoder_TargetPathAlt } else { $MediaEncoder_TargetPathAlt2 }
 $MediaEncoder_Beta_TargetPath = "${env:ProgramFiles}\Adobe\"
-$MediaEncoder_Beta_Name = if (Test-Path -Path $MediaEncoder_Beta_TargetPath) { Get-ChildItem -Directory -Path $MediaEncoder_Beta_TargetPath | Where-Object { $_.Name -match '^.*Media Encoder.*\(Beta\)$' } | Sort-Object -Property LastWriteTime -Top 1 }
-$MediaEncoder_Beta_Name = if ($MediaEncoder_Beta_Name) { $MediaEncoder_Beta_Name.name } else { "Adobe Media Encoder (Beta)" }
+$MediaEncoder_Beta_Name = if (Test-Path -Path $MediaEncoder_Beta_TargetPath) { Get-ChildItem -Directory -Path $MediaEncoder_Beta_TargetPath | Where-Object { $_.Name -match '^.*Media Encoder.*\(Beta\)$' } | Sort-Object -Property LastWriteTime }
+$MediaEncoder_Beta_Name = if ($MediaEncoder_Beta_Name) { $MediaEncoder_Beta_Name[0].name } else { "Adobe Media Encoder (Beta)" }
 $MediaEncoder_Beta_WorkingDirectory = $MediaEncoder_Beta_TargetPath + $MediaEncoder_Beta_Name
 $MediaEncoder_Beta_WorkingDirectoryAlt = $MediaEncoder_Beta_WorkingDirectory + "\Support Files"
 $MediaEncoder_Beta_WorkingDirectoryAlt2 = $MediaEncoder_Beta_WorkingDirectoryAlt + "\Contents\Windows"
@@ -1797,8 +1797,8 @@ $MediaEncoder_Beta_TargetPath = if (Test-Path -Path $MediaEncoder_Beta_TargetPat
   elseif (Test-Path -Path $MediaEncoder_Beta_TargetPathAlt -PathType leaf) { $MediaEncoder_Beta_TargetPathAlt } else { $MediaEncoder_Beta_TargetPathAlt2 }
 # Adobe Photoshop
 $Photoshop_TargetPath = "${env:ProgramFiles}\Adobe\"
-$Photoshop_Name = if (Test-Path -Path $Photoshop_TargetPath) { Get-ChildItem -Directory -Path $Photoshop_TargetPath | Where-Object { $_.Name -match '^.*Photoshop(?!.*\(Beta\)$)' } | Sort-Object -Property LastWriteTime -Top 1 }
-$Photoshop_Name = if ($Photoshop_Name) { $Photoshop_Name.name } else { "Adobe Photoshop" }
+$Photoshop_Name = if (Test-Path -Path $Photoshop_TargetPath) { Get-ChildItem -Directory -Path $Photoshop_TargetPath | Where-Object { $_.Name -match '^.*Photoshop(?!.*\(Beta\)$)' } | Sort-Object -Property LastWriteTime }
+$Photoshop_Name = if ($Photoshop_Name) { $Photoshop_Name[0].name } else { "Adobe Photoshop" }
 $Photoshop_WorkingDirectory = $Photoshop_TargetPath + $Photoshop_Name
 $Photoshop_WorkingDirectoryAlt = $Photoshop_WorkingDirectory + "\Support Files"
 $Photoshop_WorkingDirectoryAlt2 = $Photoshop_WorkingDirectoryAlt + "\Contents\Windows"
@@ -1807,8 +1807,8 @@ $Photoshop_TargetPathAlt = $Photoshop_WorkingDirectoryAlt + "\Photoshop.exe"
 $Photoshop_TargetPathAlt2 = $Photoshop_WorkingDirectoryAlt2 + "\Photoshop.exe"
 $Photoshop_TargetPath = if (Test-Path -Path $Photoshop_TargetPath -PathType leaf) { $Photoshop_TargetPath } elseif (Test-Path -Path $Photoshop_TargetPathAlt -PathType leaf) { $Photoshop_TargetPathAlt } else { $Photoshop_TargetPathAlt2 }
 $Photoshop_Beta_TargetPath = "${env:ProgramFiles}\Adobe\"
-$Photoshop_Beta_Name = if (Test-Path -Path $Photoshop_Beta_TargetPath) { Get-ChildItem -Directory -Path $Photoshop_Beta_TargetPath | Where-Object { $_.Name -match '^.*Photoshop.*\(Beta\)$' } | Sort-Object -Property LastWriteTime -Top 1 }
-$Photoshop_Beta_Name = if ($Photoshop_Beta_Name) { $Photoshop_Beta_Name.name } else { "Adobe Photoshop (Beta)" }
+$Photoshop_Beta_Name = if (Test-Path -Path $Photoshop_Beta_TargetPath) { Get-ChildItem -Directory -Path $Photoshop_Beta_TargetPath | Where-Object { $_.Name -match '^.*Photoshop.*\(Beta\)$' } | Sort-Object -Property LastWriteTime }
+$Photoshop_Beta_Name = if ($Photoshop_Beta_Name) { $Photoshop_Beta_Name[0].name } else { "Adobe Photoshop (Beta)" }
 $Photoshop_Beta_WorkingDirectory = $Photoshop_Beta_TargetPath + $Photoshop_Beta_Name
 $Photoshop_Beta_WorkingDirectoryAlt = $Photoshop_Beta_WorkingDirectory + "\Support Files"
 $Photoshop_Beta_WorkingDirectoryAlt2 = $Photoshop_Beta_WorkingDirectoryAlt + "\Contents\Windows"
@@ -1823,8 +1823,8 @@ $Photoshop_Beta_TargetPath = if (Test-Path -Path $Photoshop_Beta_TargetPathExeAl
   elseif (Test-Path -Path $Photoshop_Beta_TargetPathAlt -PathType leaf) { $Photoshop_Beta_TargetPathAlt } else { $Photoshop_Beta_TargetPathAlt2 }
 # Adobe Premiere Pro
 $PremierePro_TargetPath = "${env:ProgramFiles}\Adobe\"
-$PremierePro_Name = if (Test-Path -Path $PremierePro_TargetPath) { Get-ChildItem -Directory -Path $PremierePro_TargetPath | Where-Object { $_.Name -match '^.*Premiere Pro(?!.*\(Beta\)$)' } | Sort-Object -Property LastWriteTime -Top 1 }
-$PremierePro_Name = if ($PremierePro_Name) { $PremierePro_Name.name } else { "Adobe Premiere Pro" }
+$PremierePro_Name = if (Test-Path -Path $PremierePro_TargetPath) { Get-ChildItem -Directory -Path $PremierePro_TargetPath | Where-Object { $_.Name -match '^.*Premiere Pro(?!.*\(Beta\)$)' } | Sort-Object -Property LastWriteTime }
+$PremierePro_Name = if ($PremierePro_Name) { $PremierePro_Name[0].name } else { "Adobe Premiere Pro" }
 $PremierePro_WorkingDirectory = $PremierePro_TargetPath + $PremierePro_Name
 $PremierePro_WorkingDirectoryAlt = $PremierePro_WorkingDirectory + "\Support Files"
 $PremierePro_WorkingDirectoryAlt2 = $PremierePro_WorkingDirectoryAlt + "\Contents\Windows"
@@ -1833,8 +1833,8 @@ $PremierePro_TargetPathAlt = $PremierePro_WorkingDirectoryAlt + "\Adobe Premiere
 $PremierePro_TargetPathAlt2 = $PremierePro_WorkingDirectoryAlt2 + "\Adobe Premiere Pro.exe"
 $PremierePro_TargetPath = if (Test-Path -Path $PremierePro_TargetPath -PathType leaf) { $PremierePro_TargetPath } elseif (Test-Path -Path $PremierePro_TargetPathAlt -PathType leaf) { $PremierePro_TargetPathAlt } else { $PremierePro_TargetPathAlt2 }
 $PremierePro_Beta_TargetPath = "${env:ProgramFiles}\Adobe\"
-$PremierePro_Beta_Name = if (Test-Path -Path $PremierePro_Beta_TargetPath) { Get-ChildItem -Directory -Path $PremierePro_Beta_TargetPath | Where-Object { $_.Name -match '^.*Premiere Pro.*\(Beta\)$' } | Sort-Object -Property LastWriteTime -Top 1 }
-$PremierePro_Beta_Name = if ($PremierePro_Beta_Name) { $PremierePro_Beta_Name.name } else { "Adobe Premiere Pro (Beta)" }
+$PremierePro_Beta_Name = if (Test-Path -Path $PremierePro_Beta_TargetPath) { Get-ChildItem -Directory -Path $PremierePro_Beta_TargetPath | Where-Object { $_.Name -match '^.*Premiere Pro.*\(Beta\)$' } | Sort-Object -Property LastWriteTime }
+$PremierePro_Beta_Name = if ($PremierePro_Beta_Name) { $PremierePro_Beta_Name[0].name } else { "Adobe Premiere Pro (Beta)" }
 $PremierePro_Beta_WorkingDirectory = $PremierePro_Beta_TargetPath + $PremierePro_Beta_Name
 $PremierePro_Beta_WorkingDirectoryAlt = $PremierePro_Beta_WorkingDirectory + "\Support Files"
 $PremierePro_Beta_WorkingDirectoryAlt2 = $PremierePro_Beta_WorkingDirectoryAlt + "\Contents\Windows"
@@ -1849,8 +1849,8 @@ $PremierePro_Beta_TargetPath = if (Test-Path -Path $PremierePro_Beta_TargetPathE
   elseif (Test-Path -Path $PremierePro_Beta_TargetPathAlt -PathType leaf) { $PremierePro_Beta_TargetPathAlt } else { $PremierePro_Beta_TargetPathAlt2 }
 # Adobe Premiere Rush
 $PremiereRush_TargetPath = "${env:ProgramFiles}\Adobe\"
-$PremiereRush_Name = if (Test-Path -Path $PremiereRush_TargetPath) { Get-ChildItem -Directory -Path $PremiereRush_TargetPath | Where-Object { $_.Name -match '^.*Premiere Rush(?!.*\(Beta\)$)' } | Sort-Object -Property LastWriteTime -Top 1 }
-$PremiereRush_Name = if ($PremiereRush_Name) { $PremiereRush_Name.name } else { "Adobe Premiere Rush" }
+$PremiereRush_Name = if (Test-Path -Path $PremiereRush_TargetPath) { Get-ChildItem -Directory -Path $PremiereRush_TargetPath | Where-Object { $_.Name -match '^.*Premiere Rush(?!.*\(Beta\)$)' } | Sort-Object -Property LastWriteTime }
+$PremiereRush_Name = if ($PremiereRush_Name) { $PremiereRush_Name[0].name } else { "Adobe Premiere Rush" }
 $PremiereRush_WorkingDirectory = $PremiereRush_TargetPath + $PremiereRush_Name
 $PremiereRush_WorkingDirectoryAlt = $PremiereRush_WorkingDirectory + "\Support Files"
 $PremiereRush_WorkingDirectoryAlt2 = $PremiereRush_WorkingDirectoryAlt + "\Contents\Windows"
@@ -1859,8 +1859,8 @@ $PremiereRush_TargetPathAlt = $PremiereRush_WorkingDirectoryAlt + "\Adobe Premie
 $PremiereRush_TargetPathAlt2 = $PremiereRush_WorkingDirectoryAlt2 + "\Adobe Premiere Rush.exe"
 $PremiereRush_TargetPath = if (Test-Path -Path $PremiereRush_TargetPath -PathType leaf) { $PremiereRush_TargetPath } elseif (Test-Path -Path $PremiereRush_TargetPathAlt -PathType leaf) { $PremiereRush_TargetPathAlt } else { $PremiereRush_TargetPathAlt2 }
 $PremiereRush_Beta_TargetPath = "${env:ProgramFiles}\Adobe\"
-$PremiereRush_Beta_Name = if (Test-Path -Path $PremiereRush_Beta_TargetPath) { Get-ChildItem -Directory -Path $PremiereRush_Beta_TargetPath | Where-Object { $_.Name -match '^.*Premiere Rush.*\(Beta\)$' } | Sort-Object -Property LastWriteTime -Top 1 }
-$PremiereRush_Beta_Name = if ($PremiereRush_Beta_Name) { $PremiereRush_Beta_Name.name } else { "Adobe Premiere Rush (Beta)" }
+$PremiereRush_Beta_Name = if (Test-Path -Path $PremiereRush_Beta_TargetPath) { Get-ChildItem -Directory -Path $PremiereRush_Beta_TargetPath | Where-Object { $_.Name -match '^.*Premiere Rush.*\(Beta\)$' } | Sort-Object -Property LastWriteTime }
+$PremiereRush_Beta_Name = if ($PremiereRush_Beta_Name) { $PremiereRush_Beta_Name[0].name } else { "Adobe Premiere Rush (Beta)" }
 $PremiereRush_Beta_WorkingDirectory = $PremiereRush_Beta_TargetPath + $PremiereRush_Beta_Name
 $PremiereRush_Beta_WorkingDirectoryAlt = $PremiereRush_Beta_WorkingDirectory + "\Support Files"
 $PremiereRush_Beta_WorkingDirectoryAlt2 = $PremiereRush_Beta_WorkingDirectoryAlt + "\Contents\Windows"
@@ -1875,8 +1875,8 @@ $PremiereRush_Beta_TargetPath = if (Test-Path -Path $PremiereRush_Beta_TargetPat
   elseif (Test-Path -Path $PremiereRush_Beta_TargetPathAlt -PathType leaf) { $PremiereRush_Beta_TargetPathAlt } else { $PremiereRush_Beta_TargetPathAlt2 }
 # Adobe Substance 3D Designer
 $Substance3dDesigner_TargetPath = "${env:ProgramFiles}\Adobe\"
-$Substance3dDesigner_Name = if (Test-Path -Path $Substance3dDesigner_TargetPath) { Get-ChildItem -Directory -Path $Substance3dDesigner_TargetPath | Where-Object { $_.Name -match '^.*Substance 3D Designer(?!.*\(Beta\)$)' } | Sort-Object -Property LastWriteTime -Top 1 }
-$Substance3dDesigner_Name = if ($Substance3dDesigner_Name) { $Substance3dDesigner_Name.name } else { "Adobe Substance 3D Designer" }
+$Substance3dDesigner_Name = if (Test-Path -Path $Substance3dDesigner_TargetPath) { Get-ChildItem -Directory -Path $Substance3dDesigner_TargetPath | Where-Object { $_.Name -match '^.*Substance 3D Designer(?!.*\(Beta\)$)' } | Sort-Object -Property LastWriteTime }
+$Substance3dDesigner_Name = if ($Substance3dDesigner_Name) { $Substance3dDesigner_Name[0].name } else { "Adobe Substance 3D Designer" }
 $Substance3dDesigner_WorkingDirectory = $Substance3dDesigner_TargetPath + $Substance3dDesigner_Name
 $Substance3dDesigner_WorkingDirectoryAlt = $Substance3dDesigner_WorkingDirectory + "\Support Files"
 $Substance3dDesigner_WorkingDirectoryAlt2 = $Substance3dDesigner_WorkingDirectoryAlt + "\Contents\Windows"
@@ -1885,8 +1885,8 @@ $Substance3dDesigner_TargetPathAlt = $Substance3dDesigner_WorkingDirectoryAlt + 
 $Substance3dDesigner_TargetPathAlt2 = $Substance3dDesigner_WorkingDirectoryAlt2 + "\Adobe Substance 3D Designer.exe"
 $Substance3dDesigner_TargetPath = if (Test-Path -Path $Substance3dDesigner_TargetPath -PathType leaf) { $Substance3dDesigner_TargetPath } elseif (Test-Path -Path $Substance3dDesigner_TargetPathAlt -PathType leaf) { $Substance3dDesigner_TargetPathAlt } else { $Substance3dDesigner_TargetPathAlt2 }
 $Substance3dDesigner_Beta_TargetPath = "${env:ProgramFiles}\Adobe\"
-$Substance3dDesigner_Beta_Name = if (Test-Path -Path $Substance3dDesigner_Beta_TargetPath) { Get-ChildItem -Directory -Path $Substance3dDesigner_Beta_TargetPath | Where-Object { $_.Name -match '^.*Substance 3D Designer.*\(Beta\)$' } | Sort-Object -Property LastWriteTime -Top 1 }
-$Substance3dDesigner_Beta_Name = if ($Substance3dDesigner_Beta_Name) { $Substance3dDesigner_Beta_Name.name } else { "Adobe Substance 3D Designer (Beta)" }
+$Substance3dDesigner_Beta_Name = if (Test-Path -Path $Substance3dDesigner_Beta_TargetPath) { Get-ChildItem -Directory -Path $Substance3dDesigner_Beta_TargetPath | Where-Object { $_.Name -match '^.*Substance 3D Designer.*\(Beta\)$' } | Sort-Object -Property LastWriteTime }
+$Substance3dDesigner_Beta_Name = if ($Substance3dDesigner_Beta_Name) { $Substance3dDesigner_Beta_Name[0].name } else { "Adobe Substance 3D Designer (Beta)" }
 $Substance3dDesigner_Beta_WorkingDirectory = $Substance3dDesigner_Beta_TargetPath + $Substance3dDesigner_Beta_Name
 $Substance3dDesigner_Beta_WorkingDirectoryAlt = $Substance3dDesigner_Beta_WorkingDirectory + "\Support Files"
 $Substance3dDesigner_Beta_WorkingDirectoryAlt2 = $Substance3dDesigner_Beta_WorkingDirectoryAlt + "\Contents\Windows"
@@ -1901,8 +1901,8 @@ $Substance3dDesigner_Beta_TargetPath = if (Test-Path -Path $Substance3dDesigner_
   elseif (Test-Path -Path $Substance3dDesigner_Beta_TargetPath -PathType leaf) { $Substance3dDesigner_Beta_TargetPath } elseif (Test-Path -Path $Substance3dDesigner_Beta_TargetPathAlt -PathType leaf) { $Substance3dDesigner_Beta_TargetPathAlt } else { $Substance3dDesigner_Beta_TargetPathAlt2 }
 # Adobe Substance 3D Modeler
 $Substance3dModeler_TargetPath = "${env:ProgramFiles}\Adobe\"
-$Substance3dModeler_Name = if (Test-Path -Path $Substance3dModeler_TargetPath) { Get-ChildItem -Directory -Path $Substance3dModeler_TargetPath | Where-Object { $_.Name -match '^.*Substance 3D Modeler(?!.*\(Beta\)$)' } | Sort-Object -Property LastWriteTime -Top 1 }
-$Substance3dModeler_Name = if ($Substance3dModeler_Name) { $Substance3dModeler_Name.name } else { "Adobe Substance 3D Modeler" }
+$Substance3dModeler_Name = if (Test-Path -Path $Substance3dModeler_TargetPath) { Get-ChildItem -Directory -Path $Substance3dModeler_TargetPath | Where-Object { $_.Name -match '^.*Substance 3D Modeler(?!.*\(Beta\)$)' } | Sort-Object -Property LastWriteTime }
+$Substance3dModeler_Name = if ($Substance3dModeler_Name) { $Substance3dModeler_Name[0].name } else { "Adobe Substance 3D Modeler" }
 $Substance3dModeler_WorkingDirectory = $Substance3dModeler_TargetPath + $Substance3dModeler_Name
 $Substance3dModeler_WorkingDirectoryAlt = $Substance3dModeler_WorkingDirectory + "\Support Files"
 $Substance3dModeler_WorkingDirectoryAlt2 = $Substance3dModeler_WorkingDirectoryAlt + "\Contents\Windows"
@@ -1911,8 +1911,8 @@ $Substance3dModeler_TargetPathAlt = $Substance3dModeler_WorkingDirectoryAlt + "\
 $Substance3dModeler_TargetPathAlt2 = $Substance3dModeler_WorkingDirectoryAlt2 + "\Adobe Substance 3D Modeler.exe"
 $Substance3dModeler_TargetPath = if (Test-Path -Path $Substance3dModeler_TargetPath -PathType leaf) { $Substance3dModeler_TargetPath } elseif (Test-Path -Path $Substance3dModeler_TargetPathAlt -PathType leaf) { $Substance3dModeler_TargetPathAlt } else { $Substance3dModeler_TargetPathAlt2 }
 $Substance3dModeler_Beta_TargetPath = "${env:ProgramFiles}\Adobe\"
-$Substance3dModeler_Beta_Name = if (Test-Path -Path $Substance3dModeler_Beta_TargetPath) { Get-ChildItem -Directory -Path $Substance3dModeler_Beta_TargetPath | Where-Object { $_.Name -match '^.*Substance 3D Modeler.*\(Beta\)$' } | Sort-Object -Property LastWriteTime -Top 1 }
-$Substance3dModeler_Beta_Name = if ($Substance3dModeler_Beta_Name) { $Substance3dModeler_Beta_Name.name } else { "Adobe Substance 3D Modeler (Beta)" }
+$Substance3dModeler_Beta_Name = if (Test-Path -Path $Substance3dModeler_Beta_TargetPath) { Get-ChildItem -Directory -Path $Substance3dModeler_Beta_TargetPath | Where-Object { $_.Name -match '^.*Substance 3D Modeler.*\(Beta\)$' } | Sort-Object -Property LastWriteTime }
+$Substance3dModeler_Beta_Name = if ($Substance3dModeler_Beta_Name) { $Substance3dModeler_Beta_Name[0].name } else { "Adobe Substance 3D Modeler (Beta)" }
 $Substance3dModeler_Beta_WorkingDirectory = $Substance3dModeler_Beta_TargetPath + $Substance3dModeler_Beta_Name
 $Substance3dModeler_Beta_WorkingDirectoryAlt = $Substance3dModeler_Beta_WorkingDirectory + "\Support Files"
 $Substance3dModeler_Beta_WorkingDirectoryAlt2 = $Substance3dModeler_Beta_WorkingDirectoryAlt + "\Contents\Windows"
@@ -1927,8 +1927,8 @@ $Substance3dModeler_Beta_TargetPath = if (Test-Path -Path $Substance3dModeler_Be
   elseif (Test-Path -Path $Substance3dModeler_Beta_TargetPathAlt -PathType leaf) { $Substance3dModeler_Beta_TargetPathAlt } else { $Substance3dModeler_Beta_TargetPathAlt2 }
 # Adobe Substance 3D Painter
 $Substance3dPainter_TargetPath = "${env:ProgramFiles}\Adobe\"
-$Substance3dPainter_Name = if (Test-Path -Path $Substance3dPainter_TargetPath) { Get-ChildItem -Directory -Path $Substance3dPainter_TargetPath | Where-Object { $_.Name -match '^.*Substance 3D Painter(?!.*\(Beta\)$)' } | Sort-Object -Property LastWriteTime -Top 1 }
-$Substance3dPainter_Name = if ($Substance3dPainter_Name) { $Substance3dPainter_Name.name } else { "Adobe Substance 3D Painter" }
+$Substance3dPainter_Name = if (Test-Path -Path $Substance3dPainter_TargetPath) { Get-ChildItem -Directory -Path $Substance3dPainter_TargetPath | Where-Object { $_.Name -match '^.*Substance 3D Painter(?!.*\(Beta\)$)' } | Sort-Object -Property LastWriteTime }
+$Substance3dPainter_Name = if ($Substance3dPainter_Name) { $Substance3dPainter_Name[0].name } else { "Adobe Substance 3D Painter" }
 $Substance3dPainter_WorkingDirectory = $Substance3dPainter_TargetPath + $Substance3dPainter_Name
 $Substance3dPainter_WorkingDirectoryAlt = $Substance3dPainter_WorkingDirectory + "\Support Files"
 $Substance3dPainter_WorkingDirectoryAlt2 = $Substance3dPainter_WorkingDirectoryAlt + "\Contents\Windows"
@@ -1937,8 +1937,8 @@ $Substance3dPainter_TargetPathAlt = $Substance3dPainter_WorkingDirectoryAlt + "\
 $Substance3dPainter_TargetPathAlt2 = $Substance3dPainter_WorkingDirectoryAlt2 + "\Adobe Substance 3D Painter.exe"
 $Substance3dPainter_TargetPath = if (Test-Path -Path $Substance3dPainter_TargetPath -PathType leaf) { $Substance3dPainter_TargetPath } elseif (Test-Path -Path $Substance3dPainter_TargetPathAlt -PathType leaf) { $Substance3dPainter_TargetPathAlt } else { $Substance3dPainter_TargetPathAlt2 }
 $Substance3dPainter_Beta_TargetPath = "${env:ProgramFiles}\Adobe\"
-$Substance3dPainter_Beta_Name = if (Test-Path -Path $Substance3dPainter_Beta_TargetPath) { Get-ChildItem -Directory -Path $Substance3dPainter_Beta_TargetPath | Where-Object { $_.Name -match '^.*Substance 3D Painter.*\(Beta\)$' } | Sort-Object -Property LastWriteTime -Top 1 }
-$Substance3dPainter_Beta_Name = if ($Substance3dPainter_Beta_Name) { $Substance3dPainter_Beta_Name.name } else { "Adobe Substance 3D Painter (Beta)" }
+$Substance3dPainter_Beta_Name = if (Test-Path -Path $Substance3dPainter_Beta_TargetPath) { Get-ChildItem -Directory -Path $Substance3dPainter_Beta_TargetPath | Where-Object { $_.Name -match '^.*Substance 3D Painter.*\(Beta\)$' } | Sort-Object -Property LastWriteTime }
+$Substance3dPainter_Beta_Name = if ($Substance3dPainter_Beta_Name) { $Substance3dPainter_Beta_Name[0].name } else { "Adobe Substance 3D Painter (Beta)" }
 $Substance3dPainter_Beta_WorkingDirectory = $Substance3dPainter_Beta_TargetPath + $Substance3dPainter_Beta_Name
 $Substance3dPainter_Beta_WorkingDirectoryAlt = $Substance3dPainter_Beta_WorkingDirectory + "\Support Files"
 $Substance3dPainter_Beta_WorkingDirectoryAlt2 = $Substance3dPainter_Beta_WorkingDirectoryAlt + "\Contents\Windows"
@@ -1953,8 +1953,8 @@ $Substance3dPainter_Beta_TargetPath = if (Test-Path -Path $Substance3dPainter_Be
   elseif (Test-Path -Path $Substance3dPainter_Beta_TargetPathAlt -PathType leaf) { $Substance3dPainter_Beta_TargetPathAlt } else { $Substance3dPainter_Beta_TargetPathAlt2 }
 # Adobe Substance 3D Sampler
 $Substance3dSampler_TargetPath = "${env:ProgramFiles}\Adobe\"
-$Substance3dSampler_Name = if (Test-Path -Path $Substance3dSampler_TargetPath) { Get-ChildItem -Directory -Path $Substance3dSampler_TargetPath | Where-Object { $_.Name -match '^.*Substance 3D Sampler(?!.*\(Beta\)$)' } | Sort-Object -Property LastWriteTime -Top 1 }
-$Substance3dSampler_Name = if ($Substance3dSampler_Name) { $Substance3dSampler_Name.name } else { "Adobe Substance 3D Sampler" }
+$Substance3dSampler_Name = if (Test-Path -Path $Substance3dSampler_TargetPath) { Get-ChildItem -Directory -Path $Substance3dSampler_TargetPath | Where-Object { $_.Name -match '^.*Substance 3D Sampler(?!.*\(Beta\)$)' } | Sort-Object -Property LastWriteTime }
+$Substance3dSampler_Name = if ($Substance3dSampler_Name) { $Substance3dSampler_Name[0].name } else { "Adobe Substance 3D Sampler" }
 $Substance3dSampler_WorkingDirectory = $Substance3dSampler_TargetPath + $Substance3dSampler_Name
 $Substance3dSampler_WorkingDirectoryAlt = $Substance3dSampler_WorkingDirectory + "\Support Files"
 $Substance3dSampler_WorkingDirectoryAlt2 = $Substance3dSampler_WorkingDirectoryAlt + "\Contents\Windows"
@@ -1963,8 +1963,8 @@ $Substance3dSampler_TargetPathAlt = $Substance3dSampler_WorkingDirectoryAlt + "\
 $Substance3dSampler_TargetPathAlt2 = $Substance3dSampler_WorkingDirectoryAlt2 + "\Adobe Substance 3D Sampler.exe"
 $Substance3dSampler_TargetPath = if (Test-Path -Path $Substance3dSampler_TargetPath -PathType leaf) { $Substance3dSampler_TargetPath } elseif (Test-Path -Path $Substance3dSampler_TargetPathAlt -PathType leaf) { $Substance3dSampler_TargetPathAlt } else { $Substance3dSampler_TargetPathAlt2 }
 $Substance3dSampler_Beta_TargetPath = "${env:ProgramFiles}\Adobe\"
-$Substance3dSampler_Beta_Name = if (Test-Path -Path $Substance3dSampler_Beta_TargetPath) { Get-ChildItem -Directory -Path $Substance3dSampler_Beta_TargetPath | Where-Object { $_.Name -match '^.*Substance 3D Sampler.*\(Beta\)$' } | Sort-Object -Property LastWriteTime -Top 1 }
-$Substance3dSampler_Beta_Name = if ($Substance3dSampler_Beta_Name) { $Substance3dSampler_Beta_Name.name } else { "Adobe Substance 3D Sampler (Beta)" }
+$Substance3dSampler_Beta_Name = if (Test-Path -Path $Substance3dSampler_Beta_TargetPath) { Get-ChildItem -Directory -Path $Substance3dSampler_Beta_TargetPath | Where-Object { $_.Name -match '^.*Substance 3D Sampler.*\(Beta\)$' } | Sort-Object -Property LastWriteTime }
+$Substance3dSampler_Beta_Name = if ($Substance3dSampler_Beta_Name) { $Substance3dSampler_Beta_Name[0].name } else { "Adobe Substance 3D Sampler (Beta)" }
 $Substance3dSampler_Beta_WorkingDirectory = $Substance3dSampler_Beta_TargetPath + $Substance3dSampler_Beta_Name
 $Substance3dSampler_Beta_WorkingDirectoryAlt = $Substance3dSampler_Beta_WorkingDirectory + "\Support Files"
 $Substance3dSampler_Beta_WorkingDirectoryAlt2 = $Substance3dSampler_Beta_WorkingDirectoryAlt + "\Contents\Windows"
@@ -1979,8 +1979,8 @@ $Substance3dSampler_Beta_TargetPath = if (Test-Path -Path $Substance3dSampler_Be
   elseif (Test-Path -Path $Substance3dSampler_Beta_TargetPathAlt -PathType leaf) { $Substance3dSampler_Beta_TargetPathAlt } else { $Substance3dSampler_Beta_TargetPathAlt2 }
 # Adobe Substance 3D Stager
 $Substance3dStager_TargetPath = "${env:ProgramFiles}\Adobe\"
-$Substance3dStager_Name = if (Test-Path -Path $Substance3dStager_TargetPath) { Get-ChildItem -Directory -Path $Substance3dStager_TargetPath | Where-Object { $_.Name -match '^.*Substance 3D Stager(?!.*\(Beta\)$)' } | Sort-Object -Property LastWriteTime -Top 1 }
-$Substance3dStager_Name = if ($Substance3dStager_Name) { $Substance3dStager_Name.name } else { "Adobe Substance 3D Stager" }
+$Substance3dStager_Name = if (Test-Path -Path $Substance3dStager_TargetPath) { Get-ChildItem -Directory -Path $Substance3dStager_TargetPath | Where-Object { $_.Name -match '^.*Substance 3D Stager(?!.*\(Beta\)$)' } | Sort-Object -Property LastWriteTime }
+$Substance3dStager_Name = if ($Substance3dStager_Name) { $Substance3dStager_Name[0].name } else { "Adobe Substance 3D Stager" }
 $Substance3dStager_WorkingDirectory = $Substance3dStager_TargetPath + $Substance3dStager_Name
 $Substance3dStager_WorkingDirectoryAlt = $Substance3dStager_WorkingDirectory + "\Support Files"
 $Substance3dStager_WorkingDirectoryAlt2 = $Substance3dStager_WorkingDirectoryAlt + "\Contents\Windows"
@@ -1989,8 +1989,8 @@ $Substance3dStager_TargetPathAlt = $Substance3dStager_WorkingDirectoryAlt + "\Ad
 $Substance3dStager_TargetPathAlt2 = $Substance3dStager_WorkingDirectoryAlt2 + "\Adobe Substance 3D Stager.exe"
 $Substance3dStager_TargetPath = if (Test-Path -Path $Substance3dStager_TargetPath -PathType leaf) { $Substance3dStager_TargetPath } elseif (Test-Path -Path $Substance3dStager_TargetPathAlt -PathType leaf) { $Substance3dStager_TargetPathAlt } else { $Substance3dStager_TargetPathAlt2 }
 $Substance3dStager_Beta_TargetPath = "${env:ProgramFiles}\Adobe\"
-$Substance3dStager_Beta_Name = if (Test-Path -Path $Substance3dStager_Beta_TargetPath) { Get-ChildItem -Directory -Path $Substance3dStager_Beta_TargetPath | Where-Object { $_.Name -match '^.*Substance 3D Stager.*\(Beta\)$' } | Sort-Object -Property LastWriteTime -Top 1 }
-$Substance3dStager_Beta_Name = if ($Substance3dStager_Beta_Name) { $Substance3dStager_Beta_Name.name } else { "Adobe Substance 3D Stager (Beta)" }
+$Substance3dStager_Beta_Name = if (Test-Path -Path $Substance3dStager_Beta_TargetPath) { Get-ChildItem -Directory -Path $Substance3dStager_Beta_TargetPath | Where-Object { $_.Name -match '^.*Substance 3D Stager.*\(Beta\)$' } | Sort-Object -Property LastWriteTime }
+$Substance3dStager_Beta_Name = if ($Substance3dStager_Beta_Name) { $Substance3dStager_Beta_Name[0].name } else { "Adobe Substance 3D Stager (Beta)" }
 $Substance3dStager_Beta_WorkingDirectory = $Substance3dStager_Beta_TargetPath + $Substance3dStager_Beta_Name
 $Substance3dStager_Beta_WorkingDirectoryAlt = $Substance3dStager_Beta_WorkingDirectory + "\Support Files"
 $Substance3dStager_Beta_WorkingDirectoryAlt2 = $Substance3dStager_Beta_WorkingDirectoryAlt + "\Contents\Windows"
@@ -2014,54 +2014,54 @@ $PostComparer2023_EXE = "${env:ProgramFiles}\Autodesk\Manufacturing Post Process
 $PostComparer2023_MakeCurrent_Arguments = "add `"HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\PostComparer.exe`" /f /ve /d `"${PostComparer2023_EXE}`""
 $PostComparer2023_MakeCurrent_TargetPath = "${env:windir}\System32\" + $(if (Test-Path -Path $PostComparer2023_EXE -PathType leaf) { "reg.exe" } else { "${NOT_INSTALLED}.exe" })
 $EAGLE_WorkingDirectory = "${env:SystemDrive}\" # "C:\EAGLE 9.6.2"
-$EAGLE_FindFolder = Get-ChildItem -Directory -Path $EAGLE_WorkingDirectory | Where-Object { $_.Name -match '^EAGLE [.0-9]+$' } | Sort-Object -Property LastWriteTime -Top 1
-$EAGLE_WorkingDirectory += if ($EAGLE_FindFolder) { $EAGLE_FindFolder } else { $NOT_INSTALLED }
+$EAGLE_FindFolder = Get-ChildItem -Directory -Path $EAGLE_WorkingDirectory | Where-Object { $_.Name -match '^EAGLE [.0-9]+$' } | Sort-Object -Property LastWriteTime
+$EAGLE_WorkingDirectory += if ($EAGLE_FindFolder) { $EAGLE_FindFolder[0].name } else { $NOT_INSTALLED }
 $EAGLE_TargetPath = "${EAGLE_WorkingDirectory}\eagle.exe"
 # GIMP
 $GIMP_TargetPath = "${env:ProgramFiles}\"
-$GIMP_FindFolder = Get-ChildItem -Directory -Path $GIMP_TargetPath | Where-Object { $_.Name -match '^GIMP' } | Sort-Object -Property LastWriteTime -Top 1
-$GIMP_FindFolder = if ($GIMP_FindFolder) { $GIMP_FindFolder.name } else { $NOT_INSTALLED }
+$GIMP_FindFolder = Get-ChildItem -Directory -Path $GIMP_TargetPath | Where-Object { $_.Name -match '^GIMP' } | Sort-Object -Property LastWriteTime
+$GIMP_FindFolder = if ($GIMP_FindFolder) { $GIMP_FindFolder[0].name } else { $NOT_INSTALLED }
 $GIMP_TargetPath += "${GIMP_FindFolder}\bin\"
-$GIMP_FindExe = if (Test-Path -Path $GIMP_TargetPath) { Get-ChildItem -File -Path $GIMP_TargetPath | Where-Object { $_.Name -match '^gimp\-[.0-9]+exe$' } | Sort-Object -Property LastWriteTime -Top 1 }
-$GIMP_FindExe = if ($GIMP_FindExe) { $GIMP_FindExe.name } else { "${NOT_INSTALLED}.exe" }
+$GIMP_FindExe = if (Test-Path -Path $GIMP_TargetPath) { Get-ChildItem -File -Path $GIMP_TargetPath | Where-Object { $_.Name -match '^gimp\-[.0-9]+exe$' } | Sort-Object -Property LastWriteTime }
+$GIMP_FindExe = if ($GIMP_FindExe) { $GIMP_FindExe[0].name } else { "${NOT_INSTALLED}.exe" }
 $GIMP_TargetPath += $GIMP_FindExe
 $GIMP_32bit_TargetPath = "${env:ProgramFiles(x86)}\"
-$GIMP_32bit_FindFolder = Get-ChildItem -Directory -Path $GIMP_32bit_TargetPath | Where-Object { $_.Name -match '^GIMP' } | Sort-Object -Property LastWriteTime -Top 1
-$GIMP_32bit_FindFolder = if ($GIMP_32bit_FindFolder) { $GIMP_32bit_FindFolder.name } else { $NOT_INSTALLED }
+$GIMP_32bit_FindFolder = Get-ChildItem -Directory -Path $GIMP_32bit_TargetPath | Where-Object { $_.Name -match '^GIMP' } | Sort-Object -Property LastWriteTime
+$GIMP_32bit_FindFolder = if ($GIMP_32bit_FindFolder) { $GIMP_32bit_FindFolder[0].name } else { $NOT_INSTALLED }
 $GIMP_32bit_TargetPath += "${GIMP_32bit_FindFolder}\bin\"
-$GIMP_32bit_FindExe = if (Test-Path -Path $GIMP_32bit_TargetPath) { Get-ChildItem -File -Path $GIMP_32bit_TargetPath | Where-Object { $_.Name -match '^gimp\-[.0-9]+exe$' } | Sort-Object -Property LastWriteTime -Top 1 }
-$GIMP_32bit_FindExe = if ($GIMP_32bit_FindExe) { $GIMP_32bit_FindExe.name } else { "${NOT_INSTALLED}.exe" }
+$GIMP_32bit_FindExe = if (Test-Path -Path $GIMP_32bit_TargetPath) { Get-ChildItem -File -Path $GIMP_32bit_TargetPath | Where-Object { $_.Name -match '^gimp\-[.0-9]+exe$' } | Sort-Object -Property LastWriteTime }
+$GIMP_32bit_FindExe = if ($GIMP_32bit_FindExe) { $GIMP_32bit_FindExe[0].name } else { "${NOT_INSTALLED}.exe" }
 $GIMP_32bit_TargetPath += $GIMP_32bit_FindExe
 # Google
 $GoogleDrive_TargetPath = "${env:ProgramFiles}\Google\Drive File Stream\"
-$GoogleDrive_Version = if (Test-Path -Path $GoogleDrive_TargetPath) { Get-ChildItem -Directory -Path $GoogleDrive_TargetPath | Where-Object { $_.Name -match '^[.0-9]+$' } | Sort-Object -Property LastWriteTime -Top 1 }
-$GoogleDrive_Version = if ($GoogleDrive_Version) { $GoogleDrive_Version.name } else { $NOT_INSTALLED }
+$GoogleDrive_Version = if (Test-Path -Path $GoogleDrive_TargetPath) { Get-ChildItem -Directory -Path $GoogleDrive_TargetPath | Where-Object { $_.Name -match '^[.0-9]+$' } | Sort-Object -Property LastWriteTime }
+$GoogleDrive_Version = if ($GoogleDrive_Version) { $GoogleDrive_Version[0].name } else { $NOT_INSTALLED }
 $GoogleDrive_TargetPath += "${GoogleDrive_Version}\GoogleDriveFS.exe"
 $GoogleDrive_32bit_TargetPath = "${env:ProgramFiles(x86)}\Google\Drive File Stream\"
-$GoogleDrive_32bit_Version = if (Test-Path -Path $GoogleDrive_32bit_TargetPath) { Get-ChildItem -Directory -Path $GoogleDrive_32bit_TargetPath | Where-Object { $_.Name -match '^[.0-9]+$' } | Sort-Object -Property LastWriteTime -Top 1 }
-$GoogleDrive_32bit_Version = if ($GoogleDrive_32bit_Version) { $GoogleDrive_32bit_Version.name } else { $NOT_INSTALLED }
+$GoogleDrive_32bit_Version = if (Test-Path -Path $GoogleDrive_32bit_TargetPath) { Get-ChildItem -Directory -Path $GoogleDrive_32bit_TargetPath | Where-Object { $_.Name -match '^[.0-9]+$' } | Sort-Object -Property LastWriteTime }
+$GoogleDrive_32bit_Version = if ($GoogleDrive_32bit_Version) { $GoogleDrive_32bit_Version[0].name } else { $NOT_INSTALLED }
 $GoogleDrive_32bit_TargetPath += "${GoogleDrive_32bit_Version}\GoogleDriveFS.exe"
 $GoogleOneVPN_TargetPath = "${env:ProgramFiles}\Google\VPN by Google One\"
-$GoogleOneVPN_Version = if (Test-Path -Path $GoogleOneVPN_TargetPath) { Get-ChildItem -Directory -Path $GoogleOneVPN_TargetPath | Where-Object { $_.Name -match '^[.0-9]+$' } | Sort-Object -Property LastWriteTime -Top 1 }
-$GoogleOneVPN_Version = if ($GoogleOneVPN_Version) { $GoogleOneVPN_Version.name } else { $NOT_INSTALLED }
+$GoogleOneVPN_Version = if (Test-Path -Path $GoogleOneVPN_TargetPath) { Get-ChildItem -Directory -Path $GoogleOneVPN_TargetPath | Where-Object { $_.Name -match '^[.0-9]+$' } | Sort-Object -Property LastWriteTime }
+$GoogleOneVPN_Version = if ($GoogleOneVPN_Version) { $GoogleOneVPN_Version[0].name } else { $NOT_INSTALLED }
 $GoogleOneVPN_TargetPath += "${GoogleOneVPN_Version}\googleone.exe"
 $GoogleOneVPN_32bit_TargetPath = "${env:ProgramFiles}\Google\VPN by Google One\"
-$GoogleOneVPN_32bit_Version = if (Test-Path -Path $GoogleOneVPN_32bit_TargetPath) { Get-ChildItem -Directory -Path $GoogleOneVPN_32bit_TargetPath | Where-Object { $_.Name -match '^[.0-9]+$' } | Sort-Object -Property LastWriteTime -Top 1 }
-$GoogleOneVPN_32bit_Version = if ($GoogleOneVPN_32bit_Version) { $GoogleOneVPN_32bit_Version.name } else { $NOT_INSTALLED }
+$GoogleOneVPN_32bit_Version = if (Test-Path -Path $GoogleOneVPN_32bit_TargetPath) { Get-ChildItem -Directory -Path $GoogleOneVPN_32bit_TargetPath | Where-Object { $_.Name -match '^[.0-9]+$' } | Sort-Object -Property LastWriteTime }
+$GoogleOneVPN_32bit_Version = if ($GoogleOneVPN_32bit_Version) { $GoogleOneVPN_32bit_Version[0].name } else { $NOT_INSTALLED }
 $GoogleOneVPN_32bit_TargetPath += "${GoogleOneVPN_32bit_Version}\googleone.exe"
 # KeePass
 $KeePass_WorkingDirectory = "${env:ProgramFiles}\"
-$KeePass_FindFolder = Get-ChildItem -Directory -Path $KeePass_WorkingDirectory | Where-Object { $_.Name -match '^KeePass Password Safe' } | Sort-Object -Property LastWriteTime -Top 1
-$KeePass_FindFolder = if ($KeePass_FindFolder) { $KeePass_FindFolder.name } else { $NOT_INSTALLED }
+$KeePass_FindFolder = Get-ChildItem -Directory -Path $KeePass_WorkingDirectory | Where-Object { $_.Name -match '^KeePass Password Safe' } | Sort-Object -Property LastWriteTime
+$KeePass_FindFolder = if ($KeePass_FindFolder) { $KeePass_FindFolder[0].name } else { $NOT_INSTALLED }
 $KeePass_TargetPath = "${KeePass_FindFolder}\KeePass.exe"
 $KeePass_32bit_WorkingDirectory = "${env:ProgramFiles(x86)}\"
-$KeePass_32bit_FindFolder = Get-ChildItem -Directory -Path $KeePass_32bit_WorkingDirectory | Where-Object { $_.Name -match '^KeePass Password Safe' } | Sort-Object -Property LastWriteTime -Top 1
-$KeePass_32bit_FindFolder = if ($KeePass_32bit_FindFolder) { $KeePass_32bit_FindFolder.name } else { $NOT_INSTALLED }
+$KeePass_32bit_FindFolder = Get-ChildItem -Directory -Path $KeePass_32bit_WorkingDirectory | Where-Object { $_.Name -match '^KeePass Password Safe' } | Sort-Object -Property LastWriteTime
+$KeePass_32bit_FindFolder = if ($KeePass_32bit_FindFolder) { $KeePass_32bit_FindFolder[0].name } else { $NOT_INSTALLED }
 $KeePass_32bit_TargetPath = "${KeePass_32bit_FindFolder}\KeePass.exe"
 # Maxon
 $MaxonCinema4D_WorkingDirectory = "${env:ProgramFiles}\"
-$MaxonCinema4D_FindFolder = Get-ChildItem -Directory -Path $MaxonCinema4D_WorkingDirectory | Where-Object { $_.Name -match '^Maxon Cinema 4D' } | Sort-Object -Property LastWriteTime -Top 1
-$MaxonCinema4D_FindFolder = if ($MaxonCinema4D_FindFolder) { $MaxonCinema4D_FindFolder.name } else { $NOT_INSTALLED }
+$MaxonCinema4D_FindFolder = Get-ChildItem -Directory -Path $MaxonCinema4D_WorkingDirectory | Where-Object { $_.Name -match '^Maxon Cinema 4D' } | Sort-Object -Property LastWriteTime
+$MaxonCinema4D_FindFolder = if ($MaxonCinema4D_FindFolder) { $MaxonCinema4D_FindFolder[0].name } else { $NOT_INSTALLED }
 $MaxonCinema4D_Version = $MaxonCinema4D_FindFolder | Select-String -pattern "\d\d\d\d$" -All
 $MaxonCinema4D_Version = if ($MaxonCinema4D_Version) { $MaxonCinema4D_Version.Matches[-1].value } else { $NOT_INSTALLED }
 $MaxonCinema4D_WorkingDirectory += $MaxonCinema4D_FindFolder
@@ -4907,22 +4907,22 @@ if ($Users -And ($Users[0].length -eq 1)) { $Users = @("$Users") }
 
 # Adobe
 $AdobeDigitalEditions_TargetPath = "${env:ProgramFiles}\Adobe\"
-$AdobeDigitalEditions_FindFolders = if (Test-Path -Path $AdobeDigitalEditions_TargetPath) { (Get-ChildItem -Directory -Path $AdobeDigitalEditions_TargetPath | Where-Object { $_.Name -match '^Adobe Digital Editions' } | Sort-Object -Property LastWriteTime -Top 1) }
-$AdobeDigitalEditions_FindFolder = if ($AdobeDigitalEditions_FindFolders) { $AdobeDigitalEditions_FindFolders.name } else { $NOT_INSTALLED }
+$AdobeDigitalEditions_FindFolders = if (Test-Path -Path $AdobeDigitalEditions_TargetPath) { (Get-ChildItem -Directory -Path $AdobeDigitalEditions_TargetPath | Where-Object { $_.Name -match '^Adobe Digital Editions' } | Sort-Object -Property LastWriteTime) }
+$AdobeDigitalEditions_FindFolder = if ($AdobeDigitalEditions_FindFolders) { $AdobeDigitalEditions_FindFolders[0].name } else { $NOT_INSTALLED }
 $AdobeDigitalEditions_TargetPath += "${AdobeDigitalEditions_FindFolder}\DigitalEditions.exe"
 $AdobeDigitalEditions_32bit_TargetPath = "${env:ProgramFiles(x86)}\Adobe\"
-$AdobeDigitalEditions_32bit_FindFolders = if (Test-Path -Path $AdobeDigitalEditions_32bit_TargetPath) { (Get-ChildItem -Directory -Path $AdobeDigitalEditions_32bit_TargetPath | Where-Object { $_.Name -match '^Adobe Digital Editions' } | Sort-Object -Property LastWriteTime -Top 1) }
-$AdobeDigitalEditions_32bit_FindFolder = if ($AdobeDigitalEditions_32bit_FindFolders) { $AdobeDigitalEditions_32bit_FindFolders.name } else { $NOT_INSTALLED }
+$AdobeDigitalEditions_32bit_FindFolders = if (Test-Path -Path $AdobeDigitalEditions_32bit_TargetPath) { (Get-ChildItem -Directory -Path $AdobeDigitalEditions_32bit_TargetPath | Where-Object { $_.Name -match '^Adobe Digital Editions' } | Sort-Object -Property LastWriteTime) }
+$AdobeDigitalEditions_32bit_FindFolder = if ($AdobeDigitalEditions_32bit_FindFolders) { $AdobeDigitalEditions_32bit_FindFolders[0].name } else { $NOT_INSTALLED }
 $AdobeDigitalEditions_32bit_TargetPath += "${AdobeDigitalEditions_32bit_FindFolder}\DigitalEditions.exe"
 # Blender
 $Blender_TargetPath = "${env:ProgramFiles}\Blender Foundation\"
-$Blender_FindFolder = if (Test-Path -Path $Blender_TargetPath) { Get-ChildItem -Directory -Path $Blender_TargetPath | Where-Object { $_.Name -match '^Blender' } | Sort-Object -Property LastWriteTime -Top 1 }
-$Blender_FindFolder = if ($Blender_FindFolder) { $Blender_FindFolder.name } else { $NOT_INSTALLED }
+$Blender_FindFolder = if (Test-Path -Path $Blender_TargetPath) { Get-ChildItem -Directory -Path $Blender_TargetPath | Where-Object { $_.Name -match '^Blender' } | Sort-Object -Property LastWriteTime }
+$Blender_FindFolder = if ($Blender_FindFolder) { $Blender_FindFolder[0].name } else { $NOT_INSTALLED }
 $Blender_WorkingDirectory = $Blender_TargetPath + "${Blender_FindFolder}\"
 $Blender_TargetPath = $Blender_WorkingDirectory + "blender-launcher.exe"
 $Blender_32bit_TargetPath = "${env:ProgramFiles(x86)}\Blender Foundation\"
-$Blender_32bit_FindFolder = if (Test-Path -Path $Blender_32bit_TargetPath) { Get-ChildItem -Directory -Path $Blender_32bit_TargetPath | Where-Object { $_.Name -match '^Blender' } | Sort-Object -Property LastWriteTime -Top 1 }
-$Blender_32bit_FindFolder = if ($Blender_32bit_FindFolder) { $Blender_32bit_FindFolder.name } else { $NOT_INSTALLED }
+$Blender_32bit_FindFolder = if (Test-Path -Path $Blender_32bit_TargetPath) { Get-ChildItem -Directory -Path $Blender_32bit_TargetPath | Where-Object { $_.Name -match '^Blender' } | Sort-Object -Property LastWriteTime }
+$Blender_32bit_FindFolder = if ($Blender_32bit_FindFolder) { $Blender_32bit_FindFolder[0].name } else { $NOT_INSTALLED }
 $Blender_32bit_WorkingDirectory = $Blender_32bit_TargetPath + "${Blender_32bit_FindFolder}\"
 $Blender_32bit_TargetPath = $Blender_32bit_WorkingDirectory + "blender-launcher.exe"
 
@@ -4954,8 +4954,8 @@ for ($i = 0; $i -lt $Users.length; $i++) {
 
   # 1Password
   $OnePassword_TargetPath = "${UsersAppDataLocal}\1Password\app\"
-  $OnePassword_FindFolder = if (Test-Path -Path $OnePassword_TargetPath) { Get-ChildItem -Directory -Path $OnePassword_TargetPath | Where-Object { $_.Name -match '^[.0-9]+$' } | Sort-Object -Property LastWriteTime -Top 1 }
-  $OnePassword_FindFolder = if ($OnePassword_FindFolder) { $OnePassword_FindFolder.name } else { $NOT_INSTALLED }
+  $OnePassword_FindFolder = if (Test-Path -Path $OnePassword_TargetPath) { Get-ChildItem -Directory -Path $OnePassword_TargetPath | Where-Object { $_.Name -match '^[.0-9]+$' } | Sort-Object -Property LastWriteTime }
+  $OnePassword_FindFolder = if ($OnePassword_FindFolder) { $OnePassword_FindFolder[0].name } else { $NOT_INSTALLED }
   $OnePassword_TargetPath += "${OnePassword_FindFolder}\1Password.exe"
   # Adobe
   $AdobeDigitalEditions_WorkingDirectory = "${UsersAppDataLocal}\Temp"
@@ -4977,14 +4977,14 @@ for ($i = 0; $i -lt $Users.length; $i++) {
   # Discord
   $Discord_WorkingDirectory = "${UsersAppDataLocal}\Discord\"
   $Discord_TargetPath = $Discord_WorkingDirectory + "Update.exe"
-  $Discord_FindFolder = if (Test-Path -Path $Discord_WorkingDirectory) { Get-ChildItem -Directory -Path $Discord_WorkingDirectory | Where-Object { $_.Name -match '^app\-[.0-9]+$' } | Sort-Object -Property LastWriteTime -Top 1 }
-  $Discord_FindFolder = if ($Discord_FindFolder) { $Discord_FindFolder.name } else { $NOT_INSTALLED }
+  $Discord_FindFolder = if (Test-Path -Path $Discord_WorkingDirectory) { Get-ChildItem -Directory -Path $Discord_WorkingDirectory | Where-Object { $_.Name -match '^app\-[.0-9]+$' } | Sort-Object -Property LastWriteTime }
+  $Discord_FindFolder = if ($Discord_FindFolder) { $Discord_FindFolder[0].name } else { $NOT_INSTALLED }
   $Discord_WorkingDirectory += $Discord_FindFolder
   # GitHub
   $GitHubDesktop_WorkingDirectory = "${UsersAppDataLocal}\GitHubDesktop\"
   $GitHubDesktop_TargetPath = $GitHubDesktop_WorkingDirectory + "GitHubDesktop.exe"
-  $GitHubDesktop_FindFolder = if (Test-Path -Path $GitHubDesktop_WorkingDirectory) { Get-ChildItem -Directory -Path $GitHubDesktop_WorkingDirectory | Where-Object { $_.Name -match '^app\-[.0-9]+$' } | Sort-Object -Property LastWriteTime -Top 1 }
-  $GitHubDesktop_FindFolder = if ($GitHubDesktop_FindFolder) { $GitHubDesktop_FindFolder.name } else { $NOT_INSTALLED }
+  $GitHubDesktop_FindFolder = if (Test-Path -Path $GitHubDesktop_WorkingDirectory) { Get-ChildItem -Directory -Path $GitHubDesktop_WorkingDirectory | Where-Object { $_.Name -match '^app\-[.0-9]+$' } | Sort-Object -Property LastWriteTime }
+  $GitHubDesktop_FindFolder = if ($GitHubDesktop_FindFolder) { $GitHubDesktop_FindFolder[0].name } else { $NOT_INSTALLED }
   $GitHubDesktop_WorkingDirectory += $GitHubDesktop_FindFolder
   # GoTo
   $GoToResolveDesktopConsole_WorkingDirectory = "${aUserFolder}\GoTo\GoTo Resolve Desktop Console\"
@@ -4997,8 +4997,8 @@ for ($i = 0; $i -lt $Users.length; $i++) {
   $AzureIoTExplorer_TargetPath = if (Test-Path -Path $AzureIoTExplorerPreview_TargetPath -PathType leaf) { $AzureIoTExplorerPreview_TargetPath } else { "${UsersProgramFiles}\azure-iot-explorer\Azure IoT Explorer.exe" }
   # Python
   $Python_WorkingDirectory = "${UsersProgramFiles}\Python\"
-  $Python_FindFolder = if (Test-Path -Path $Python_WorkingDirectory) { Get-ChildItem -Directory -Path $Python_WorkingDirectory | Where-Object { $_.Name -match '^Python[.0-9]+$' } | Sort-Object -Property LastWriteTime -Top 1 }
-  $Python_FindFolder = if ($Python_FindFolder) { $Python_FindFolder.name } else { $NOT_INSTALLED }
+  $Python_FindFolder = if (Test-Path -Path $Python_WorkingDirectory) { Get-ChildItem -Directory -Path $Python_WorkingDirectory | Where-Object { $_.Name -match '^Python[.0-9]+$' } | Sort-Object -Property LastWriteTime }
+  $Python_FindFolder = if ($Python_FindFolder) { $Python_FindFolder[0].name } else { $NOT_INSTALLED }
   $Python_WorkingDirectory += "${Python_FindFolder}\"
   $PythonIDLE_TargetPath = $Python_WorkingDirectory + "Lib\idlelib\idle.pyw"
   $PythonManuals_TargetPath = $Python_WorkingDirectory + "Doc\html\index.html"
@@ -5009,8 +5009,8 @@ for ($i = 0; $i -lt $Users.length; $i++) {
   # Slack
   $Slack_WorkingDirectory = "${UsersAppDataLocal}\slack\"
   $Slack_TargetPath = $Slack_WorkingDirectory + "slack.exe"
-  $Slack_FindFolder = if (Test-Path -Path $Slack_WorkingDirectory) { Get-ChildItem -Directory -Path $Slack_WorkingDirectory | Where-Object { $_.Name -match '^app\-[.0-9]+$' } | Sort-Object -Property LastWriteTime -Top 1 }
-  $Slack_FindFolder = if ($Slack_FindFolder) { $Slack_FindFolder.name } else { $NOT_INSTALLED }
+  $Slack_FindFolder = if (Test-Path -Path $Slack_WorkingDirectory) { Get-ChildItem -Directory -Path $Slack_WorkingDirectory | Where-Object { $_.Name -match '^app\-[.0-9]+$' } | Sort-Object -Property LastWriteTime }
+  $Slack_FindFolder = if ($Slack_FindFolder) { $Slack_FindFolder[0].name } else { $NOT_INSTALLED }
   $Slack_WorkingDirectory += $Slack_FindFolder
   
   # User app names dependant on OS or app version
