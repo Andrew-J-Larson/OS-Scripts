@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Recreate Base Shortcuts (Intune) v1.0.2
+  Recreate Base Shortcuts (Intune) v1.0.4
 
   .DESCRIPTION
   This is just a wrapper script (made for Intune), to download and run the full script (bypasses the "script is too large" issue for Intune).
@@ -89,7 +89,7 @@ if ($Help.IsPresent) {
 
 # Constants
 
-Set-Variable REMOTE_SCRIPT_LOCATION -Option Constant -Value "https://github.com/TheAlienDrew/OS-Scripts/raw/master/Windows/Microsoft-Endpoint-Defender/Recreate-Base-Shortcuts-INTUNE.ps1"
+Set-Variable -Name REMOTE_SCRIPT_LOCATION -Option Constant -Value "https://github.com/TheAlienDrew/OS-Scripts/raw/master/Windows/Microsoft-Endpoint-Defender/Recreate-Base-Shortcuts-INTUNE.ps1" -ErrorAction SilentlyContinue
 
 
 
