@@ -89,7 +89,7 @@ if ($Help.IsPresent) {
 
 # Constants
 
-Set-Variable -Name REMOTE_SCRIPT_LOCATION -Option Constant -Value "https://github.com/TheAlienDrew/OS-Scripts/raw/master/Windows/Microsoft-Endpoint-Defender/Recreate-Base-Shortcuts-INTUNE.ps1" -ErrorAction SilentlyContinue
+Set-Variable -Name REMOTE_SCRIPT_LOCATION -Option Constant -Value "https://github.com/TheAlienDrew/OS-Scripts/raw/master/Windows/Microsoft-Endpoint-Defender/Recreate-Base-Shortcuts.ps1" -ErrorAction SilentlyContinue
 
 
 
