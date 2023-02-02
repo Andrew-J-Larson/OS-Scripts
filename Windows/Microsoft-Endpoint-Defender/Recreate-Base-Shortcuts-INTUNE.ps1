@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Recreate Base Shortcuts (Intune) v1.0.4
+  Recreate Base Shortcuts (Intune) v1.0.5
 
   .DESCRIPTION
   This is just a wrapper script (made for Intune), to download and run the full script (bypasses the "script is too large" issue for Intune).
