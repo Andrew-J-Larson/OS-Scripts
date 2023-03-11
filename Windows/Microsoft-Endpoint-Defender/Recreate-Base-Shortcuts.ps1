@@ -3938,6 +3938,31 @@ $sys3rdPartyAppList = @(
     WorkingDirectory = "${env:ProgramFiles(x86)}\draw.io"
     Description      = "draw.io desktop"
   },
+  # DYMO
+  @{ # it's the only install on 32-bit
+    Name             = "DYMO Connect Web Service"
+    TargetPath       = "${env:ProgramFiles}\DYMO\DYMO Connect\DYMO.WebApi.Win.Host.exe"
+    SystemLnk        = "DYMO\DYMO Connect\"
+    WorkingDirectory = "${env:ProgramFiles}\DYMO\DYMO Connect\"
+  },
+  @{ # it's the only install on 32-bit
+    Name             = "DYMO Connect"
+    TargetPath       = "${env:ProgramFiles}\DYMO\DYMO Connect\DYMOConnect.exe"
+    SystemLnk        = "DYMO\DYMO Connect\"
+    WorkingDirectory = "${env:ProgramFiles}\DYMO\DYMO Connect\"
+  },
+  @{ # it's the only install on 64-bit
+    Name             = "DYMO Connect Web Service"
+    TargetPath       = "${env:ProgramFiles(x86)}\DYMO\DYMO Connect\DYMO.WebApi.Win.Host.exe"
+    SystemLnk        = "DYMO\DYMO Connect\"
+    WorkingDirectory = "${env:ProgramFiles(x86)}\DYMO\DYMO Connect\"
+  },
+  @{ # it's the only install on 64-bit
+    Name             = "DYMO Connect"
+    TargetPath       = "${env:ProgramFiles(x86)}\DYMO\DYMO Connect\DYMOConnect.exe"
+    SystemLnk        = "DYMO\DYMO Connect\"
+    WorkingDirectory = "${env:ProgramFiles(x86)}\DYMO\DYMO Connect\"
+  },
   # Egnyte (note: uninstaller is architecture independent)
   @{ # it's the only install on 32-bit
     Name             = "Egnyte Desktop App"
