@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Recreate Base Shortcuts (Intune) v1.0.6
+  Recreate Startmenu Shortcuts (Intune) v1.0.7
 
   .DESCRIPTION
   This is just a wrapper script (made for Intune), to download and run the full script (bypasses the "script is too large" issue for Intune).
@@ -13,14 +13,14 @@
 
   .OUTPUTS
   Creates shortcuts (if they don't already exist).
-  Successes, warnings, and errors log to the console (this also logs to the file at `${env:SystemDrive}\Recreate-Base-Shortcuts.log`).
+  Successes, warnings, and errors log to the console (this also logs to the file at `${env:SystemDrive}\Recreate-Startmenu-Shortcuts.log`).
   
   Returns $true or $false if script ran successfully.
 
   If there is no internet access to download the rest of the script, then it'll also return $false.
 
   .EXAMPLE
-  .\Recreate-Base-Shortcuts-INTUNE.ps1
+  .\Recreate-Startmenu-Shortcuts-INTUNE.ps1
 
   .NOTES
   Requires admin! Because VBscript (used to create shortcuts) requires admin to create shortcuts in system folders.
@@ -42,13 +42,13 @@
   About the issue: https://www.bleepingcomputer.com/news/microsoft/buggy-microsoft-defender-asr-rule-deletes-windows-app-shortcuts/
 
   .LINK
-  Full script at: https://github.com/TheAlienDrew/OS-Scripts/blob/master/Windows/Microsoft-Endpoint-Defender/Recreate-Base-Shortcuts.ps1
+  Full script at: https://github.com/TheAlienDrew/OS-Scripts/blob/master/Windows/Microsoft-Endpoint-Defender/Recreate-Startmenu-Shortcuts.ps1
 
   .LINK
-  Need an app added?: https://github.com/TheAlienDrew/OS-Scripts/issues/new?title=%5BAdd%20App%5D%20Recreate-Base-Shortcuts.ps1&body=%3C%21--%20Please%20enter%20the%20app%20you%20need%20added%20below%2C%20and%20a%20link%20to%20the%20installer%20--%3E%0A%0A
+  Need an app added?: https://github.com/TheAlienDrew/OS-Scripts/issues/new?title=%5BAdd%20App%5D%20Recreate-Startmenu-Shortcuts.ps1&body=%3C%21--%20Please%20enter%20the%20app%20you%20need%20added%20below%2C%20and%20a%20link%20to%20the%20installer%20--%3E%0A%0A
 
   .LINK
-  Script from: https://github.com/TheAlienDrew/OS-Scripts/blob/master/Windows/Microsoft-Endpoint-Defender/Recreate-Base-Shortcuts-INTUNE.ps1
+  Script from: https://github.com/TheAlienDrew/OS-Scripts/blob/master/Windows/Microsoft-Endpoint-Defender/Recreate-Startmenu-Shortcuts-INTUNE.ps1
 #>
 #Requires -RunAsAdministrator
 
@@ -82,7 +82,7 @@ if ($Help.IsPresent) {
 
 # Constants
 
-Set-Variable -Name REMOTE_SCRIPT_LOCATION -Option Constant -Value "https://github.com/TheAlienDrew/OS-Scripts/raw/master/Windows/Microsoft-Endpoint-Defender/Recreate-Base-Shortcuts.ps1" -ErrorAction SilentlyContinue
+Set-Variable -Name REMOTE_SCRIPT_LOCATION -Option Constant -Value "https://github.com/TheAlienDrew/OS-Scripts/raw/master/Windows/Microsoft-Endpoint-Defender/Recreate-Startmenu-Shortcuts.ps1" -ErrorAction SilentlyContinue
 
 
 

@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Recreate Base Shortcuts v0.9.017
+  Recreate Startmenu Shortcuts v0.9.018
 
   .DESCRIPTION
   Script only recreates shortcuts to applications it knows are installed, and also works for user profile installed applications.
@@ -17,12 +17,12 @@
 
   .OUTPUTS
   Creates shortcuts (if they don't already exist).
-  Successes, warnings, and errors log to the console (this also logs to the file at `${env:SystemDrive}\Recreate-Base-Shortcuts.log`).
+  Successes, warnings, and errors log to the console (this also logs to the file at `${env:SystemDrive}\Recreate-Startmenu-Shortcuts.log`).
   
   Returns $true or $false if script ran successfully.
 
   .EXAMPLE
-  .\Recreate-Base-Shortcuts.ps1
+  .\Recreate-Startmenu-Shortcuts.ps1
 
   .NOTES
   Requires admin! Because VBscript (used to create shortcuts) requires admin to create shortcuts in system folders.
@@ -44,13 +44,13 @@
   About the issue: https://www.bleepingcomputer.com/news/microsoft/buggy-microsoft-defender-asr-rule-deletes-windows-app-shortcuts/
 
   .LINK
-  Intune version of script: https://github.com/TheAlienDrew/OS-Scripts/blob/master/Windows/Microsoft-Endpoint-Defender/Recreate-Base-Shortcuts-INTUNE.ps1
+  Intune version of script: https://github.com/TheAlienDrew/OS-Scripts/blob/master/Windows/Microsoft-Endpoint-Defender/Recreate-Startmenu-Shortcuts-INTUNE.ps1
 
   .LINK
-  Need an app added?: https://github.com/TheAlienDrew/OS-Scripts/issues/new?title=%5BAdd%20App%5D%20Recreate-Base-Shortcuts.ps1&body=%3C%21--%20Please%20enter%20the%20app%20you%20need%20added%20below%2C%20and%20a%20link%20to%20the%20installer%20--%3E%0A%0A
+  Need an app added?: https://github.com/TheAlienDrew/OS-Scripts/issues/new?title=%5BAdd%20App%5D%20Recreate-Startmenu-Shortcuts.ps1&body=%3C%21--%20Please%20enter%20the%20app%20you%20need%20added%20below%2C%20and%20a%20link%20to%20the%20installer%20--%3E%0A%0A
 
   .LINK
-  Script from: https://github.com/TheAlienDrew/OS-Scripts/blob/master/Windows/Microsoft-Endpoint-Defender/Recreate-Base-Shortcuts.ps1
+  Script from: https://github.com/TheAlienDrew/OS-Scripts/blob/master/Windows/Microsoft-Endpoint-Defender/Recreate-Startmenu-Shortcuts.ps1
 #>
 #Requires -RunAsAdministrator
 
@@ -83,7 +83,7 @@ if ($Help.IsPresent) {
 
 # Logging
 
-Start-Transcript -Path "${env:SystemDrive}\Recreate-Base-Shortcuts.log"
+Start-Transcript -Path "${env:SystemDrive}\Recreate-Startmenu-Shortcuts.log"
 Write-Host "" # Makes log look better
 
 
@@ -3994,24 +3994,68 @@ $sys3rdPartyAppList = @(
   },
   # Epson
   @{ # it's the only install on 32-bit
+    Name       = "Epson Connect Printer Setup"
+    TargetPath = "${env:ProgramFiles}\Epson Software\ECPrinterSetup\ENPApp.exe"
+    SystemLnk  = "EPSON\Epson Connect Printer Setup\"
+  },
+  @{ # it's the only install on 32-bit
+    Name       = "Epson Scan 2 Utility"
+    TargetPath = "${env:ProgramFiles}\epson\Epson Scan 2\Core\es2utility.exe"
+    SystemLnk  = "EPSON\Epson Scan 2\"
+  },
+  @{ # it's the only install on 32-bit
     Name       = "Epson Scan 2"
     TargetPath = "${env:ProgramFiles}\epson\Epson Scan 2\Core\es2launcher.exe"
-    SystemLnk  = "EPSON\Epson Scan 2\" 
+    SystemLnk  = "EPSON\Epson Scan 2\"
   },
   @{ # it's the only install on 32-bit
     Name       = "FAX Utility"
     TargetPath = "${env:ProgramFiles}\Epson Software\FAX Utility\FUFAXCNT.exe"
-    SystemLnk  = "EPSON Software\" 
+    SystemLnk  = "EPSON Software\"
+  },
+  @{ # it's the only install on 32-bit
+    Name       = "Epson ScanSmart"
+    TargetPath = "${env:ProgramFiles}\Epson Software\Epson ScanSmart\ScanSmart.exe"
+    SystemLnk  = "EPSON Software\"
+  },
+  @{ # it's the only install on 32-bit
+    Name        = "Epson Software Updater"
+    TargetPath  = "${env:ProgramFiles}\Epson Software\Download Navigator\EPSDNAVI.EXE"
+    Arguments   = "/ST"
+    SystemLnk   = "EPSON Software\"
+    Description = "Epson Software Updater"
+  },
+  @{ # it's the only install on 64-bit
+    Name       = "Epson Connect Printer Setup"
+    TargetPath = "${env:ProgramFiles(x86)}\Epson Software\ECPrinterSetup\ENPApp.exe"
+    SystemLnk  = "EPSON\Epson Connect Printer Setup\"
+  },
+  @{ # it's the only install on 64-bit
+    Name       = "Epson Scan 2 Utility"
+    TargetPath = "${env:ProgramFiles(x86)}\epson\Epson Scan 2\Core\es2utility.exe"
+    SystemLnk  = "EPSON\Epson Scan 2\"
   },
   @{ # it's the only install on 64-bit
     Name       = "Epson Scan 2"
     TargetPath = "${env:ProgramFiles(x86)}\epson\Epson Scan 2\Core\es2launcher.exe"
-    SystemLnk  = "EPSON\Epson Scan 2\" 
+    SystemLnk  = "EPSON\Epson Scan 2\"
   },
   @{ # it's the only install on 64-bit
     Name       = "FAX Utility"
     TargetPath = "${env:ProgramFiles(x86)}\Epson Software\FAX Utility\FUFAXCNT.exe"
-    SystemLnk  = "EPSON Software\" 
+    SystemLnk  = "EPSON Software\"
+  },
+  @{ # it's the only install on 64-bit
+    Name       = "Epson ScanSmart"
+    TargetPath = "${env:ProgramFiles(x86)}\Epson Software\Epson ScanSmart\ScanSmart.exe"
+    SystemLnk  = "EPSON Software\"
+  },
+  @{ # it's the only install on 64-bit
+    Name        = "Epson Software Updater"
+    TargetPath  = "${env:ProgramFiles(x86)}\Epson Software\Download Navigator\EPSDNAVI.EXE"
+    Arguments   = "/ST"
+    SystemLnk   = "EPSON Software\"
+    Description = "Epson Software Updater"
   },
   # GIMP
   @{
