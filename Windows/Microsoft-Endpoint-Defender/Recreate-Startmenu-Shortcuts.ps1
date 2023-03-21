@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Recreate Startmenu Shortcuts v0.9.018
+  Recreate Startmenu Shortcuts v0.9.019
 
   .DESCRIPTION
   Script only recreates shortcuts to applications it knows are installed, and also works for user profile installed applications.
@@ -4620,6 +4620,19 @@ $sys3rdPartyAppList = @(
     Name             = "Samsung DeX"
     TargetPath       = "${env:ProgramFiles(x86)}\Samsung\Samsung DeX\SamsungDeX.exe"
     WorkingDirectory = "${env:ProgramFiles(x86)}\Samsung\Samsung DeX\" 
+  },
+  # SAP Logon
+  @{ # it's the only install on 32-bit
+    Name             = "SAP Logon"
+    TargetPath       = "${env:ProgramFiles}\SAP\FrontEnd\SapGui\saplogon.exe"
+    SystemLnk        = "SAP Front End\"
+    WorkingDirectory = "${env:ProgramFiles}\SAP\FrontEnd\SAPgui"
+  },
+  @{ # it's the only install on 64-bit
+    Name             = "SAP Logon"
+    TargetPath       = "${env:ProgramFiles(x86)}\SAP\FrontEnd\SapGui\saplogon.exe"
+    SystemLnk        = "SAP Front End\"
+    WorkingDirectory = "${env:ProgramFiles(x86)}\SAP\FrontEnd\SAPgui"
   },
   # SonicWall Global VPN Client
   @{

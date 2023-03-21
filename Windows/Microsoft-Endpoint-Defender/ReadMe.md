@@ -157,6 +157,7 @@ If you wish to contribute, either look at the code and add in entries manually, 
    - Python 3.11 (or whatever is the newest installed on your machine)
    - Raspberry Pi Imager
    - Samsung DeX
+   - SAP Logon
    - Slack
    - SonicWall Global VPN Client
    - SoundSwitch
