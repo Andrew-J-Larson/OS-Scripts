@@ -110,8 +110,8 @@ If you wish to contribute, either look at the code and add in entries manually, 
    - Cisco AnyConnect Secure Mobility Client
    - Cisco Jabber
  - Altair
-   - Monarch 2021
-   - Monarch 2020
+   - Monarch 2021 (+ its utilities)
+   - Monarch 2020 (+ its utilities)
  - Eaton
    - 9000XDrive
    - 9000XLoad

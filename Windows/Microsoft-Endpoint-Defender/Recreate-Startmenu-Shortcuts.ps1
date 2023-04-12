@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Recreate Startmenu Shortcuts v0.9.019
+  Recreate Startmenu Shortcuts v0.9.020
 
   .DESCRIPTION
   Script only recreates shortcuts to applications it knows are installed, and also works for user profile installed applications.
@@ -2394,24 +2394,163 @@ $sys3rdPartyAppList = @(
   },
   # Altair Monarch
   @{
-    Name       = "Altair Monarch 2021"
-    TargetPath = "${env:ProgramFiles}\Altair Monarch 2021\DWMonarch.exe"
+    Name       = "Altair Monarch 2021 Data Prep Studio"
+    TargetPath = "${env:ProgramFiles}\Altair Monarch 2021\DPS\MonarchDataPrepStudio.exe"
+    SystemLnk  = "Altair Monarch 2021\"
+    WorkingDirectory = "%tmp%"
+    Description = "Altair Monarch 2021 Data Prep Studio"
+  },
+  @{
+    Name       = "Altair Monarch 2021 Learning Guide"
+    TargetPath = "${env:ProgramFiles}\Altair Monarch 2021\Altair Monarch Learning Guide.pdf"
     SystemLnk  = "Altair Monarch 2021\"
   },
   @{
-    Name       = "Altair Monarch 2020"
-    TargetPath = "${env:ProgramFiles}\Altair Monarch 2020\DWMonarch.exe"
-    SystemLnk  = "Altair Monarch 2020\"
+    Name       = "Altair Monarch 2021 License Manager"
+    TargetPath = "${env:ProgramFiles}\Altair Monarch 2021\LicenseManager\Datawatch.Licensing.Manager.exe"
+    SystemLnk  = "Altair Monarch 2021\"
+    WorkingDirectory = "%tmp%"
+    Description = "Altair Monarch 2021 License Manager Executable"
+  },
+  @{
+    Name       = "Altair Monarch 2021 Table Extractor"
+    TargetPath = "${env:ProgramFiles}\Altair Monarch 2021\PDF Table Extractor\AltairTableExtractor.exe"
+    SystemLnk  = "Altair Monarch 2021\"
+    WorkingDirectory = "%tmp%"
+    Description = "Altair Monarch 2021 Table Extractor"
+  },
+  @{
+    Name       = "Altair Monarch 2021 Utility"
+    TargetPath = "${env:ProgramFiles}\Altair Monarch 2021\MonarchUtility.exe"
+    SystemLnk  = "Altair Monarch 2021\"
+  },
+  @{
+    Name       = "Altair Monarch 2021"
+    TargetPath = "${env:ProgramFiles}\Altair Monarch 2021\DWMonarch.exe"
+    SystemLnk  = "Altair Monarch 2021\"
+    WorkingDirectory = "%tmp%"
+    Description = "Altair Monarch 2021 Executable"
+  },
+  @{
+    Name       = "Altair Monarch 2021 Data Prep Studio"
+    TargetPath = "${env:ProgramFiles(x86)}\Altair Monarch 2021\DPS\MonarchDataPrepStudio.exe"
+    SystemLnk  = "Altair Monarch 2021\"
+    WorkingDirectory = "%tmp%"
+    Description = "Altair Monarch 2021 Data Prep Studio"
+  },
+  @{
+    Name       = "Altair Monarch 2021 Learning Guide"
+    TargetPath = "${env:ProgramFiles(x86)}\Altair Monarch 2021\Altair Monarch Learning Guide.pdf"
+    SystemLnk  = "Altair Monarch 2021\"
+  },
+  @{
+    Name       = "Altair Monarch 2021 License Manager"
+    TargetPath = "${env:ProgramFiles(x86)}\Altair Monarch 2021\LicenseManager\Datawatch.Licensing.Manager.exe"
+    SystemLnk  = "Altair Monarch 2021\"
+    WorkingDirectory = "%tmp%"
+    Description = "Altair Monarch 2021 License Manager Executable"
+  },
+  @{
+    Name       = "Altair Monarch 2021 Table Extractor"
+    TargetPath = "${env:ProgramFiles(x86)}\Altair Monarch 2021\PDF Table Extractor\AltairTableExtractor.exe"
+    SystemLnk  = "Altair Monarch 2021\"
+    WorkingDirectory = "%tmp%"
+    Description = "Altair Monarch 2021 Table Extractor"
+  },
+  @{
+    Name       = "Altair Monarch 2021 Utility"
+    TargetPath = "${env:ProgramFiles(x86)}\Altair Monarch 2021\MonarchUtility.exe"
+    SystemLnk  = "Altair Monarch 2021\"
   },
   @{
     Name       = "Altair Monarch 2021"
     TargetPath = "${env:ProgramFiles(x86)}\Altair Monarch 2021\DWMonarch.exe"
     SystemLnk  = "Altair Monarch 2021\"
+    WorkingDirectory = "%tmp%"
+    Description = "Altair Monarch 2021 Executable"
+  },
+  @{
+    Name       = "Altair Monarch 2020 Data Prep Studio"
+    TargetPath = "${env:ProgramFiles}\Altair Monarch 2020\DPS\MonarchDataPrepStudio.exe"
+    SystemLnk  = "Altair Monarch 2020\"
+    WorkingDirectory = "%tmp%"
+    Description = "Altair Monarch 2020 Data Prep Studio"
+  },
+  @{
+    Name       = "Altair Monarch 2020 Learning Guide"
+    TargetPath = "${env:ProgramFiles}\Altair Monarch 2020\Altair Monarch Learning Guide.pdf"
+    SystemLnk  = "Altair Monarch 2020\"
+  },
+  @{
+    Name       = "Altair Monarch 2020 License Manager"
+    TargetPath = "${env:ProgramFiles}\Altair Monarch 2020\LicenseManager\Datawatch.Licensing.Manager.exe"
+    SystemLnk  = "Altair Monarch 2020\"
+    WorkingDirectory = "%tmp%"
+    Description = "Altair Monarch 2020 License Manager Executable"
+  },
+  @{
+    Name       = "Altair Monarch 2020 Table Extractor"
+    TargetPath = "${env:ProgramFiles}\Altair Monarch 2020\PDF Table Extractor\AltairTableExtractor.exe"
+    SystemLnk  = "Altair Monarch 2020\"
+    WorkingDirectory = "%tmp%"
+    Description = "Altair Monarch 2020 Table Extractor"
+  },
+  @{
+    Name       = "Altair Monarch 2020 Utility"
+    TargetPath = "${env:ProgramFiles}\Altair Monarch 2020\MonarchUtility.exe"
+    SystemLnk  = "Altair Monarch 2020\"
+  },
+  @{
+    Name       = "Altair Monarch 2020"
+    TargetPath = "${env:ProgramFiles}\Altair Monarch 2020\DWMonarch.exe"
+    SystemLnk  = "Altair Monarch 2020\"
+    WorkingDirectory = "%tmp%"
+    Description = "Altair Monarch 2020 Executable"
+  },
+  @{
+    Name       = "Altair Monarch 2020 Data Prep Studio"
+    TargetPath = "${env:ProgramFiles(x86)}\Altair Monarch 2020\DPS\MonarchDataPrepStudio.exe"
+    SystemLnk  = "Altair Monarch 2020\"
+    WorkingDirectory = "%tmp%"
+    Description = "Altair Monarch 2020 Data Prep Studio"
+  },
+  @{
+    Name       = "Altair Monarch 2020 Learning Guide"
+    TargetPath = "${env:ProgramFiles(x86)}\Altair Monarch 2020\Altair Monarch Learning Guide.pdf"
+    SystemLnk  = "Altair Monarch 2020\"
+  },
+  @{
+    Name       = "Altair Monarch 2020 License Manager"
+    TargetPath = "${env:ProgramFiles(x86)}\Altair Monarch 2020\LicenseManager\Datawatch.Licensing.Manager.exe"
+    SystemLnk  = "Altair Monarch 2020\"
+    WorkingDirectory = "%tmp%"
+    Description = "Altair Monarch 2020 License Manager Executable"
+  },
+  @{
+    Name       = "Altair Monarch 2020 Table Extractor"
+    TargetPath = "${env:ProgramFiles(x86)}\Altair Monarch 2020\PDF Table Extractor\AltairTableExtractor.exe"
+    SystemLnk  = "Altair Monarch 2020\"
+    WorkingDirectory = "%tmp%"
+    Description = "Altair Monarch 2020 Table Extractor"
+  },
+  @{
+    Name       = "Altair Monarch 2020 Utility"
+    TargetPath = "${env:ProgramFiles(x86)}\Altair Monarch 2020\MonarchUtility.exe"
+    SystemLnk  = "Altair Monarch 2020\"
   },
   @{
     Name       = "Altair Monarch 2020"
     TargetPath = "${env:ProgramFiles(x86)}\Altair Monarch 2020\DWMonarch.exe"
     SystemLnk  = "Altair Monarch 2020\"
+    WorkingDirectory = "%tmp%"
+    Description = "Altair Monarch 2020 Executable"
+  },
+  @{
+    Name       = "Altair Monarch 2020"
+    TargetPath = "${env:ProgramFiles(x86)}\Altair Monarch 2020\DWMonarch.exe"
+    SystemLnk  = "Altair Monarch 2020\"
+    WorkingDirectory = "%tmp%"
+    Description = "Altair Monarch 2020 Executable"
   },
   # Amazon
   @{
