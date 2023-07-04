@@ -3,7 +3,7 @@
   Script downloads and installs all extensions needed for viewing/editing HEIF/HEVC/HEIC file types.
 
   .DESCRIPTION
-  Version 2.0.8
+  Version 2.0.9
   
   Since old manufacturer installed Windows installations don't always include this support, this script is handy to turn
   on HEIC file support without needing admin access or even the Microsoft Store.
@@ -31,7 +31,7 @@
   Third-Party API for Downloading Microsoft Store Apps: https://store.rg-adguard.net/
 
   .LINK
-  Script downloaded from: https://github.com/TheAlienDrew/OS-Scripts/blob/master/Windows/Enable-HEIC-Extension-Feature.ps1
+  Script downloaded from: https://github.com/TheAlienDrew/OS-Scripts/blob/main/Windows/Enable-HEIC-Extension-Feature.ps1
 #>
 
 # Copyright (C) 2023  Andrew Larson (thealiendrew@gmail.com)

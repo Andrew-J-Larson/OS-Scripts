@@ -3,7 +3,7 @@
   Script that helps facilitate downloading Microsoft Store apps from their servers (via third-party API's).
 
   .DESCRIPTION
-  Version 2.0.1
+  Version 2.0.2
   
   This script is meant to be used as an alternative from the Microsoft Store and winget, to download application
   packages, for installation, such as in the case where an app is blocked from being downloaded directly from
@@ -30,7 +30,7 @@
   Third-Party API for Downloading Microsoft Store Apps: https://store.rg-adguard.net/
 
   .LINK
-  Script downloaded from: https://github.com/TheAlienDrew/OS-Scripts/blob/master/Windows/Wrapper-Functions/Download-AppxPackage-Function.ps1
+  Script downloaded from: https://github.com/TheAlienDrew/OS-Scripts/blob/main/Windows/Wrapper-Functions/Download-AppxPackage-Function.ps1
 #>
 
 # Copyright (C) 2023  Andrew Larson (thealiendrew@gmail.com)

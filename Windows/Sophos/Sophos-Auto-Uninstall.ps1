@@ -3,7 +3,7 @@
   Script that aids in the mass uninstallation of Sophos anti-virus.
 
   .DESCRIPTION
-  Version 1.1.0
+  Version 1.1.1
   
   This script is meant to be used in aid of mass uninstallation of Sophos anti-virus in any organization,
   per computer. It should be able to be ran in the background, as long as a computer has internet access,
@@ -44,7 +44,7 @@
   Sophos API Developer Docs: https://developer.sophos.com/intro
 
   .LINK
-  Script downloaded from: https://github.com/TheAlienDrew/OS-Scripts/blob/master/Windows/Sophos/Sophos-Auto-Uninstall.ps1
+  Script downloaded from: https://github.com/TheAlienDrew/OS-Scripts/blob/main/Windows/Sophos/Sophos-Auto-Uninstall.ps1
 #>
 
 #Requires -RunAsAdministrator

@@ -1,6 +1,6 @@
 ﻿<#
   .SYNOPSIS
-  Generate Shortcuts (Functions) v1.0.5
+  Generate Shortcuts (Functions) v1.0.6
 
   .DESCRIPTION
   Script only enables the functions genLnkInfo and genLnkRecurseInfo.
@@ -36,7 +36,7 @@
    - @{Name = "..."; TargetPath = "..."; Arguments = "..."; SystemLnk = "..."; WorkingDirectory = "..."; Description = "..."; IconLocation = "..."; RunAsAdmin = ($true -Or $false) },
 
   .LINK
-  Script from: https://github.com/TheAlienDrew/OS-Scripts/blob/master/Windows/Microsoft-Endpoint-Defender/Function-Generate-Lnk-Info.ps1
+  Script from: https://github.com/TheAlienDrew/OS-Scripts/blob/main/Windows/Microsoft-Endpoint-Defender/Function-Generate-Lnk-Info.ps1
 #>
 #Requires -RunAsAdministrator
 

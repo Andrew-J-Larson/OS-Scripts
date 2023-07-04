@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Reset Taskbar Pins (Fixes Duplicate Pins) v1.0.0
+  Reset Taskbar Pins (Fixes Duplicate Pins) v1.0.1
 
   .DESCRIPTION
   Script only resets the taskbar pins for the current user running the script.
@@ -23,7 +23,7 @@
   Shouldn't be ran as admin, as it doesn't require extra permissions to work.
 
   .LINK
-  Script from: https://github.com/TheAlienDrew/OS-Scripts/blob/master/Windows/Microsoft-Endpoint-Defender/Reset-Taskbar-Pins.ps1
+  Script from: https://github.com/TheAlienDrew/OS-Scripts/blob/main/Windows/Microsoft-Endpoint-Defender/Reset-Taskbar-Pins.ps1
 #>
 
 # Copyright (C) 2023  Andrew Larson (thealiendrew@gmail.com)
