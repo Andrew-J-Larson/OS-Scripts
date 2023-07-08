@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Recreate Startmenu Shortcuts (Intune) v1.0.8
+  Recreate Startmenu Shortcuts (Intune) v1.0.9
 
   .DESCRIPTION
   This is just a wrapper script (made for Intune), to download and run the full script (bypasses the "script is too large" issue for Intune).
@@ -82,7 +82,7 @@ if ($Help.IsPresent) {
 
 # Constants
 
-Set-Variable -Name REMOTE_SCRIPT_LOCATION -Option Constant -Value "https://github.com/TheAlienDrew/OS-Scripts/raw/main/Windows/Microsoft-Endpoint-Defender/Recreate-Startmenu-Shortcuts.ps1" -ErrorAction SilentlyContinue
+Set-Variable -Name REMOTE_SCRIPT_LOCATION -Option Constant -Value "https://raw.githubusercontent.com/TheAlienDrew/OS-Scripts/main/Windows/Microsoft-Endpoint-Defender/Recreate-Startmenu-Shortcuts.ps1" -ErrorAction SilentlyContinue
 
 
 
