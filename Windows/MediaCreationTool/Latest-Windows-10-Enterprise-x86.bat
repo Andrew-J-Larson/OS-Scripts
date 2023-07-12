@@ -19,5 +19,5 @@ setlocal
 
 set "scriptName=MediaCreationTool_Run_Preset.ps1"
 set "scriptLocation=%~dp0%scriptName%"
-set "args=-OS 10 -Edition Enterprise -Arch x86"
+set "args=-OS 10 -Edition Ent -Arch x86"
 powershell.exe -WindowStyle Hidden -c "Start-Process 'powershell.exe' -ArgumentList '-ExecutionPolicy Bypass -c \". \\\"%scriptLocation%\\\" %args%\"' -Verb RunAs -WindowStyle Minimized"

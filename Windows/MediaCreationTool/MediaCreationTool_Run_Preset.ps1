@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  MediaCreationTool Run Preset v1.0.0
+  MediaCreationTool Run Preset v1.0.1
 
   .DESCRIPTION
   Script helps to automate a part of the process needed to generate single edition ISOs.
@@ -33,16 +33,19 @@
   .\Prepare-PC.ps1 # generates Windows 11 Home en-US
 
   .EXAMPLE
-  .\Prepare-PC.ps1 -OS 10  # generates Windows 10 Home en-US x64
+  .\Prepare-PC.ps1 -OS 10 # generates Windows 10 Home en-US x64
 
   .EXAMPLE
   .\Prepare-PC.ps1 -OS 10 -Arch x86 # generates Windows 10 Home en-US x86
 
   .EXAMPLE
-  .\Prepare-PC.ps1 -OS 10 -Edition Professional # generates Windows 10 Professional en-US x64
+  .\Prepare-PC.ps1 -OS 10 -Edition Pro # generates Windows 10 Pro en-US x64
 
   .EXAMPLE
-  .\Prepare-PC.ps1 -Edition Enterprise # generates Windows 11 Enterprise en-US
+  .\Prepare-PC.ps1 -OS 10 -Edition Edu # generates Windows 10 Education en-US x64
+
+  .EXAMPLE
+  .\Prepare-PC.ps1 -Edition Ent # generates Windows 11 Enterprise en-US
 
   .EXAMPLE
   .\Prepare-PC.ps1 -Help
@@ -95,7 +98,20 @@ param (
     [String]$LangCode = "en-US",
 
     [Parameter(Mandatory = $False)]
-    [ValidateSet("Home", "Education", "Enterprise", "Professional", "ProfessionalWorkstation")]
+    [ValidateSet( # `N` means 'Not with Media Player'
+        # Home editions
+        "Home", "HomeN",
+        "HomeSL", # `SL` means 'Single Language'
+        "HomeCS", # `CS` means 'Country Specific' (Windows 11+ only)
+        # Pro editions
+        "Pro", "ProN",
+        "ProW", "ProWN", # `W` means 'for Workstations'
+        # Education editions
+        "Edu", "EduN",
+        "EduP", "EduPN", # `P` means 'Pro'
+        # Enterprise editions
+        "Ent", "EntN",
+        "EntG", "EntGN")] # `G` means 'Government'
     [String]$Edition = "Home",
 
     [Parameter(Mandatory = $False)]
@@ -111,14 +127,8 @@ if ($Help.IsPresent) {
 
 # CONSTANTS
 
-# License keys: all are valid and legal, they still require that you activate Windows with a real key
-$RTM_GENERIC_KEY_HOME = "YTMG3-N6DKC-DKB77-7M9GH-8HVX7"
-$RTM_GENERIC_KEY_EDUCATION = "YNMGQ-8RYV3-4PGQ3-C8XTP-7CFBY"
-$RTM_GENERIC_KEY_ENTERPRISE = "XGVPP-NMH47-7TTHJ-W3FW7-8HV2C"
-$RTM_GENERIC_KEY_PROFESSIONAL = "VK7JG-NPHTM-C97JM-9MPGT-3V66T"
-$RTM_GENERIC_KEY_PRO_WORKSTATION = "DXG7C-N36C4-C4HTG-X4T3X-2YV77"
-
 # Error exit codes
+$FAILED_INVALID_EDITION = 5
 $FAILED_INVALID_ARCH = 4
 $FAILED_INIT_MCT = 3
 $FAILED_RUNNING_MCT = 2
@@ -179,6 +189,26 @@ function Write-WarningCenter {
 function Wait-Host {
     Write-Host -NoNewLine 'Press any key to continue...';
     $null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown');
+}
+
+# Creates a deep copy of a hashtable
+# code via https://powershellexplained.com/2016-11-06-powershell-hashtable-everything-you-wanted-to-know-about/#deep-copies
+function Get-DeepClone {
+    [cmdletbinding()]
+    param(
+        $InputObject
+    )
+    process {
+        if ($InputObject -is [hashtable]) {
+            $clone = @{}
+            foreach ($key in $InputObject.keys) {
+                $clone[$key] = Get-DeepClone $InputObject[$key]
+            }
+            return $clone
+        } else {
+            return $InputObject
+        }
+    }
 }
 
 # Download latest MCT (if needed), and set exe value in object
@@ -278,14 +308,46 @@ function Initialize-MCT([Hashtable]$winVersionMCT) {
 
 # OBJECTS
 
-# Editions mapped to their RTM generic MAK's
+# Editions mapped to their license keys:
+# - all are valid and legal, they still require that you activate Windows with a real key
+# - all keys are to be assumed as RTM generic MAK's, unless otherwise specified
 $WIN_EDITION_KEYS = @{
-    Home                    = $RTM_GENERIC_KEY_HOME
-    Education               = $RTM_GENERIC_KEY_EDUCATION
-    Enterprise              = $RTM_GENERIC_KEY_ENTERPRISE
-    Professional            = $RTM_GENERIC_KEY_PROFESSIONAL
-    ProfessionalWorkstation = $RTM_GENERIC_KEY_PRO_WORKSTATION
+    win10 = @{
+        Home         = @{
+            0  = "YTMG3-N6DKC-DKB77-7M9GH-8HVX7"
+            N  = "4CPRK-NM3K3-X6XXQ-RXX86-WXCHW"
+            SL = "BT79Q-G7N6G-PGBYW-4YWX6-6F4BT" # Single Language
+        }
+        Professional = @{
+            0 = "VK7JG-NPHTM-C97JM-9MPGT-3V66T"
+            N = "2B87N-8KFHP-DKV6R-Y2C8J-PKCKT"
+            W = @{ # for Workstations
+                0 = "DXG7C-N36C4-C4HTG-X4T3X-2YV77"
+                N = "WYPNQ-8C467-V2W6J-TX4WX-WT2RQ"
+            }
+        }
+        Education    = @{
+            0 = "YNMGQ-8RYV3-4PGQ3-C8XTP-7CFBY"
+            N = "84NGF-MHBT6-FXBX8-QWJK7-DRR8H"
+            P = @{ # Pro
+                0 = "8PTT6-RNW4C-6V7J2-C2D3X-MHBPB"
+                N = "GJTYN-HDMQY-FRR76-HVGC7-QPF8P"
+            }
+        }
+        Enterprise   = @{
+            0 = "XGVPP-NMH47-7TTHJ-W3FW7-8HV2C"
+            N = "WGGHN-J84D6-QYCPR-T7PJ7-X766F"
+            G = @{ # Government
+                0 = <#KMS#> "YYVX9-NTFWV-6MDM3-9PT4T-4M68B"
+                N = "FW7NV-4T673-HF4VX-9X4MM-B4H4T"
+            }
+        }
+    }
+    # win11: gets set below
 }
+# all win10 keys work with win11
+$WIN_EDITION_KEYS.win11 = Get-DeepClone $WIN_EDITION_KEYS.win10
+$WIN_EDITION_KEYS.win11.Home.CS = "N2434-X9D7W-8PF6X-8DV9T-8TYMD" # Country Specific
 
 # Contains link and info related to MCT version used depending on OS
 $WIN_VERSION_MCT = @{
@@ -293,7 +355,7 @@ $WIN_VERSION_MCT = @{
         url         = "https://go.microsoft.com/fwlink/?LinkId=691209"
         os          = "Windows 10"
         x86_support = $True
-        release     = "22H2" # used to generate a suggested ISO name; this is the final os release, won'r get new major releases
+        release     = "22H2" # used to generate a suggested ISO name; this is the final os release, won't get new major releases
         # timestampFile: needed to check for new versions without downloading; gets set after object creation
         # folder: the folder to download the tool to; gets set after object creation
         # exe: the path to the exe after downloaded; gets set later
@@ -329,6 +391,7 @@ Show-MaximizedPowerShell
 
 # Select version of Windows we'll be using to create an image for
 $MCT = $Null
+$winEditionKeys = $Null
 $warnings = ""
 Switch ($OS) {
     10 {
@@ -336,17 +399,16 @@ Switch ($OS) {
         if ($Arch -eq "x86") {
             $warnings = "Microsoft no longer supports the x86 (32-bit) architecture for Windows 10."
         }
-        $MCT = $WIN_VERSION_MCT.win10; Break
+        $MCT = $WIN_VERSION_MCT.win10; $winEditionKeys = $WIN_EDITION_KEYS.win10; Break
     }
     11 {
         # Confirm arch is valid
         if ($Arch -eq "x86") {
-            Write-Error "Microsoft does not build x86 (32-bit) images for Windows 11."
+            Write-Error "Microsoft only built x86 (32-bit) images for Windows 10."
             Wait-Host
             exit $FAILED_INVALID_ARCH
         }
-        $MCT = $WIN_VERSION_MCT.win11;
-        Break
+        $MCT = $WIN_VERSION_MCT.win11; $winEditionKeys = $WIN_EDITION_KEYS.win11; Break
     }
 }
 
@@ -358,30 +420,132 @@ if (-Not (Initialize-MCT -winVersionMCT $MCT)) {
     exit $FAILED_INIT_MCT
 }
 
-# Select the edition MAK to be copied into clipboard later
-Set-Clipboard -Value $WIN_EDITION_KEYS.$Edition
-
 # Setup arguments for MCT
+$BaseEdition = $Null
+Switch -Wildcard ($Edition) {
+    "Home*" {
+        # Confirm OS is valid
+        if ($OS -lt 11) {
+            Write-Error "Microsoft does not build CS (Country Specific) editions for Windows 10."
+            Wait-Host
+            exit $FAILED_INVALID_EDITION
+        }
+        $BaseEdition = "Home"; Break
+    }
+    "Pro*" { $BaseEdition = "Professional"; Break }
+    "Edu*" { $BaseEdition = "Education"; Break }
+    "Ent*" { $BaseEdition = "Enterprise"; Break }
+}
 $argumentsMCT = @(
     "/Download",
     "/Web",
     "/Retail",
     "/Eula Accept",
     "/MediaLangCode ${LangCode}",
-    "/MediaEdition ${Edition}",
+    "/MediaEdition ${BaseEdition}",
     "/MediaArch ${Arch}",
     "/Action CreateMedia"
 )
+# changed back to shortened variant, since that's what it's referred to officially
+if ($BaseEdition -eq "Professional") { $BaseEdition = "Pro" }
+
+# Select the edition MAK to be copied into the clipboard later,
+# and set the edition type for displaying a possible file name to user
+$EditionKey = $Null
+$EditionType = $BaseEdition
+Switch -Wildcard ($Edition) {
+    "Home" {
+        $EditionKey = $winEditionKeys.Home[0];
+        Break 
+    }
+    "HomeN" {
+        $EditionType += ' N'
+        $EditionKey = $winEditionKeys.Home.N;
+        Break 
+    }
+    "HomeSL" {
+        $EditionType += ' Single Language'
+        $EditionKey = $winEditionKeys.Home.SL;
+        Break 
+    }
+    "HomeCS" {
+        $EditionType += ' Country Specific'
+        $EditionKey = $winEditionKeys.Home.CS;
+        Break 
+    }
+    "Pro" {
+        $EditionKey = $winEditionKeys.Pro[0];
+        Break 
+    }
+    "ProN" {
+        $EditionType += ' N'
+        $EditionKey = $winEditionKeys.Pro.N;
+        Break 
+    }
+    "ProW" {
+        $EditionType += ' for Workstations'
+        $EditionKey = $winEditionKeys.Pro.W[0];
+        Break 
+    }
+    "ProWN" {
+        $EditionType += ' for Workstations N'
+        $EditionKey = $winEditionKeys.Pro.W.N;
+        Break 
+    }
+    "Edu" {
+        $EditionKey = $winEditionKeys.Edu[0];
+        Break 
+    }
+    "EduN" {
+        $EditionType += ' N'
+        $EditionKey = $winEditionKeys.Edu.N;
+        Break 
+    }
+    "EduP" {
+        $EditionType = 'Pro ' + $EditionType
+        $EditionKey = $winEditionKeys.Edu.P[0];
+        Break 
+    }
+    "EduPN" {
+        $EditionType = 'Pro ' + $EditionType + ' N'
+        $EditionKey = $winEditionKeys.Edu.P.N;
+        Break 
+    }
+    "Ent" {
+        $EditionKey = $winEditionKeys.Ent[0];
+        Break 
+    }
+    "EntN" {
+        $EditionType += ' N'
+        $EditionKey = $winEditionKeys.Ent.N;
+        Break 
+    }
+    "EntG" {
+        $EditionType += ' G'
+        $EditionKey = $winEditionKeys.Ent.G[0];
+        Break 
+    }
+    "EntGN" {
+        $EditionType += ' G N'
+        $EditionKey = $winEditionKeys.Ent.G.N;
+        Break 
+    }
+}
+$TargetSelectionStrings = @(
+    $MCT.os, $MCT.release, $EditionType, $LangCode
+)
+if ($MCT.x86_support) { $TargetSelectionStrings += , $Arch }
+Set-Clipboard -Value $EditionKey
 
 # Notify of options selected
 $e = [char]0x1b # ansi escape
 Clear-Host
 Write-Host '' # formatting
-Write-HostCenter "${e}[94mTargeting: ${e}[92m$($MCT.os) $($MCT.release) ${Edition} ${LangCode}$(if ($MCT.x86_support) {" ${Arch}"})${e}[22m"
-Write-HostCenter "${e}[94mFilename Format (not auto filled): ${e}[96m$(($MCT.os).Replace(' ' , '-'))_$($MCT.release)_${Edition}_${LangCode}$(if ($MCT.x86_support) {"_${Arch}"}).iso${e}[22m"
+Write-HostCenter "${e}[94mTargeting: ${e}[92m$($TargetSelectionStrings -Join ' ')${e}[22m"
+Write-HostCenter "${e}[94mFilename Format (not auto filled): ${e}[96m$(($TargetSelectionStrings -Join '_').Replace(' ' , '-')).iso${e}[22m"
 if ($warnings) { Write-WarningCenter $warnings }
 # Warn user about needing to paste in product key
-Write-HostCenter "The RTM Generic Key for selected edition has been copied to clipboard. If prompted to enter product key, just paste from the clipboard, then continue."
+Write-HostCenter "The generic product key for selected edition has been copied to clipboard. If prompted to enter product key, just paste from the clipboard, then continue."
 
 # Start MCT with arguments to create image
 $generateISO = Start-Process $MCT.exe -ArgumentList $argumentsMCT -PassThru -Wait
