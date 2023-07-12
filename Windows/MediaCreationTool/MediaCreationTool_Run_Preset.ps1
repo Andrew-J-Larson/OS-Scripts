@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  MediaCreationTool Run Preset v1.0.2
+  MediaCreationTool Run Preset v1.0.3
 
   .DESCRIPTION
   Script helps to automate a part of the process needed to generate single edition ISOs.
@@ -313,12 +313,12 @@ function Initialize-MCT([Hashtable]$winVersionMCT) {
 # - all keys are to be assumed as RTM generic MAK's, unless otherwise specified
 $WIN_EDITION_KEYS = @{
     win10 = @{
-        Home         = @{
+        Home = @{
             0  = "YTMG3-N6DKC-DKB77-7M9GH-8HVX7"
             N  = "4CPRK-NM3K3-X6XXQ-RXX86-WXCHW"
             SL = "BT79Q-G7N6G-PGBYW-4YWX6-6F4BT" # Single Language
         }
-        Professional = @{
+        Pro  = @{ # Professional
             0 = "VK7JG-NPHTM-C97JM-9MPGT-3V66T"
             N = "2B87N-8KFHP-DKV6R-Y2C8J-PKCKT"
             W = @{ # for Workstations
@@ -326,7 +326,7 @@ $WIN_EDITION_KEYS = @{
                 N = "WYPNQ-8C467-V2W6J-TX4WX-WT2RQ"
             }
         }
-        Education    = @{
+        Edu  = @{ # Education
             0 = "YNMGQ-8RYV3-4PGQ3-C8XTP-7CFBY"
             N = "84NGF-MHBT6-FXBX8-QWJK7-DRR8H"
             P = @{ # Pro
@@ -334,7 +334,7 @@ $WIN_EDITION_KEYS = @{
                 N = "GJTYN-HDMQY-FRR76-HVGC7-QPF8P"
             }
         }
-        Enterprise   = @{
+        Ent  = @{ # Enterprise
             0 = "XGVPP-NMH47-7TTHJ-W3FW7-8HV2C"
             N = "WGGHN-J84D6-QYCPR-T7PJ7-X766F"
             G = @{ # Government
