@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  MediaCreationTool Run Preset v1.0.3
+  MediaCreationTool Run Preset v1.0.4
 
   .DESCRIPTION
   Script helps to automate a part of the process needed to generate single edition ISOs.
@@ -128,11 +128,14 @@ if ($Help.IsPresent) {
 # CONSTANTS
 
 # Error exit codes
-$FAILED_INVALID_EDITION = 5
-$FAILED_INVALID_ARCH = 4
-$FAILED_INIT_MCT = 3
-$FAILED_RUNNING_MCT = 2
-$FAILED_ADMIN_NOT_LOGGED_ON = 1
+$FAILED = @{
+    INVALID_EDITION     = 6
+    INVALID_ARCH        = 5
+    INIT_MCT            = 4
+    RUNNING_MCT         = 3
+    ALREADY_RUNNING     = 2
+    ADMIN_NOT_LOGGED_ON = 1
+}
 
 # FUNCTIONS
 
@@ -380,15 +383,21 @@ $WIN_VERSION_MCT.win11.timestampFile = $WIN_VERSION_MCT.win11.folder + "\timesta
 # MCT won't work unless:
 #  1. Current logged in user is an admin
 #  2. The program is elevated
+#  3. Only one instance of program is started
 $loggedOnUser = (Get-WMIObject -class Win32_ComputerSystem).Username
 $elevatedUser = $env:USERDOMAIN + '\' + $env:USERNAME
 $wdagUtilUser = (Get-WMIObject -class Win32_ComputerSystem).Name + '\WDAGUtilityAccount'
 if (-Not (($loggedOnUser -eq $elevatedUser) -or ($wdagUtilUser -eq $elevatedUser))) {
     Add-Type -AssemblyName Microsoft.VisualBasic -ErrorAction SilentlyContinue
     [Microsoft.VisualBasic.Interaction]::MsgBox('Must be signed in as an admin, or ran inside Windows Sandbox, to use this tool.', 'OKOnly,SystemModal,Information', $MyInvocation.MyCommand.Name) | Out-Null
-    exit $FAILED_ADMIN_NOT_LOGGED_ON
+    exit $FAILED.ADMIN_NOT_LOGGED_ON
 }
 Show-MaximizedPowerShell
+if (Get-Process -Name "MediaCreationTool*") {
+    Write-Error "Can only run one instance of the Media Creation Tool at a time."
+    Wait-Host
+    exit $FAILED.ALREADY_RUNNING
+}
 
 # Select version of Windows we'll be using to create an image for
 $MCT = $Null
@@ -407,7 +416,7 @@ Switch ($OS) {
         if ($Arch -eq "x86") {
             Write-Error "Microsoft only built x86 (32-bit) images for Windows 10."
             Wait-Host
-            exit $FAILED_INVALID_ARCH
+            exit $FAILED.INVALID_ARCH
         }
         $MCT = $WIN_VERSION_MCT.win11; $winEditionKeys = $WIN_EDITION_KEYS.win11; Break
     }
@@ -418,7 +427,7 @@ if (-Not (Initialize-MCT -winVersionMCT $MCT)) {
     $errorMessage = "Something went wrong initializing MCT for $($MCT.os)."
     Write-Error $errorMessage
     Wait-Host
-    exit $FAILED_INIT_MCT
+    exit $FAILED.INIT_MCT
 }
 
 # Setup arguments for MCT
@@ -429,7 +438,7 @@ Switch -Wildcard ($Edition) {
         if ($OS -lt 11) {
             Write-Error "Microsoft does not build CS (Country Specific) editions for Windows 10."
             Wait-Host
-            exit $FAILED_INVALID_EDITION
+            exit $FAILED.INVALID_EDITION
         }
         $BaseEdition = "Home"; Break
     }
@@ -558,5 +567,5 @@ if (0 -ne $generateISO.ExitCode) {
     $errorMessage = "Something went wrong running the $($MCT.os) Media Creation Tool."
     Write-Error $errorMessage
     Wait-Host
-    exit $FAILED_RUNNING_MCT
+    exit $FAILED.RUNNING_MCT
 }
