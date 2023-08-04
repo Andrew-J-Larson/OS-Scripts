@@ -42,13 +42,13 @@
   About the issue: https://www.bleepingcomputer.com/news/microsoft/buggy-microsoft-defender-asr-rule-deletes-windows-app-shortcuts/
 
   .LINK
-  Full script at: https://github.com/TheAlienDrew/OS-Scripts/blob/main/Windows/Microsoft-Endpoint-Defender/Recreate-Startmenu-Shortcuts.ps1
+  Full script at: https://github.com/Andrew-J-Larson/OS-Scripts/blob/main/Windows/Microsoft-Endpoint-Defender/Recreate-Startmenu-Shortcuts.ps1
 
   .LINK
-  Need an app added?: https://github.com/TheAlienDrew/OS-Scripts/issues/new?title=%5BAdd%20App%5D%20Recreate-Startmenu-Shortcuts.ps1&body=%3C%21--%20Please%20enter%20the%20app%20you%20need%20added%20below%2C%20and%20a%20link%20to%20the%20installer%20--%3E%0A%0A
+  Need an app added?: https://github.com/Andrew-J-Larson/OS-Scripts/issues/new?title=%5BAdd%20App%5D%20Recreate-Startmenu-Shortcuts.ps1&body=%3C%21--%20Please%20enter%20the%20app%20you%20need%20added%20below%2C%20and%20a%20link%20to%20the%20installer%20--%3E%0A%0A
 
   .LINK
-  Script from: https://github.com/TheAlienDrew/OS-Scripts/blob/main/Windows/Microsoft-Endpoint-Defender/Recreate-Startmenu-Shortcuts-INTUNE.ps1
+  Script from: https://github.com/Andrew-J-Larson/OS-Scripts/blob/main/Windows/Microsoft-Endpoint-Defender/Recreate-Startmenu-Shortcuts-INTUNE.ps1
 #>
 #Requires -RunAsAdministrator
 

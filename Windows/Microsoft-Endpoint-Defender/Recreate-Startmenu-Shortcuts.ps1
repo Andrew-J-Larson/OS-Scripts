@@ -44,13 +44,13 @@
   About the issue: https://www.bleepingcomputer.com/news/microsoft/buggy-microsoft-defender-asr-rule-deletes-windows-app-shortcuts/
 
   .LINK
-  Intune version of script: https://github.com/TheAlienDrew/OS-Scripts/blob/main/Windows/Microsoft-Endpoint-Defender/Recreate-Startmenu-Shortcuts-INTUNE.ps1
+  Intune version of script: https://github.com/Andrew-J-Larson/OS-Scripts/blob/main/Windows/Microsoft-Endpoint-Defender/Recreate-Startmenu-Shortcuts-INTUNE.ps1
 
   .LINK
-  Need an app added?: https://github.com/TheAlienDrew/OS-Scripts/issues/new?title=%5BAdd%20App%5D%20Recreate-Startmenu-Shortcuts.ps1&body=%3C%21--%20Please%20enter%20the%20app%20you%20need%20added%20below%2C%20and%20a%20link%20to%20the%20installer%20--%3E%0A%0A
+  Need an app added?: https://github.com/Andrew-J-Larson/OS-Scripts/issues/new?title=%5BAdd%20App%5D%20Recreate-Startmenu-Shortcuts.ps1&body=%3C%21--%20Please%20enter%20the%20app%20you%20need%20added%20below%2C%20and%20a%20link%20to%20the%20installer%20--%3E%0A%0A
 
   .LINK
-  Script from: https://github.com/TheAlienDrew/OS-Scripts/blob/main/Windows/Microsoft-Endpoint-Defender/Recreate-Startmenu-Shortcuts.ps1
+  Script from: https://github.com/Andrew-J-Larson/OS-Scripts/blob/main/Windows/Microsoft-Endpoint-Defender/Recreate-Startmenu-Shortcuts.ps1
 #>
 #Requires -RunAsAdministrator
 
@@ -263,9 +263,9 @@ function New-Shortcut {
       # place shortcut on Jerry's desktop, and use the default CMD icon
       New-Shortcut -n "CMD (Admin)" -tp "%windir%\system32\cmd.exe" -a "/k `"echo This is an example.`"" -sl "${env:SystemDrive}\Users\Jerry\Desktop\" -wd "${env:SystemDrive}\Users\Jerry" -d "Performs text-based (command-line) functions." -il "%windir%\system32\cmd.exe, 0" -r $true -u "Jerry"
     .NOTES
-      Author: TheAlienDrew
+      Author: Andrew Larson
     .LINK
-      https://github.com/TheAlienDrew/OS-Scripts/tree/main/Windows
+      https://github.com/Andrew-J-Larson/OS-Scripts/tree/main/Windows
   #>
   #Requires -RunAsAdministrator
 

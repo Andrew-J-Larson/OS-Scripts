@@ -23,7 +23,7 @@
   Shouldn't be ran as admin, as it doesn't require extra permissions to work.
 
   .LINK
-  Script from: https://github.com/TheAlienDrew/OS-Scripts/blob/main/Windows/Microsoft-Endpoint-Defender/Reset-Taskbar-Pins.ps1
+  Script from: https://github.com/Andrew-J-Larson/OS-Scripts/blob/main/Windows/Microsoft-Endpoint-Defender/Reset-Taskbar-Pins.ps1
 #>
 
 <# Copyright (C) 2023  Andrew Larson (thealiendrew@gmail.com)

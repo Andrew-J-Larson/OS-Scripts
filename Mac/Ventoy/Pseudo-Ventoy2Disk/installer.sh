@@ -216,7 +216,7 @@ if [ -z "$packageManager" ] # prompt to install a package manager
       read -p "Would you like to install the [H]omeBrew or [M]acPorts package manager, or [C]ancel installation? " hm
       case ${hm} in
         [Hh]* ) $SHELL -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"; break;;
-        [Mm]* ) $SHELL -c "$(curl -fsSL https://raw.githubusercontent.com/TheAlienDrew/OS-Scripts/main/Mac/MacPorts/installer.sh)"; break;;
+        [Mm]* ) $SHELL -c "$(curl -fsSL https://raw.githubusercontent.com/Andrew-J-Larson/OS-Scripts/main/Mac/MacPorts/installer.sh)"; break;;
         [Cc]* ) exit 1; break;;
         * ) echo "Please answer with H (HomeBrew) or M (MacPorts), or C (Cancel installation).";;
       esac
@@ -249,7 +249,7 @@ if [ -z "$packageManager" ] # prompt to install a package manager
       while true; do
         read -p "Would you like to install the MacPorts package manager? (only one supported with Ventoy at this time) " yn
         case ${yn} in
-          [Yy]* ) $SHELL -c "$(curl -fsSL https://raw.githubusercontent.com/TheAlienDrew/OS-Scripts/main/Mac/MacPorts/installer.sh)"; break;;
+          [Yy]* ) $SHELL -c "$(curl -fsSL https://raw.githubusercontent.com/Andrew-J-Larson/OS-Scripts/main/Mac/MacPorts/installer.sh)"; break;;
           [Nn]* ) exit 1; break;;
           * ) echo "Please answer yes or no..";;
         esac

@@ -36,7 +36,7 @@
    - @{Name = "..."; TargetPath = "..."; Arguments = "..."; SystemLnk = "..."; WorkingDirectory = "..."; Description = "..."; IconLocation = "..."; RunAsAdmin = ($true -Or $false) },
 
   .LINK
-  Script from: https://github.com/TheAlienDrew/OS-Scripts/blob/main/Windows/Microsoft-Endpoint-Defender/Function-Generate-Lnk-Info.ps1
+  Script from: https://github.com/Andrew-J-Larson/OS-Scripts/blob/main/Windows/Microsoft-Endpoint-Defender/Function-Generate-Lnk-Info.ps1
 #>
 #Requires -RunAsAdministrator
 

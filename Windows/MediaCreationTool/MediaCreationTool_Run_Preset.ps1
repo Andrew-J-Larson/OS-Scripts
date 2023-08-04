@@ -59,10 +59,10 @@
   Primarily created as an alternative to https://github.com/AveYo/MediaCreationTool.bat (`MediaCreationTool.bat` usually sets off Defender).
 
   .LINK
-  Having issues?: https://github.com/TheAlienDrew/OS-Scripts/issues/new?title=%5BBug%5D%20MediaCreationTool_Run_Preset.ps1&body=%3C%21--%20Please%20describe%20the%20issue%28s%29%20you%20are%20having%20below%2C%20and%20include%20steps%20to%20reproduce%20them%20--%3E%0A%0A
+  Having issues?: https://github.com/Andrew-J-Larson/OS-Scripts/issues/new?title=%5BBug%5D%20MediaCreationTool_Run_Preset.ps1&body=%3C%21--%20Please%20describe%20the%20issue%28s%29%20you%20are%20having%20below%2C%20and%20include%20steps%20to%20reproduce%20them%20--%3E%0A%0A
 
   .LINK
-  Script from: https://github.com/TheAlienDrew/OS-Scripts/blob/main/Windows/MediaCreationTool/MediaCreationTool_Run_Preset.ps1
+  Script from: https://github.com/Andrew-J-Larson/OS-Scripts/blob/main/Windows/MediaCreationTool/MediaCreationTool_Run_Preset.ps1
 #>
 #Requires -RunAsAdministrator
 
