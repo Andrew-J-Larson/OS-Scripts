@@ -1,0 +1,1 @@
+"example-config.ovpn" is a dummy file, please replace with your own config, may want to rename the variable in script, if you want the config to be under a different name.

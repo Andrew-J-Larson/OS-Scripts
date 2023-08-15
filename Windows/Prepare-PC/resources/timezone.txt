@@ -1,0 +1,1 @@
+[only the names of timezones in the "Timezones" column is valid: https://learn.microsoft.com/en-us/windows-hardware/manufacture/desktop/default-time-zones?view=windows-11#time-zones , e.g. "Pacific Standard Time" (but without quotes]

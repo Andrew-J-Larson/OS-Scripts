@@ -1,0 +1,1 @@
+[a server name that has a share only a domain admin can mount, used for testing credentials]
