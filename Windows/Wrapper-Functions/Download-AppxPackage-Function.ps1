@@ -1,9 +1,9 @@
 <#
   .SYNOPSIS
-  Script that helps facilitate downloading Microsoft Store apps from their servers (via third-party API's).
+  Download AppxPackage Function v2.0.2
 
   .DESCRIPTION
-  Version 2.0.2
+  Script that helps facilitate downloading Microsoft Store apps from their servers (via third-party API's).
   
   This script is meant to be used as an alternative from the Microsoft Store and winget, to download application
   packages, for installation, such as in the case where an app is blocked from being downloaded directly from
@@ -33,7 +33,7 @@
   Script downloaded from: https://github.com/Andrew-J-Larson/OS-Scripts/blob/main/Windows/Wrapper-Functions/Download-AppxPackage-Function.ps1
 #>
 
-<# Copyright (C) 2023  Andrew Larson (thealiendrew@gmail.com)
+<# Copyright (C) 2023  Andrew Larson (andrew.j.larson18@gmail.com)
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by

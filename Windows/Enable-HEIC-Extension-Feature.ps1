@@ -1,9 +1,9 @@
 <#
   .SYNOPSIS
-  Script downloads and installs all extensions needed for viewing/editing HEIF/HEVC/HEIC file types.
+  Enable HEIC Extension Feature v2.0.9
 
   .DESCRIPTION
-  Version 2.0.9
+  Script downloads and installs all extensions needed for viewing/editing HEIF/HEVC/HEIC file types.
   
   Since old manufacturer installed Windows installations don't always include this support, this script is handy to turn
   on HEIC file support without needing admin access or even the Microsoft Store.
@@ -34,7 +34,7 @@
   Script downloaded from: https://github.com/Andrew-J-Larson/OS-Scripts/blob/main/Windows/Enable-HEIC-Extension-Feature.ps1
 #>
 
-<# Copyright (C) 2023  Andrew Larson (thealiendrew@gmail.com)
+<# Copyright (C) 2023  Andrew Larson (andrew.j.larson18@gmail.com)
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by

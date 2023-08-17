@@ -1,9 +1,8 @@
 <#
   .SYNOPSIS
-  Script that aids in the mass uninstallation of Sophos anti-virus.
+  Sophos Auto Uninstall v1.1.1
 
   .DESCRIPTION
-  Version 1.1.1
   
   This script is meant to be used in aid of mass uninstallation of Sophos anti-virus in any organization,
   per computer. It should be able to be ran in the background, as long as a computer has internet access,
@@ -49,7 +48,7 @@
 
 #Requires -RunAsAdministrator
 
-<# Copyright (C) 2023  Andrew Larson (thealiendrew@gmail.com)
+<# Copyright (C) 2023  Andrew Larson (andrew.j.larson18@gmail.com)
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
