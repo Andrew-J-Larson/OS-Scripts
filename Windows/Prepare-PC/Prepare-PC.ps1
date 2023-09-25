@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.0.0
+  Prepare PC v1.0.1
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -768,8 +768,9 @@ if ($isDell) {
     Write-Output "Attempting to install Dell Command Update..."
     Write-Output '' # Makes log look better
     $installDellCommandUpdate = Start-Process 'winget.exe' -ArgumentList 'install -h --id "Dell.CommandUpdate.Universal" --accept-package-agreements --accept-source-agreements' -NoNewWindow -PassThru -Wait
-    if (0 -eq $installDellCommandUpdate.ExitCode) {
-      Write-Output "Successfully installed Dell Command Update."
+    $dcuRebootRequired = (1 -eq $installDellCommandUpdate.ExitCode) -Or (5 -eq $installDellCommandUpdate.ExitCode)
+    if ((0 -eq $installDellCommandUpdate.ExitCode) -Or $dcuRebootRequired) {
+      Write-Output "Successfully installed Dell Command Update.$(if ($dcuRebootRequired) { " (reboot required)" } else { '' })"
     } else {
       Write-Warning "Failed to install Dell Command Update."
     }
