@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.0.1
+  Prepare PC v1.0.2
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -768,8 +768,7 @@ if ($isDell) {
     Write-Output "Attempting to install Dell Command Update..."
     Write-Output '' # Makes log look better
     $installDellCommandUpdate = Start-Process 'winget.exe' -ArgumentList 'install -h --id "Dell.CommandUpdate.Universal" --accept-package-agreements --accept-source-agreements' -NoNewWindow -PassThru -Wait
-    $dcuRebootRequired = (1 -eq $installDellCommandUpdate.ExitCode) -Or (5 -eq $installDellCommandUpdate.ExitCode)
-    if ((0 -eq $installDellCommandUpdate.ExitCode) -Or $dcuRebootRequired) {
+    if (0 -eq $installDellCommandUpdate.ExitCode) {
       Write-Output "Successfully installed Dell Command Update.$(if ($dcuRebootRequired) { " (reboot required)" } else { '' })"
     } else {
       Write-Warning "Failed to install Dell Command Update."
@@ -779,11 +778,12 @@ if ($isDell) {
   if (Test-Path -Path $dcuCliExe -PathType Leaf) {
     Write-Output "Attempting to update all Dell drivers/firmwares directly from manufacturer..."
     $dcuUpdate = Start-Process -FilePath $dcuCliExe -ArgumentList $dcuArgs -NoNewWindow -PassThru -Wait
+    $dcuRebootRequired = (1 -eq $dcuUpdate.ExitCode) -Or (5 -eq $dcuUpdate.ExitCode)
     # 0 = updated, 500 = no updates were available, a.k.a. up-to-date
     Write-Output '' # Makes log look better
     if ((0 -eq $dcuUpdate.ExitCode) -Or (500 -eq $dcuUpdate.ExitCode)) {
       Write-Output "Successfully ran Dell Command Update to update Dell drivers/firmwares."
-    } elseif (5 -eq $dcuUpdate.ExitCode) {
+    } elseif ($dcuRebootRequired) {
       Write-Warning "Likely already ran Dell Command Update to update Dell drivers/firmwares, as it's pending a reboot."
     } else {
       Write-Warning "Failed to run Dell Command Update to update Dell drivers/firmwares."
