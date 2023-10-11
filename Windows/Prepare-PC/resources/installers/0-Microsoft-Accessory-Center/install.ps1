@@ -69,6 +69,6 @@ if (Test-Path -Path $packageFolder) {
 if ($provisioned) {
     Write-Output "Successfully provisioned ${appTitle}."
 } else {
-    Write-Warning "Failed to provision ${appTitle} (result: ${reason})."
+    throw "Failed to provision ${appTitle} (result: ${reason})."
 }
 Write-Output '' # Makes log look better
