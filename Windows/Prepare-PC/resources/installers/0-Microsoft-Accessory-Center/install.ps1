@@ -20,6 +20,7 @@ $appTitle = 'Microsoft Accessory Center'
 $packageFolder = $PSScriptRoot + '\package'
 $dependencyPackagesFolder = $packageFolder + '\dependency_packages'
 $provisioned = $Null
+$canSkip = $False
 $reason = "unknown"
 Write-Output "Attempting to provision ${appTitle}..."
 Write-Output '' # Makes log look better
@@ -31,6 +32,7 @@ if (Test-Path -Path $packageFolder) {
         $appAlreadyProvisioned = Get-AppxProvisionedPackage -Online | Where-Object { $_.DisplayName -eq $appPackageName }
         if ($appAlreadyProvisioned) {
             $reason = "already provisioned"
+            $canSkip = $True
         } else {
             # setup provision command
             $provisionCommand = 'Add-AppxProvisionedPackage -Online -PackagePath "' + $package.FullName + '"'
@@ -66,8 +68,12 @@ if (Test-Path -Path $packageFolder) {
 } else {
     $reason = "packages folder missing"
 }
-if ($provisioned) {
-    Write-Output "Successfully provisioned ${appTitle}."
+if ($provisioned -Or $canSkip) {
+    if ($canSkip) {
+        Write-Output "${appTitle} is ${reason}, skipped."
+    } else {
+        Write-Output "Successfully provisioned ${appTitle}."
+    }
 } else {
     throw "Failed to provision ${appTitle} (result: ${reason})."
 }
