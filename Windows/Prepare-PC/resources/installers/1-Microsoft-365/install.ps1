@@ -25,12 +25,13 @@ $officeRoot = "${env:ProgramFiles}\Microsoft Office\root\Office16"
 $regOfficeOEM = "HKLM:\WOW6432Node\Microsoft\Office\16.0\Common\OEM"
 $officeReleasehistoryDownloadURL = 'https://officecdn.microsoft.com/pr/wsus/releasehistory.cab'
 $officeInstallerDownloadURL = 'https://officecdn.microsoft.com/pr/wsus/setup.exe'
-$officeWasPreinstalled = Get-Package -Name "Microsoft 365*" -ErrorAction SilentlyContinue
+$officeWasPreinstalled = @(Get-Package -Name "Microsoft 365*" -ErrorAction SilentlyContinue)
 $officeCameFromOEM = Test-Path -Path $regOfficeOEM
 $officeIncludesSfB = Test-Path -Path "${officeRoot}\lync.exe" -PathType Leaf
 $officeNeedsConfiguring = $officeWasPreinstalled -And ($officeCameFromOEM -Or $officeIncludesSfB)
 $officeNeedsUpdate = $False
 if ($officeWasPreinstalled) {
+  $officeWasPreinstalled = $officeWasPreinstalled[0]
   $currentVersion = [System.Version]$officeWasPreinstalled.Version
   # need to grab the releasehistory cab file to check for latest version
   $tempReleasehistoryCAB = $envTEMP + '\' + $officeReleasehistoryDownloadURL.substring($officeReleasehistoryDownloadURL.LastIndexOf('/') + 1)
