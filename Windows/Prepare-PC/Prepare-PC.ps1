@@ -717,7 +717,7 @@ if (Get-Command 'winget.exe' -ErrorAction SilentlyContinue) {
   $wingetUpgradePSI.RedirectStandardOutput = $true
   $wingetUpgradePSI.RedirectStandardError = $false
   $wingetUpgradePSI.FileName = 'winget.exe'
-  $wingetUpgradePSI.Arguments = @('upgrade -hr --accept-source-agreements')
+  $wingetUpgradePSI.Arguments = @('upgrade --silent --all --accept-source-agreements')
   $wingetUpgradeProcess = New-Object System.Diagnostics.Process
   $wingetUpgradeProcess.StartInfo = $wingetUpgradePSI
   [void]$wingetUpgradeProcess.Start()
