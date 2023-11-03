@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.0.4
+  Prepare PC v1.0.5
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -743,7 +743,9 @@ if (Get-Command 'winget.exe' -ErrorAction SilentlyContinue) {
     if (0 -eq $wingetExceptionList.length) {
       Write-Warning "Failed to update all apps (not from the Microsoft Store)."
     } else {
-      $wingetExceptionMessage = 'Successfully updated most apps (not from the Microsoft Store), but ' + ($wingetExceptionList -Join ', ') + '.'
+      $wingetExceptionMessage = "$(
+        if ($wingetOutput.Contains('An unexpected error occurred while executing the command:')) { 'Partially' } else { 'Successfully' }
+      ) updated most apps (not from the Microsoft Store), but " + ($wingetExceptionList -Join ', ') + '.'
       Write-Warning $wingetExceptionMessage
     }
   }
