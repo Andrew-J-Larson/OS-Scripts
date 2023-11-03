@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.0.2
+  Prepare PC v1.0.4
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -214,6 +214,7 @@ $regTzautoupdate = "${regHKLM}\SYSTEM\CurrentControlSet\Services\tzautoupdate"
 $regCurrentVersion = "${regLocalMachineSoftware}\Microsoft\Windows NT\CurrentVersion"
 $regMachinePolicies = "${regLocalMachineSoftware}\Policies\Microsoft\Windows"
 $regWinlogon = "${regCurrentVersion}\Winlogon"
+$faultyWingetVersion = 'v1.2.10691'
 $dcuEndPath = "Dell\CommandUpdate\dcu-cli.exe"
 $dcuCli = "${env:ProgramFiles}\${dcuEndPath}"
 $dcuCli32bit = "${env:ProgramFiles(x86)}\${dcuEndPath}" # required in the case of Dell SupportAssist OS reinstalls
@@ -495,6 +496,7 @@ while ($attemptUpdates) {
 }
 
 # Update all apps (not from the Microsoft Store)
+$forceWingetUpdate = $False
 $desktopAppInstaller = Get-AppxPackage -AllUsers -Name "Microsoft.DesktopAppInstaller"
 if ($desktopAppInstaller) {
   # if we can't find WinGet, try re-registering it (only a first time logon issue)
@@ -503,9 +505,12 @@ if ($desktopAppInstaller) {
     Add-AppxPackage -DisableDevelopmentMode -Register "$($desktopAppInstaller.InstallLocation)\AppxManifest.xml"
     # need to wait a moment to allow Windows to recognize registration
     Start-Sleep -Seconds $appxInstallDelay
+  } elseif ($faultyWingetVersion -eq $(winget -v)) {
+    # if winget is a faulty version, it'll require a forced update
+    $forceWingetUpdate = $True
   }
 }
-if (-Not (Get-Command 'winget.exe' -ErrorAction SilentlyContinue)) {
+if ($forceWingetUpdate -Or (-Not (Get-Command 'winget.exe' -ErrorAction SilentlyContinue))) {
   # download WinGet package
   Write-Output "Downloading WinGet..."
   Write-Output '' # Makes log look better
