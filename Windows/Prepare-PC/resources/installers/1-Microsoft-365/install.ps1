@@ -51,7 +51,9 @@ if ($officeWasPreinstalled) {
     Remove-Item -Path $tempReleaseHistoryXML -Force -ErrorAction SilentlyContinue
     $updateChannels = $releaseHistoryXML.ReleaseHistory.UpdateChannel
     $updates = $updateChannels | Where-Object { ($_.name -like $channel) -Or ($_.ID -like $channel) }
-    $latestVersion = [System.Version]($updates.Update[0].LegacyVersion)
+    if ($updates.Update) {
+      $latestVersion = [System.Version]($(if ($updates.Update.count -gt 0) {$updates.Update[0]} else {$updates.Update}).LegacyVersion)
+    }
   }
   # check version to see if we need to update
   $officeNeedsUpdate = if ($latestVersion) { $currentVersion -lt $latestVersion } else { $True }
