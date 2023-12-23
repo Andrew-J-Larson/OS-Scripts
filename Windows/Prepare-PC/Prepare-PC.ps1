@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.0.6
+  Prepare PC v1.0.7
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -1001,7 +1001,6 @@ Write-Output '' # Makes log look better
 # Set a scheduled task to run at startup and ...
 # - Wait for BitLocker to be done encypting (if needed),
 # - Wait for a network connection,
-# - If computer didn't rename, fix first
 # - Set computer AD description,
 # - Run Check for Dell updates again, as some updates only show up after the first update (only on Dell machines)
 # - Lock the computer,
@@ -1025,14 +1024,10 @@ $actionFinalizeOnline = New-ScheduledTaskAction -Execute 'powershell.exe' -Argum
   `$domainAdminPasswordPath = `"`"`"`"${domainAdminPasswordPath}`"`"`"`" ; `
   `$domainAdminPassword = Get-Content -Path `$domainAdminPasswordPath ; `
   `$psCred = New-Object System.Management.Automation.PSCredential('$($credentials.username)', `$(ConvertTo-SecureString `$domainAdminPassword -AsPlainText -Force)) ; `
-  if ( `$env:COMPUTERNAME -ne '${serialnumber}' ) { `
-  Rename-Computer -NewName '${serialnumber}' -DomainCredential `$psCred -Force ; `
-  Start-Sleep -Seconds ${domainSyncDelay} `
-  } ; `
   Start-Process -FilePath 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe' -ArgumentList `"`"`"`"-c \`"`"`"`"& { `
   ```$ComputerSearcher = New-Object DirectoryServices.DirectorySearcher ; `
   ```$ComputerSearcher.SearchRoot = 'LDAP://${adRootOU}' ; `
-  ```$ComputerSearcher.Filter = '(&(objectCategory=Computer)(CN=${serialnumber}))' ; `
+  ```$ComputerSearcher.Filter = '(&(objectCategory=Computer)(CN=`${env:COMPUTERNAME}))' ; `
   ```$computerObj = ```$null ; `
   while (```$null -eq ```$computerObj) `
   { Write-Output 'Searching for computer in AD...' ; Write-Output '' ; `
