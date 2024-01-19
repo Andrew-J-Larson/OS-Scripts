@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Recreate Startmenu Shortcuts v0.9.021
+  Recreate Startmenu Shortcuts v0.9.022
 
   .DESCRIPTION
   Script only recreates shortcuts to applications it knows are installed, and also works for user profile installed applications.
@@ -5115,9 +5115,7 @@ for ($i = 0; $i -lt $sys3rdPartyAppList.length; $i++) {
 # User Applications (per user installed apps)
 
 # get all users 
-$Users = (Get-ChildItem -Directory -Path "${USERS_FOLDER}\" | ForEach-Object { if (($_.name -ne "Default") -And ($_.name -ne "Public")) { $_.name } })
-# if only one user, array needs to be recreated
-if ($Users -And ($Users[0].length -eq 1)) { $Users = @("$Users") }
+$Users = @(Get-ChildItem -Directory -Path "${USERS_FOLDER}\" | ForEach-Object { if (($_.name -ne "Default") -And ($_.name -ne "Public")) { $_.name } })
 
 # System app arguments dependant on uninstall strings
 
