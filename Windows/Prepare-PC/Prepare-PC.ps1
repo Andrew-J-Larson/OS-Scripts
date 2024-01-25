@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.0.7
+  Prepare PC v1.0.8
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -164,6 +164,14 @@ if ($HardwareType -eq 2) {
     }
   }
 }
+
+# Check if running in Windows Terminal (determines if encoding needs to be changed when running some apps)
+# code modified from https://stackoverflow.com/a/72575526
+$ps = Get-Process -Id $PID
+while ($ps -and 0 -eq [int] $ps.MainWindowHandle) { 
+  $ps = Get-Process -ErrorAction Ignore -Id (Get-CimInstance Win32_Process -Filter "ProcessID = $($ps.Id)").ParentProcessId 
+}
+$runningInWindowsTerminal = $ps.ProcessName -eq 'WindowsTerminal'
 
 # Check manufacturer (only required for using Dell Command Update on Dell computers)
 $manufacturer = (Get-WmiObject -Class Win32_ComputerSystem -Property Manufacturer).Manufacturer
@@ -725,10 +733,19 @@ if (Get-Command 'winget.exe' -ErrorAction SilentlyContinue) {
   $wingetUpgradePSI.Arguments = @('upgrade --silent --all --accept-source-agreements')
   $wingetUpgradeProcess = New-Object System.Diagnostics.Process
   $wingetUpgradeProcess.StartInfo = $wingetUpgradePSI
+  # if not running in Windows Terminal, need to change encoding to UTF-8 temporarily for winget
+  $oldOutputEncoding = $OutputEncoding; $oldConsoleEncoding = [Console]::OutputEncoding
+  if (-Not $runningInWindowsTerminal) {
+    $OutputEncoding = [Console]::OutputEncoding = New-Object System.Text.Utf8Encoding
+  }
   [void]$wingetUpgradeProcess.Start()
   $wingetOutput = $wingetUpgradeProcess.StandardOutput.ReadToEnd()
   $wingetUpgradeProcess.WaitForExit()
   Write-Host $wingetOutput # show output after so that we at least know what went on
+  # revert any encoding changes we made from earlier if needed
+  if (-Not $runningInWindowsTerminal) {
+    $OutputEncoding = $oldOutputEncoding; [Console]::OutputEncoding = $oldConsoleEncoding
+  }
   if (0 -eq $wingetUpgradeProcess.ExitCode) {
     Write-Output "Successfully updated all apps (not from the Microsoft Store)."
   } else {
