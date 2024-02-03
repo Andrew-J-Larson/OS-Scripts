@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Install WinGet Function v1.0.0
+  Install WinGet Function v1.1.0
 
   .DESCRIPTION
   Script contains a function which can be used to install WinGet (to current user profile) automatically.
@@ -33,7 +33,7 @@
   PS> Install-WinGet -Force
 
   .LINK
-  winget-cli (WinGet source): https://github.com/microsoft/winget-cli
+  Windows Package Manager (WinGet): https://github.com/microsoft/winget-cli
 
   .LINK
   Microsoft.UI.Xaml (WinGet requirement): https://www.nuget.org/packages/Microsoft.UI.Xaml/
@@ -79,10 +79,36 @@ function Install-WinGet {
 
   # Constants
   
-  $envTEMP = (Get-Item -LiteralPath $env:TEMP).FullName # Required due to PowerShell bug with shortnames appearing when they shouldn't be
+  $osIsWindows = (-Not (Test-Path variable:global:isWindows)) -Or $isWindows # required for PS 5.1
+  $osIsARM = $env:PROCESSOR_ARCHITECTURE -match '^arm*'
+  $osIs64Bit = [System.Environment]::Is64BitOperatingSystem
+  $osArch = $( # architecture is required for some parts of the install process
+    if ($osIsARM) { 'arm' } else { 'x' }
+  ) + $(
+    if ($osIs64Bit) { '64' } elseif (-Not $osIsARM) { '86' }
+  ) # = x86 | x64 | arm | arm64
+  $osVersion = [System.Environment]::OSVersion.Version
+  $osName = if ($PSVersionTable.OS) {
+    $PSVersionTable.OS
+  } else { # required for PS 5.1
+    ((([System.Environment]::OSVersion.VersionString.split() |
+    Select-Object -Index 0,1,3) -join ' ').split('.') |
+    Select-Object -First 3) -join '.'
+  }
+  $experimentalWindowsVersion = [System.Version]'10.0.16299.0' # first Windows version with MSIX features: https://learn.microsoft.com/en-us/windows/msix/supported-platforms
+  $supportedWindowsVersion = [System.Version]'10.0.17763.0' # oldest Windows version that WinGet supports: https://github.com/microsoft/winget-cli?tab=readme-ov-file#installing-the-client
+  $retiredWingetVersion = [System.Version]'1.2' # if on this version or older, WinGet must be updated, due to retired CDNs
+  $experimentalWarning = "(things may not work properly)"
+  $continuePrompt = "Press any key to continue or CTRL+C to quit"
+  $envTEMP = (Get-Item -LiteralPath $( # Required due to PowerShell bug with shortnames appearing when they shouldn't be
+    if (Test-Path variable:global:TEMP) {
+      $env:TEMP
+    } else { # Required for non-Windows
+      [System.IO.Path]::GetTempPath().TrimEnd('\')
+    }
+  )).FullName 
   $loopDelay = 1 # second
   $appxInstallDelay = 3 # seconds
-  $faultyWingetVersion = 'v1.2.10691'
 
   # Variables
 
@@ -94,6 +120,34 @@ function Install-WinGet {
     return Get-Command 'winget.exe' -ErrorAction SilentlyContinue
   }
 
+  # MAIN
+
+  # only for Windows 10 and newer
+  Write-Output "Operating System = ${osName}"
+  if (-Not $osIsWindows) {
+    Write-Error "WinGet is only for Windows 10 and newer versions."
+    return $LastExitCode
+  }
+
+  # only experimental on Windows 10 (1709) and newer, where MSIX features are available
+  $supportedWindowsBuild = "WinGet is only supported on Windows 10 (build $($supportedWindowsVersion.Build)) and newer versions"
+  if ($experimentalWindowsVersion -gt $osVersion) {
+    Write-Error "${supportedWindowsBuild}, and is only experimental on versions at or above Windows 10 (build $($experimentalWindowsVersion.Build)) ${experimentalWarning}."
+    return $LastExitCode
+  }
+
+  # only supported on Windows 10 (1809) and newer, warn about unsupported Windows versions
+  if ($supportedWindowsVersion -gt $osVersion) {
+    Write-Warning "${supportedWindowsBuild} ${experimentalWarning}."
+    Read-Host -Prompt $continuePrompt | Out-Null
+  }
+
+  # only supported on Windows (Work Station) versions, warn about unsupported Windows Server versions
+  if ((Get-CimInstance Win32_OperatingSystem).ProductType -ne 1) {
+    Write-Warning "WinGet isn't supported on Windows Server versions ${experimentalWarning}."
+    Read-Host -Prompt $continuePrompt | Out-Null
+  }
+
   # if we can't find WinGet, try re-registering it (only a first time logon issue)
   $desktopAppInstaller = Get-AppxPackage -AllUsers -Name "Microsoft.DesktopAppInstaller"
   if ($desktopAppInstaller) {
@@ -102,41 +156,48 @@ function Install-WinGet {
       Add-AppxPackage -DisableDevelopmentMode -Register "$($desktopAppInstaller.InstallLocation)\AppxManifest.xml"
       # need to wait a moment to allow Windows to recognize registration
       Start-Sleep -Seconds $appxInstallDelay
-    } elseif ($faultyWingetVersion -eq $(winget -v)) {
-      # if winget is a faulty version, it'll require a forced update
-      $forceWingetUpdate = $True
+    }
+    if ((-Not $forceWingetUpdate) -And (Test-WinGet)) {
+      # if WinGet version is retired, force it to update
+      $currentWingetVersion = [System.Version](
+        ((winget.exe -v).split('v')[1].split('.') | Select-Object -First 2) -join '.'
+      )
+      $forceWingetUpdate = ($currentWingetVersion -le $retiredWingetVersion)
     }
   }
 
   # if WinGet is still not found, download WinGet package with any dependent packages, and attempt install
-  if ($forceWingetUpdate -Or (-Not $(Test-WinGet))) {
+  if ($forceWingetUpdate -Or (-Not (Test-WinGet))) {
     # Internet connection check
     $InternetAccess = (Get-NetConnectionProfile).IPv4Connectivity -contains "Internet" -or (Get-NetConnectionProfile).IPv6Connectivity -contains "Internet"
     if (-Not $InternetAccess) {
       Write-Error "Please connect to the internet first. Aborting."
-      exit 1
+      return $LastExitCode
     }
 
     Write-Output "Downloading WinGet..."
     Write-Output '' # Makes log look better
-    $wingetGitHubLatestURL = "https://api.github.com/repos/microsoft/winget-cli/releases/latest"
-    $wingetDownloadURL = $Null
-    while (-Not $wingetDownloadURL) {
-      # need to loop until download URL is pulled from GitHub
-      try {
-        $wingetDownloadURL = (Invoke-RestMethod -Uri $wingetGitHubLatestURL -UseBasicParsing).assets.browser_download_url | Where-Object { $_.EndsWith(".msixbundle") }
-      } catch {
-        $wingetDownloadURL = $Null
-        Start-Sleep -Seconds $loopDelay
-      }
-    }
-    $tempWingetPackage = $envTEMP + '\' + $wingetDownloadURL.substring($wingetDownloadURL.LastIndexOf('/') + 1)
-    while ((Invoke-WebRequest -Uri $wingetDownloadURL -OutFile $tempWingetPackage -UseBasicParsing -PassThru).StatusCode -ne 200) {
+    $wingetLatestDownloadURL = "https://aka.ms/getwinget"
+    $tempWingetPackage = $Null
+    while (-Not $tempWingetPackage) {
       # need to loop until WinGet package is downloaded
-      Start-Sleep -Seconds $loopDelay
+      $tempWingetWebResponse = Invoke-WebRequest -Uri $wingetLatestDownloadURL -UseBasicParsing
+      if ($tempWingetWebRequest.StatusCode -eq 200) {
+        # confirm file extension is correct
+        $tempWingetFileName = ([System.Net.Mime.ContentDisposition]$tempWingetWebResponse.Headers.'Content-Disposition').FileName
+        if (-Not $tempWingetFileName.EndsWith(".msixbundle")) {
+          Write-Error "File downloaded doesn't have the correct file extension."
+          return $LastExitCode
+        }
+        $tempWingetPackage = $envTEMP + '\' + $tempWingetFileName
+        # save to file
+        $tempWingetFile = [System.IO.FileStream]::new($tempWingetPackage, [System.IO.FileMode]::Create)
+        $tempWingetFile.write($tempWingetWebResponse.Content, 0, $tempWingetWebResponse.Content.Length)
+        $tempWingetFile.close()
+        Write-Output "Downloaded WinGet."
+        Write-Output '' # Makes log look better
+      } else { Start-Sleep -Seconds $loopDelay }
     }
-    Write-Output "Downloaded WinGet."
-    Write-Output '' # Makes log look better
 
     # check for dependencies in WinGet that are not met, and only grab what we need
     Write-Output "Confirming dependencies for WinGet..."
@@ -216,7 +277,7 @@ function Install-WinGet {
         } elseif ($packageElement.Name -like "Microsoft.VCLibs*UWPDesktop") {
           $dependencyPackage = $wingetDependencies.vcLibs
           $dependencyPackage.version = ([System.Version]$packageElement.MinVersion).Major
-          $dependencyPackage.fileName = 'Microsoft.VCLibs.x64.' + $dependencyPackage.version + '.00.Desktop.appx'
+          $dependencyPackage.fileName = "Microsoft.VCLibs.${osArch}." + $dependencyPackage.version + '.00.Desktop.appx'
           $dependencyPackage.url = 'https://aka.ms/' + $dependencyPackage.fileName
         } else {
           Write-Warning "Unexpected new dependency found for WinGet: $($packageElement.Name))"
@@ -337,7 +398,7 @@ function Install-WinGet {
 
   # return results from install attempt
   $noErrors = $error.count -eq 0
-  $executableFound = $(Test-WinGet)
+  $executableFound = Test-WinGet
   if ($noErrors -And $executableFound) {
     Write-Output "WinGet successfully installed."
   } else {
