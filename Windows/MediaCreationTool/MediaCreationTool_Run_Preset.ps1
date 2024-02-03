@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  MediaCreationTool Run Preset v1.0.5
+  MediaCreationTool Run Preset v1.0.6
 
   .DESCRIPTION
   Script helps to automate a part of the process needed to generate single edition ISOs.
@@ -384,9 +384,9 @@ $WIN_VERSION_MCT.win11.timestampFile = $WIN_VERSION_MCT.win11.folder + "\timesta
 #  1. Current logged in user is an admin
 #  2. The program is elevated
 #  3. Only one instance of program is started
-$loggedOnUser = (Get-WMIObject -class Win32_ComputerSystem).Username
+$loggedOnUser = (Get-CimInstance Win32_ComputerSystem).Username
 $elevatedUser = [Security.Principal.WindowsIdentity]::GetCurrent().Name
-$wdagUtilUser = (Get-WMIObject -class Win32_ComputerSystem).Name + '\WDAGUtilityAccount'
+$wdagUtilUser = (Get-CimInstance Win32_ComputerSystem).Name + '\WDAGUtilityAccount'
 if (-Not (($loggedOnUser -eq $elevatedUser) -or ($wdagUtilUser -eq $elevatedUser))) {
     Add-Type -AssemblyName Microsoft.VisualBasic -ErrorAction SilentlyContinue
     [Microsoft.VisualBasic.Interaction]::MsgBox('Must be signed in as an admin, or ran inside Windows Sandbox, to use this tool.', 'OKOnly,SystemModal,Information', $MyInvocation.MyCommand.Name) | Out-Null
