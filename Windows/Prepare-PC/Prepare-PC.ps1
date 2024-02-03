@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.0.8
+  Prepare PC v1.0.9
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -103,10 +103,24 @@ if ($FullScreen.IsPresent) {
 $logEnabled = $Log.IsPresent
 # $SelectAppList is checked later in script
 
-# Only supported on 64-bit
-$architecture = (Get-CimInstance Win32_operatingsystem).OSArchitecture
-if ($architecture -ne '64-bit') {
-  Write-Warning "Not supported for ${architecture} operating systems. Aborting script."
+# Only supported on 64-bit based versions of Windows
+$osIsWindows = (-Not (Test-Path variable:global:isWindows)) -Or $isWindows # required for PS 5.1
+$osIsARM = $env:PROCESSOR_ARCHITECTURE -match '^arm*'
+$osIs64Bit = [System.Environment]::Is64BitOperatingSystem
+$osName = if ($PSVersionTable.OS) {
+  $PSVersionTable.OS
+} else { # required for PS 5.1
+  ((([System.Environment]::OSVersion.VersionString.split() |
+  Select-Object -Index 0,1,3) -join ' ').split('.') |
+  Select-Object -First 3) -join '.'
+}
+$osArch = $(
+  if ($osIsARM) { 'arm' } else { 'x' }
+) + $(
+  if ($osIs64Bit) { '64' } elseif (-Not $osIsARM) { '86' }
+) # = x86 | x64 | arm | arm64
+if (-Not ($osIsWindows -And $osIs64Bit)) {
+  Write-Warning "Not supported for $(if ($osIsWindows) { $osArch } else { $osName }) operating systems. Aborting script."
   exit 1
 }
 
@@ -193,9 +207,7 @@ if ($logEnabled) {
 
 # Constants
 
-$envTEMP = (Get-Item -LiteralPath $env:TEMP).FullName # Required due to PowerShell bug with shortnames appearing when they shouldn't be
 $loopDelay = 1 # second
-$appxInstallDelay = 3 # seconds
 $domainSyncDelay = 5 # seconds
 $resources = "${PSScriptRoot}\resources"
 $installers = "${resources}\installers"
@@ -222,12 +234,424 @@ $regTzautoupdate = "${regHKLM}\SYSTEM\CurrentControlSet\Services\tzautoupdate"
 $regCurrentVersion = "${regLocalMachineSoftware}\Microsoft\Windows NT\CurrentVersion"
 $regMachinePolicies = "${regLocalMachineSoftware}\Policies\Microsoft\Windows"
 $regWinlogon = "${regCurrentVersion}\Winlogon"
-$faultyWingetVersion = 'v1.2.10691'
 $dcuEndPath = "Dell\CommandUpdate\dcu-cli.exe"
 $dcuCli = "${env:ProgramFiles}\${dcuEndPath}"
 $dcuCli32bit = "${env:ProgramFiles(x86)}\${dcuEndPath}" # required in the case of Dell SupportAssist OS reinstalls
 $dcuCliExe = if (Test-Path -Path $dcuCli32bit -PathType Leaf) { $dcuCli32bit } else { $dcuCli }
 $dcuArgs = '/applyUpdates' + $(if ($dcuCliExe -eq $dcuCli) { ' -forceUpdate=enable' } else { '' }) + ' -reboot=disable -autoSuspendBitLocker=enable' # if using the universal version, need forceUpdate option
+
+# Functions
+
+# installs WinGet from the internet: code via https://github.com/Andrew-J-Larson/OS-Scripts/blob/main/Windows/Wrapper-Functions/Install-WinGet-Function.ps1
+function Install-WinGet {
+  param(
+    [switch]$Force
+  )
+
+  # CONSTANTS
+
+  $osIsWindows = (-Not (Test-Path variable:global:isWindows)) -Or $isWindows # required for PS 5.1
+  $osIsARM = $env:PROCESSOR_ARCHITECTURE -match '^arm*'
+  $osIs64Bit = [System.Environment]::Is64BitOperatingSystem
+  $osArch = $( # architecture is required for some parts of the install process
+    if ($osIsARM) { 'arm' } else { 'x' }
+  ) + $(
+    if ($osIs64Bit) { '64' } elseif (-Not $osIsARM) { '86' }
+  ) # = x86 | x64 | arm | arm64
+  $osVersion = [System.Environment]::OSVersion.Version
+  $osName = if ($PSVersionTable.OS) {
+    $PSVersionTable.OS
+  } else { # required for PS 5.1
+    ((([System.Environment]::OSVersion.VersionString.split() |
+    Select-Object -Index 0,1,3) -join ' ').split('.') |
+    Select-Object -First 3) -join '.'
+  }
+  $experimentalWindowsVersion = [System.Version]'10.0.16299.0' # first Windows version with MSIX features: https://learn.microsoft.com/en-us/windows/msix/supported-platforms
+  $supportedWindowsVersion = [System.Version]'10.0.17763.0' # oldest Windows version that WinGet supports: https://github.com/microsoft/winget-cli?tab=readme-ov-file#installing-the-client
+  $retiredWingetVersion = [System.Version]'1.2' # if on this version or older, WinGet must be updated, due to retired CDNs
+  $experimentalWarning = "(things may not work properly)"
+  $continuePrompt = "Press any key to continue or CTRL+C to quit"
+  $envTEMP = (Get-Item -LiteralPath $( # Required due to PowerShell bug with shortnames appearing when they shouldn't be
+    if (Test-Path variable:global:TEMP) {
+      $env:TEMP
+    } else { # Required for non-Windows
+      [System.IO.Path]::GetTempPath().TrimEnd('\')
+    }
+  )).FullName 
+  $loopDelay = 1 # second
+  $appxInstallDelay = 3 # seconds
+
+  # Error exit codes
+
+  $FAILED = @{
+    INSTALL                = 6
+    DEPENDENCIES_CHECK     = 5
+    INVALID_FILE_EXTENSION = 4
+    NO_INTERNET            = 3
+    NO_MSIX_FEATURE        = 2
+    NOT_WINDOWS            = 1
+  }
+
+  # FUNCTIONS
+
+  function Test-WinGet {
+    return Get-Command 'winget.exe' -ErrorAction SilentlyContinue
+  }
+
+  # VARIABLES
+
+  $forceWingetUpdate = $Force.IsPresent
+
+  # MAIN
+
+  # only for Windows 10 and newer
+  Write-Output "Operating System = ${osName}"
+  Write-Output '' # Makes log look better
+  if (-Not $osIsWindows) {
+    Write-Error "WinGet is only for Windows 10 and newer versions."
+    Write-Output '' # Makes log look better
+    return $FAILED.NOT_WINDOWS
+  }
+
+  # only experimental on Windows 10 (1709) and newer, where MSIX features are available
+  $supportedWindowsBuild = "WinGet is only supported on Windows 10 (build $($supportedWindowsVersion.Build)) and newer versions"
+  if ($experimentalWindowsVersion -gt $osVersion) {
+    Write-Error "${supportedWindowsBuild}, and is only experimental on versions at or above Windows 10 (build $($experimentalWindowsVersion.Build)) ${experimentalWarning}."
+    Write-Output '' # Makes log look better
+    return $FAILED.NO_MSIX_FEATURE
+  }
+
+  # only supported on Windows 10 (1809) and newer, warn about unsupported Windows versions
+  if ($supportedWindowsVersion -gt $osVersion) {
+    Write-Warning "${supportedWindowsBuild} ${experimentalWarning}."
+    Read-Host -Prompt $continuePrompt | Out-Null
+    Write-Output '' # Makes log look better
+  }
+
+  # only supported on Windows (Work Station) versions, warn about unsupported Windows Server versions
+  if ((Get-CimInstance Win32_OperatingSystem).ProductType -ne 1) {
+    Write-Warning "WinGet isn't supported on Windows Server versions ${experimentalWarning}."
+    Read-Host -Prompt $continuePrompt | Out-Null
+    Write-Output '' # Makes log look better
+  }
+
+  # check for elevated powershell, and grab AppxPackage data from all users
+  $currentPrincipal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
+  $elevatedPowershell = $currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+  # Installing packages is based on the user profile currently loaded into powershell:
+  #   If the original user account (without admin rights) attempts to use a second user account (with
+  #   admin rights) to elevate the Install-WinGet function in any way before the automatic elevation,
+  #   then it will load the profile of the second user account instead, and therefore will install
+  #   WinGet to the second user's profile, instead of the original user's profile
+  $appxPackagesAllUsers = $Null
+  if ($elevatedPowershell) {
+    # warn about running in elevated powershell as a different user
+    $loggedOnUser = (Get-CimInstance Win32_ComputerSystem).Username
+    $elevatedUser = [Security.Principal.WindowsIdentity]::GetCurrent().Name
+    if ($loggedOnUser -ne $elevatedUser) {
+      Write-Host -NoNewline "Logged in as non-admin user "
+      Write-Host -NoNewline $loggedOnUser -BackgroundColor Blue
+      Write-Host -NoNewline ", but elevated as admin user "
+      Write-Host -NoNewline $elevatedUser -BackgroundColor DarkRed
+      Write-Host "."
+      Write-Warning "WinGet will be installed in the following user's profile: ${elevatedUser}"
+      Write-Host -NoNewline "If this is not the intention, run the " -ForegroundColor Yellow
+      Write-Host -NoNewline "script" -ForegroundColor Cyan
+      Write-Host -NoNewline ", or " -ForegroundColor Yellow
+      Write-Host -NoNewline "Install-WinGet" -ForegroundColor Cyan
+      Write-Host " function, again, but" -ForegroundColor Yellow
+      Write-Host -NoNewline "don't run it as admin" -BackgroundColor Red
+      Write-Host ", to install in the following user's profile: ${loggedOnUser}" -ForegroundColor Yellow
+      Write-Output '' # Makes log look better
+      Read-Host -Prompt $continuePrompt | Out-Null
+    }
+    $appxPackagesAllUsers = @(Get-AppxPackage -AllUsers)
+  } else {
+    Write-Warning "Elevation required to install WinGet for the logged on user."
+    $tempFileForElevatedData = New-TemporaryFile
+    Start-Process 'powershell.exe' -ArgumentList "-command `"& { Get-AppxPackage -AllUsers | Export-Clixml '$($tempFileForElevatedData.FullName)' }`"" -Verb RunAs -Wait -WindowStyle Hidden
+    $elevatedData = Import-Clixml -LiteralPath $tempFileForElevatedData
+    $tempFileForElevatedData | Remove-Item -Force -ErrorAction SilentlyContinue
+    $appxPackagesAllUsers = @($elevatedData)
+  }
+
+  # if we can't find WinGet, try re-registering it (only a first time logon issue)
+  $desktopAppInstaller = $appxPackagesAllUsers | Where-Object { $_.Name -eq "Microsoft.DesktopAppInstaller"}
+  if ($desktopAppInstaller) {
+    if (-Not $(Test-WinGet)) {
+      # if the version is new enough to contain WinGet, this should fix things
+      Add-AppxPackage -DisableDevelopmentMode -Register "$($desktopAppInstaller.InstallLocation)\AppxManifest.xml"
+      # need to wait a moment to allow Windows to recognize registration
+      Start-Sleep -Seconds $appxInstallDelay
+    }
+    if ((-Not $forceWingetUpdate) -And (Test-WinGet)) {
+      # if WinGet version is retired, force it to update
+      $currentWingetVersion = [System.Version](
+        ((winget.exe -v).split('v')[1].split('.') | Select-Object -First 2) -join '.'
+      )
+      $forceWingetUpdate = ($currentWingetVersion -le $retiredWingetVersion)
+    }
+  }
+
+  # if WinGet is still not found, download WinGet package with any dependent packages, and attempt install
+  if ($forceWingetUpdate -Or (-Not (Test-WinGet))) {
+    # Internet connection check
+    $InternetAccess = (Get-NetConnectionProfile).IPv4Connectivity -contains "Internet" -or (Get-NetConnectionProfile).IPv6Connectivity -contains "Internet"
+    if (-Not $InternetAccess) {
+      Write-Error "Please connect to the internet first. Aborting."
+      Write-Output '' # Makes log look better
+      return $FAILED.NO_INTERNET
+    }
+
+    Write-Output "Downloading WinGet..."
+    Write-Output '' # Makes log look better
+    $wingetLatestDownloadURL = "https://aka.ms/getwinget"
+    $tempWingetPackage = $Null
+    while (-Not $tempWingetPackage) {
+      # need to loop until WinGet package is downloaded
+      $tempWingetWebResponse = Invoke-WebRequest -Uri $wingetLatestDownloadURL -UseBasicParsing
+      if ($tempWingetWebRequest.StatusCode -eq 200) {
+        # confirm file extension is correct
+        $tempWingetFileName = ([System.Net.Mime.ContentDisposition]$tempWingetWebResponse.Headers.'Content-Disposition').FileName
+        if (-Not $tempWingetFileName.EndsWith(".msixbundle")) {
+          Write-Error "File downloaded doesn't have the correct file extension."
+          Write-Output '' # Makes log look better
+          return $FAILED.INVALID_FILE_EXTENSION
+        }
+        $tempWingetPackage = $envTEMP + '\' + $tempWingetFileName
+        # save to file
+        $tempWingetFile = [System.IO.FileStream]::new($tempWingetPackage, [System.IO.FileMode]::Create)
+        $tempWingetFile.write($tempWingetWebResponse.Content, 0, $tempWingetWebResponse.Content.Length)
+        $tempWingetFile.close()
+        Write-Output "Downloaded WinGet."
+        Write-Output '' # Makes log look better
+      } else { Start-Sleep -Seconds $loopDelay }
+    }
+
+    # check for dependencies in WinGet that are not met, and only grab what we need
+    Write-Output "Confirming dependencies for WinGet..."
+    Write-Output '' # Makes log look better
+    $wingetDependencies = @{
+      # properties get set later
+      uiXaml = @{
+        # preinstalled
+        # version
+        # name
+        # fileName
+        # file
+        # url
+      }
+      vcLibs = @{
+        # preinstalled
+        # version
+        # name
+        # fileName
+        # file
+        # url
+      }
+    }
+    $wingetPackageZip = $Null
+    $appManifestReader = $Null
+    $appManifestStream = $Null
+    $appInstallerMsixZip = $Null
+    try {
+      # required for checking inside packages
+      Add-Type -Assembly System.IO.Compression.FileSystem
+
+      # extract app installer msix from the WinGet package
+      $appInstallerMsixFilename = 'AppInstaller_x64.msix'
+      $tempAppInstallerMsix = $envTEMP + '\' + $appInstallerMsixFilename
+      $wingetPackageZip = [IO.Compression.ZipFile]::OpenRead($tempWingetPackage)
+      $appInstallerMsix = $wingetPackageZip.Entries | Where-Object { $_.FullName -eq $appInstallerMsixFilename }
+      [System.IO.Compression.ZipFileExtensions]::ExtractToFile($appInstallerMsix, $tempAppInstallerMsix, $true)
+      $wingetPackageZip.Dispose()
+
+      # grab the app manifest from inside the app installer msix
+      $appInstallerMsixZip = [IO.Compression.ZipFile]::OpenRead($tempAppInstallerMsix)
+      $appxManifestXml = $appInstallerMsixZip.Entries | Where-Object { $_.FullName -eq 'AppxManifest.xml' }
+      $appManifestStream = $appxManifestXml.Open()
+      $appManifestReader = New-Object IO.StreamReader($appManifestStream)
+      $appManifestText = $appManifestReader.ReadToEnd()
+      $appManifestReader.Close()
+      $appManifestStream.Close()
+      $appInstallerMsixZip.Dispose()
+      Remove-Item -Path $tempAppInstallerMsix -Force -ErrorAction SilentlyContinue
+      $appManifest = [Xml]$appManifestText
+
+      # setup objects in the dependencies hashtable
+      $dependencyPackages = $appManifest.Package.Dependencies.PackageDependency
+      if ($dependencyPackages) {
+        Write-Output "Checked dependencies for WinGet."
+        Write-Output '' # Makes log look better
+      } else { throw "missing dependency packages" }
+      $dependencyPackages | ForEach-Object {
+        $packageElement = $_
+        $dependencyPackage = $Null
+        if ($packageElement.Name -like "Microsoft.UI.Xaml*") {
+          $dependencyPackage = $wingetDependencies.uiXaml
+          $dependencyPackage.version = @($packageElement.Name -Split "Microsoft.UI.Xaml.")[1]
+          $uiXamlLatestVersion = $Null
+          while (-Not ($dependencyPackage.url -And $uiXamlLatestVersion)) {
+            # grabs the latest version number of the Major.Minor build
+            try {
+              $uiXamlVersionsNugetUrl = 'https://packages.nuget.org/api/v2/package-versions/Microsoft.UI.Xaml'
+              $uiXamlLatestVersion = @(Invoke-RestMethod -Uri $uiXamlVersionsNugetUrl -UseBasicParsing)[0] | Where-Object { $_ -like "$($dependencyPackage.version)*" } | Select-Object -Last 1
+              $dependencyPackage.url = 'https://www.nuget.org/api/v2/package/Microsoft.UI.Xaml/' + $uiXamlLatestVersion
+            } catch {
+              $dependencyPackage.url = $Null
+              Start-Sleep -Seconds $loopDelay
+            }
+          }
+          $dependencyPackage.fileName = 'microsoft.ui.xaml.' + $uiXamlLatestVersion + '.nupkg'
+        } elseif ($packageElement.Name -like "Microsoft.VCLibs*UWPDesktop") {
+          $dependencyPackage = $wingetDependencies.vcLibs
+          $dependencyPackage.version = ([System.Version]$packageElement.MinVersion).Major
+          $dependencyPackage.fileName = "Microsoft.VCLibs.${osArch}." + $dependencyPackage.version + '.00.Desktop.appx'
+          $dependencyPackage.url = 'https://aka.ms/' + $dependencyPackage.fileName
+        } else {
+          Write-Warning "Unexpected new dependency found for WinGet: $($packageElement.Name))"
+        }
+
+        # if we have a known dependency, download and work on them if needed
+        $dependencyPackage.name = $packageElement.Name
+        if ($dependencyPackage) {
+          # only re-register dependency if we have an equal or newer version already installed (don't try to download package)
+          $dependencyPackagePreinstalledList = @($appxPackagesAllUsers | Where-Object { $_.Name -eq $dependencyPackage.name} | Where-Object { [System.Version]$_.Version -ge [System.Version]$packageElement.MinVersion })
+
+          # sometimes may have more than one architecture of the package that needs to be registered
+          if ($dependencyPackagePreinstalledList) {
+            for ($archIndex = 0; $archIndex -lt $dependencyPackagePreinstalledList.length; $archIndex++) {
+              $dependencyPackagePreinstalled = $dependencyPackagePreinstalledList[$archIndex]
+              $dependencyArch = $dependencyPackagePreinstalled.Architecture
+              Write-Output "Registering an ${dependencyArch} dependency for WinGet..."
+              Write-Output '' # Makes log look better
+              $registeredDependency = $True
+              try {
+                Add-AppxPackage -DisableDevelopmentMode -Register "$($dependencyPackagePreinstalled.InstallLocation)\AppxManifest.xml"
+              } catch {
+                $registeredDependency = $False
+              }
+              if ($registeredDependency) {
+                $dependencyPackage.preinstalled = $True
+                Write-Output "Successfully registered an ${dependencyArch} dependency for WinGet."
+              } else {
+                Write-Warning "Failed to register an ${dependencyArch} dependency for WinGet."
+              }
+              Write-Output '' # Makes log look better
+            }
+          } else {
+            # try to download dependency
+            $dependencyPackage.file = $envTEMP + '\' + $dependencyPackage.fileName
+            Write-Output "Downloading a dependency for WinGet..."
+            Write-Output '' # Makes log look better
+            while ((Invoke-WebRequest -Uri $dependencyPackage.url -OutFile $dependencyPackage.file -UseBasicParsing -PassThru).StatusCode -ne 200) {
+              # need to loop until dependency package is downloaded, or we timeout
+              Start-Sleep -Seconds $loopDelay
+              $dependencyPackageDownloadTime += $loopDelay
+            }
+  
+            # need to see if package is uiXaml, if so, extract dependency needed
+            $packageIsUiXaml = ($dependencyPackage -eq $wingetDependencies.uiXaml) -And $dependencyPackage.file
+            $successMsg = @("Successfully downloaded a ", "dependency for Winget.")
+            if ($packageIsUiXaml) {
+              Write-Output "$($successMsg -Join 'source file containing a ')"
+              Write-Output '' # Makes log look better
+  
+              Write-Output "Extracting dependency, from downloaded source file, for WinGet..."
+              Write-Output '' # Makes log look better
+              $uiXamlNupkg = $dependencyPackage.file
+              $dependencyPackage.file = $envTEMP + '\' + $dependencyPackage.name
+              $uiXamlNupkgZip = $Null
+              try {
+                $uiXamlNupkgZip = [IO.Compression.ZipFile]::OpenRead($uiXamlNupkg)
+                $uiXamlNupkgZipAppx = $uiXamlNupkgZip.Entries | Where-Object { $_.FullName -like "*/${osArch}/*/$($dependencyPackage.name).appx" }
+                [System.IO.Compression.ZipFileExtensions]::ExtractToFile($uiXamlNupkgZipAppx, $dependencyPackage.file, $true)
+              } catch {
+                $dependencyPackage.file = $Null
+              }
+              if ($dependencyPackage.file) {
+                Write-Output "Successfully extracted dependency, from downloaded source file, for WinGet."
+              } else {
+                Write-Warning "Failed to extract dependency, from downloaded source file, for WinGet."
+              }
+              if ($uiXamlNupkgZip) { $uiXamlNupkgZip.Dispose() }
+              Remove-Item -Path $uiXamlNupkgZip -Force -ErrorAction SilentlyContinue
+            } else {
+              Write-Output "$($successMsg -Join '')"
+            }
+            Write-Output '' # Makes log look better
+            if ($packageIsUiXaml -And (-Not $dependencyPackage.file)) { throw 'extracting dependency failed' }
+          }
+        }
+      }
+    } catch {
+      $wingetDependencies.uiXaml = $False
+      $wingetDependencies.vcLibs = $False
+      if ($wingetPackageZip) { $wingetPackageZip.Dispose() }
+      if ($appManifestReader) { $appManifestReader.Close() }
+      if ($appManifestStream) { $appManifestStream.Close() }
+      if ($appInstallerMsixZip) { $appInstallerMsixZip.Dispose() }
+      Write-Error "Failed to check dependencies for WinGet."
+      Write-Output '' # Makes log look better
+      return $FAILED.DEPENDENCIES_CHECK
+    }
+
+    # install WinGet (updates Desktop App Installer) with any missing dependencies prior
+    Write-Output "Installing WinGet..."
+    Write-Output '' # Makes log look better
+    $wingetInstalled = $True
+    try {
+      $dependencyFiles = @()
+      if ($wingetDependencies.vcLibs -And $wingetDependencies.vcLibs.file) { $dependencyFiles += , ($wingetDependencies.vcLibs.file) }
+      if ($wingetDependencies.uiXaml -And $wingetDependencies.uiXaml.file) { $dependencyFiles += , ($wingetDependencies.uiXaml.file) }
+      $addPackageCommand = 'Add-AppxPackage -Path "' + $tempWingetPackage + '"'
+      if ($dependencyFiles) { $addPackageCommand += ' -DependencyPath "' + "$($dependencyFiles -Join '","')" + '"' }
+      Invoke-Expression $addPackageCommand
+      # need to wait a moment to allow install to register with Windows
+      Start-Sleep -Seconds $appxInstallDelay
+    } catch {
+      $wingetInstalled = $False
+    }
+    if ($wingetInstalled) {
+      Write-Output "Installed WinGet."
+      Write-Output '' # Makes log look better
+    }
+    # delete left over files no longer needed
+    if ($dependencyFiles) { $dependencyFiles | ForEach-Object { Remove-Item -Path $_ -Force -ErrorAction SilentlyContinue } }
+    Remove-Item -Path $tempWingetPackage -Force -ErrorAction SilentlyContinue
+  } else {
+    # special return of results, if a working version of WinGet is already installed
+    Write-Output "WinGet is already installed."
+    return 0
+  }
+
+  # return results from install attempt
+  $noErrors = $error.count -eq 0
+  $executableFound = Test-WinGet
+  $result = 0
+  if ($noErrors -And $executableFound) {
+    Write-Output "WinGet successfully installed."
+  } else {
+    $result = $FAILED.INSTALL
+    $errorMsg = "WinGet failed to install."
+
+    $reasons = @()
+    if (-Not $noErrors) {
+      $reasons += @("some errors occured")
+    }
+    if (-Not $executableFound) {
+      $reasons += @("executable couldn't be found")
+    }
+    if ($reasons.length -gt 0) {
+      $errorMsg += " ($($reasons -join ', '))"
+    }
+    Write-Error $errorMsg
+  }
+  Write-Output '' # Makes log look better
+  return $result
+}
+
+# MAIN
 
 # Current user can't have the same username local admin to be setup, because of deletions
 $isBuiltInAdmin = $False
@@ -504,224 +928,7 @@ while ($attemptUpdates) {
 }
 
 # Update all apps (not from the Microsoft Store)
-$forceWingetUpdate = $False
-$desktopAppInstaller = Get-AppxPackage -AllUsers -Name "Microsoft.DesktopAppInstaller"
-if ($desktopAppInstaller) {
-  # if we can't find WinGet, try re-registering it (only a first time logon issue)
-  if (-Not (Get-Command 'winget.exe' -ErrorAction SilentlyContinue)) {
-    # if the version is new enough to contain WinGet, this should fix things
-    Add-AppxPackage -DisableDevelopmentMode -Register "$($desktopAppInstaller.InstallLocation)\AppxManifest.xml"
-    # need to wait a moment to allow Windows to recognize registration
-    Start-Sleep -Seconds $appxInstallDelay
-  } elseif ($faultyWingetVersion -eq $(winget -v)) {
-    # if winget is a faulty version, it'll require a forced update
-    $forceWingetUpdate = $True
-  }
-}
-if ($forceWingetUpdate -Or (-Not (Get-Command 'winget.exe' -ErrorAction SilentlyContinue))) {
-  # download WinGet package
-  Write-Output "Downloading WinGet..."
-  Write-Output '' # Makes log look better
-  $wingetGitHubLatestURL = "https://api.github.com/repos/microsoft/winget-cli/releases/latest"
-  $wingetDownloadURL = $Null
-  while (-Not $wingetDownloadURL) {
-    # need to loop until download URL is pulled from GitHub
-    try {
-      $wingetDownloadURL = (Invoke-RestMethod -Uri $wingetGitHubLatestURL -UseBasicParsing).assets.browser_download_url | Where-Object { $_.EndsWith(".msixbundle") }
-    } catch {
-      $wingetDownloadURL = $Null
-      Start-Sleep -Seconds $loopDelay
-    }
-  }
-  $tempWingetPackage = $envTEMP + '\' + $wingetDownloadURL.substring($wingetDownloadURL.LastIndexOf('/') + 1)
-  while ((Invoke-WebRequest -Uri $wingetDownloadURL -OutFile $tempWingetPackage -UseBasicParsing -PassThru).StatusCode -ne 200) {
-    # need to loop until WinGet package is downloaded
-    Start-Sleep -Seconds $loopDelay
-  }
-  Write-Output "Downloaded WinGet."
-  Write-Output '' # Makes log look better
-  # check for dependencies in WinGet that are not met
-  Write-Output "Confirming dependencies for WinGet..."
-  Write-Output '' # Makes log look better
-  $wingetDependencies = @{
-    # properties get set later
-    uiXaml = @{
-      # preinstalled
-      # version
-      # name
-      # fileName
-      # file
-      # url
-    }
-    vcLibs = @{
-      # preinstalled
-      # version
-      # name
-      # fileName
-      # file
-      # url
-    }
-  }
-  $wingetPackageZip = $Null
-  $appManifestReader = $Null
-  $appManifestStream = $Null
-  $appInstallerMsixZip = $Null
-  try {
-    Add-Type -Assembly System.IO.Compression.FileSystem # required for checking inside packages
-    # extract app installer msix from the WinGet package
-    $appInstallerMsixFilename = 'AppInstaller_x64.msix'
-    $tempAppInstallerMsix = $envTEMP + '\' + $appInstallerMsixFilename
-    $wingetPackageZip = [IO.Compression.ZipFile]::OpenRead($tempWingetPackage)
-    $appInstallerMsix = $wingetPackageZip.Entries | Where-Object { $_.FullName -eq $appInstallerMsixFilename }
-    [System.IO.Compression.ZipFileExtensions]::ExtractToFile($appInstallerMsix, $tempAppInstallerMsix, $true)
-    $wingetPackageZip.Dispose()
-    # grab the app manifest from inside the app installer msix
-    $appInstallerMsixZip = [IO.Compression.ZipFile]::OpenRead($tempAppInstallerMsix)
-    $appxManifestXml = $appInstallerMsixZip.Entries | Where-Object { $_.FullName -eq 'AppxManifest.xml' }
-    $appManifestStream = $appxManifestXml.Open()
-    $appManifestReader = New-Object IO.StreamReader($appManifestStream)
-    $appManifestText = $appManifestReader.ReadToEnd()
-    $appManifestReader.Close()
-    $appManifestStream.Close()
-    $appInstallerMsixZip.Dispose()
-    Remove-Item -Path $tempAppInstallerMsix -Force -ErrorAction SilentlyContinue
-    $appManifest = [Xml]$appManifestText
-    # setup objects in the dependencies hashtable
-    $dependencyPackages = $appManifest.Package.Dependencies.PackageDependency
-    if ($dependencyPackages) {
-      Write-Output "Checked dependencies for WinGet."
-      Write-Output '' # Makes log look better
-    } else { throw "missing dependency packages" }
-    $dependencyPackages | ForEach-Object {
-      $packageElement = $_
-      $dependencyPackage = $Null
-      if ($packageElement.Name -like "Microsoft.UI.Xaml*") {
-        $dependencyPackage = $wingetDependencies.uiXaml
-        $dependencyPackage.version = @($packageElement.Name -Split "Microsoft.UI.Xaml.")[1]
-        $uiXamlLatestVersion = $Null
-        while (-Not ($dependencyPackage.url -And $uiXamlLatestVersion)) {
-          # grabs the latest version number of the Major.Minor build
-          try {
-            $uiXamlVersionsNugetUrl = 'https://packages.nuget.org/api/v2/package-versions/Microsoft.UI.Xaml'
-            $uiXamlLatestVersion = @(Invoke-RestMethod -Uri $uiXamlVersionsNugetUrl -UseBasicParsing)[0] | Where-Object { $_ -like "$($dependencyPackage.version)*" } | Select-Object -Last 1
-            $dependencyPackage.url = 'https://www.nuget.org/api/v2/package/Microsoft.UI.Xaml/' + $uiXamlLatestVersion
-          } catch {
-            $dependencyPackage.url = $Null
-            Start-Sleep -Seconds $loopDelay
-          }
-        }
-        $dependencyPackage.fileName = 'microsoft.ui.xaml.' + $uiXamlLatestVersion + '.nupkg'
-      } elseif ($packageElement.Name -like "Microsoft.VCLibs*UWPDesktop") {
-        $dependencyPackage = $wingetDependencies.vcLibs
-        $dependencyPackage.version = ([System.Version]$packageElement.MinVersion).Major
-        $dependencyPackage.fileName = 'Microsoft.VCLibs.x64.' + $dependencyPackage.version + '.00.Desktop.appx'
-        $dependencyPackage.url = 'https://aka.ms/' + $dependencyPackage.fileName
-      } else {
-        Write-Warning "Unexpected new dependency found for WinGet: $($packageElement.Name))"
-      }
-      # if we have a known dependency, download and work on them if needed
-      $dependencyPackage.name = $packageElement.Name
-      if ($dependencyPackage) {
-        # only re-register dependency if we have an equal or newer version already installed (don't try to download package)
-        $dependencyPackagePreinstalledList = @(Get-AppxPackage -AllUsers -Name $dependencyPackage.name | Where-Object { [System.Version]$_.Version -ge [System.Version]$packageElement.MinVersion })
-        # sometimes may have more than one architecture of the package that needs to be registered
-        if ($dependencyPackagePreinstalledList) {
-          for ($archIndex = 0; $archIndex -lt $dependencyPackagePreinstalledList.length; $archIndex++) {
-            $dependencyPackagePreinstalled = $dependencyPackagePreinstalledList[$archIndex]
-            $dependencyArch = $dependencyPackagePreinstalled.Architecture
-            Write-Output "Registering an ${dependencyArch} dependency for WinGet..."
-            Write-Output '' # Makes log look better
-            $registeredDependency = $True
-            try {
-              Add-AppxPackage -DisableDevelopmentMode -Register "$($dependencyPackagePreinstalled.InstallLocation)\AppxManifest.xml"
-            } catch {
-              $registeredDependency = $False
-            }
-            if ($registeredDependency) {
-              $dependencyPackage.preinstalled = $True
-              Write-Output "Successfully registered an ${dependencyArch} dependency for WinGet."
-            } else {
-              Write-Warning "Failed to register an ${dependencyArch} dependency for WinGet."
-            }
-            Write-Output '' # Makes log look better
-          }
-          return
-        }
-        # try to download dependency
-        $dependencyPackage.file = $envTEMP + '\' + $dependencyPackage.fileName
-        Write-Output "Downloading a dependency for WinGet..."
-        Write-Output '' # Makes log look better
-        while ((Invoke-WebRequest -Uri $dependencyPackage.url -OutFile $dependencyPackage.file -UseBasicParsing -PassThru).StatusCode -ne 200) {
-          # need to loop until dependency package is downloaded, or we timeout
-          Start-Sleep -Seconds $loopDelay
-          $dependencyPackageDownloadTime += $loopDelay
-        }
-        # need to see if package is uiXaml, if so, extract dependency needed
-        $packageIsUiXaml = ($dependencyPackage -eq $wingetDependencies.uiXaml) -And $dependencyPackage.file
-        $successMsg = @("Successfully downloaded a ", "dependency for Winget.")
-        if ($packageIsUiXaml) {
-          Write-Output "$($successMsg -Join 'source file containing a ')"
-          Write-Output '' # Makes log look better
-          Write-Output "Extracting dependency, from downloaded source file, for WinGet..."
-          Write-Output '' # Makes log look better
-          $uiXamlNupkg = $dependencyPackage.file
-          $dependencyPackage.file = $envTEMP + '\' + $dependencyPackage.name
-          $uiXamlNupkgZip = $Null
-          try {
-            $uiXamlNupkgZip = [IO.Compression.ZipFile]::OpenRead($uiXamlNupkg)
-            $uiXamlNupkgZipAppx = $uiXamlNupkgZip.Entries | Where-Object { $_.FullName -like "*/x64/*/$($dependencyPackage.name).appx" }
-            [System.IO.Compression.ZipFileExtensions]::ExtractToFile($uiXamlNupkgZipAppx, $dependencyPackage.file, $true)
-          } catch {
-            $dependencyPackage.file = $Null
-          }
-          if ($dependencyPackage.file) {
-            Write-Output "Successfully extracted dependency, from downloaded source file, for WinGet."
-          } else {
-            Write-Warning "Failed to extract dependency, from downloaded source file, for WinGet."
-          }
-          if ($uiXamlNupkgZip) { $uiXamlNupkgZip.Dispose() }
-          Remove-Item -Path $uiXamlNupkgZip -Force -ErrorAction SilentlyContinue
-        } else {
-          Write-Output "$($successMsg -Join '')"
-        }
-        Write-Output '' # Makes log look better
-        if ($packageIsUiXaml -And (-Not $dependencyPackage.file)) { throw 'extracting dependency failed' }
-      }
-    }
-  } catch {
-    Write-Warning "Failed to check dependencies for WinGet."
-    Write-Output '' # Makes log look better
-    $wingetDependencies.uiXaml = $False
-    $wingetDependencies.vcLibs = $False
-    if ($wingetPackageZip) { $wingetPackageZip.Dispose() }
-    if ($appManifestReader) { $appManifestReader.Close() }
-    if ($appManifestStream) { $appManifestStream.Close() }
-    if ($appInstallerMsixZip) { $appInstallerMsixZip.Dispose() }
-  }
-  # install WinGet (updates Desktop App Installer) with dependencies
-  Write-Output "Installing WinGet..."
-  Write-Output '' # Makes log look better
-  $wingetInstalled = $True
-  try {
-    $dependencyFiles = @()
-    if ($wingetDependencies.vcLibs -And $wingetDependencies.vcLibs.file) { $dependencyFiles += , ($wingetDependencies.vcLibs.file) }
-    if ($wingetDependencies.uiXaml -And $wingetDependencies.uiXaml.file) { $dependencyFiles += , ($wingetDependencies.uiXaml.file) }
-    $addPackageCommand = 'Add-AppxPackage -Path "' + $tempWingetPackage + '"'
-    if ($dependencyFiles) { $addPackageCommand += ' -DependencyPath "' + "$($dependencyFiles -Join '","')" + '"' }
-    Invoke-Expression $addPackageCommand
-    Start-Sleep -Seconds $appxInstallDelay # need to wait a moment to allow install to register with Windows
-  } catch {
-    $wingetInstalled = $False
-  }
-  if ($wingetInstalled) {
-    Write-Output "Installed WinGet."
-    Write-Output '' # Makes log look better
-  }
-  # delete left over files no longer needed
-  if ($dependencyFiles) { $dependencyFiles | ForEach-Object { Remove-Item -Path $_ -Force -ErrorAction SilentlyContinue } }
-  Remove-Item -Path $tempWingetPackage -Force -ErrorAction SilentlyContinue
-}
-if (Get-Command 'winget.exe' -ErrorAction SilentlyContinue) {
+if (Install-WinGet) { # install WinGet first if not available
   Write-Output "Attempting to update all apps (not from the Microsoft Store)..."
   Write-Output '' # Makes log look better
   $wingetUpgradePSI = New-object System.Diagnostics.ProcessStartInfo
