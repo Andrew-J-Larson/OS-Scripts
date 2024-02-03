@@ -1,16 +1,18 @@
 <#
   .SYNOPSIS
-  Download AppxPackage Function v2.0.2
+  Get AppxPackage Function v2.0.3
 
   .DESCRIPTION
-  Script that helps facilitate downloading Microsoft Store apps from their servers (via third-party API's).
+  Script that contains a function which helps facilitate downloading Microsoft Store apps from their servers (via third-party API's).
   
-  This script is meant to be used as an alternative from the Microsoft Store and winget, to download application
+  The function is meant to be used as an alternative from the Microsoft Store and winget, to download application
   packages, for installation, such as in the case where an app is blocked from being downloaded directly from
   the store (e.g. HEVC Video Extensions from Device Manufacturer).
   
-  By default, the script downloads the latest Retail version of the .msixbundle/.appxbundle/.msix/.appx files, for your
-  system's architecture.
+  By default, the function downloads the latest Retail version of the .msixbundle/.appxbundle/.msix/.appx files, for your
+  system's architecture. That means internet access is required.
+
+  The script doesn't automatically start the function.
 
   .PARAMETER Help
   Brings up this help page, but won't run script.
@@ -24,13 +26,13 @@
   Function: Display errors if any, but returned is an array of paths to successfully downloaded files.
 
   .EXAMPLE
-  PS> [Array]$packages = Download-AppxPackage "Clipchamp.Clipchamp_yxz26nhyzhsrt"
+  PS> [Array]$packages = Get-AppxPackage "Clipchamp.Clipchamp_yxz26nhyzhsrt"
 
   .LINK
   Third-Party API for Downloading Microsoft Store Apps: https://store.rg-adguard.net/
 
   .LINK
-  Script downloaded from: https://github.com/Andrew-J-Larson/OS-Scripts/blob/main/Windows/Wrapper-Functions/Download-AppxPackage-Function.ps1
+  Script downloaded from: https://github.com/Andrew-J-Larson/OS-Scripts/blob/main/Windows/Wrapper-Functions/Get-AppxPackage-Function.ps1
 #>
 
 <# Copyright (C) 2023  Andrew Larson (andrew.j.larson18+github@gmail.com)
@@ -60,7 +62,7 @@ if ($Help.IsPresent) {
 }
 
 # MAIN function
-function Download-AppxPackage {
+function Get-AppxPackage {
   $DownloadedFiles = @()
   $errored = $false
   $allFilesDownloaded = $true
@@ -77,7 +79,7 @@ function Download-AppxPackage {
   }
 
   $AppxPackageFamilyName = $args[0]
-  $AppxName = $AppxPackageFamilyName.split('_')[0]
+  # $AppxName = $AppxPackageFamilyName.split('_')[0]
 
   $downloadFolder = Join-Path $env:TEMP "StoreDownloads"
   if (!(Test-Path $downloadFolder -PathType Container)) {
@@ -107,7 +109,7 @@ function Download-AppxPackage {
   [Collections.Generic.Dictionary[string, Collections.Generic.Dictionary[string, array]]] $packageList = @{}
   # populate $packageList
   $patternUrlAndText = '<tr style.*<a href=\"(?<url>.*)"\s.*>(?<text>.*\.(app|msi)x.*)<\/a>'
-  $raw | Select-String $patternUrlAndText -AllMatches | % { $_.Matches } | % {
+  $raw | Select-String $patternUrlAndText -AllMatches | ForEach-Object { $_.Matches } | ForEach-Object {
     $url = ($_.Groups['url']).Value
     $text = ($_.Groups['text']).Value
     $textSplitUnderscore = $text.split('_')
@@ -142,12 +144,12 @@ function Download-AppxPackage {
   # an array of packages as objects, meant to only contain one of each $name
   $latestPackages = @()
   # grabs the most updated package for $name and puts it into $latestPackages
-  $packageList.GetEnumerator() | % { ($_.value).GetEnumerator() | Select-Object -Last 1 } | % {
+  $packageList.GetEnumerator() | ForEach-Object { ($_.value).GetEnumerator() | Select-Object -Last 1 } | ForEach-Object {
     $packagesByType = $_.value
-    $msixbundle = ($packagesByType | ? { $_.type -match "^msixbundle$" })
-    $appxbundle = ($packagesByType | ? { $_.type -match "^appxbundle$" })
-    $msix = ($packagesByType | ? { ($_.type -match "^msix$") -And ($_.arch -match ('^' + [Regex]::Escape($architecture) + '$')) })
-    $appx = ($packagesByType | ? { ($_.type -match "^appx$") -And ($_.arch -match ('^' + [Regex]::Escape($architecture) + '$')) })
+    $msixbundle = ($packagesByType | Where-Object { $_.type -match "^msixbundle$" })
+    $appxbundle = ($packagesByType | Where-Object { $_.type -match "^appxbundle$" })
+    $msix = ($packagesByType | Where-Object { ($_.type -match "^msix$") -And ($_.arch -match ('^' + [Regex]::Escape($architecture) + '$')) })
+    $appx = ($packagesByType | Where-Object { ($_.type -match "^appx$") -And ($_.arch -match ('^' + [Regex]::Escape($architecture) + '$')) })
     if ($msixbundle) { $latestPackages += $msixbundle }
     elseif ($appxbundle) { $latestPackages += $appxbundle }
     elseif ($msix) { $latestPackages += $msix }
@@ -155,7 +157,7 @@ function Download-AppxPackage {
   }
 
   # download packages
-  $latestPackages | % {
+  $latestPackages | ForEach-Object {
     $url = $_.url
     $filename = $_.filename
     # TODO: may need to include detection in the future of expired package download URLs..... in the case that downloads take over 10 minutes to complete
