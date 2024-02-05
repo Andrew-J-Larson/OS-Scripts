@@ -32,7 +32,7 @@
   Third-Party API for Downloading Microsoft Store Apps: https://store.rg-adguard.net/
 
   .LINK
-  Script downloaded from: https://github.com/Andrew-J-Larson/OS-Scripts/blob/main/Windows/Wrapper-Functions/Get-AppxPackage-Function.ps1
+  Script from: https://github.com/Andrew-J-Larson/OS-Scripts/blob/main/Windows/Wrapper-Functions/Get-AppxPackage-Function.ps1
 #>
 
 <# Copyright (C) 2023  Andrew Larson (andrew.j.larson18+github@gmail.com)
