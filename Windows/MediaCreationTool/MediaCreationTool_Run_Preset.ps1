@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  MediaCreationTool Run Preset v1.0.6
+  MediaCreationTool Run Preset v1.0.7
 
   .DESCRIPTION
   Script helps to automate a part of the process needed to generate single edition ISOs.
@@ -85,11 +85,9 @@ param (
     [Alias("h")]
     [switch]$Help,
 
-    [Parameter(Mandatory = $False)]
     [ValidateSet(10, 11)]
     [Int]$OS = 11,
 
-    [Parameter(Mandatory = $False)]
     [ValidateSet(
         "ar-SA", "eu-ES", "bg-BG", "ca-ES", "zh-TW", "zh-CN", "zh-TW", "hr-HR", "cs-CZ", "da-DK", "nl-NL",
         "en-US", "en-GB", "et-EE", "fi-FI", "fr-CA", "fr-FR", "gl-ES", "de-DE", "el-GR", "he-IL", "hu-HU",
@@ -97,7 +95,6 @@ param (
         "ru-RU", "sr-Latn-RS", "sk-SK", "sl-SI", "es-MX", "es-ES", "sv-SE", "th-TH", "tr-TR", "uk-UA", "vi-VN")]
     [String]$LangCode = "en-US",
 
-    [Parameter(Mandatory = $False)]
     [ValidateSet( # `N` means 'Not with Media Player'
         # Home editions
         "Home", "HomeN",
@@ -114,7 +111,6 @@ param (
         "EntG", "EntGN")] # `G` means 'Government'
     [String]$Edition = "Home",
 
-    [Parameter(Mandatory = $False)]
     [ValidateSet("x86", "x64")]
     [String]$Arch = "x64"
 )
