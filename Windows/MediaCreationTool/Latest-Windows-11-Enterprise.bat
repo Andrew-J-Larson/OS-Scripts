@@ -1,6 +1,6 @@
 @echo off
 
-REM Copyright (C) 2023  Andrew Larson (andrew.j.larson18+github@gmail.com)
+REM Copyright (C) 2024  Andrew Larson (andrew.j.larson18+github@gmail.com)
 REM
 REM This program is free software: you can redistribute it and/or modify
 REM it under the terms of the GNU General Public License as published by

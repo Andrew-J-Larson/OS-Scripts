@@ -45,7 +45,7 @@
   Script from: https://github.com/Andrew-J-Larson/OS-Scripts/blob/main/Windows/Wrapper-Functions/Install-WinGet-Function.ps1
 #>
 
-<# Copyright (C) 2023  Andrew Larson (andrew.j.larson18+github@gmail.com)
+<# Copyright (C) 2024  Andrew Larson (andrew.j.larson18+github@gmail.com)
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
