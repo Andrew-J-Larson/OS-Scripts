@@ -42,7 +42,7 @@
   Microsoft.VCLibs (WinGet requirement): https://learn.microsoft.com/en-us/troubleshoot/developer/visualstudio/cpp/libraries/c-runtime-packages-desktop-bridge
 
   .LINK
-  Script downloaded from: https://github.com/Andrew-J-Larson/OS-Scripts/blob/main/Windows/Wrapper-Functions/Install-WinGet-Function.ps1
+  Script from: https://github.com/Andrew-J-Larson/OS-Scripts/blob/main/Windows/Wrapper-Functions/Install-WinGet-Function.ps1
 #>
 
 <# Copyright (C) 2023  Andrew Larson (andrew.j.larson18+github@gmail.com)
