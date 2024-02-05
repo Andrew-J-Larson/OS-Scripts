@@ -43,7 +43,7 @@
   Sophos API Developer Docs: https://developer.sophos.com/intro
 
   .LINK
-  Script downloaded from: https://github.com/Andrew-J-Larson/OS-Scripts/blob/main/Windows/Sophos/Sophos-Auto-Uninstall.ps1
+  Script from: https://github.com/Andrew-J-Larson/OS-Scripts/blob/main/Windows/Sophos/Sophos-Auto-Uninstall.ps1
 #>
 
 #Requires -RunAsAdministrator
