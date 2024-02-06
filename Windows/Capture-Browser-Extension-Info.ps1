@@ -1,6 +1,6 @@
 ﻿<#
   .SYNOPSIS
-  Capture Browser Extension Info v1.0.0
+  Capture Browser Extension Info v1.0.1
 
   .DESCRIPTION
   This script will capture all browser extension information from every user profile on the computer (except extensions built into
@@ -361,7 +361,7 @@ for ($i = 0; $i -lt $AllBrowserExtensionBasedJsonFileMatches.length; $i++) {
         # deduplicate URLs
         $extensionURLs = $extensionURLs | Select-Object -Unique
         # convert to string
-        $extensionURLs = "[$(@($extensionURLs | ForEach-Object { "'$_'" }) -join ',')]"
+        $extensionURLs = "[$(@($extensionURLs | ForEach-Object { " $_ " }) -join ',')]"
 
         # some browsers remove the extension ID from here
         if (-Not $extension.id) {
@@ -442,7 +442,7 @@ for ($i = 0; $i -lt $AllBrowserExtensionBasedJsonFileMatches.length; $i++) {
         # deduplicate URLs
         $extensionURLs = $extensionURLs | Select-Object -Unique
         # convert to string
-        $extensionURLs = "[$(@($extensionURLs | ForEach-Object { "'$_'" }) -join ',')]"
+        $extensionURLs = "[$(@($extensionURLs | ForEach-Object { " $_ " }) -join ',')]"
 
         # add extension to the array
         $UserBrowserProfile.Extensions += @($addon)
