@@ -1,11 +1,12 @@
 ﻿<#
   .SYNOPSIS
-  Capture Browser Extension Info v1.0.1
+  Audit Browser Extensions v1.0.2
 
   .DESCRIPTION
-  This script will capture all browser extension information from every user profile on the computer (except extensions built into
-  each browser, e.g. non-removeable extensions). Most Blink (Chromium) and Gecko (FireFox) engine based browsers should be
-  supported, if there's a browser you come across where this script isn't working properly, please report it on the GitHub.
+  This script will get all browser extensions installed from every user profile on the computer (and by default avoiding extensions
+  built into each browser, e.g. non-removeable extensions). Most Blink (Chromium) and Gecko (FireFox)/Goanna (Palemoon) engine based
+  browsers should be supported, if there's a browser you come across where this script isn't working properly, please report it on
+  the GitHub.
 
   Browsers installed to different drives should also be detected, assuming the data for the browser is still stored on the computer
   in the user's AppData folder.
@@ -56,22 +57,22 @@
       * Note: this is a de-duplicated list of just all the extensions, with only their information
 
   .EXAMPLE
-  .\Extension-Info-Capture-Browser.ps1
+  .\Audit-Browser-Extensions.ps1
 
   .EXAMPLE
-  .\Extension-Info-Capture-Browser.ps1 -Path "C:\Path\To\Where\I\Want\Captured\Data\Stored"
+  .\Audit-Browser-Extensions.ps1 -Path "C:\Path\To\Where\I\Want\Captured\Data\Stored"
 
   .EXAMPLE
-  .\Extension-Info-Capture-Browser.ps1 -Help
+  .\Audit-Browser-Extensions.ps1 -Help
 
   .EXAMPLE
-  .\Extension-Info-Capture-Browser.ps1 -h
+  .\Audit-Browser-Extensions.ps1 -h
 
   .NOTES
   Requires admin! Due to needing access every users AppData folder.
 
   .LINK
-  Script from: https://github.com/Andrew-J-Larson/OS-Scripts/blob/main/Windows/Extension-Info-Capture-Browser.ps1
+  Script from: https://github.com/Andrew-J-Larson/OS-Scripts/blob/main/Windows/Audit-Browser-Extensions.ps1
 #>
 #Requires -RunAsAdministrator
 
