@@ -20,6 +20,8 @@
   Additionally, user profiles that have been moved outside of the Users folder will also likely not be supported, due to an infinite
   number of possiblities of where the user's folder could be stored, but also is generally not supported by Windows anyways.
 
+  WSL distros aren't supported currently, however, the possiblity of support being included is not off the table.
+
   .PARAMETER Path
   Changes where the captured browser information is stored. By not providing this value, exporting will default to the directory
   in where the script was launched in (or to the root of the drive if not running directly from a script file).
