@@ -22,6 +22,9 @@
 
   WSL distros aren't supported currently, however, the possiblity of support being included is not off the table.
 
+  Headless cloud browsers (e.g. Puffin Secure Browser) will never be supported, as their data is completely hosted else where, without
+  any direct access to user data (a.k.a. can't ever get extension data).
+
   .PARAMETER Path
   Changes where the captured browser information is stored. By not providing this value, exporting will default to the directory
   in where the script was launched in (or to the root of the drive if not running directly from a script file).
