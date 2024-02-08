@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Install WinGet Function v1.2.0
+  Install WinGet Function v1.2.1
 
   .DESCRIPTION
   Script contains a function which can be used to install WinGet (to current user profile) automatically.
@@ -213,7 +213,7 @@ function Install-WinGet {
       # need to wait a moment to allow Windows to recognize registration
       Start-Sleep -Seconds $appxInstallDelay
     }
-    if ((-Not $forceWingetUpdate) -And (Test-WinGet)) {
+    if ((-Not $forceWingetUpdate) -And $(Test-WinGet)) {
       # if WinGet version is retired, force it to update
       $currentWingetVersion = [System.Version](
         ((winget.exe -v).split('v')[1].split('.') | Select-Object -First 2) -join '.'
@@ -223,7 +223,7 @@ function Install-WinGet {
   }
 
   # if WinGet is still not found, download WinGet package with any dependent packages, and attempt install
-  if ($forceWingetUpdate -Or (-Not (Test-WinGet))) {
+  if ($forceWingetUpdate -Or (-Not $(Test-WinGet))) {
     # Internet connection check
     $InternetAccess = (Get-NetConnectionProfile).IPv4Connectivity -contains "Internet" -or (Get-NetConnectionProfile).IPv6Connectivity -contains "Internet"
     if (-Not $InternetAccess) {
@@ -448,6 +448,7 @@ function Install-WinGet {
     # delete left over files no longer needed
     if ($dependencyFiles) { $dependencyFiles | ForEach-Object { Remove-Item -Path $_ -Force -ErrorAction SilentlyContinue } }
     Remove-Item -Path $tempWingetPackage -Force -ErrorAction SilentlyContinue
+    return (if ($wingetInstalled) { 0 } else { $FAILED.INSTALL })
   } else {
     # special return of results, if a working version of WinGet is already installed
     Write-Output "WinGet is already installed."
