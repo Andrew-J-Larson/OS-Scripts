@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Install WinGet Function v1.2.1
+  Install WinGet Function v1.2.2
 
   .DESCRIPTION
   Script contains a function which can be used to install WinGet (to current user profile) automatically.
@@ -441,42 +441,22 @@ function Install-WinGet {
     } catch {
       $wingetInstalled = $False
     }
-    if ($wingetInstalled) {
-      Write-Output "Installed WinGet."
-      Write-Output '' # Makes log look better
-    }
     # delete left over files no longer needed
     if ($dependencyFiles) { $dependencyFiles | ForEach-Object { Remove-Item -Path $_ -Force -ErrorAction SilentlyContinue } }
     Remove-Item -Path $tempWingetPackage -Force -ErrorAction SilentlyContinue
-    return (if ($wingetInstalled) { 0 } else { $FAILED.INSTALL })
+    $result = 0
+    if ($wingetInstalled -And $(Test-WinGet)) {
+      Write-Output "WinGet successfully installed."
+    } else {
+      Write-Error = "WinGet failed to install."
+      $result = $FAILED.INSTALL
+    }
+    Write-Output '' # Makes log look better
+    return $result
   } else {
     # special return of results, if a working version of WinGet is already installed
     Write-Output "WinGet is already installed."
     return 0
   }
-
-  # return results from install attempt
-  $noErrors = $error.count -eq 0
-  $executableFound = Test-WinGet
-  $result = 0
-  if ($noErrors -And $executableFound) {
-    Write-Output "WinGet successfully installed."
-  } else {
-    $result = $FAILED.INSTALL
-    $errorMsg = "WinGet failed to install."
-
-    $reasons = @()
-    if (-Not $noErrors) {
-      $reasons += @("some errors occured")
-    }
-    if (-Not $executableFound) {
-      $reasons += @("executable couldn't be found")
-    }
-    if ($reasons.length -gt 0) {
-      $errorMsg += " ($($reasons -join ', '))"
-    }
-    Write-Error $errorMsg
-  }
   Write-Output '' # Makes log look better
-  return $result
 }
