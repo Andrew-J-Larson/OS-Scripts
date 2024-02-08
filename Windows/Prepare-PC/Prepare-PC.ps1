@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.1.2
+  Prepare PC v1.1.3
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -873,7 +873,7 @@ Write-Output "Making sure Windows Update Agent is running..."
 Write-Output '' # Makes log look better
 Stop-Service -Name wuauserv -Force -ErrorAction SilentlyContinue # prevent issues by resetting WUA
 Remove-Item $regWindowsUpdate -Recurse -Force -ErrorAction SilentlyContinue
-Start-Service -Name wuauserv -ErrorAction SilentlyContinue
+$windowsUpdateService = Start-Service -Name wuauserv -PassThru -ErrorAction SilentlyContinue
 while ($windowsUpdateService.Status -ne 'Running') {
   # wait for Windows Update Agent to start
   Start-Sleep -Seconds $loopDelay
