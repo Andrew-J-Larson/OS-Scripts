@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.0.9
+  Prepare PC v1.1.0
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -150,11 +150,11 @@ if ($HardwareType -eq 2) {
     Partially Charged (11)
   #>
   switch ([int]$BatteryStatus) {
-    { 2, 6, 7, 8 -contains $_ } {
+    { 2,6,7,8 -contains $_ } {
       # Continue without prompting user
       Out-Null
     }
-    { 1, 3, 4, 11 -contains $_ } {
+    { 1,3,4,11 -contains $_ } {
       # Prompt before continuing
       $title = 'Computer is not charging.'
       $question = 'Are you sure you want to proceed?'
@@ -166,7 +166,7 @@ if ($HardwareType -eq 2) {
         exit 0 # user chose to exit from script
       }
     }
-    { 5, 9 -contains $_ } {
+    { 5,9 -contains $_ } {
       # Exit and stress to user to charge their computer more
       Write-Warning "Battery status is critical, please charge your device more. Aborting script."
       exit 1
@@ -177,6 +177,18 @@ if ($HardwareType -eq 2) {
       exit 1
     }
   }
+}
+
+# USB dongles can cause issues when trying to start updates
+$title = 'Check the USB ports on this computer (and/or docking station if plugged in to one of those).'
+$question = 'Are all peripheral USB dongles removed from the computer?'
+$choices = '&Yes', '&No'
+$decision = $Host.UI.PromptForChoice($title, $question, $choices, 1)
+if ($decision -eq 0) {
+  Clear-Host # no need to keep this information on screen
+} else {
+  Write-Warning "Peripheral USB dongles must be removed to continue. Use wired peripheral's instead. Aborting script."
+  exit 1
 }
 
 # Check if running in Windows Terminal (determines if encoding needs to be changed when running some apps)
