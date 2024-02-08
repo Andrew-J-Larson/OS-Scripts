@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.1.4
+  Prepare PC v1.1.5
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -103,6 +103,9 @@ if ($FullScreen.IsPresent) {
 $logEnabled = $Log.IsPresent
 # $SelectAppList is checked later in script
 
+# Windows Defender Application Gaurd has quirks with script
+$isWDAG = ($env:USERNAME -eq 'WDAGUtilityAccount')
+
 # Only supported on 64-bit based versions of Windows
 $osIsWindows = (-Not (Test-Path variable:global:isWindows)) -Or $isWindows # required for PS 5.1
 $osIsARM = $env:PROCESSOR_ARCHITECTURE -match '^arm*'
@@ -180,7 +183,10 @@ if ($HardwareType -eq 2) {
 }
 
 # media USB dongles can cause issues with later BIOS updates
-$usbMediaDevices = Get-PnpDevice -Class MEDIA -PresentOnly | Where-Object { ($_.Description -match '^\bUSB\b') }
+$usbMediaDevices = if (-Not $isWDAG) {
+  # Windows Defender Application Gaurd will never have USB devices
+  Get-PnpDevice -Class MEDIA -PresentOnly | Where-Object { ($_.Description -match '^\bUSB\b') }
+}
 if ($usbMediaDevices) {
   Write-Host "Found media USB devices connected to the computer:`n"
   $usbMediaDevices.FriendlyName
@@ -232,7 +238,14 @@ $resources = "${PSScriptRoot}\resources"
 $installers = "${resources}\installers"
 $baseAppListFilename = "0-base.txt"
 $baseAppList = "${installers}\${baseAppListFilename}"
-$currentUser = ((Get-WMIObject -class win32_computersystem).username).split('\')[-1]
+$currentDomain = if ($env:USERDOMAIN) { $env:USERDOMAIN } else {
+  (Get-WMIObject -class win32_computersystem).name
+}
+$currentUsername = "$(
+  $testUsername = (Get-WMIObject -class win32_computersystem).username
+  if ($testUsername) { $testUsername } else { $currentDomain + '\' + $env:USERNAME }
+)"
+$currentUser = ($currentUsername).split('\')[-1]
 $shortDomainName = Get-Content "${resources}\shortDomainName.txt"
 $domainName = Get-Content "${resources}\domainName.txt"
 $adRootOU = "DC=$(${domainName}.Replace(".",",DC="))"
@@ -743,8 +756,10 @@ Write-Output '' # Makes log look better
 $networkAdapterConfigs = Get-WmiObject -List | Where-Object { $_.Name -eq "Win32_NetworkAdapterConfiguration" }
 $releaseDHCP = $networkAdapterConfigs.InvokeMethod("ReleaseDHCPLeaseAll", $null)
 $renewDHCP = $networkAdapterConfigs.InvokeMethod("RenewDHCPLeaseAll", $null)
-Clear-DnsClientCache
-Register-DnsClient
+if (-Not $isWDAG) {
+  Clear-DnsClientCache
+  Register-DnsClient
+}
 $internetReconnected = $False
 while (-Not $internetReconnected) {
   $internetReconnected = (Get-NetConnectionProfile).IPv4Connectivity -contains "Internet" -or (Get-NetConnectionProfile).IPv6Connectivity -contains "Internet"
@@ -834,87 +849,89 @@ Write-Output '' # Makes log look better #>
 # Attempt automatic updates without rebooting (reboot happens at end of script)
 # - Windows Update Agent (WUA) API: https://learn.microsoft.com/en-us/windows/win32/wua_sdk/portal-client
 # - Note: no ComObjects need to be manually disposed, since Microsoft already handles it with the API
-Write-Output "Making sure Windows Update Agent is running..."
-Write-Output '' # Makes log look better
-Stop-Service -Name wuauserv -Force -ErrorAction SilentlyContinue # prevent issues by resetting WUA
-Remove-Item $regWindowsUpdate -Recurse -Force -ErrorAction SilentlyContinue
-$windowsUpdateService = Start-Service -Name wuauserv -PassThru -ErrorAction SilentlyContinue
-while ($windowsUpdateService.Status -ne 'Running') {
-  # wait for Windows Update Agent to start
-  Start-Sleep -Seconds $loopDelay
-}
-Write-Output "Windows Update Agent is running."
-Write-Output '' # Makes log look better
-$attemptUpdates = $True
-$updateAttempt = 1
-while ($attemptUpdates) {
-  # Need to loop attempts until either succeeds with no errors, or until Windows appears already updated, to avoid breaking Dell Command Update later on
-  Write-Output "$(if ($updateAttempt -gt 1) {"Attempt ${updateAttempt}: "})Searching for Windows updates..."
+if (-Not $isWDGA) { # online Windows Updates are not possible in WDGA
+  Write-Output "Making sure Windows Update Agent is running..."
   Write-Output '' # Makes log look better
-  $ResultCodesInt = @{ SUCCEEDED = 2 ; SUCCEEDED_WITH_ERRORS = 3 ; FAILED = 4 ; ABORTED = 5 }
-  $ResultCodesIntArray = @($ResultCodesInt.Values)
-  $ResultCodesIntArraySucceededOnly = @($ResultCodesInt.SUCCEEDED,$ResultCodesInt.SUCCEEDED_WITH_ERRORS)
-  $ResultCodesString = @{
-    ($ResultCodesInt.SUCCEEDED) = 'succeeded'
-    ($ResultCodesInt.SUCCEEDED_WITH_ERRORS)  = 'succeeded with errors'
-    ($ResultCodesInt.FAILED)  = 'failed'
-    ($ResultCodesInt.ABORTED)  = 'aborted'
+  Stop-Service -Name wuauserv -Force -ErrorAction SilentlyContinue # prevent issues by resetting WUA
+  Remove-Item $regWindowsUpdate -Recurse -Force -ErrorAction SilentlyContinue
+  $windowsUpdateService = Start-Service -Name wuauserv -PassThru -ErrorAction SilentlyContinue
+  while ($windowsUpdateService.Status -ne 'Running') {
+    # wait for Windows Update Agent to start
+    Start-Sleep -Seconds $loopDelay
   }
-  # get all updates that normally come from from auto updates (no optional updates)
-  $Criteria = "IsInstalled=0 and IsHidden=0 and AutoSelectOnWebSites=1" 
-  $MicrosoftUpdateSession = New-Object -ComObject 'Microsoft.Update.Session'
-  $UpdateSearcher = $MicrosoftUpdateSession.CreateUpdateSearcher()
-  $SearcherResults = $UpdateSearcher.Search($Criteria)
-  $ResultsUpdates = $SearcherResults.Updates
-  $resultMsg = "Search for Windows updates $(
-    if ($ResultCodesIntArray -contains $SearcherResults.ResultCode)
-    { $ResultCodesString[$SearcherResults.ResultCode] } else { 'stopped, result unknown' }
-  )."
-  if ((-Not $ResultsUpdates) -And ($SearcherResults.ResultCode -eq $ResultCodesInt.SUCCEEDED)) {
-    $attemptUpdates = $False
-    $resultMsg = "Windows is already up-to-date."
-  }
-  Switch ($SearcherResults.ResultCode) {
-    ($ResultCodesInt.SUCCEEDED) { Write-Output $resultMsg }
-    Default { Write-Warning $resultMsg }
-  }
+  Write-Output "Windows Update Agent is running."
   Write-Output '' # Makes log look better
-  if ($ResultsUpdates) {
-    # found updates to install, attempt to download
-    Write-Output "Downloading Windows updates..."
+  $attemptUpdates = $True
+  $updateAttempt = 1
+  while ($attemptUpdates) {
+    # Need to loop attempts until either succeeds with no errors, or until Windows appears already updated, to avoid breaking Dell Command Update later on
+    Write-Output "$(if ($updateAttempt -gt 1) {"Attempt ${updateAttempt}: "})Searching for Windows updates..."
     Write-Output '' # Makes log look better
-    $UpdateDownloader = $MicrosoftUpdateSession.CreateUpdateDownloader()
-    $UpdateDownloader.Updates = $ResultsUpdates
-    $DownloaderResults = $UpdateDownloader.Download()
-    $resultMsg = "Download of Windows updates $(
-      if ($ResultCodesIntArray -contains $DownloaderResults.ResultCode)
+    $ResultCodesInt = @{ SUCCEEDED = 2 ; SUCCEEDED_WITH_ERRORS = 3 ; FAILED = 4 ; ABORTED = 5 }
+    $ResultCodesIntArray = @($ResultCodesInt.Values)
+    $ResultCodesIntArraySucceededOnly = @($ResultCodesInt.SUCCEEDED,$ResultCodesInt.SUCCEEDED_WITH_ERRORS)
+    $ResultCodesString = @{
+      ($ResultCodesInt.SUCCEEDED) = 'succeeded'
+      ($ResultCodesInt.SUCCEEDED_WITH_ERRORS)  = 'succeeded with errors'
+      ($ResultCodesInt.FAILED)  = 'failed'
+      ($ResultCodesInt.ABORTED)  = 'aborted'
+    }
+    # get all updates that normally come from from auto updates (no optional updates)
+    $Criteria = "IsInstalled=0 and IsHidden=0 and AutoSelectOnWebSites=1" 
+    $MicrosoftUpdateSession = New-Object -ComObject 'Microsoft.Update.Session'
+    $UpdateSearcher = $MicrosoftUpdateSession.CreateUpdateSearcher()
+    $SearcherResults = $UpdateSearcher.Search($Criteria)
+    $ResultsUpdates = $SearcherResults.Updates
+    $resultMsg = "Search for Windows updates $(
+      if ($ResultCodesIntArray -contains $SearcherResults.ResultCode)
       { $ResultCodesString[$SearcherResults.ResultCode] } else { 'stopped, result unknown' }
     )."
-    Switch ($DownloaderResults.ResultCode) {
+    if ((-Not $ResultsUpdates) -And ($SearcherResults.ResultCode -eq $ResultCodesInt.SUCCEEDED)) {
+      $attemptUpdates = $False
+      $resultMsg = "Windows is already up-to-date."
+    }
+    Switch ($SearcherResults.ResultCode) {
       ($ResultCodesInt.SUCCEEDED) { Write-Output $resultMsg }
       Default { Write-Warning $resultMsg }
     }
     Write-Output '' # Makes log look better
-    if ($ResultCodesIntArraySucceededOnly -contains $DownloaderResults.ResultCode) {
-      # downloaded updates, attempt to install
-      Write-Output "Installing Windows updates..."
+    if ($ResultsUpdates) {
+      # found updates to install, attempt to download
+      Write-Output "Downloading Windows updates..."
       Write-Output '' # Makes log look better
-      $UpdateInstaller = $MicrosoftUpdateSession.CreateUpdateInstaller()
-      $UpdateInstaller.Updates = $ResultsUpdates
-      $InstallerResults = $UpdateInstaller.Install()
-      $resultMsg = "Install of Windows updates $(
-        if ($ResultCodesIntArray -contains $InstallerResults.ResultCode)
+      $UpdateDownloader = $MicrosoftUpdateSession.CreateUpdateDownloader()
+      $UpdateDownloader.Updates = $ResultsUpdates
+      $DownloaderResults = $UpdateDownloader.Download()
+      $resultMsg = "Download of Windows updates $(
+        if ($ResultCodesIntArray -contains $DownloaderResults.ResultCode)
         { $ResultCodesString[$SearcherResults.ResultCode] } else { 'stopped, result unknown' }
       )."
-      Switch ($InstallerResults.ResultCode) {
+      Switch ($DownloaderResults.ResultCode) {
         ($ResultCodesInt.SUCCEEDED) { Write-Output $resultMsg }
         Default { Write-Warning $resultMsg }
       }
       Write-Output '' # Makes log look better
-      $attemptUpdates = ($ResultCodesIntArraySucceededOnly -notcontains $InstallerResults.ResultCode)
+      if ($ResultCodesIntArraySucceededOnly -contains $DownloaderResults.ResultCode) {
+        # downloaded updates, attempt to install
+        Write-Output "Installing Windows updates..."
+        Write-Output '' # Makes log look better
+        $UpdateInstaller = $MicrosoftUpdateSession.CreateUpdateInstaller()
+        $UpdateInstaller.Updates = $ResultsUpdates
+        $InstallerResults = $UpdateInstaller.Install()
+        $resultMsg = "Install of Windows updates $(
+          if ($ResultCodesIntArray -contains $InstallerResults.ResultCode)
+          { $ResultCodesString[$SearcherResults.ResultCode] } else { 'stopped, result unknown' }
+        )."
+        Switch ($InstallerResults.ResultCode) {
+          ($ResultCodesInt.SUCCEEDED) { Write-Output $resultMsg }
+          Default { Write-Warning $resultMsg }
+        }
+        Write-Output '' # Makes log look better
+        $attemptUpdates = ($ResultCodesIntArraySucceededOnly -notcontains $InstallerResults.ResultCode)
+      }
     }
+    $updateAttempt++
   }
-  $updateAttempt++
 }
 
 # Update all apps (not from the Microsoft Store)
