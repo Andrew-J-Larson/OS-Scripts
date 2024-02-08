@@ -78,3 +78,61 @@ if ($provisioned -Or $canSkip) {
     throw "Failed to provision ${appTitle} (result: ${reason})."
 }
 Write-Output '' # Makes log look better
+
+# --- NEW WIP CODE, WAITING ON FEATURE TO BE ADDED IN WINGET ---
+# https://github.com/microsoft/winget-cli/issues/4154
+# will need to modify code in the else (not provisioned) area
+<# 
+# Functions
+
+function Test-WinGet { return Get-Command 'winget.exe' -ErrorAction SilentlyContinue }
+
+# MAIN
+
+# requires WinGet
+if (-Not $(Test-WinGet)) {
+  throw "Failed to provision ${appTitle}, WinGet needs to be installed first."
+  return 1
+}
+
+# Provisions Microsoft Accessory Center if not already
+$appTitle = 'Microsoft Accessory Center'
+$appPackageName = 'Microsoft.MicrosoftAccessoryCenter'
+$appStoreID = '9N013P0KR5VX'
+
+# check if package is already provisioned
+$appAlreadyProvisioned = Get-AppxProvisionedPackage -Online | Where-Object { $_.DisplayName -eq $appPackageName }
+if ($appAlreadyProvisioned) {
+  Write-Output "${appTitle} is already provisioned."
+} else {
+  # check if package is already installed
+  $appAlreadyInstalled = Get-AppxPackage -AllUsers $appPackageName
+  if (-Not $appAlreadyInstalled) {
+    Write-Output "Attempting to install ${appTitle}..."
+    Write-Output '' # Makes log look better
+    $installAppPackage = Start-Process 'winget.exe' -ArgumentList "install -h --id $appStoreID --accept-package-agreements --accept-source-agreements" -NoNewWindow -PassThru -Wait
+    $appAlreadyInstalled = Get-AppxPackage -AllUsers $appPackageName
+    if ($appAlreadyInstalled) {
+      Write-Output "Successfully installed ${appTitle}."
+      Write-Output '' # Makes log look better
+    } else {
+      throw "Failed to install ${appTitle}."
+      Write-Output '' # Makes log look better
+      return 1
+    }
+  }
+  # attempt provision
+  $provisioned = $True
+  try {
+    Add-AppxProvisionedPackage -Online -FolderPath $appAlreadyInstalled.InstallLocation
+  } catch {
+    $provisioned = $False
+  }
+  if ($provisioned) {
+    Write-Output "Successfully provisioned ${appTitle}."
+  } else {
+    throw "Failed to provision ${appTitle}."
+  }
+  Write-Output '' # Makes log look better
+}
+ #>
