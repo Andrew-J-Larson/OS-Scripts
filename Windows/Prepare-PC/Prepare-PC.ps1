@@ -264,6 +264,7 @@ $dcuArgs = '/applyUpdates' + $(if ($dcuCliExe -eq $dcuCli) { ' -forceUpdate=enab
 
 # installs WinGet from the internet: code via https://github.com/Andrew-J-Larson/OS-Scripts/blob/main/Windows/Wrapper-Functions/Install-WinGet-Function.ps1
 function Install-WinGet {
+  # v1.2.3
   param(
     [switch]$Force
   )
@@ -404,7 +405,7 @@ function Install-WinGet {
       # need to wait a moment to allow Windows to recognize registration
       Start-Sleep -Seconds $appxInstallDelay
     }
-    if ((-Not $forceWingetUpdate) -And (Test-WinGet)) {
+    if ((-Not $forceWingetUpdate) -And $(Test-WinGet)) {
       # if WinGet version is retired, force it to update
       $currentWingetVersion = [System.Version](
         ((winget.exe -v).split('v')[1].split('.') | Select-Object -First 2) -join '.'
@@ -414,7 +415,7 @@ function Install-WinGet {
   }
 
   # if WinGet is still not found, download WinGet package with any dependent packages, and attempt install
-  if ($forceWingetUpdate -Or (-Not (Test-WinGet))) {
+  if ($forceWingetUpdate -Or (-Not $(Test-WinGet))) {
     # Internet connection check
     $InternetAccess = (Get-NetConnectionProfile).IPv4Connectivity -contains "Internet" -or (Get-NetConnectionProfile).IPv6Connectivity -contains "Internet"
     if (-Not $InternetAccess) {
@@ -632,43 +633,24 @@ function Install-WinGet {
     } catch {
       $wingetInstalled = $False
     }
-    if ($wingetInstalled) {
-      Write-Output "Installed WinGet."
-      Write-Output '' # Makes log look better
-    }
     # delete left over files no longer needed
     if ($dependencyFiles) { $dependencyFiles | ForEach-Object { Remove-Item -Path $_ -Force -ErrorAction SilentlyContinue } }
     Remove-Item -Path $tempWingetPackage -Force -ErrorAction SilentlyContinue
+    $result = 0
+    if ($wingetInstalled -And $(Test-WinGet)) {
+      Write-Output "WinGet successfully installed."
+    } else {
+      Write-Error = "WinGet failed to install."
+      $result = $FAILED.INSTALL
+    }
+    Write-Output '' # Makes log look better
+    return $result
   } else {
     # special return of results, if a working version of WinGet is already installed
     Write-Output "WinGet is already installed."
     return 0
   }
-
-  # return results from install attempt
-  $noErrors = $error.count -eq 0
-  $executableFound = Test-WinGet
-  $result = 0
-  if ($noErrors -And $executableFound) {
-    Write-Output "WinGet successfully installed."
-  } else {
-    $result = $FAILED.INSTALL
-    $errorMsg = "WinGet failed to install."
-
-    $reasons = @()
-    if (-Not $noErrors) {
-      $reasons += @("some errors occured")
-    }
-    if (-Not $executableFound) {
-      $reasons += @("executable couldn't be found")
-    }
-    if ($reasons.length -gt 0) {
-      $errorMsg += " ($($reasons -join ', '))"
-    }
-    Write-Error $errorMsg
-  }
   Write-Output '' # Makes log look better
-  return $result
 }
 
 # MAIN
@@ -953,7 +935,7 @@ while ($attemptUpdates) {
 }
 
 # Update all apps (not from the Microsoft Store)
-if (Install-WinGet) { # install WinGet first if not available
+if ($(Install-WinGet) -eq 0) { # installs/updates WinGet if needed
   Write-Output "Attempting to update all apps (not from the Microsoft Store)..."
   Write-Output '' # Makes log look better
   $wingetUpgradePSI = New-object System.Diagnostics.ProcessStartInfo

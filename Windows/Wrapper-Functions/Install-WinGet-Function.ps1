@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Install WinGet Function v1.2.2
+  Install WinGet Function v1.2.3
 
   .DESCRIPTION
   Script contains a function which can be used to install WinGet (to current user profile) automatically.
@@ -239,7 +239,7 @@ function Install-WinGet {
     while (-Not $tempWingetPackage) {
       # need to loop until WinGet package is downloaded
       $tempWingetWebResponse = Invoke-WebRequest -Uri $wingetLatestDownloadURL -UseBasicParsing
-      if ($tempWingetWebRequest.StatusCode -eq 200) {
+      if ($tempWingetWebResponse.StatusCode -eq 200) {
         # confirm file extension is correct
         $tempWingetFileName = ([System.Net.Mime.ContentDisposition]$tempWingetWebResponse.Headers.'Content-Disposition').FileName
         if (-Not $tempWingetFileName.EndsWith(".msixbundle")) {
