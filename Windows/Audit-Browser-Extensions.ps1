@@ -1,6 +1,6 @@
 ﻿<#
   .SYNOPSIS
-  Audit Browser Extensions v1.0.2
+  Audit Browser Extensions v1.0.3
 
   .DESCRIPTION
   This script will get all browser extensions installed from every user profile on the computer (and by default avoiding extensions
@@ -49,6 +49,10 @@
                   |-> Engine (by name, the browser engine used for the browser)
                   |-> Profiles (ordered list of profiles in the browser, since there may be more than one profile used)
                       |=> Profile (by folder name)
+                          |-> Path (path to the folder the profile is in)
+                          |-> Account (the main account logged into the profile, if any)
+                              |=> Email       (if there is a logged in account, data here won't be empty)
+                              |=> DisplayName (if there is a logged in account, data here won't be empty)
                           |-> Extensions (array of extensions)
                               |=> Extension
                                   |-> (original extension data here will differ based on type of browser and may change over time)
@@ -102,7 +106,9 @@ param(
 
   [Parameter(ValueFromRemainingArguments)]
   [ValidateScript({Test-Path -Path $_})]
-  [String]$Path = $(if ($PSScriptRoot) { $PSScriptRoot } else { $env:SystemDrive })
+  [String]$Path = $(if ($PSScriptRoot) { $PSScriptRoot } elseif ($MyInvocation.MyCommand.Path) {
+    Split-Path -Parent $MyInvocation.MyCommand.Path
+  } else { $env:SystemDrive })
 )
 
 # check for parameters and execute accordingly
@@ -241,8 +247,18 @@ for ($i = 0; $i -lt $AllBrowserExtensionBasedJsonFileMatches.length; $i++) {
   $jsonPath = $browserJsonMatch.Value
   $jsonData = Get-Content $jsonPath -Raw -Encoding UTF8 | Fix-JsonContent | ConvertFrom-Json
 
+  # User
   $username = $browserJsonMatch.Groups[$USERNAME_REGEX_GROUP].Value
+  if (-Not $OriginalExtensionDataJSON.Users[$username]) {
+    # create user property with FullName string and Browsers object
+    $OriginalExtensionDataJSON.Users[$username] = [ordered]@{
+      FullName = Get-CimInstance -ClassName Win32_UserAccount -Filter "Name = '${username}'" -Property FullName | Select-Object -Expand FullName
+      Browsers = [ordered]@{}
+    }
+  }
+  $User = $OriginalExtensionDataJSON.Users[$username]
 
+  # Browser
   $browser = $Null
   if ($browserJsonMatch.Groups[$BROWSER_UWP_REGEX_GROUP].length -gt 0) {
     # UWP browsers have company name listed elsewhere
@@ -258,20 +274,6 @@ for ($i = 0; $i -lt $AllBrowserExtensionBasedJsonFileMatches.length; $i++) {
   $browserCompany = if ($browser[0] -ne $browserName) { $browser[0] } else { $Null } # browser name can't be company name too
   $browserEngine = $browserJsonMatch.Engine
   $browser = $browser -Join ' '
-
-  $profileName = $browserJsonMatch.Groups[$PROFILE_REGEX_GROUP].Value
-
-  # User
-  if (-Not $OriginalExtensionDataJSON.Users[$username]) {
-    # create user property with FullName string and Browsers object
-    $OriginalExtensionDataJSON.Users[$username] = [ordered]@{
-      FullName = Get-CimInstance -ClassName Win32_UserAccount -Filter "Name = '${username}'" -Property FullName | Select-Object -Expand FullName
-      Browsers = [ordered]@{}
-    }
-  }
-  $User = $OriginalExtensionDataJSON.Users[$username]
-
-  # Browser
   if (-Not $User.Browsers[$browserName]) {
     # create browser property with Company string and Profiles array
     $User.Browsers[$browserName] = [ordered]@{
@@ -281,11 +283,71 @@ for ($i = 0; $i -lt $AllBrowserExtensionBasedJsonFileMatches.length; $i++) {
     }
   }
   $UserBrowser = $User.Browsers[$browserName]
+  $isBlinkEngine = $browserEngine -eq $BLINK_BROWSER_ENGINE # ; $isGeckoEngine = $browserEngine -eq $GECKO_BROWSER_ENGINE
 
   # BrowserProfile
+  $profileFolderName = $browserJsonMatch.Groups[$PROFILE_REGEX_GROUP].Value
+  $profileName = $profileFolderName
+  $profilePath = Split-Path -Parent $jsonPath
+  $profileAccount = [ordered]@{
+    Email = $Null
+    DisplayName = $Null
+  }
   if (-Not $UserBrowser.Profiles[$profileName]) {
+    # profile name and account details is a bit tricker to get
+    if ($isBlinkEngine) {
+      # profile name/account details is only stored in the Preferences file
+      $profileJsonData = $jsonData
+      if ($jsonPath.EndsWith('Secure Preferences')) {
+        $profileJsonPath = $profilePath + '\Preferences'
+        $profileJsonData = if (Test-Path -Path $profileJsonPath -PathType leaf) {
+          Get-Content $profileJsonPath -Raw -Encoding UTF8 | Fix-JsonContent | ConvertFrom-Json
+        } else { $Null }
+      }
+      if ($profileJsonData) {
+        # profile name
+        if ($profileJsonData.profile -And $profileJsonData.profile.name) {
+          $profileName = $profileJsonData.profile.name
+        }
+        # account details (from the main account)
+        if ($profileJsonData.account_info) {
+          if ($profileJsonData.account_info[0].email) {
+            $profileAccount.Email = $profileJsonData.account_info[0].email
+          }
+          if ($profileJsonData.account_info[0].given_name) {
+            $profileAccount.DisplayName = $profileJsonData.account_info[0].given_name
+          } elseif ($profileJsonData.account_info[0].full_name) {
+            $profileAccount.DisplayName = $profileJsonData.account_info[0].full_name
+          }
+        }
+      }
+    } else {
+      # profile name is pulled from the folder name
+      $indexFirstPeriod = $profileFolderName.IndexOf('.')
+      if ($indexFirstPeriod -gt -1) {
+        $testProfileName = $profileFolderName.substring($indexFirstPeriod + 1)
+        if ($testProfileName) { $profileName = $testProfileName }
+      }
+      # account data is pulled from a different file
+      $profileJsonPath = $profilePath + '\signedInUser.json'
+      $profileJsonData = if (Test-Path -Path $profileJsonPath -PathType leaf) {
+        Get-Content $profileJsonPath -Raw -Encoding UTF8 | Fix-JsonContent | ConvertFrom-Json
+      } else { $Null }
+      if ($profileJsonData -And $profileJsonData.accountData) {
+        if ($profileJsonData.accountData -And $profileJsonData.accountData.email) {
+          $profileAccount.Email = $profileJsonData.accountData.email
+        }
+        if ($profileJsonData.accountData -And $profileJsonData.accountData.displayName -And
+            $profileJsonData.accountData.profileCache -And $profileJsonData.accountData.profileCache.profile -And
+            $profileJsonData.accountData.profileCache.profile.displayName) {
+          $profileAccount.DisplayName = $profileJsonData.accountData.profileCache.profile.displayName
+        }
+      }
+    }
     # create profile property with an Extensions array
     $UserBrowser.Profiles[$profileName] = [ordered]@{
+      Path = $profilePath # will be the profile folder name if profile name wasn't obtainable
+      Account = $profileAccount # may or may not include online account info if user is logged into browser profile
       Extensions = @()
     }
   }
@@ -293,7 +355,6 @@ for ($i = 0; $i -lt $AllBrowserExtensionBasedJsonFileMatches.length; $i++) {
 
   # get extension list based on browser engine
   $extensionsList = $Null
-  $isBlinkEngine = $browserEngine -eq $BLINK_BROWSER_ENGINE # ; $isGeckoEngine = $browserEngine -eq $GECKO_BROWSER_ENGINE
   if ($isBlinkEngine) {
     $extensionsSettings = ($jsonData.extensions.PSObject.Properties | # some browsers like to rename the settings property
                            Where-Object { $_.Name -like "*settings" }).Value.PSObject.Properties
