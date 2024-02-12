@@ -48,7 +48,7 @@
                   |-> Company (by name, but empty if a company name couldn't be found)
                   |-> Engine (by name, the browser engine used for the browser)
                   |-> Profiles (ordered list of profiles in the browser, since there may be more than one profile used)
-                      |=> Profile (by folder name)
+                      |=> Profile (by name, or folder name if name couldn't be determined)
                           |-> Path (path to the folder the profile is in)
                           |-> Account (the main account logged into the profile, if any)
                               |=> Email       (if there is a logged in account, data here won't be empty)
