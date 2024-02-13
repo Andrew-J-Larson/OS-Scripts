@@ -20,7 +20,8 @@
   Additionally, user profiles that have been moved outside of the Users folder will also likely not be supported, due to an infinite
   number of possiblities of where the user's folder could be stored, but also is generally not supported by Windows anyways.
 
-  WSL distros aren't supported currently, however, the possiblity of support being included is not off the table.
+  The Windows Subsystems for Linux and Android will both not be supported, as those features are turned off by default, and users
+  can't turn them on without admin access to begin with.
 
   Headless cloud browsers (e.g. Puffin Secure Browser) will never be supported, as their data is completely hosted else where, without
   any direct access to user data (a.k.a. can't ever get extension data).
