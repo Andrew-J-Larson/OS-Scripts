@@ -23,8 +23,8 @@
   The Windows Subsystems for Linux and Android will both not be supported, as those features are turned off by default, and users
   can't turn them on without admin access to begin with.
 
-  Headless cloud browsers (e.g. Puffin Secure Browser) will never be supported, as their data is completely hosted else where, without
-  any direct access to user data (a.k.a. can't ever get extension data).
+  Headless cloud browsers (e.g. Puffin Secure Browser) will never be supported, as their data is completely hosted else where,
+  without any direct access to user data (a.k.a. can't ever get extension data).
 
   .PARAMETER Path
   Changes where the captured browser information is stored. By not providing this value, exporting will default to the directory
@@ -145,12 +145,12 @@ Set-Variable -Name GECKO_THUNDERBIRD_ADDON_XPI_URL_REGEX -Option Constant -Value
 # these constants are values pulled from the source code of each browser engine
 Set-Variable -Name BLINK_BROWSER_LOCATION_UNPACKED -Option Constant -Value 4 -ErrorAction SilentlyContinue # special value is given to loaded unpacked extensions
 Set-Variable -Name BLINK_BROWSER_LOCATION_COMMAND_LINE -Option Constant -Value 8 -ErrorAction SilentlyContinue # another way unpacked extensions are loaded in
-Set-Variable -Name BLINK_BROWSER_LOCATION_COMPONENT -Option Constant -Value 5 -ErrorAction SilentlyContinue
+Set-Variable -Name BLINK_BROWSER_LOCATION_COMPONENT -Option Constant -Value 5 -ErrorAction SilentlyContinue # these are system extensions that can't be disabled by user
 Set-Variable -Name BLINK_BROWSER_LOCATION_EXTERNAL_COMPONENT -Option Constant -Value 10 -ErrorAction SilentlyContinue # these are system extensions that can be disabled by user
-Set-Variable -Name GECKO_BROWSER_SOURCE_TEMPORARY_ADDON -Option Constant -Value "temporary-addon" -ErrorAction SilentlyContinue
-Set-Variable -Name GECKO_BROWSER_SOURCE_FILE_URL -Option Constant -Value "file-url" -ErrorAction SilentlyContinue
-Set-Variable -Name GECKO_BROWSER_SOURCE_ABOUT_ADDONS -Option Constant -Value "about:addons" -ErrorAction SilentlyContinue
-Set-Variable -Name GECKO_BROWSER_LOCATION_APP_SYSTEM_DEFAULTS -Option Constant -Value "app-system-defaults" -ErrorAction SilentlyContinue
+Set-Variable -Name GECKO_BROWSER_SOURCE_TEMPORARY_ADDON -Option Constant -Value "temporary-addon" -ErrorAction SilentlyContinue # special value is given to loaded unpacked extensions
+Set-Variable -Name GECKO_BROWSER_SOURCE_FILE_URL -Option Constant -Value "file-url" -ErrorAction SilentlyContinue # can used in combination to check if unpacked extension was loaded
+Set-Variable -Name GECKO_BROWSER_SOURCE_ABOUT_ADDONS -Option Constant -Value "about:addons" -ErrorAction SilentlyContinue # can used in combination to check if unpacked extension was loaded
+Set-Variable -Name GECKO_BROWSER_LOCATION_APP_SYSTEM_DEFAULTS -Option Constant -Value "app-system-defaults" -ErrorAction SilentlyContinue # these are system addons that can't be disabled by user
 Set-Variable -Name GECKO_BROWSER_LOCATION_APP_BUILTINS -Option Constant -Value "app-builtin" -ErrorAction SilentlyContinue # these are system addons that can be disabled by user
 
 Set-Variable -Name BLINK_BROWSER_CHECK_UNPACKED -Option Constant -Value @($BLINK_BROWSER_LOCATION_UNPACKED, $BLINK_BROWSER_LOCATION_COMMAND_LINE) -ErrorAction SilentlyContinue
