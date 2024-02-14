@@ -1,6 +1,6 @@
 ﻿<#
   .SYNOPSIS
-  Audit Browser Extensions v1.0.6
+  Audit Browser Extensions v1.0.7
 
   .DESCRIPTION
   This script will get all browser extensions installed from every user profile on the computer (and by default avoiding extensions
@@ -59,7 +59,7 @@
                                   |-> (original extension data here will differ based on type of browser and may change over time)
    - 2 CSV files - Both files will contain more basic info of the extensions collected, like so:
     - Simplified:
-     > Username,ExtensionUnpacked,ExtensionID,ExtensionVersion,BrowserEngine,BrowserCompany,BrowserName
+     > Username,ExtensionUnpacked,ExtensionID,ExtensionVersion,ExtensionEnabled,BrowserEngine,BrowserCompany,BrowserName
       * Note: this is de-duplicated, since any same extension could be installed in different browser profiles of the same user
     - Extensions only:
      > BrowserEngine,ExtensionURLs,ExtensionUnpacked,ExtensionID,ExtensionVendor,ExtensionName,ExtensionDescription
@@ -171,7 +171,7 @@ $OriginalExtensionDataJSON = @{
 
 # simplify data from extensions, contains headers already
 [array]$SimplifiedExtensionDataCSV = ConvertFrom-Csv @'
-Username,ExtensionUnpacked,ExtensionID,ExtensionVersion,BrowserEngine,BrowserCompany,BrowserName
+Username,ExtensionUnpacked,ExtensionID,ExtensionVersion,ExtensionEnabled,BrowserEngine,BrowserCompany,BrowserName
 '@
 
 # only the extensions are in this, contains headers already
@@ -374,8 +374,8 @@ for ($i = 0; $i -lt $AllBrowserExtensionBasedJsonFileMatches.length; $i++) {
   # iterate over extension lists to determine installed extensions
   $extensionsList | ForEach-Object {
     $extensionID = $Null ; $extensionVersion = $Null ; $extensionVendor = $Null
-    $extensionName = $Null ; $extensionDescription = $Null ; $extensionURLs = $Null
-    $extensionUnpacked = $False
+    $extensionName = $Null ; $extensionDescription = $Null ; $extensionURLs = $null
+    $extensionEnabled = $True ; $extensionUnpacked = $False
 
     # only continue parsing/adding extension data if:
     # - the data is actually an extension
@@ -407,6 +407,7 @@ for ($i = 0; $i -lt $AllBrowserExtensionBasedJsonFileMatches.length; $i++) {
         $extensionVendor = $extension.manifest.author
         $extensionName = $extension.manifest.name
         $extensionDescription = $extension.manifest.description
+        $extensionEnabled = $extension.state -And $extension.state -eq 1
 
         # get all possible URLs
         $extensionHomepageURL = $extension.manifest.homepage_url
@@ -516,6 +517,7 @@ for ($i = 0; $i -lt $AllBrowserExtensionBasedJsonFileMatches.length; $i++) {
         $extensionVendor = $addon.defaultLocale.creator
         $extensionName = $addon.defaultLocale.name
         $extensionDescription = $addon.defaultLocale.description
+        $extensionEnabled = $addon.active
 
         # get all possible URLs
         $extensionUpdateURL = $addon.updateURL
@@ -594,6 +596,7 @@ for ($i = 0; $i -lt $AllBrowserExtensionBasedJsonFileMatches.length; $i++) {
         ExtensionUnpacked = $extensionUnpacked
         ExtensionID = $extensionID
         ExtensionVersion = $extensionVersion
+        ExtensionEnabled = $extensionEnabled
         BrowserEngine = $browserEngine
         BrowserCompany = $browserCompany
         BrowserName = $browserName
@@ -636,7 +639,7 @@ for ($i = 0; $i -lt $AllBrowserExtensionBasedJsonFileMatches.length; $i++) {
 }
 
 # get unique values for the CSVs, while sorting at the same time
-$SimplifiedExtensionDataCSV = $SimplifiedExtensionDataCSV | Sort-Object Username,BrowserEngine,BrowserCompany,BrowserName,ExtensionUnpacked,ExtensionID,ExtensionVersion -Unique
+$SimplifiedExtensionDataCSV = $SimplifiedExtensionDataCSV | Sort-Object Username,BrowserEngine,BrowserCompany,BrowserName,ExtensionUnpacked,ExtensionID,ExtensionVersion,ExtensionEnabled -Unique
 $ExtensionsOnlyCSV = $ExtensionsOnlyCSV | Sort-Object BrowserEngine,ExtensionURLs,ExtensionUnpacked,ExtensionVendor,ExtensionName,ExtensionID,ExtensionDescription -Unique
 
 # export finialized data
