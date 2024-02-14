@@ -1,6 +1,6 @@
 ﻿<#
   .SYNOPSIS
-  Audit Browser Extensions v1.0.5
+  Audit Browser Extensions v1.0.6
 
   .DESCRIPTION
   This script will get all browser extensions installed from every user profile on the computer (and by default avoiding extensions
@@ -148,13 +148,14 @@ Set-Variable -Name BLINK_BROWSER_LOCATION_COMMAND_LINE -Option Constant -Value 8
 Set-Variable -Name BLINK_BROWSER_LOCATION_COMPONENT -Option Constant -Value 5 -ErrorAction SilentlyContinue
 Set-Variable -Name BLINK_BROWSER_LOCATION_EXTERNAL_COMPONENT -Option Constant -Value 10 -ErrorAction SilentlyContinue # these are system extensions that can be disabled by user
 Set-Variable -Name GECKO_BROWSER_SOURCE_TEMPORARY_ADDON -Option Constant -Value "temporary-addon" -ErrorAction SilentlyContinue
+Set-Variable -Name GECKO_BROWSER_SOURCE_FILE_URL -Option Constant -Value "file-url" -ErrorAction SilentlyContinue
 Set-Variable -Name GECKO_BROWSER_SOURCE_ABOUT_ADDONS -Option Constant -Value "about:addons" -ErrorAction SilentlyContinue
 Set-Variable -Name GECKO_BROWSER_LOCATION_APP_SYSTEM_DEFAULTS -Option Constant -Value "app-system-defaults" -ErrorAction SilentlyContinue
 Set-Variable -Name GECKO_BROWSER_LOCATION_APP_BUILTINS -Option Constant -Value "app-builtin" -ErrorAction SilentlyContinue # these are system addons that can be disabled by user
 
 Set-Variable -Name BLINK_BROWSER_CHECK_UNPACKED -Option Constant -Value @($BLINK_BROWSER_LOCATION_UNPACKED, $BLINK_BROWSER_LOCATION_COMMAND_LINE) -ErrorAction SilentlyContinue
 Set-Variable -Name BLINK_BROWSER_CHECK_BUILTIN -Option Constant -Value @($BLINK_BROWSER_LOCATION_COMPONENT, $BLINK_BROWSER_LOCATION_EXTERNAL_COMPONENT) -ErrorAction SilentlyContinue
-Set-Variable -Name GECKO_BROWSER_CHECK_UNPACKED -Option Constant -Value @($GECKO_BROWSER_SOURCE_TEMPORARY_ADDON, $GECKO_BROWSER_SOURCE_ABOUT_ADDONS) -ErrorAction SilentlyContinue
+Set-Variable -Name GECKO_BROWSER_CHECK_UNPACKED -Option Constant -Value @($GECKO_BROWSER_SOURCE_TEMPORARY_ADDON, $GECKO_BROWSER_SOURCE_FILE_URL, $GECKO_BROWSER_SOURCE_ABOUT_ADDONS) -ErrorAction SilentlyContinue
 Set-Variable -Name GECKO_BROWSER_CHECK_BUILTIN -Option Constant -Value @($GECKO_BROWSER_LOCATION_APP_BUILTINS, $GECKO_BROWSER_LOCATION_APP_SYSTEM_DEFAULTS) -ErrorAction SilentlyContinue
 
 Set-Variable -Name BLINK_BROWSER_ENGINE -Option Constant -Value "Blink" -ErrorAction SilentlyContinue
@@ -451,16 +452,28 @@ for ($i = 0; $i -lt $AllBrowserExtensionBasedJsonFileMatches.length; $i++) {
       $addon = $_
 
       # Unpacked extension detection
-      $extensionUnpacked = ( # only extension type of WebExtension API
+      $extensionUnpacked = (( # only extension type of WebExtension API
         # Gecko versions < 62: https://blog.mozilla.org/addons/2018/02/22/removing-support-unpacked-extensions/
         # and >= 48: (see below)
         $addon.installTelemetryInfo -And $addon.installTelemetryInfo.source -And (
-          $GECKO_BROWSER_CHECK_UNPACKED -contains $addon.installTelemetryInfo.source
+          ($GECKO_BROWSER_CHECK_UNPACKED -contains $addon.installTelemetryInfo.source) -And
+            (-Not $addon.installTelemetryInfo.sourceURL) # unsure if this needs to be here, but doesn't hurt to check
         )
       ) -Or ( # old extension type of different APIs included
         # Gecko versions < 57: https://en.wikipedia.org/wiki/Features_of_Firefox#Electrolysis_and_WebExtensions
         $addon.sourceURI -And ($addon.sourceURI).StartsWith('file:///')
+      )) -And (
+        # see https://github.com/mozilla/gecko-dev/blob/master/toolkit/mozapps/extensions/AddonManager.sys.mjs
+        #   SIGNEDSTATE_NOT_REQUIRED = null ... `xpinstall.signatures.required` == false, in "about:config": https://wiki.mozilla.org/Add-ons/Extension_Signing#FAQ
+        #   SIGNEDSTATE_MISSING      = 0 ...... unsigned
+        # (-Not $addon.signedState) == true, when signedState is null or 0
+        (-Not $addon.signedState) -Or ( # when signing extensions was required
+          # SIGNEDSTATE_UNKNOWN      = -1 ..... packed with web-ext only for ease of testing, but otherwise still basically unpacked
+          # Gecko versions >= 40: https://en.wikipedia.org/wiki/Add-on_(Mozilla)#Restrictions
+          $addon.signedState -eq -1
+        )
       )
+
       # NOTE: Unpacked extensions are not supported in the latest versions of Gecko...
       #       - https://blog.mozilla.org/addons/2018/02/22/removing-support-unpacked-extensions/
       #       ... but should still be checked for, due to older versions being used for Gecko forks, e.g. Goanna
