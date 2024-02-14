@@ -1,6 +1,6 @@
 ﻿<#
   .SYNOPSIS
-  Audit Browser Extensions v1.0.3
+  Audit Browser Extensions v1.0.5
 
   .DESCRIPTION
   This script will get all browser extensions installed from every user profile on the computer (and by default avoiding extensions
@@ -59,10 +59,10 @@
                                   |-> (original extension data here will differ based on type of browser and may change over time)
    - 2 CSV files - Both files will contain more basic info of the extensions collected, like so:
     - Simplified:
-     > Username,ExtensionID,ExtensionVersion,BrowserEngine,BrowserCompany,BrowserName
+     > Username,ExtensionUnpacked,ExtensionID,ExtensionVersion,BrowserEngine,BrowserCompany,BrowserName
       * Note: this is de-duplicated, since any same extension could be installed in different browser profiles of the same user
     - Extensions only:
-     > BrowserEngine,ExtensionURLs,ExtensionID,ExtensionVendor,ExtensionName,ExtensionDescription
+     > BrowserEngine,ExtensionURLs,ExtensionUnpacked,ExtensionID,ExtensionVendor,ExtensionName,ExtensionDescription
       * Note: if possible, for extensions that came from a webstore/online, additional URLs will be parsed and included
       * Note: this is a de-duplicated list of just all the extensions, with only their information
 
@@ -142,15 +142,20 @@ Set-Variable -Name GECKO_BROWSER_EXTENSIONS_REGEX -Option Constant -Value "${BRO
 Set-Variable -Name GECKO_THUNDERBIRD_ADDON_ID_REGEX_GROUP -Option Constant -Value "ADDON_ID" -ErrorAction SilentlyContinue
 Set-Variable -Name GECKO_THUNDERBIRD_ADDON_XPI_URL_REGEX -Option Constant -Value "https?\:\/\/addons\.thunderbird\.net\/thunderbird\/downloads\/latest\/[^\/]+\/addon\-(?<${GECKO_THUNDERBIRD_ADDON_ID_REGEX_GROUP}>[0-9]+)\-latest\.xpi.*" -ErrorAction SilentlyContinue
 
-Set-Variable -Name BLINK_BROWSER_LOCATION_UNPACKED -Option Constant -Value 4 -ErrorAction SilentlyContinue
-
+# these constants are values pulled from the source code of each browser engine
+Set-Variable -Name BLINK_BROWSER_LOCATION_UNPACKED -Option Constant -Value 4 -ErrorAction SilentlyContinue # special value is given to loaded unpacked extensions
+Set-Variable -Name BLINK_BROWSER_LOCATION_COMMAND_LINE -Option Constant -Value 8 -ErrorAction SilentlyContinue # another way unpacked extensions are loaded in
 Set-Variable -Name BLINK_BROWSER_LOCATION_COMPONENT -Option Constant -Value 5 -ErrorAction SilentlyContinue
-Set-Variable -Name BLINK_BROWSER_LOCATION_EXTERNAL_COMPONENT -Option Constant -Value 10 -ErrorAction SilentlyContinue
-Set-Variable -Name GECKO_BROWSER_LOCATION_APP_BUILTIN -Option Constant -Value "app-builtin" -ErrorAction SilentlyContinue
+Set-Variable -Name BLINK_BROWSER_LOCATION_EXTERNAL_COMPONENT -Option Constant -Value 10 -ErrorAction SilentlyContinue # these are system extensions that can be disabled by user
+Set-Variable -Name GECKO_BROWSER_SOURCE_TEMPORARY_ADDON -Option Constant -Value "temporary-addon" -ErrorAction SilentlyContinue
+Set-Variable -Name GECKO_BROWSER_SOURCE_ABOUT_ADDONS -Option Constant -Value "about:addons" -ErrorAction SilentlyContinue
 Set-Variable -Name GECKO_BROWSER_LOCATION_APP_SYSTEM_DEFAULTS -Option Constant -Value "app-system-defaults" -ErrorAction SilentlyContinue
+Set-Variable -Name GECKO_BROWSER_LOCATION_APP_BUILTINS -Option Constant -Value "app-builtin" -ErrorAction SilentlyContinue # these are system addons that can be disabled by user
 
+Set-Variable -Name BLINK_BROWSER_CHECK_UNPACKED -Option Constant -Value @($BLINK_BROWSER_LOCATION_UNPACKED, $BLINK_BROWSER_LOCATION_COMMAND_LINE) -ErrorAction SilentlyContinue
 Set-Variable -Name BLINK_BROWSER_CHECK_BUILTIN -Option Constant -Value @($BLINK_BROWSER_LOCATION_COMPONENT, $BLINK_BROWSER_LOCATION_EXTERNAL_COMPONENT) -ErrorAction SilentlyContinue
-Set-Variable -Name GECKO_BROWSER_CHECK_BUILTIN -Option Constant -Value @($GECKO_BROWSER_LOCATION_APP_BUILTIN, $GECKO_BROWSER_LOCATION_APP_SYSTEM_DEFAULTS) -ErrorAction SilentlyContinue
+Set-Variable -Name GECKO_BROWSER_CHECK_UNPACKED -Option Constant -Value @($GECKO_BROWSER_SOURCE_TEMPORARY_ADDON, $GECKO_BROWSER_SOURCE_ABOUT_ADDONS) -ErrorAction SilentlyContinue
+Set-Variable -Name GECKO_BROWSER_CHECK_BUILTIN -Option Constant -Value @($GECKO_BROWSER_LOCATION_APP_BUILTINS, $GECKO_BROWSER_LOCATION_APP_SYSTEM_DEFAULTS) -ErrorAction SilentlyContinue
 
 Set-Variable -Name BLINK_BROWSER_ENGINE -Option Constant -Value "Blink" -ErrorAction SilentlyContinue
 Set-Variable -Name GECKO_BROWSER_ENGINE -Option Constant -Value "Gecko" -ErrorAction SilentlyContinue
@@ -165,12 +170,12 @@ $OriginalExtensionDataJSON = @{
 
 # simplify data from extensions, contains headers already
 [array]$SimplifiedExtensionDataCSV = ConvertFrom-Csv @'
-Username,ExtensionID,ExtensionVersion,BrowserEngine,BrowserCompany,BrowserName
+Username,ExtensionUnpacked,ExtensionID,ExtensionVersion,BrowserEngine,BrowserCompany,BrowserName
 '@
 
 # only the extensions are in this, contains headers already
 [array]$ExtensionsOnlyCSV = ConvertFrom-Csv @'
-BrowserEngine,ExtensionURLs,ExtensionID,ExtensionVendor,ExtensionName,ExtensionDescription
+BrowserEngine,ExtensionURLs,ExtensionUnpacked,ExtensionID,ExtensionVendor,ExtensionName,ExtensionDescription
 '@
 
 # Functions
@@ -365,28 +370,31 @@ for ($i = 0; $i -lt $AllBrowserExtensionBasedJsonFileMatches.length; $i++) {
     $extensionsList = $addons
   }
 
-  # Iterate over extension lists to determine installed extensions
+  # iterate over extension lists to determine installed extensions
   $extensionsList | ForEach-Object {
     $extensionID = $Null ; $extensionVersion = $Null ; $extensionVendor = $Null
     $extensionName = $Null ; $extensionDescription = $Null ; $extensionURLs = $Null
+    $extensionUnpacked = $False
 
     # only continue parsing/adding extension data if:
     # - the data is actually an extension
     # - and the extension isn't built into the browser
     if ($isBlinkEngine) {
       $extension = $_.Value
-      # Unpacked extensions don't usually have manifest data loaded in, so this needs to be done instead
-      if (($extension.location -eq $BLINK_BROWSER_LOCATION_UNPACKED) -And (-Not $extension.manifest)) {
-        $extensionManifestPath = "$($extension.Path)\manifest.json"
-        if (Test-Path -Path $extensionManifestPath -PathType Leaf) {
-          $extensionManifestData = Get-Content $extensionManifestPath -Raw -Encoding UTF8 | Fix-JsonContent | ConvertFrom-Json
-          $extension | Add-Member -Name "manifest" -Value $extensionManifestData -MemberType NoteProperty
-        }
+
+      # Unpacked extension detection
+      $extensionUnpacked = $BLINK_BROWSER_CHECK_UNPACKED -contains $extension.location
+      # Sometimes manifest data needs to be loaded in manually (usually the case for unpacked extensions)
+      $checkExtensionManifestPath = "$($extension.Path)\manifest.json"
+      if ((-Not $extension.manifest) -And (Test-Path -Path $checkExtensionManifestPath -PathType Leaf)) {
+        $extensionManifestData = Get-Content $extensionManifestPath -Raw -Encoding UTF8 | Fix-JsonContent | ConvertFrom-Json
+        $extension | Add-Member -Name "manifest" -Value $extensionManifestData -MemberType NoteProperty
       }
       # Opera browsers may have one or more special builtin app(s) that they don't have properly using location properties
       $specialOperaBuiltinCheck = ($extension.manifest.author -eq "Opera Norway AS") -And
                                   ($extension.manifest.update_url) -And
                                   (([System.Uri]$extension.manifest.update_url).Host.EndsWith('operacdn.com'))
+
       if ($extension.manifest -And (-Not $extension.manifest.theme) -And
           ($BLINK_BROWSER_CHECK_BUILTIN -notcontains $extension.location) -And (-Not $specialOperaBuiltinCheck)) {
         # remove the `default_locale` property as it's unnecessary extra data
@@ -441,7 +449,49 @@ for ($i = 0; $i -lt $AllBrowserExtensionBasedJsonFileMatches.length; $i++) {
       }
     } else { # elseif ($isGeckoEngine)
       $addon = $_
-      if ($addon.defaultLocale -And ($addon.type -eq "extension") -And
+
+      # Unpacked extension detection
+      $extensionUnpacked = ( # only extension type of WebExtension API
+        # Gecko versions < 62: https://blog.mozilla.org/addons/2018/02/22/removing-support-unpacked-extensions/
+        # and >= 48: (see below)
+        $addon.installTelemetryInfo -And $addon.installTelemetryInfo.source -And (
+          $GECKO_BROWSER_CHECK_UNPACKED -contains $addon.installTelemetryInfo.source
+        )
+      ) -Or ( # old extension type of different APIs included
+        # Gecko versions < 57: https://en.wikipedia.org/wiki/Features_of_Firefox#Electrolysis_and_WebExtensions
+        $addon.sourceURI -And ($addon.sourceURI).StartsWith('file:///')
+      )
+      # NOTE: Unpacked extensions are not supported in the latest versions of Gecko...
+      #       - https://blog.mozilla.org/addons/2018/02/22/removing-support-unpacked-extensions/
+      #       ... but should still be checked for, due to older versions being used for Gecko forks, e.g. Goanna
+      # In modern Gecko versions, unpacked extensions can be temporarily loaded in via `about:debugging`, but detecting what has
+      # been loaded would be very complicated, and it would have incomplete data necessary to be viable information...
+      # - 3 files, in a browser profile, contain pieces of information
+      #   - '.\datareporting\glean\events\events'
+      #     - each event... only captures later addon reloads or unloads (unreliable, since ther first load of an unpacked
+      #       extension isn't logged)
+      #       - `extra.source` = "temporary-addon", for unpacked extensions (un)loaded in
+      #       - `extra.addon_id` = (if id exists in manifest of extension) ? true addon id : temporary addon id
+      #   - '.\weave\addonsreconciler.json' (indexA has no correlation with indexB)
+      #     - each addon in `addons`
+      #       - `addons[indexA].scope` = 16, denotes if a temporary addon
+      #       - `addons[indexA].id` = (if id exists in manifest of extension) ? true addon id : temporary addon id
+      #       - `addons[indexA].guid` = (exists)
+      #     - each change in `changes` (could be used to triangulate active unpacked addons against a start time from "prefs.js"...)
+      #       - `changes[indexB][0]` = time int (when change occured)
+      #       - `changes[indexB][1]` = int, where addon: 1 = loaded, 2 = unloaded
+      #       - `changes[indexB][2]` = (if id exists in manifest of extension) ? true addon id : temporary addon id
+      #   - '.\prefs.js'
+      #     - will only ever show the most recently loaded unpacked extension path (can be found by finding
+      #       "devtools.aboutdebugging.tmpExtDirPath"), which means, previously loaded extensions will not have a path to capture...
+      #     - "extensions.webextensions.uuids" always load a temporary addon id (never the true addon id) for the unpacked
+      #       extensions, but is paired with a guid
+      # - temporary addon id's start with uuid and end with '@temporary-addon'
+      # - due to bugs, "prefs.js" and "addonsreconciler.json" do not remove temporary addon entries that have been unloaded from
+      #   browser restarts/terminations, unless manually unloaded beforehand (unreliable detection of currently loaded unpacked
+      #   extensions)
+
+      if ($addon.defaultLocale -And ($addon.type -match "(web)?extension") -And
           ($GECKO_BROWSER_CHECK_BUILTIN -notcontains $addon.location)) {
 
         # remove the `locales` property as it's unnecessary extra data
@@ -458,7 +508,12 @@ for ($i = 0; $i -lt $AllBrowserExtensionBasedJsonFileMatches.length; $i++) {
         $extensionUpdateURL = $addon.updateURL
         $extensionHomepageURL = $addon.defaultLocale.homepageURL
         $extensionSourceURI = $addon.sourceURI
-        $extensionOnlineURL = if ($extensionUpdateURL) { $extensionUpdateURL } else { $extensionSourceURI }
+        $extensionSourceURL = if ($addon.installTelemetryInfo -And $addon.installTelemetryInfo.sourceURL) {
+                                $addon.installTelemetryInfo.sourceURL # only modern Gecko versions (w/ install telemetry)
+                              }
+        $extensionOnlineURL = if ($extensionUpdateURL) { $extensionUpdateURL } elseif ($extensionSourceURI) {
+                                $extensionSourceURI
+                              } else { $extensionSourceURL }
         $extensionURLs = @()
         if ($extensionOnlineURL) {
           $urlEncodedExtensionID = [Uri]::EscapeDataString($extensionID.trimstart('@')) # beginning @'s are removed in webstore URLs
@@ -503,6 +558,8 @@ for ($i = 0; $i -lt $AllBrowserExtensionBasedJsonFileMatches.length; $i++) {
         }
         # always include the homepage URL if there is one
         if ($extensionHomepageURL) { $extensionURLs += @($extensionHomepageURL) }
+        # always include the source URL if there is one (will usually be an alternate to the generated one in the switch statement)
+        if ($extensionSourceURL) { $extensionURLs += @($extensionSourceURL) }
         # only need to add update URL for unknown webstores
         if (($extensionURLs.length -eq 0) -And $extensionUpdateURL) { $extensionURLs += @($extensionUpdateURL) }
         # if we still have no URLs, use source URI as a last resort
@@ -521,16 +578,18 @@ for ($i = 0; $i -lt $AllBrowserExtensionBasedJsonFileMatches.length; $i++) {
     if ($extensionID) {
       $SimplifiedExtensionDataCSV += [PSCustomObject]@{
         Username = $username
+        ExtensionUnpacked = $extensionUnpacked
+        ExtensionID = $extensionID
+        ExtensionVersion = $extensionVersion
         BrowserEngine = $browserEngine
         BrowserCompany = $browserCompany
         BrowserName = $browserName
-        ExtensionVersion = $extensionVersion
-        ExtensionID = $extensionID
       }
       $ExtensionsOnlyCSV += [PSCustomObject]@{
         BrowserEngine = $browserEngine
-        ExtensionID = $extensionID
         ExtensionURLs = $extensionURLs
+        ExtensionUnpacked = $extensionUnpacked
+        ExtensionID = $extensionID
         ExtensionVendor = $extensionVendor
         ExtensionName = $extensionName
         ExtensionDescription = $extensionDescription
@@ -563,9 +622,9 @@ for ($i = 0; $i -lt $AllBrowserExtensionBasedJsonFileMatches.length; $i++) {
   }
 }
 
-# get unique values for the CSVs
-$SimplifiedExtensionDataCSV = $SimplifiedExtensionDataCSV | Sort-Object Username,BrowserEngine,BrowserCompany,BrowserName,ExtensionID,ExtensionVersion -Unique
-$ExtensionsOnlyCSV = $ExtensionsOnlyCSV | Sort-Object BrowserEngine,ExtensionURLs,ExtensionVendor,ExtensionName,ExtensionID,ExtensionDescription -Unique
+# get unique values for the CSVs, while sorting at the same time
+$SimplifiedExtensionDataCSV = $SimplifiedExtensionDataCSV | Sort-Object Username,BrowserEngine,BrowserCompany,BrowserName,ExtensionUnpacked,ExtensionID,ExtensionVersion -Unique
+$ExtensionsOnlyCSV = $ExtensionsOnlyCSV | Sort-Object BrowserEngine,ExtensionURLs,ExtensionUnpacked,ExtensionVendor,ExtensionName,ExtensionID,ExtensionDescription -Unique
 
 # export finialized data
 $OriginalExtensionDataJSON | ConvertTo-Json -Compress -Depth 100 | Out-File "${Path}\${FILENAME_PRE}_original_${FILENAME_POST}.json" -Encoding utf8
