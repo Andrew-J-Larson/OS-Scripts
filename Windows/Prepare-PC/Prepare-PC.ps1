@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.1.5
+  Prepare PC v1.1.6
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -649,6 +649,39 @@ function Install-WinGet {
   }
 }
 
+# strips progress spinner/blocks from WinGet outputs
+# code via https://github.com/microsoft/winget-cli/issues/2582#issuecomment-1945481998
+function Strip-Progress {
+  param(
+      [ScriptBlock]$ScriptBlock
+  )
+
+  # Regex pattern to match spinner characters and progress bar patterns
+  $progressPattern = 'Γû[Æê]|^\s+[-\\|/]\s+$'
+
+  # Corrected regex pattern for size formatting, ensuring proper capture groups are utilized
+  $sizePattern = '(\d+(\.\d{1,2})?)\s+(B|KB|MB|GB|TB|PB) /\s+(\d+(\.\d{1,2})?)\s+(B|KB|MB|GB|TB|PB)'
+
+  $previousLineWasEmpty = $false # Track if the previous line was empty
+
+  & $ScriptBlock 2>&1 | ForEach-Object {
+      if ($_ -is [System.Management.Automation.ErrorRecord]) {
+          "ERROR: $($_.Exception.Message)"
+      } elseif ($_ -match '^\s*$') {
+          if (-not $previousLineWasEmpty) {
+              Write-Output ""
+              $previousLineWasEmpty = $true
+          }
+      } else {
+          $line = $_ -replace $progressPattern, '' -replace $sizePattern, '$1 $3 / $4 $6'
+          if (-not [string]::IsNullOrWhiteSpace($line)) {
+              $previousLineWasEmpty = $false
+              $line
+          }
+      }
+  }
+}
+
 # MAIN
 
 # Current user can't have the same username local admin to be setup, because of deletions
@@ -955,7 +988,10 @@ if ($(Install-WinGet) -eq 0) { # installs/updates WinGet if needed
   [void]$wingetUpgradeProcess.Start()
   $wingetOutput = $wingetUpgradeProcess.StandardOutput.ReadToEnd()
   $wingetUpgradeProcess.WaitForExit()
-  Write-Host $wingetOutput # show output after so that we at least know what went on
+  Strip-Progress -ScriptBlock {
+    # show output after so that we at least know what went on
+    Write-Output $wingetOutput
+  }
   # revert any encoding changes we made from earlier if needed
   if (-Not $runningInWindowsTerminal) {
     $OutputEncoding = $oldOutputEncoding; [Console]::OutputEncoding = $oldConsoleEncoding
