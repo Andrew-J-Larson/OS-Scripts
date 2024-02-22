@@ -6,7 +6,7 @@
 # This script is basically a wrapper for the Ventoy LiveCD VM in QEMU in order to use the `Ventoy2Disk.sh`
 # script used on Linux. (which isn't compatible with MacOS at the time of writing this, 5/26/2021)
 
-# Copyright (C) 2024  Andrew Larson (andrew.j.larson18+github@gmail.com)
+# Copyright (C) 2024  Andrew Larson (github@andrew-larson.dev)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
