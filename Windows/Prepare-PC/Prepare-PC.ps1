@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.1.7
+  Prepare PC v1.1.8
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -953,7 +953,7 @@ if (-Not $isWDGA) { # online Windows Updates are not possible in WDGA
         $InstallerResults = $UpdateInstaller.Install()
         $resultMsg = "Install of Windows updates $(
           if ($ResultCodesIntArray -contains $InstallerResults.ResultCode)
-          { $ResultCodesString[$SearcherResults.ResultCode] } else { 'stopped, result unknown' }
+          { $ResultCodesString[$InstallerResults.ResultCode] } else { 'stopped, result unknown' }
         )."
         Switch ($InstallerResults.ResultCode) {
           ($ResultCodesInt.SUCCEEDED) { Write-Output $resultMsg }
