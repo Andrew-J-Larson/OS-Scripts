@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Fix UTF-8 Bytes Interpretted as Windows-1252 v1.0.0
+  Fix UTF-8 Bytes Interpretted as Windows-1252 v1.0.1
 
   .DESCRIPTION
   When a file's encoding has been improperly interpretted with the wrong encoding (in this case Windows-1252), it
@@ -69,8 +69,8 @@ $fixedPath = "${Path}\fixed"
 # MAIN
 
 # Creates folders if needed
-$debugFolder = New-Item -LiteralPath $debugPath -ItemType Directory -Force
-$fixedFolder = New-Item -LiteralPath $fixedPath -ItemType Directory -Force
+$debugFolder = New-Item -Path $debugPath -ItemType Directory -Force
+$fixedFolder = New-Item -Path $fixedPath -ItemType Directory -Force
 
 # Recurse and loop through all files in the debug folder
 $debugFiles = Get-ChildItem -LiteralPath $debugFolder -File -Recurse
