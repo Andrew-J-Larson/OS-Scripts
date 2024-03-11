@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Download AppxPackage Function v2.0.3
+  Download AppxPackage Function v2.0.4
 
   .DESCRIPTION
   Script that contains a function which helps facilitate downloading Microsoft Store apps from their servers (via third-party API's).
@@ -63,6 +63,8 @@ if ($Help.IsPresent) {
 
 # MAIN function
 function Download-AppxPackage {
+  $UserAgent = [Microsoft.PowerShell.Commands.PSUserAgent]::Chrome # needed as sometimes the API will block things when it knows requests are coming from PowerShell
+
   $DownloadedFiles = @()
   $errored = $false
   $allFilesDownloaded = $true
@@ -95,7 +97,7 @@ function Download-AppxPackage {
 
   $raw = $null
   try {
-    $raw = Invoke-RestMethod -Method Post -Uri $apiUrl -ContentType 'application/x-www-form-urlencoded' -Body $body
+    $raw = Invoke-RestMethod -Method Post -Uri $apiUrl -ContentType 'application/x-www-form-urlencoded' -Body $body -UserAgent $UserAgent
   } catch {
     $errorMsg = "An error occurred: " + $_
     Write-Host $errorMsg
