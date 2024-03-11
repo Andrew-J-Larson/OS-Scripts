@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Enable HEIC Extension Feature v2.0.9
+  Enable HEIC Extension Feature v2.1.0
 
   .DESCRIPTION
   Script downloads and installs all extensions needed for viewing/editing HEIF/HEVC/HEIC file types.
@@ -74,6 +74,8 @@ Set-Variable -Name HEVC_APPX_NAME -Option Constant -Value ${HEVC_APPX_PACKAGEFAM
 # Output = Array of paths to successfully downloaded packages (app of PackageFamilyName and its dependencies)
 # Errors = Display in console
 function Download-AppxPackage {
+  $UserAgent = [Microsoft.PowerShell.Commands.PSUserAgent]::Chrome # needed as sometimes the API will block things when it knows requests are coming from PowerShell
+
   $DownloadedFiles = @()
   $errored = $false
   $allFilesDownloaded = $true
@@ -106,7 +108,7 @@ function Download-AppxPackage {
 
   $raw = $null
   try {
-    $raw = Invoke-RestMethod -Method Post -Uri $apiUrl -ContentType 'application/x-www-form-urlencoded' -Body $body
+    $raw = Invoke-RestMethod -Method Post -Uri $apiUrl -ContentType 'application/x-www-form-urlencoded' -Body $body -UserAgent $UserAgent
   } catch {
     $errorMsg = "An error occurred: " + $_
     Write-Host $errorMsg
