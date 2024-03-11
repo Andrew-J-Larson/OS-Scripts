@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Get AppxPackage Function v2.0.3
+  Download AppxPackage Function v2.0.3
 
   .DESCRIPTION
   Script that contains a function which helps facilitate downloading Microsoft Store apps from their servers (via third-party API's).
@@ -26,13 +26,13 @@
   Function: Display errors if any, but returned is an array of paths to successfully downloaded files.
 
   .EXAMPLE
-  PS> [Array]$packages = Get-AppxPackage "Clipchamp.Clipchamp_yxz26nhyzhsrt"
+  PS> [Array]$packages = Download-AppxPackage "Clipchamp.Clipchamp_yxz26nhyzhsrt"
 
   .LINK
   Third-Party API for Downloading Microsoft Store Apps: https://store.rg-adguard.net/
 
   .LINK
-  Script from: https://github.com/Andrew-J-Larson/OS-Scripts/blob/main/Windows/Wrapper-Functions/Get-AppxPackage-Function.ps1
+  Script from: https://github.com/Andrew-J-Larson/OS-Scripts/blob/main/Windows/Wrapper-Functions/Download-AppxPackage-Function.ps1
 #>
 
 <# Copyright (C) 2024  Andrew Larson (github@andrew-larson.dev)
@@ -62,7 +62,7 @@ if ($Help.IsPresent) {
 }
 
 # MAIN function
-function Get-AppxPackage {
+function Download-AppxPackage {
   $DownloadedFiles = @()
   $errored = $false
   $allFilesDownloaded = $true
