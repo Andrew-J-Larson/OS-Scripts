@@ -1,6 +1,6 @@
 ﻿<#
   .SYNOPSIS
-  Audit Browser Extensions v1.2.1
+  Audit Browser Extensions v1.2.2
 
   .DESCRIPTION
   This script will audit all browser extensions installed from all local drives of the machine, including details such as the user
@@ -823,8 +823,8 @@ $AllBrowserPreferencesOrExtensionsFileMatches = @(
 
 # parse all extension data
 Write-Host "Parsing data from files..."
-for ($i = 0; $i -lt $AllBrowserPreferencesOrExtensionsFileMatches.length; $i++) {
-  $browserJsonMatch = $AllBrowserPreferencesOrExtensionsFileMatches[$i]
+$AllBrowserPreferencesOrExtensionsFileMatches | ForEach-Object {
+  $browserJsonMatch = $_
   $jsonFilePath = $browserJsonMatch.Value
   $jsonContent = Get-Content -LiteralPath $jsonFilePath -Raw -Encoding UTF8 | Fix-JsonContent
   $jsonData = $jsonContent | ConvertFrom-Json
@@ -942,9 +942,9 @@ for ($i = 0; $i -lt $AllBrowserPreferencesOrExtensionsFileMatches.length; $i++) 
   if ($nonstandardBrowserProfile -Or (-Not $browserCompany)) {
     $jsonParentFolderPath = Split-Path -Parent $jsonFolderPath
     $browserFolderPath = $Null
-    $browserExeFiles = $()
-    $appxManifestXmlFiles = $()
-    $geckoApplicationIniFiles = $()
+    $browserExeFiles = @()
+    $appxManifestXmlFiles = @()
+    $geckoApplicationIniFiles = @()
 
     # detached browsers can't be certain of name, so have to just use the path of the browser by its respective browser engine
     if ($isBlinkEngine) {
@@ -985,8 +985,8 @@ for ($i = 0; $i -lt $AllBrowserPreferencesOrExtensionsFileMatches.length; $i++) 
 
       $loadedBrowserDataPossiblePaths = @()
       if ($browserFolderPath) { $loadedBrowserDataPossiblePaths += @($browserFolderPath) }
-      for ($j = 0; $j -lt $loadedBrowserDataMatches.length; $j++) {
-        $loadedBrowserDataMatch = $loadedBrowserDataMatches[$j]
+      $loadedBrowserDataMatches | ForEach-Object {
+        $loadedBrowserDataMatch = $_
 
         # can't add if there are no matches
         if ($loadedBrowserDataMatch.Groups[$POSSIBLE_BROWSER_PATH_REGEX_GROUP].length -gt 0) {
@@ -1082,9 +1082,7 @@ for ($i = 0; $i -lt $AllBrowserPreferencesOrExtensionsFileMatches.length; $i++) 
         # get details of browser from the first AppxManifest.xml in packaged apps
         [xml]$appxManifestXml = $appxManifestXmlFiles[0] | Get-Content -Encoding UTF8
         $appxPackageIdentityNameArray = ($appxManifestXml.Package.Identity.Name).split('.')
-        for ($j = 0; $j -lt $browser.length; $j++) {
-          $browser[$j] = $browser[$j] -csplit '(?=[A-Z])' -ne '' -join ' '
-        }
+        $browser = $browser -csplit '(?=[A-Z])' -ne '' -join ' '
         if (-Not $browser) { $browser = $appxPackageIdentityNameArray }
         if (-Not $browserName) { $browserName = $appxPackageIdentityNameArray[-1] }
         if (-Not $browserCompany) {
