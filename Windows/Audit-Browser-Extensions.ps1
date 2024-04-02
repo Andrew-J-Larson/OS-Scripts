@@ -13,8 +13,8 @@
 
   Unpacked extension detection is limited but should be working.
 
-  If user details can't be found on the local machine, but a computer is connected to a domain, it will attempt to find the missing
-  information for each user account via the domain.
+  If user details can't be found on the local machine, but it's connected to a domain, it will attempt to find the missing
+  information for each user account via cached information from the domain.
 
   Only supports versions of Windows from 7 and newer (only if Windows PowerShell is updated to at least version 5.1).
 
