@@ -1,6 +1,6 @@
 ﻿<#
   .SYNOPSIS
-  Audit Browser Extensions v1.2.0
+  Audit Browser Extensions v1.2.1
 
   .DESCRIPTION
   This script will audit all browser extensions installed from all local drives of the machine, including details such as the user
@@ -387,7 +387,7 @@ WpSystem
 "@ -ErrorAction SilentlyContinue
 
 Set-Variable -Name STANDARD_BROWSER_PROFILES_FOLDER_REGEX_PART -Option Constant -Value @"
-(?:User Data|Profiles)
+(?:User Data(?:\\Snapshots\\[0-9\.]+)?|Profiles)
 "@ -ErrorAction SilentlyContinue
 
 Set-Variable -Name USER_PROFILE_FOLDER_REGEX_PART -Option Constant -Value @"
