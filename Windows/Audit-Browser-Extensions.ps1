@@ -1,6 +1,6 @@
 ﻿<#
   .SYNOPSIS
-  Audit Browser Extensions v1.2.3
+  Audit Browser Extensions v1.2.4
 
   .DESCRIPTION
   This script will audit all browser extensions installed from all local drives of the machine, including details such as the user
@@ -750,7 +750,7 @@ if ($currentDomain) {
     $DRIVE_LETTERS | ForEach-Object {
       $usersPath = "${_}:\Users"
       if (Test-Path -LiteralPath $usersPath) {
-        Get-ChildItem -Path $usersPath -Exclude ($EXCLUDE_USER_FOLDERS) -Attributes !ReparsePoint -Directory -Force | Select -Property Name
+        Get-ChildItem -Path $usersPath -Exclude ($EXCLUDE_USER_FOLDERS) -Attributes !ReparsePoint -Directory -Force | Select-Object -Property Name
       }
     }
   )
@@ -779,7 +779,7 @@ if ($currentDomain) {
     $DRIVE_LETTERS | ForEach-Object {
       $sidsPath = "${_}:\WpSystem"
       if (Test-Path -LiteralPath $sidsPath) {
-        Get-ChildItem -Path $sidsPath -Exclude ($ExcludeSIDs) -Attributes !ReparsePoint -Directory -Force | Select -Property Name
+        Get-ChildItem -Path $sidsPath -Exclude ($ExcludeSIDs) -Attributes !ReparsePoint -Directory -Force | Select-Object -Property Name
       }
     }
   )
