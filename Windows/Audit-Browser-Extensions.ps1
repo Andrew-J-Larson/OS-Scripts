@@ -1,6 +1,6 @@
 ﻿<#
   .SYNOPSIS
-  Audit Browser Extensions v1.2.2
+  Audit Browser Extensions v1.2.3
 
   .DESCRIPTION
   This script will audit all browser extensions installed from all local drives of the machine, including details such as the user
@@ -834,7 +834,7 @@ $AllBrowserPreferencesOrExtensionsFileMatches | ForEach-Object {
 
   # Drive
   $driveLetter = $browserJsonMatch.Groups[$DRIVE_LETTER_REGEX_GROUP].Value
-  $driveType = "$(
+  $driveType = $(
     if (Get-Volume) {
       (Get-Volume -DriveLetter $driveLetter).DriveType
     } else {
@@ -847,7 +847,7 @@ $AllBrowserPreferencesOrExtensionsFileMatches | ForEach-Object {
         } | Select-Object -First 1 | Select-Object -ExpandProperty DriveType
       )]
     }
-  )"
+  )
   if (-Not $OriginalExtensionDataJSON.Drives[$driveLetter]) {
     # create drive property with DriveType string and the following objects: Users, DetachedBrowsers
     $OriginalExtensionDataJSON.Drives[$driveLetter] = [ordered]@{
