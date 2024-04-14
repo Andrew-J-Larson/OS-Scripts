@@ -16,7 +16,7 @@
 
   Only supports versions of Windows from 7 and newer (only if Windows PowerShell is updated to at least version 5.1).
 
-  The Windows Subsystems for Linux and Android will both not be supported, as those features are turned off by default, and users
+  The Windows Subsystems for Linux and Android are both not supported, as those features are turned off by default, and users
   can't turn them on without admin access to begin with.
 
   Browsers with engines way too out of date won't be supported:
