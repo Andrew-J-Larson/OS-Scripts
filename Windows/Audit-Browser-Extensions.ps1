@@ -9,8 +9,6 @@
   Gecko (FireFox)/Goanna (Gecko fork; Palemoon) engine based browsers should be supported. If there's a browser you come across where
   this script isn't working properly, please refer to the unsupported list below before reporting it on the GitHub.
 
-  Browsers installed to different drives should also be detected.
-
   Unpacked extension detection is limited but should be working.
 
   If user details can't be found on the local machine, but it's connected to a domain, it will attempt to find the missing
