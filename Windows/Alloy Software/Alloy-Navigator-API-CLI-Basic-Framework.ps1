@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Alloy Navigator API CLI Basic Framework v1.0.0
+  Alloy Navigator API CLI Basic Framework v1.0.2
 
   .DESCRIPTION
   This script activates functions meant to interact with an active Alloy Navigator database. Replace the API url and application
@@ -303,8 +303,8 @@ if (-Not $AlloyObjectID) {
 
   # first attempt only to find active computer in Alloy
   $ActiveComputerOnlySearchParams = $(Copy-Object $CustomComputerSearchParams)
-  $NotActiveStatuses = @('Inactive', 'Missing', 'Retired')
-  ForEach ($ComputerStatus in $NotActiveStatuses) {
+  $NonActiveStatuses = @('Inactive', 'Missing', 'Retired')
+  ForEach ($ComputerStatus in $NonActiveStatuses) {
     ForEach ($i in 0..(($ActiveComputerOnlySearchParams.filters).length - 1)) {
       ($ActiveComputerOnlySearchParams.filters)[$i] += @(
         @{
@@ -336,12 +336,13 @@ if (-Not $AlloyObjectID) {
     $NonActiveComputerOnlySearchParams = $(Copy-Object $BaseComputerSearchParams)
     ForEach ($index in 0..($CustomComputerSearchParams.filters.length - 1)) {
       $originalFilter = $CustomComputerSearchParams.filters[$index]
-      $NotActiveStatuses | ForEach-Object { 
+
+      ForEach ($ComputerStatus in $NonActiveStatuses) {
         $alteredFilter = Copy-Object $originalFilter
         $alteredFilter += @(
           @{
             name      = 'Status'
-            value     = $_
+            value     = $ComputerStatus
             operation = '='
           }
         )
