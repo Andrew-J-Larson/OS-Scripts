@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Alloy Navigator API CLI Basic Framework v1.0.2
+  Alloy Navigator API CLI Basic Framework v1.0.3
 
   .DESCRIPTION
   This script activates functions meant to interact with an active Alloy Navigator database. Replace the API url and application
@@ -22,8 +22,8 @@
 
 # FUNCTIONS
 
-# get's the current time in epoch seconds
-function Get-CurrentTimeEpoch () {
+# get's the current time in Unix epoch seconds
+function Get-CurrentUnixTime () {
   $date1 = Get-Date -Date "01/01/1970"
   $date2 = Get-Date
   $epoch = (New-TimeSpan -Start $date1 -End $date2).TotalSeconds
@@ -72,14 +72,14 @@ function Invoke-AlloyApi ([hashtable]$credentials, [hashtable]$token, [string]$a
   # https://docs.alloysoftware.com/alloynavigator/docs/api-userguide/api-userguide/authenticating-the-application.htm
 
   $ignoreMaxTries = (-Not $maxTries) -Or ($maxTries -le 0)
-  $currentTime = [int](Get-CurrentTimeEpoch)
+  $currentTime = [int](Get-CurrentUnixTime)
   $requestRetrySpeed = 10 # in seconds, this is the delay that will be used to wait between each failed API call
 
   $tokenAuthorized = $token -And (
     $token.access_token -And
     $token.token_type -And
     $token.expires_in -And
-    $token.init_time # epoch time of the last token authentication
+    $token.init_time # Unix time of the last token authentication
   ) -And ($currentTime -lt ($token.init_time + $token.expires_in))
 
   # setup the method, uri and headers/body params
@@ -111,7 +111,7 @@ function Invoke-AlloyApi ([hashtable]$credentials, [hashtable]$token, [string]$a
   $catchError = $Null
   do {
     if ($attempt -gt 0) { Start-Sleep -Seconds $requestRetrySpeed }
-    if (-Not $tokenAuthorized) { $currentTime = Get-CurrentTimeEpoch }
+    if (-Not $tokenAuthorized) { $currentTime = Get-CurrentUnixTime }
     $ProgressPreference = 'SilentlyContinue'
     try {
       $data = Invoke-RestMethod @restMethodParams
@@ -139,7 +139,7 @@ function Invoke-AlloyApi ([hashtable]$credentials, [hashtable]$token, [string]$a
     $token.access_token = $data.access_token
     $token.token_type   = $data.token_type
     $token.expires_in   = $data.expires_in
-    $token.init_time    = $currentTime # epoch time of the last token authentication
+    $token.init_time    = $currentTime # Unix time of the last token authentication
     # splatting copies objects, which could slow down API calls, so not using it for faster performance
     Return $(Invoke-AlloyApi $credentials $token $api $apiEndpoint $apiParams $method $maxTries)
   }
