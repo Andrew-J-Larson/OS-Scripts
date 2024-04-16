@@ -382,7 +382,7 @@ $preMessage = "Add-AlloyObjectAttachment (OID = ${AlloyObjectID})"
 try {
   $result = Add-AlloyObjectAttachment $ApiCredentials $ApiToken $ApiUrl $AlloyObjectID $FileFullName $FileDescription, $MaxAttempts
   if ($result.success) {
-    Write-Host 'File uploaded successfully.'
+    Write-Host "${preMessage} - File uploaded successfully."
     Remove-Item -LiteralPath $FileFullName
     Write-Host 'Deleted file from local computer.'
   } else {
