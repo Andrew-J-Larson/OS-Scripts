@@ -19,7 +19,6 @@
   .LINK
   Script from: https://github.com/Andrew-J-Larson/OS-Scripts/blob/main/Windows/Alloy%20Software/Alloy-Navigator-API-CLI-Basic-Framework.ps1
 #>
-#Requires -RunAsAdministrator
 
 # FUNCTIONS
 
@@ -58,7 +57,7 @@ function Copy-Object ([PSCustomObject]$object) {
 # make an API call to Alloy, max tries is optional to prevent infinite loop (otherwise, see the $requestRetrySpeed variable below)
 # - Alloy's API only accepts POST and GET methods, and examples show them using the Invoke-WebRequest function
 #   instead of using Invoke-RestMethod, so if something breaks, check there first
-function Invoke-AlloyApi ([hashtable]$credentials, [string]$api, [string]$apiEndpoint, [PSCustomObject]$apiParams, [string]$method, [int]$maxTries) {
+function Invoke-AlloyApi ([hashtable]$credentials, [hashtable]$token, [string]$api, [string]$apiEndpoint, [PSCustomObject]$apiParams, [string]$method, [int]$maxTries) {
   <# # NOTE: the $credentials object should contain the ApplicationID and Secret in the following format
     $credentials = @{
       i = 'replace with your ApplicationID'
@@ -147,7 +146,7 @@ function Invoke-AlloyApi ([hashtable]$credentials, [string]$api, [string]$apiEnd
 }
 
 # retrieve objects from Alloy based on parameters
-function Get-AlloyObjects ([hashtable]$credentials, [string]$api, [string]$objectClass, [PSCustomObject]$apiParams, [int]$maxTries) {
+function Get-AlloyObjects ([hashtable]$credentials, [hashtable]$token, [string]$api, [string]$objectClass, [PSCustomObject]$apiParams, [int]$maxTries) {
   # Retrieving objects (POST) (API User's Guide):
   # https://docs.alloysoftware.com/alloynavigator/docs/api-userguide/api-userguide/retrieving-objects-post.htm
 
@@ -158,13 +157,13 @@ function Get-AlloyObjects ([hashtable]$credentials, [string]$api, [string]$objec
 }
 
 # retrieve computer objects from Alloy based on parameters
-function Get-AlloyComputers ([hashtable]$credentials, [string]$api, [PSCustomObject]$apiParams, [int]$maxTries) {
+function Get-AlloyComputers ([hashtable]$credentials, [hashtable]$token, [string]$api, [PSCustomObject]$apiParams, [int]$maxTries) {
   Return $(Get-AlloyObjects $credentials $token $api 'Computers' $apiParams $maxTries)
 }
 
 # add attachments to an Alloy object based on parameters
 # - where $fileName is the fully qualified path to the file to be uploaded
-function Add-AlloyObjectAttachment ([hashtable]$credentials, [string]$api, [string]$objectID, [string]$fileName, [string]$description, [int]$maxTries) {
+function Add-AlloyObjectAttachment ([hashtable]$credentials, [hashtable]$token, [string]$api, [string]$objectID, [string]$fileName, [string]$description, [int]$maxTries) {
   # PowerShell: Adding attachments (API User's Guide):
   # https://docs.alloysoftware.com/alloynavigator/docs/api-userguide/api-userguide/adding-attachments-pssample.htm
 
@@ -249,6 +248,8 @@ Write-Host 'Attempting to find local computer in Alloy...'
 
 # attempt to find local computer in Alloy by audit id
 if ($AlloyAuditID) {
+  $preMessage = 'Get-AlloyComputers'
+
   # include the Audit_ID filter in the search params
   $CustomComputerSearchParams = $(Copy-Object $BaseComputerSearchParams)
   $CustomComputerSearchParams.filters += @{
@@ -257,7 +258,6 @@ if ($AlloyAuditID) {
     operation = '='
   }
 
-  $preMessage = 'Get-AlloyComputers'
   try {
     $result = Get-AlloyComputers $ApiCredentials $ApiToken $ApiUrl $CustomComputerSearchParams $MaxAttempts
     if ($result.success) {
@@ -276,40 +276,52 @@ if ($AlloyAuditID) {
 
 # if computer wasn't found, attempt to find local computer in Alloy by serial number
 if (-Not $AlloyObjectID) {
+  $preMessage = 'Get-AlloyComputers'
+  $preNoComputersFound = "${preMessage} - No computers found with a matching serial number"
+
   # include the Serial_Num filter in the search params
   $CustomComputerSearchParams = $(Copy-Object $BaseComputerSearchParams)
   $SerialNumFilter = @{
+    # separated filter as it may be used again during another search
     name      = 'Serial_Num'
     value     = $ComputerSerialNumber
     operation = '='
   }
-  $CustomComputerSearchParams.filters += @(
-    # might want to remove Type filters, if we want to include servers, towers, embedded, etc.
-    @(
-      $SerialNumFilter,
-      @{
-        name      = 'Type'
-        value     = 'Desktop'
-        operation = '='
-      }
-    ),
-    @(
-      $SerialNumFilter,
-      @{
-        name      = 'Type'
-        value     = 'Laptop'
-        operation = '='
-      }
+  # might want to remove Type filters, if we want to include servers, towers, embedded, etc.
+  ForEach ($ComputerType in @('Desktop', 'Laptop')) {
+    $CustomComputerSearchParams.filters += @(
+      ,@( # comma needed to prevent simplification of array
+        $SerialNumFilter,
+        @{
+          name      = 'Type'
+          value     = $ComputerType
+          operation = '='
+        }
+      )
     )
-  )
+  }
 
-  $preMessage = 'Get-AlloyComputers'
+  # first attempt only to find active computer in Alloy
+  $ActiveComputerOnlySearchParams = $(Copy-Object $CustomComputerSearchParams)
+  $NotActiveStatuses = @('Inactive', 'Missing', 'Retired')
+  ForEach ($ComputerStatus in $NotActiveStatuses) {
+    ForEach ($i in 0..(($ActiveComputerOnlySearchParams.filters).length - 1)) {
+      ($ActiveComputerOnlySearchParams.filters)[$i] += @(
+        @{
+          name      = 'Status'
+          value     = $ComputerStatus
+          operation = '<>'
+        }
+      )
+    }
+  }
+
   try {
-    $result = Get-AlloyComputers $ApiCredentials $ApiToken $ApiUrl $CustomComputerSearchParams $MaxAttempts
+    $result = Get-AlloyComputers $ApiCredentials $ApiToken $ApiUrl $ActiveComputerOnlySearchParams $MaxAttempts
     if ($result.success) {
       if ($result.responseObject -And $result.responseObject.Data) {
         $AlloyObjectID = $result.responseObject.Data[0]
-      } else { Write-Warning "${preMessage} - No computers found with a matching serial number in Alloy." }
+      } else { Write-Warning "${preNoComputersFound}, and an active status, in Alloy." }
     } else {
       Write-HostRed "${preMessage} - API Error $($result.errorCode): $($result.errorText)"
       Exit $ERROR_CODE.API_RESPONSE_FAIL
@@ -317,6 +329,42 @@ if (-Not $AlloyObjectID) {
   } catch {
     Write-HostRed "${preMessage} - $($_.Exception.Message)"
     Exit $ERROR_CODE.API_CALL_INTERRUPTED
+  }
+
+  # if none were still found, then attempt to find the not-active computer
+  if (-Not $AlloyObjectID) {
+    $NonActiveComputerOnlySearchParams = $(Copy-Object $BaseComputerSearchParams)
+    ForEach ($index in 0..($CustomComputerSearchParams.filters.length - 1)) {
+      $originalFilter = $CustomComputerSearchParams.filters[$index]
+      $NotActiveStatuses | ForEach-Object { 
+        $alteredFilter = Copy-Object $originalFilter
+        $alteredFilter += @(
+          @{
+            name      = 'Status'
+            value     = $_
+            operation = '='
+          }
+        )
+        $NonActiveComputerOnlySearchParams.filters += @(
+          ,$alteredFilter # comma needed to prevent simplification of array
+        )
+      }
+    }
+
+    try {
+      $result = Get-AlloyComputers $ApiCredentials $ApiToken $ApiUrl $NonActiveComputerOnlySearchParams $MaxAttempts
+      if ($result.success) {
+        if ($result.responseObject -And $result.responseObject.Data) {
+          $AlloyObjectID = $result.responseObject.Data[0]
+        } else { Write-Warning "${preNoComputersFound}, and a non-active status, in Alloy." }
+      } else {
+        Write-HostRed "${preMessage} - API Error $($result.errorCode): $($result.errorText)"
+        Exit $ERROR_CODE.API_RESPONSE_FAIL
+      }
+    } catch {
+      Write-HostRed "${preMessage} - $($_.Exception.Message)"
+      Exit $ERROR_CODE.API_CALL_INTERRUPTED
+    }
   }
 }
 
