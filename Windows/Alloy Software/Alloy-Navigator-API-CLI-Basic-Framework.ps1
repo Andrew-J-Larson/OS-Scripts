@@ -281,6 +281,8 @@ if (-Not $AlloyObjectID) {
 
   # include the Serial_Num filter in the search params
   $CustomComputerSearchParams = $(Copy-Object $BaseComputerSearchParams)
+  $ComputerTypes = @('Desktop', 'Laptop') # might want to remove Type filters, if we want to include servers, towers, embedded, etc.
+  $NonActiveStatuses = @('Inactive', 'Missing', 'Retired')
   $SerialNumFilter = @{
     # separated filter as it may be used again during another search
     name      = 'Serial_Num'
@@ -288,33 +290,35 @@ if (-Not $AlloyObjectID) {
     operation = '='
   }
   # might want to remove Type filters, if we want to include servers, towers, embedded, etc.
-  ForEach ($ComputerType in @('Desktop', 'Laptop')) {
-    $CustomComputerSearchParams.filters += @(
-      ,@( # comma needed to prevent simplification of array
-        $SerialNumFilter,
-        @{
-          name      = 'Type'
-          value     = $ComputerType
-          operation = '='
-        }
-      )
+  $ComputersOnlyFilter = @(
+    ForEach ($ComputerType in $ComputerTypes) {
+      @{
+        name      = 'Type'
+        value     = $ComputerType
+        operation = '='
+      }
+    }
+  )
+  $CustomComputerSearchParams.filters = @(
+    ,@( # comma needed to prevent simplification of array
+      $SerialNumFilter,
+      $ComputersOnlyFilter
     )
-  }
+  )
 
   # first attempt only to find active computer in Alloy
   $ActiveComputerOnlySearchParams = $(Copy-Object $CustomComputerSearchParams)
-  $NonActiveStatuses = @('Inactive', 'Missing', 'Retired')
+  $IsActiveComputerFilter = @()
   ForEach ($ComputerStatus in $NonActiveStatuses) {
-    ForEach ($i in 0..(($ActiveComputerOnlySearchParams.filters).length - 1)) {
-      ($ActiveComputerOnlySearchParams.filters)[$i] += @(
-        @{
-          name      = 'Status'
-          value     = $ComputerStatus
-          operation = '<>'
-        }
-      )
-    }
+    $IsActiveComputerFilter += @(
+      ,@{ # comma needed to prevent simplification of array
+        name      = 'Status'
+        value     = $ComputerStatus
+        operation = '<>' # is not equal
+      }
+    )
   }
+  $ActiveComputerOnlySearchParams.filters[0] += $IsActiveComputerFilter
 
   try {
     $result = Get-AlloyComputers $ApiCredentials $ApiToken $ApiUrl $ActiveComputerOnlySearchParams $MaxAttempts
@@ -333,24 +337,20 @@ if (-Not $AlloyObjectID) {
 
   # if none were still found, then attempt to find the not-active computer
   if (-Not $AlloyObjectID) {
-    $NonActiveComputerOnlySearchParams = $(Copy-Object $BaseComputerSearchParams)
-    ForEach ($index in 0..($CustomComputerSearchParams.filters.length - 1)) {
-      $originalFilter = $CustomComputerSearchParams.filters[$index]
-
-      ForEach ($ComputerStatus in $NonActiveStatuses) {
-        $alteredFilter = Copy-Object $originalFilter
-        $alteredFilter += @(
-          @{
-            name      = 'Status'
-            value     = $ComputerStatus
-            operation = '='
-          }
-        )
-        $NonActiveComputerOnlySearchParams.filters += @(
-          ,$alteredFilter # comma needed to prevent simplification of array
-        )
-      }
+    $NonActiveComputerOnlySearchParams = $(Copy-Object $CustomComputerSearchParams)
+    $IsNonActiveComputerFilter = @()
+    ForEach ($ComputerStatus in $NonActiveStatuses) {
+      $IsNonActiveComputerFilter += @(
+        ,@{ # comma needed to prevent simplification of array
+          name      = 'Status'
+          value     = $ComputerStatus
+          operation = '=' # is equal
+        }
+      )
     }
+    $NonActiveComputerOnlySearchParams.filters[0] += @(
+      ,$IsNonActiveComputerFilter # comma needed to prevent simplification of array
+    )
 
     try {
       $result = Get-AlloyComputers $ApiCredentials $ApiToken $ApiUrl $NonActiveComputerOnlySearchParams $MaxAttempts
