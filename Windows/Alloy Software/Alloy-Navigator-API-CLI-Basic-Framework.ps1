@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Alloy Navigator API CLI Basic Framework v1.0.3
+  Alloy Navigator API CLI Basic Framework v1.0.4
 
   .DESCRIPTION
   This script activates functions meant to interact with an active Alloy Navigator database. Replace the API url and application
@@ -179,8 +179,35 @@ function Add-AlloyObjectAttachment ([hashtable]$credentials, [hashtable]$token, 
   Return $(Invoke-AlloyApi $credentials $token $api $apiEndpoint $apiParams 'PUT' $maxTries)
 }
 
+# convert the 'responseObject' Data results from the API to a readable format that PowerShell can parse
+# returns either an array of objects, or $Null
+function ConvertFrom-AlloyResponseObject ([PSCustomObject]$responseObject) {
+  if (-Not ($responseObject.Fields -And $responseObject.Data)) {
+    Write-Error 'Missing required properties, or data is empty.'
+    return $Null
+  }
+
+  # convert Alloy returned API data
+  $AlloyData = @()
+  ForEach ($AlloyObjectUnparsed in $responseObject.Data) {
+    $AlloyObject = @{}
+
+    $fieldIndex = 0
+    ForEach ($Field in $responseObject.Fields) {
+      $AlloyField = $Field.Name
+
+      $AlloyObject.$AlloyField = $AlloyObjectUnparsed[$fieldIndex]
+      $fieldIndex++
+    }
+
+    $AlloyData += $AlloyObject
+  }
+
+  return $AlloyData
+}
+
 # EXAMPLE SCRIPT BELOW
-<# 
+<#
 #Requires -RunAsAdministrator
 
 # CONSTANTS
@@ -246,114 +273,66 @@ Write-Host "Collected data was exported to file located at: ${FileFullName}"
 $AlloyObjectID = $Null
 Write-Host 'Attempting to find local computer in Alloy...'
 
-# NOTE: The API unfortunately doesn't support any form of OR operator, so searches that require OR, need
-#       to be made as separate calls.
+# The API unfortunately doesn't support any form of OR operator, so searches that require OR, need to be
+# made as separate calls, or just do more advanced filtering after basic search
 
-# attempt to find local computer in Alloy by audit id
-if ($AlloyAuditID) {
-  $preMessage = 'Get-AlloyComputers'
-
-  # include the Audit_ID filter in the search params
-  $CustomComputerSearchParams = $(Copy-Object $BaseComputerSearchParams)
-  $CustomComputerSearchParams.filters += @{
-    name      = 'Audit_ID'
-    value     = $AlloyAuditID
-    operation = '='
-  }
-
-  try {
-    $result = Get-AlloyComputers $ApiCredentials $ApiToken $ApiUrl $CustomComputerSearchParams $MaxAttempts
-    if ($result.success) {
-      if ($result.responseObject -And $result.responseObject.Data) {
-        $AlloyObjectID = $result.responseObject.Data[0]
-      } else { Write-Warning "${preMessage} - No computers found with a matching audit id in Alloy." }
-    } else {
-      Write-HostRed "${preMessage} - API Error $($result.errorCode): $($result.errorText)"
-      Exit $ERROR_CODE.API_RESPONSE_FAIL
-    }
-  } catch {
-    Write-HostRed "${preMessage} - $($_.Exception.Message)"
-    Exit $ERROR_CODE.API_CALL_INTERRUPTED
-  }
+# In this case, going with basic serial number first,
+# then doing advanced filtering after getting the results
+$CustomComputerSearchParams = $(Copy-Object $BaseComputerSearchParams)
+$CustomComputerSearchParams.filters += @{
+  name      = 'Serial_Num'
+  value     = $ComputerSerialNumber
+  operation = '='
 }
 
-# if computer wasn't found, attempt to find local computer in Alloy by serial number
-if (-Not $AlloyObjectID) {
-  $preMessage = 'Get-AlloyComputers'
-  $preNoComputersFound = "${preMessage} - No computers found with a matching serial number"
+$preMessage = 'Get-AlloyComputers'
+try {
+  $result = Get-AlloyComputers $ApiCredentials $ApiToken $ApiUrl $CustomComputerSearchParams $MaxAttempts
+  if ($result.success) {
+    if ($result.responseObject -And $result.responseObject.Data) {
+      # parse data
+      $ComputerObjects = @(ConvertFrom-AlloyResponseObject $result.responseObject)
 
-  # include the Serial_Num filter in the search params
-  $CustomComputerSearchParams = $(Copy-Object $BaseComputerSearchParams)
-  $ComputerTypes = @('Desktop', 'Laptop') # might want to remove Type filters, if we want to include servers, towers, embedded, etc.
-  $NonActiveStatuses = @('Inactive', 'Missing', 'Retired')
-  $SerialNumFilter = @{
-    # separated filter as it may be used again during another search
-    name      = 'Serial_Num'
-    value     = $ComputerSerialNumber
-    operation = '='
-  }
-  # might want to remove Type filters, if we want to include servers, towers, embedded, etc.
-  $ComputersOnlyFilter = @(
-    ForEach ($ComputerType in $ComputerTypes) {
-      @{
-        name      = 'Type'
-        value     = $ComputerType
-        operation = '='
+      $FoundComputers = $Null
+
+      # check for audit id
+      if ($AlloyAuditID) {
+        $FoundComputers = @($ComputerObjects | Where-Object { $_.Audit_ID -eq $AlloyAuditID })
       }
-    }
-  )
-  $CustomComputerSearchParams.filters += @(
-    $SerialNumFilter,
-    $ComputersOnlyFilter
-  )
 
-  # first attempt only to find active computer in Alloy
-  $ActiveComputerOnlySearchParams = $(Copy-Object $CustomComputerSearchParams)
-  $IsActiveComputerFilter = @()
-  ForEach ($ComputerStatus in $NonActiveStatuses) {
-    $IsActiveComputerFilter += @{
-      name      = 'Status'
-      value     = $ComputerStatus
-      operation = '<>' # is not equal
-    }
-  }
-  $ActiveComputerOnlySearchParams.filters[0] += $IsActiveComputerFilter
-
-  try {
-    $result = Get-AlloyComputers $ApiCredentials $ApiToken $ApiUrl $ActiveComputerOnlySearchParams $MaxAttempts
-    if ($result.success) {
-      if ($result.responseObject -And $result.responseObject.Data) {
-        $AlloyObjectID = $result.responseObject.Data[0]
-      } else { Write-Warning "${preNoComputersFound}, and an active status, in Alloy." }
-    } else {
-      Write-HostRed "${preMessage} - API Error $($result.errorCode): $($result.errorText)"
-      Exit $ERROR_CODE.API_RESPONSE_FAIL
-    }
-  } catch {
-    Write-HostRed "${preMessage} - $($_.Exception.Message)"
-    Exit $ERROR_CODE.API_CALL_INTERRUPTED
-  }
-
-  # if none were still found, then attempt to find the computer (by allowing the search to include the
-  # non-active computers)
-  if (-Not $AlloyObjectID) {
-    $AnyComputerSearchParams = $(Copy-Object $CustomComputerSearchParams)
-
-    try {
-      $result = Get-AlloyComputers $ApiCredentials $ApiToken $ApiUrl $AnyComputerSearchParams $MaxAttempts
-      if ($result.success) {
-        if ($result.responseObject -And $result.responseObject.Data) {
-          $AlloyObjectID = $result.responseObject.Data[0]
-        } else { Write-Warning "${preNoComputersFound}, and a non-active status, in Alloy." }
-      } else {
-        Write-HostRed "${preMessage} - API Error $($result.errorCode): $($result.errorText)"
-        Exit $ERROR_CODE.API_RESPONSE_FAIL
+      # if no computer found still, then try looking at computers matching type and status
+      if (-Not $FoundComputers) {
+        $NonActiveStatuses = @('Inactive', 'Missing', 'Retired')
+        # might want to remove type filters, if we want to include servers, towers, embedded, etc.
+        $ComputerTypes = @('Desktop', 'Laptop')
+        # don't continue if type doesn't match
+        $ComputersMatchingType = @($ComputerObjects | Where-Object { $ComputerTypes -contains $_.Type })
+        if ($ComputersMatchingType) {
+          # check for active computer
+          $FoundComputers = @(
+            $ComputersMatchingType | Where-Object { $NonActiveStatuses -notcontains $_.Status }
+          )
+          # else, check for non-active computer
+          if (-Not $FoundComputers) {
+            $FoundComputers = @(
+              $ComputersMatchingType | Where-Object { $NonActiveStatuses -contains $_.Status }
+            )
+          }
+        }
       }
-    } catch {
-      Write-HostRed "${preMessage} - $($_.Exception.Message)"
-      Exit $ERROR_CODE.API_CALL_INTERRUPTED
-    }
+
+      # only need first computer if any were found
+      if ($FoundComputers) {
+        $AlloyObjectID = $FoundComputers[0].OID
+      }
+    } else { Write-Warning "${preMessage} - No computers found with a serial number in Alloy." }
+  } else {
+    Write-HostRed "${preMessage} - API Error $($result.errorCode): $($result.errorText)"
+    Exit $ERROR_CODE.API_RESPONSE_FAIL
   }
+} catch {
+  Write-HostRed "${preMessage} - $($_.Exception.Message)"
+  Exit $ERROR_CODE.API_CALL_INTERRUPTED
 }
 
 # if the computer wasn't found in Alloy, then can't upload file
