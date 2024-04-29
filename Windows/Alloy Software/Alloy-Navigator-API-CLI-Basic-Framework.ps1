@@ -246,6 +246,9 @@ Write-Host "Collected data was exported to file located at: ${FileFullName}"
 $AlloyObjectID = $Null
 Write-Host 'Attempting to find local computer in Alloy...'
 
+# NOTE: The API unfortunately doesn't support any form of OR operator, so searches that require OR, need
+#       to be made as separate calls.
+
 # attempt to find local computer in Alloy by audit id
 if ($AlloyAuditID) {
   $preMessage = 'Get-AlloyComputers'
@@ -299,24 +302,20 @@ if (-Not $AlloyObjectID) {
       }
     }
   )
-  $CustomComputerSearchParams.filters = @(
-    ,@( # comma needed to prevent simplification of array
-      $SerialNumFilter,
-      $ComputersOnlyFilter
-    )
+  $CustomComputerSearchParams.filters += @(
+    $SerialNumFilter,
+    $ComputersOnlyFilter
   )
 
   # first attempt only to find active computer in Alloy
   $ActiveComputerOnlySearchParams = $(Copy-Object $CustomComputerSearchParams)
   $IsActiveComputerFilter = @()
   ForEach ($ComputerStatus in $NonActiveStatuses) {
-    $IsActiveComputerFilter += @(
-      ,@{ # comma needed to prevent simplification of array
-        name      = 'Status'
-        value     = $ComputerStatus
-        operation = '<>' # is not equal
-      }
-    )
+    $IsActiveComputerFilter += @{
+      name      = 'Status'
+      value     = $ComputerStatus
+      operation = '<>' # is not equal
+    }
   }
   $ActiveComputerOnlySearchParams.filters[0] += $IsActiveComputerFilter
 
@@ -335,25 +334,13 @@ if (-Not $AlloyObjectID) {
     Exit $ERROR_CODE.API_CALL_INTERRUPTED
   }
 
-  # if none were still found, then attempt to find the not-active computer
+  # if none were still found, then attempt to find the computer (by allowing the search to include the
+  # non-active computers)
   if (-Not $AlloyObjectID) {
-    $NonActiveComputerOnlySearchParams = $(Copy-Object $CustomComputerSearchParams)
-    $IsNonActiveComputerFilter = @()
-    ForEach ($ComputerStatus in $NonActiveStatuses) {
-      $IsNonActiveComputerFilter += @(
-        ,@{ # comma needed to prevent simplification of array
-          name      = 'Status'
-          value     = $ComputerStatus
-          operation = '=' # is equal
-        }
-      )
-    }
-    $NonActiveComputerOnlySearchParams.filters[0] += @(
-      ,$IsNonActiveComputerFilter # comma needed to prevent simplification of array
-    )
+    $AnyComputerSearchParams = $(Copy-Object $CustomComputerSearchParams)
 
     try {
-      $result = Get-AlloyComputers $ApiCredentials $ApiToken $ApiUrl $NonActiveComputerOnlySearchParams $MaxAttempts
+      $result = Get-AlloyComputers $ApiCredentials $ApiToken $ApiUrl $AnyComputerSearchParams $MaxAttempts
       if ($result.success) {
         if ($result.responseObject -And $result.responseObject.Data) {
           $AlloyObjectID = $result.responseObject.Data[0]
