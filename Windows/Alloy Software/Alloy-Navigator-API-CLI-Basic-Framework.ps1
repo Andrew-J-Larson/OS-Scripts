@@ -231,9 +231,7 @@ $BaseComputerSearchParams = @{
       direction = 'desc'
     }
   )
-  fields = @(
-    @( 'OID' )
-  )
+  fields = @( 'OID', 'Audit_ID', 'Type', 'Status' )
 }
 
 # error codes
