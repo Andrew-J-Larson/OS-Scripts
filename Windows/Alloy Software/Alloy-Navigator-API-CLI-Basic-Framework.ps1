@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Alloy Navigator API CLI Basic Framework v1.0.4
+  Alloy Navigator API CLI Basic Framework v1.0.5
 
   .DESCRIPTION
   This script activates functions meant to interact with an active Alloy Navigator database. Replace the API url and application
@@ -55,21 +55,30 @@ function Copy-Object ([PSCustomObject]$object) {
 }
 
 # make an API call to Alloy, max tries is optional to prevent infinite loop (otherwise, see the $requestRetrySpeed variable below)
-# - Alloy's API only accepts POST and GET methods, and examples show them using the Invoke-WebRequest function
-#   instead of using Invoke-RestMethod, so if something breaks, check there first
+#  * Alloy's API only accepts POST and GET methods, and examples show them using the Invoke-WebRequest function
+#    instead of using Invoke-RestMethod, so if something breaks, check there first
 function Invoke-AlloyApi ([hashtable]$credentials, [hashtable]$token, [string]$api, [string]$apiEndpoint, [PSCustomObject]$apiParams, [string]$method, [int]$maxTries) {
-  <# # NOTE: the $credentials object should contain the ApplicationID and Secret in the following format
-    $credentials = @{
-      i = 'replace with your ApplicationID'
-      s = 'replace with your Secret'
-    }
-  #>
-
   # Getting started (API User's Guide):
   # https://docs.alloysoftware.com/alloynavigator/docs/api-userguide/api-userguide/getting-started.htm
 
-  # Obtaining an API Access Token (API User's Guide):
-  # https://docs.alloysoftware.com/alloynavigator/docs/api-userguide/api-userguide/authenticating-the-application.htm
+  <# # NOTE: the $credentials object should be in one of two formats
+  # User credentials (from Technician account)
+  #  * Authenticating users - Obtaining an API Access Token (API User's Guide):
+  #    https://docs.alloysoftware.com/alloynavigator/docs/api-userguide/api-userguide/authenticating-the-user.htm
+    $credentials = @{
+      grant_type = 'password'
+      username   = '[replace with your username]'
+      password   = '[replace with your password]'
+    }
+  # Application credentials (ApplicationID and Secret)
+  #  * Authenticating applications - Obtaining an API Access Token (API User's Guide):
+  #    https://docs.alloysoftware.com/alloynavigator/docs/api-userguide/api-userguide/authenticating-the-application.htm
+    $credentials = @{
+      grant_type    = 'client_credentials'
+      client_id     = '[replace with your ApplicationID]'
+      client_secret = '[replace with your Secret]'
+    }
+  #>
 
   $ignoreMaxTries = (-Not $maxTries) -Or ($maxTries -le 0)
   $currentTime = [int](Get-CurrentUnixTime)
@@ -96,11 +105,7 @@ function Invoke-AlloyApi ([hashtable]$credentials, [hashtable]$token, [string]$a
     # craft token renewal API call
     $restMethodParams.Method = 'POST'
     $restMethodParams.Uri    = $api,'token' -Join '/'
-    $restMethodParams.Body   = @{
-      grant_type    = 'client_credentials'
-      client_id     = $credentials.i
-      client_secret = $credentials.s
-    }
+    $restMethodParams.Body   = $credentials
   }
   # for ease of changing content type
   $restMethodParams.ContentType = 'application/json'
@@ -217,8 +222,21 @@ $MaxAttempts = 0 # $Null, $False, 0, or negative numbers means unlimited attempt
 
 # Required Alloy application API credentials to authenticate
 $ApiCredentials = @{
-  i = 'replace with your ApplicationID'
-  s = 'replace with your Secret'
+  # USER CREDENTIALS
+
+  # grant_type = 'password'
+  # username   = '[replace with your username]'
+  # password   = '[replace with your password]'
+
+
+  # < - OR - >
+
+
+  # APP CREDENTIALS
+
+  grant_type    = 'client_credentials'
+  client_id     = '[replace with your ApplicationID]'
+  client_secret = '[replace with your Secret]'
 }
 
 # Referring to object fields (API User's Guide)
