@@ -217,7 +217,7 @@ function ConvertFrom-AlloyResponseObject ([PSCustomObject]$responseObject) {
 
 # CONSTANTS
 
-$ApiUrl = 'replace with your Alloy API url' # API URL without a trailing slash, i.e. https://example.com/api
+$ApiUrl = '[replace with your Alloy API url]' # API URL without a trailing slash, i.e. https://example.com/api
 $MaxAttempts = 0 # $Null, $False, 0, or negative numbers means unlimited attempts, for sending calls to the API
 
 # Required Alloy application API credentials to authenticate
