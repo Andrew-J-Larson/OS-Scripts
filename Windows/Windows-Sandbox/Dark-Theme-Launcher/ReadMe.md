@@ -7,6 +7,6 @@ The `Sandbox` folder needs to be copied to the root of the drive (`C:`), which s
 
 A working shortcut file that you can use anywhere on your computer is located under: `C:\Sandbox`
 
-# Extra Info
+## Extra Info
 
 `Windows (dark).deskthemepack` is not used, but left as a reference since it was needed to create the dark mode for Windows 10's version of the sandbox.
