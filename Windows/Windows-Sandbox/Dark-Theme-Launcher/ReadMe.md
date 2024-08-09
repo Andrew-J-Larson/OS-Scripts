@@ -1,12 +1,18 @@
 # Windows Sandbox - Dark Theme Launcher
-Installs a working configuration file, and launcher program to start dark mode in Windows Sandbox.
+A launcher for Windows Sandbox to start using the dark theme.
 
 ## Instructions
 
-The `Sandbox` folder needs to be copied to the root of the drive (`C:`), which should be easily taken care of if you use the `Install.bat` script.
+Launch the dark theme by using the shortcut file `Windows Sandbox (Dark Theme)`. The entire folder should be portable, so can place it anywhere on your computer to use.
 
-A working shortcut file that you can use anywhere on your computer is located under: `C:\Sandbox`
+It launches the `DarkThemeSandboxHandler.ps1` script which helps to dynamically create the working config file to run Windows Sandbox with the dark theme.
+
+If you want to put the shortcut somewhere else on your computer, without moving the files (e.g. just a shortcut on the desktop), then make sure to move the `files` folder to a good location on your computer and modify the `Start in` parameter in the shortcut to the parent directory (e.g.):
+1. Moved `files` folder to: `C:\CustomSandboxTheme\files`
+2. Set shortcut `Start in` to: `C:\CustomSandboxTheme`
 
 ## Extra Info
 
-`Windows (dark).deskthemepack` is not used, but left as a reference since it was needed to create the dark mode for Windows 10's version of the sandbox.
+I've also tried to include logic to handle hiding the sandbox window until the theme is fully loaded, so that eyes aren't blinded during the app startup.
+
+The `Windows (dark).deskthemepack` helps to theme the Windows 10 sandbox version with dark mode, and replaces the background with the original Windows 10 launch version of the desktop background for a darker appearance.
