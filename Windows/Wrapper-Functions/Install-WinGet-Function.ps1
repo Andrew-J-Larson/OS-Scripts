@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Install WinGet Function v1.2.4
+  Install WinGet Function v1.2.5
 
   .DESCRIPTION
   Script contains a function which can be used to install WinGet (to current user profile) automatically.
@@ -80,7 +80,7 @@ function Install-WinGet {
   # CONSTANTS
 
   $osIsWindows = (-Not (Test-Path variable:global:isWindows)) -Or $isWindows # required for PS 5.1
-  $osIsARM = $env:PROCESSOR_ARCHITECTURE -match '^arm*'
+  $osIsARM = $env:PROCESSOR_ARCHITECTURE -match '^arm.*'
   $osIs64Bit = [System.Environment]::Is64BitOperatingSystem
   $osArch = $( # architecture is required for some parts of the install process
     if ($osIsARM) { 'arm' } else { 'x' }

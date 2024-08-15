@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.2.0
+  Prepare PC v1.2.1
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -108,7 +108,7 @@ $isWDAG = ($env:USERNAME -eq 'WDAGUtilityAccount')
 
 # Only supported on 64-bit based versions of Windows
 $osIsWindows = (-Not (Test-Path variable:global:isWindows)) -Or $isWindows # required for PS 5.1
-$osIsARM = $env:PROCESSOR_ARCHITECTURE -match '^arm*'
+$osIsARM = $env:PROCESSOR_ARCHITECTURE -match '^arm.*'
 $osIs64Bit = [System.Environment]::Is64BitOperatingSystem
 $osName = if ($PSVersionTable.OS) {
   $PSVersionTable.OS
@@ -277,7 +277,7 @@ $dcuArgs = '/applyUpdates' + $(if ($dcuCliExe -eq $dcuCli) { ' -forceUpdate=enab
 
 # installs WinGet from the internet: code via https://github.com/Andrew-J-Larson/OS-Scripts/blob/main/Windows/Wrapper-Functions/Install-WinGet-Function.ps1
 function Install-WinGet {
-  # v1.2.4
+  # v1.2.5
   param(
     [switch]$Force
   )
@@ -285,7 +285,7 @@ function Install-WinGet {
   # CONSTANTS
 
   $osIsWindows = (-Not (Test-Path variable:global:isWindows)) -Or $isWindows # required for PS 5.1
-  $osIsARM = $env:PROCESSOR_ARCHITECTURE -match '^arm*'
+  $osIsARM = $env:PROCESSOR_ARCHITECTURE -match '^arm.*'
   $osIs64Bit = [System.Environment]::Is64BitOperatingSystem
   $osArch = $( # architecture is required for some parts of the install process
     if ($osIsARM) { 'arm' } else { 'x' }
