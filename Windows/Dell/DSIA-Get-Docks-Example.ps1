@@ -103,7 +103,7 @@ if (-Not $Dell_SoftwareIdentity) {
     Throw "Failed to extract items from the CAB file at: ${CAB_DellSDPCatalogPC}"
   }
   # Read the XML
-  [xml]$DATA_XML_DellSDPCatalogPC = Get-Content $XML_DellSDPCatalogPC
+  [xml]$DATA_XML_DellSDPCatalogPC = Get-Content -Path $XML_DellSDPCatalogPC
 
   # Grab the URL for the DSIA installer MSI
   $DATA_SPD_DSIAPC = @(
