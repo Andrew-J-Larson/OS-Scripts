@@ -35,10 +35,13 @@ if ($officeWasPreinstalled) {
   $currentVersion = [System.Version]$officeWasPreinstalled.Version
   # need to grab the releasehistory cab file to check for latest version
   $tempReleasehistoryCAB = $envTEMP + '\' + $officeReleasehistoryDownloadURL.substring($officeReleasehistoryDownloadURL.LastIndexOf('/') + 1)
+  $PreviousProgressPreference = $ProgressPreference
+  $ProgressPreference = "SilentlyContinue" # avoids slow download when using Invoke-WebRequest
   while ((Invoke-WebRequest -Uri $officeReleasehistoryDownloadURL -OutFile $tempReleasehistoryCAB -UseBasicParsing -PassThru).StatusCode -ne 200) {
     # need to loop until the releasehistory CAB file is downloaded
     Start-Sleep -Seconds $loopDelay
   }
+  $ProgressPreference = $PreviousProgressPreference # return ProgressPreference back to normal
   # must extract the ReleaseHistory XML from inside
   $xmlFilename = 'ReleaseHistory.xml'
   $tempReleaseHistoryXML = $envTEMP + '\' + $xmlFilename
@@ -64,10 +67,13 @@ if ($officeWasPreinstalled -And (-Not $officeNeedsConfiguring) -And (-Not $offic
   Write-Output "Downloading ${appTitle}..."
   Write-Output '' # Makes log look better
   $tempSetupEXE = $envTEMP + '\' + $officeInstallerDownloadURL.substring($officeInstallerDownloadURL.LastIndexOf('/') + 1)
+  $PreviousProgressPreference = $ProgressPreference
+  $ProgressPreference = "SilentlyContinue" # avoids slow download when using Invoke-WebRequest
   while ((Invoke-WebRequest -Uri $officeInstallerDownloadURL -OutFile $tempSetupEXE -UseBasicParsing -PassThru).StatusCode -ne 200) {
     # need to loop until Microsoft 365 installer is downloaded
     Start-Sleep -Seconds $loopDelay
   }
+  $ProgressPreference = $PreviousProgressPreference # return ProgressPreference back to normal
   Write-Output "Downloaded ${appTitle}."
   Write-Output '' # Makes log look better
   if ($officeCameFromOEM) {

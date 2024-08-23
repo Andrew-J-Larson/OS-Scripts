@@ -39,7 +39,10 @@ if ($ovpnWasPreinstalled) {
   $ovpnDownloadAttempt = 0
   while (($ovpnDownloadAttempt -lt $maxTries) -And (-Not $ovpnDownloadURL)) {
     # need to loop until an MSI download URL is pulled from downloads
+    $PreviousProgressPreference = $ProgressPreference
+    $ProgressPreference = "SilentlyContinue" # avoids slow download when using Invoke-WebRequest
     $ovpnDownloadsGET = Invoke-WebRequest -Uri $ovpnDownloadsURL -UseBasicParsing
+    $ProgressPreference = $PreviousProgressPreference # return ProgressPreference back to normal
     if ($ovpnDownloadsGET.StatusCode -eq 200) {
       $ovpnDownloadURL = [Regex]::Matches($ovpnDownloadsGET.Content, $ovpnDownloadPattern)[0].Value
     } else {
@@ -49,10 +52,13 @@ if ($ovpnWasPreinstalled) {
   }
   if ($ovpnDownloadURL) {
     $tempOvpnMSI = $envTEMP + '\' + $ovpnDownloadURL.substring($ovpnDownloadURL.LastIndexOf('/') + 1)
+    $PreviousProgressPreference = $ProgressPreference
+    $ProgressPreference = "SilentlyContinue" # avoids slow download when using Invoke-WebRequest
     while ((Invoke-WebRequest -Uri $ovpnDownloadURL -OutFile $tempOvpnMSI -UseBasicParsing -PassThru).StatusCode -ne 200) {
       # need to loop until OpenVPN installer is downloaded
       Start-Sleep -Seconds $loopDelay
     }
+    $ProgressPreference = $PreviousProgressPreference # return ProgressPreference back to normal
     Write-Output "Downloaded ${appTitle}."
     Write-Output '' # Makes log look better
     Write-Output "Installing ${appTitle}..."

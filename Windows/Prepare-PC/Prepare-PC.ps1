@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.2.1
+  Prepare PC v1.2.2
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -277,7 +277,7 @@ $dcuArgs = '/applyUpdates' + $(if ($dcuCliExe -eq $dcuCli) { ' -forceUpdate=enab
 
 # installs WinGet from the internet: code via https://github.com/Andrew-J-Larson/OS-Scripts/blob/main/Windows/Wrapper-Functions/Install-WinGet-Function.ps1
 function Install-WinGet {
-  # v1.2.5
+  # v1.2.6
   param(
     [switch]$Force
   )
@@ -438,7 +438,10 @@ function Install-WinGet {
     $tempWingetPackage = $Null
     while (-Not $tempWingetPackage) {
       # need to loop until WinGet package is downloaded
+      $PreviousProgressPreference = $ProgressPreference
+      $ProgressPreference = "SilentlyContinue" # avoids slow download when using Invoke-WebRequest
       $tempWingetWebResponse = Invoke-WebRequest -Uri $wingetLatestDownloadURL -UseBasicParsing
+      $ProgressPreference = $PreviousProgressPreference # return ProgressPreference back to normal
       if ($tempWingetWebResponse.StatusCode -eq 200) {
         # confirm file extension is correct
         $tempWingetFileName = ([System.Net.Mime.ContentDisposition]$tempWingetWebResponse.Headers.'Content-Disposition').FileName
@@ -567,11 +570,14 @@ function Install-WinGet {
             # try to download dependency
             $dependencyPackage.file = $envTEMP + '\' + $dependencyPackage.fileName
             Write-Host "Downloading a dependency for WinGet...`n"
+            $PreviousProgressPreference = $ProgressPreference
+            $ProgressPreference = "SilentlyContinue" # avoids slow download when using Invoke-WebRequest
             while ((Invoke-WebRequest -Uri $dependencyPackage.url -OutFile $dependencyPackage.file -UseBasicParsing -PassThru).StatusCode -ne 200) {
               # need to loop until dependency package is downloaded, or we timeout
               Start-Sleep -Seconds $loopDelay
               $dependencyPackageDownloadTime += $loopDelay
             }
+            $ProgressPreference = $PreviousProgressPreference # return ProgressPreference back to normal
   
             # need to see if package is uiXaml, if so, extract dependency needed
             $packageIsUiXaml = ($dependencyPackage -eq $wingetDependencies.uiXaml) -And $dependencyPackage.file
@@ -746,7 +752,10 @@ $userAgentStringsURL = "https://jnrbsn.github.io/user-agents/user-agents.json"
 $UserAgent = $null
 while (-Not $UserAgent) {
   # need to loop until user agent string is pulled from URL
+  $PreviousProgressPreference = $ProgressPreference
+  $ProgressPreference = "SilentlyContinue" # avoids slow download when using Invoke-WebRequest
   $getUserAgentStrings = Invoke-WebRequest -Uri $userAgentStringsURL -UseBasicParsing
+  $ProgressPreference = $PreviousProgressPreference # return ProgressPreference back to normal
   if ($getUserAgentStrings.StatusCode -eq 200) {
     $UserAgent = ($getUserAgentStrings.Content | ConvertFrom-Json)[0]
   } else {
@@ -757,7 +766,10 @@ $timeIsURL = "https://time.is/"
 $TimeHTML = $null
 while (-Not $TimeHTML) {
   # need to loop until current time is pulled from URL
+  $PreviousProgressPreference = $ProgressPreference
+  $ProgressPreference = "SilentlyContinue" # avoids slow download when using Invoke-WebRequest
   $getTimeHTML = Invoke-WebRequest -Uri $timeIsURL -UserAgent $UserAgent -UseBasicParsing
+  $ProgressPreference = $PreviousProgressPreference # return ProgressPreference back to normal
   if ($getTimeHTML.StatusCode -eq 200) {
     $TimeHTML = $getTimeHTML.Content
   } else {

@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Install WinGet Function v1.2.5
+  Install WinGet Function v1.2.6
 
   .DESCRIPTION
   Script contains a function which can be used to install WinGet (to current user profile) automatically.
@@ -233,7 +233,10 @@ function Install-WinGet {
     $tempWingetPackage = $Null
     while (-Not $tempWingetPackage) {
       # need to loop until WinGet package is downloaded
+      $PreviousProgressPreference = $ProgressPreference
+      $ProgressPreference = "SilentlyContinue" # avoids slow download when using Invoke-WebRequest
       $tempWingetWebResponse = Invoke-WebRequest -Uri $wingetLatestDownloadURL -UseBasicParsing
+      $ProgressPreference = $PreviousProgressPreference # return ProgressPreference back to normal
       if ($tempWingetWebResponse.StatusCode -eq 200) {
         # confirm file extension is correct
         $tempWingetFileName = ([System.Net.Mime.ContentDisposition]$tempWingetWebResponse.Headers.'Content-Disposition').FileName
@@ -362,11 +365,14 @@ function Install-WinGet {
             # try to download dependency
             $dependencyPackage.file = $envTEMP + '\' + $dependencyPackage.fileName
             Write-Host "Downloading a dependency for WinGet...`n"
+            $PreviousProgressPreference = $ProgressPreference
+            $ProgressPreference = "SilentlyContinue" # avoids slow download when using Invoke-WebRequest
             while ((Invoke-WebRequest -Uri $dependencyPackage.url -OutFile $dependencyPackage.file -UseBasicParsing -PassThru).StatusCode -ne 200) {
               # need to loop until dependency package is downloaded, or we timeout
               Start-Sleep -Seconds $loopDelay
               $dependencyPackageDownloadTime += $loopDelay
             }
+            $ProgressPreference = $PreviousProgressPreference # return ProgressPreference back to normal
   
             # need to see if package is uiXaml, if so, extract dependency needed
             $packageIsUiXaml = ($dependencyPackage -eq $wingetDependencies.uiXaml) -And $dependencyPackage.file

@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Recreate Startmenu Shortcuts (Intune) v1.0.9
+  Recreate Startmenu Shortcuts (Intune) v1.1.0
 
   .DESCRIPTION
   This is just a wrapper script (made for Intune), to download and run the full script (bypasses the "script is too large" issue for Intune).
@@ -96,4 +96,7 @@ if (-Not (Get-NetRoute | Where-Object DestinationPrefix -eq '0.0.0.0/0' | Get-Ne
 
 # Download and execute script code
 Write-Host "Downloading and executing `"${REMOTE_SCRIPT_LOCATION}`" shortly..."
+$PreviousProgressPreference = $ProgressPreference
+$ProgressPreference = "SilentlyContinue" # avoids slow download when using Invoke-WebRequest
 . { Invoke-WebRequest -useb $REMOTE_SCRIPT_LOCATION } | Invoke-Expression
+$ProgressPreference = $PreviousProgressPreference # return ProgressPreference back to normal

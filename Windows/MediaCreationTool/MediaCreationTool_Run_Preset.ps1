@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  MediaCreationTool Run Preset v1.0.8
+  MediaCreationTool Run Preset v1.0.9
 
   .DESCRIPTION
   Script helps to automate a part of the process needed to generate single edition ISOs.
@@ -224,12 +224,18 @@ function Initialize-MCT([Hashtable]$winVersionMCT) {
     # Then grab new version of MCT, if needed
     Write-Host '' # text formatting
     Write-HostCenter "Checking if the $($winVersionMCT.os) Media Creation Tool has a new version..."
+    $PreviousProgressPreference = $ProgressPreference
+    $ProgressPreference = "SilentlyContinue" # avoids slow download when using Invoke-WebRequest
     $get_win_MCT = Invoke-WebRequest -Method Head -MaximumRedirection 0 -Uri $winVersionMCT.url -UseBasicParsing -ErrorAction SilentlyContinue
+    $ProgressPreference = $PreviousProgressPreference # return ProgressPreference back to normal
     if ((302 -eq $get_win_MCT.StatusCode) -And $get_win_MCT.Headers -And $get_win_MCT.Headers.Location) {
         $oldVersions = @(Get-ChildItem -Path $winVersionMCT.folder -Filter MediaCreationTool*.exe)
         $winVersionMCT_redirectURL = $get_win_MCT.Headers.Location
         $winVersionMCT.exe = $winVersionMCT.folder + '\' + ([uri]($winVersionMCT_redirectURL)).Segments[-1]
+        $PreviousProgressPreference = $ProgressPreference
+        $ProgressPreference = "SilentlyContinue" # avoids slow download when using Invoke-WebRequest
         $get_win_MCT_redirect = Invoke-WebRequest -Method Head -MaximumRedirection 0 -Uri $winVersionMCT_redirectURL -UseBasicParsing -ErrorAction SilentlyContinue
+        $ProgressPreference = $PreviousProgressPreference # return ProgressPreference back to normal
         
         # only download if we don't already have the file, or hosted version is newer
         $shouldDownload = -Not (Test-Path -Path $winVersionMCT.exe -PathType Leaf)
@@ -257,7 +263,10 @@ function Initialize-MCT([Hashtable]$winVersionMCT) {
             Clear-Host
             Write-Host '' # text formatting
             Write-HostCenter "Downloading the lastest $($winVersionMCT.os) Media Creation Tool..."
+            $PreviousProgressPreference = $ProgressPreference
+            $ProgressPreference = "SilentlyContinue" # avoids slow download when using Invoke-WebRequest
             $download_win_MCT = Invoke-WebRequest -Uri $winVersionMCT.url -OutFile $winVersionMCT.exe -UseBasicParsing -PassThru -ErrorAction SilentlyContinue
+            $ProgressPreference = $PreviousProgressPreference # return ProgressPreference back to normal
             $mctExists = Test-Path -Path $winVersionMCT.exe -PathType Leaf
             if ((200 -eq $download_win_MCT.StatusCode) -And $mctExists) {
                 # if download succeeded...
@@ -285,7 +294,10 @@ function Initialize-MCT([Hashtable]$winVersionMCT) {
         if (-Not $winVersionMCT.release) {
             $releaseHealthURL = "https://learn.microsoft.com/en-us/windows/release-health/"
             $releaseHealthRegex = '(?<=>' + $winVersionMCT.os + ', version )([a-zA-Z0-9]+)(?=<)'
+            $PreviousProgressPreference = $ProgressPreference
+            $ProgressPreference = "SilentlyContinue" # avoids slow download when using Invoke-WebRequest
             $getReleaseHealth = Invoke-WebRequest -Uri $releaseHealthURL -UseBasicParsing -ErrorAction SilentlyContinue
+            $ProgressPreference = $PreviousProgressPreference # return ProgressPreference back to normal
             $release = $Null
             $errored = $False
             if (200 -eq $getReleaseHealth.StatusCode) {

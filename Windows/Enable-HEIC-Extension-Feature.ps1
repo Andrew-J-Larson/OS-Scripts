@@ -195,15 +195,19 @@ function Download-AppxPackage {
     if (!(Test-Path $downloadFile)) {
       Write-Host "Attempting download of `"${filename}`" to `"${downloadFile}`" . . ."
       $fileDownloaded = $null
+      $PreviousProgressPreference = $ProgressPreference
+      $ProgressPreference = "SilentlyContinue" # avoids slow download when using Invoke-WebRequest
       try {
         Invoke-WebRequest -Uri $url -OutFile $downloadFile
         $fileDownloaded = $?
       } catch {
+        $ProgressPreference = $PreviousProgressPreference # return ProgressPreference back to normal
         $errorMsg = "An error occurred: " + $_
         Write-Host $errorMsg
         $errored = $true
         break $false
       }
+      $ProgressPreference = $PreviousProgressPreference # return ProgressPreference back to normal
       if ($fileDownloaded) { $DownloadedFiles += $downloadFile }
       else { $allFilesDownloaded = $false }
     }

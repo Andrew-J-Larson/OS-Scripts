@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Download AppxPackage Function v2.0.4
+  Download AppxPackage Function v2.0.5
 
   .DESCRIPTION
   Script that contains a function which helps facilitate downloading Microsoft Store apps from their servers (via third-party API's).
@@ -184,15 +184,19 @@ function Download-AppxPackage {
     if (!(Test-Path $downloadFile)) {
       Write-Host "Attempting download of `"${filename}`" to `"${downloadFile}`" . . ."
       $fileDownloaded = $null
+      $PreviousProgressPreference = $ProgressPreference
+      $ProgressPreference = "SilentlyContinue" # avoids slow download when using Invoke-WebRequest
       try {
         Invoke-WebRequest -Uri $url -OutFile $downloadFile
         $fileDownloaded = $?
       } catch {
+        $ProgressPreference = $PreviousProgressPreference # return ProgressPreference back to normal
         $errorMsg = "An error occurred: " + $_
         Write-Host $errorMsg
         $errored = $true
         break $false
       }
+      $ProgressPreference = $PreviousProgressPreference # return ProgressPreference back to normal
       if ($fileDownloaded) { $DownloadedFiles += $downloadFile }
       else { $allFilesDownloaded = $false }
     }
