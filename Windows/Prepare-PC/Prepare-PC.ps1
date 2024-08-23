@@ -750,12 +750,11 @@ $setTimezone = Set-TimeZone $timezone -PassThru
 $regSetTzautoupdate = Set-ItemProperty -Path $regTzautoupdate -Name "Start" -Value 3 -Type Dword -PassThru -Force
 $userAgentStringsURL = "https://jnrbsn.github.io/user-agents/user-agents.json"
 $UserAgent = $null
+$PreviousProgressPreference = $ProgressPreference
+$ProgressPreference = "SilentlyContinue" # avoids slow download when using Invoke-WebRequest
 while (-Not $UserAgent) {
   # need to loop until user agent string is pulled from URL
-  $PreviousProgressPreference = $ProgressPreference
-  $ProgressPreference = "SilentlyContinue" # avoids slow download when using Invoke-WebRequest
   $getUserAgentStrings = Invoke-WebRequest -Uri $userAgentStringsURL -UseBasicParsing
-  $ProgressPreference = $PreviousProgressPreference # return ProgressPreference back to normal
   if ($getUserAgentStrings.StatusCode -eq 200) {
     $UserAgent = ($getUserAgentStrings.Content | ConvertFrom-Json)[0]
   } else {
@@ -766,16 +765,14 @@ $timeIsURL = "https://time.is/"
 $TimeHTML = $null
 while (-Not $TimeHTML) {
   # need to loop until current time is pulled from URL
-  $PreviousProgressPreference = $ProgressPreference
-  $ProgressPreference = "SilentlyContinue" # avoids slow download when using Invoke-WebRequest
   $getTimeHTML = Invoke-WebRequest -Uri $timeIsURL -UserAgent $UserAgent -UseBasicParsing
-  $ProgressPreference = $PreviousProgressPreference # return ProgressPreference back to normal
   if ($getTimeHTML.StatusCode -eq 200) {
     $TimeHTML = $getTimeHTML.Content
   } else {
     Start-Sleep -Seconds $loopDelay
   }
 }
+$ProgressPreference = $PreviousProgressPreference # return ProgressPreference back to normal
 $RegexClock = [Regex]::new('(?<=<time id="clock">).*(?=</time>)')
 $MatchClock = $RegexClock.Match($TimeHTML)
 $RegexTime = [Regex]::new('.*(?=<span)')
