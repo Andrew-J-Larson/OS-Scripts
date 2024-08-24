@@ -24,7 +24,7 @@ $ovpnFolder = $env:ProgramFiles + "\OpenVPN"
 $ovpnConfigFolder = $ovpnFolder + "\config"
 $ovpnBinEXE = $ovpnFolder + "\bin\openvpn.exe"
 $ovpnDownloadsURL = "https://openvpn.net/community-downloads/"
-$ovpnDownloadPattern = '(?<=<a href=")OpenVPN\-(?<Version>[0-9\.]+)\-[^"\-]*\-amd64\.msi(?=")'
+$ovpnDownloadPattern = '(?<=<a href="[^"\-]*/)OpenVPN\-(?<Version>[0-9\.]+)\-[^"\-]*\-amd64\.msi(?=")'
 Write-Output "Attempting to install ${AppName}..."
 Write-Output '' # Makes log look better
 $ovpnWasPreinstalled = (Get-Package -Name "OpenVPN *" -ErrorAction SilentlyContinue) -And (Test-Path -Path $ovpnBinEXE -PathType Leaf)
