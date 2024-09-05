@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Auto Hide Taskbar On Any Window Maximized v1.0.0
+  Auto Hide Taskbar On Any Window Maximized v1.0.1
 
   .DESCRIPTION
   This script will automatically turn on/off the taskbar auto hide setting, when a maximized
@@ -71,7 +71,6 @@ Add-Type -TypeDefinition @"
 
   using System;
   using System.Collections.Generic;
-  using System.Linq;
   using System.Runtime.InteropServices;
 
   public class Taskbar
