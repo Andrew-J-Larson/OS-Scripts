@@ -24,7 +24,7 @@ $ovpnFolder = $env:ProgramFiles + "\OpenVPN"
 $ovpnConfigFolder = $ovpnFolder + "\config"
 $ovpnBinEXE = $ovpnFolder + "\bin\openvpn.exe"
 $ovpnDownloadsURL = "https://openvpn.net/community-downloads/"
-$ovpnDownloadPattern = '(?<=<a href="[^"\-]*/)OpenVPN\-(?<Version>[0-9\.]+)\-[^"\-]*\-amd64\.msi(?=")'
+$ovpnDownloadPattern = '(?<=<a href=")[^"\-]*/OpenVPN\-(?<Version>[0-9\.]+)\-[^"\-]*\-amd64\.msi(?=")'
 Write-Output "Attempting to install ${AppName}..."
 Write-Output '' # Makes log look better
 $ovpnWasPreinstalled = (Get-Package -Name "OpenVPN *" -ErrorAction SilentlyContinue) -And (Test-Path -Path $ovpnBinEXE -PathType Leaf)
@@ -62,9 +62,9 @@ if ($ovpnWasPreinstalled) {
       Write-Output "Successfully installed ${AppName}."
     } else {
       $ovpnInstallError = ""
-      if ($configCopied) {
+      if (-Not $configCopied) {
         $ovpnInstallError += "the config being unable to copy"
-        if ($ovpnInstall) { $ovpnInstallError += ' ' }
+        if (0 -ne $ovpnInstall.ExitCode) { $ovpnInstallError += ' and ' }
       }
       if (0 -ne $ovpnInstall.ExitCode) { $ovpnInstallError += "the installer failing (exit code: $($ovpnInstall.ExitCode))" }
       throw "Failed to install ${AppName}, due to ${ovpnInstallError}."
