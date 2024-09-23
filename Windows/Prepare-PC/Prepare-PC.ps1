@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.2.2
+  Prepare PC v1.2.3
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -271,7 +271,8 @@ $dcuEndPath = "Dell\CommandUpdate\dcu-cli.exe"
 $dcuCli = "${env:ProgramFiles}\${dcuEndPath}"
 $dcuCli32bit = "${env:ProgramFiles(x86)}\${dcuEndPath}" # required in the case of Dell SupportAssist OS reinstalls
 $dcuCliExe = if (Test-Path -Path $dcuCli32bit -PathType Leaf) { $dcuCli32bit } else { $dcuCli }
-$dcuArgs = '/applyUpdates' + $(if ($dcuCliExe -eq $dcuCli) { ' -forceUpdate=enable' } else { '' }) + ' -reboot=disable -autoSuspendBitLocker=enable' # if using the universal version, need forceUpdate option
+$dcuConfigureArgs = '/configure -scheduleManual -updatesNotification=disable'
+$dcuApplyArgs = '/applyUpdates' + $(if ($dcuCliExe -eq $dcuCli) { ' -forceUpdate=enable' } else { '' }) + ' -reboot=disable -autoSuspendBitLocker=enable' # if using the universal version, need forceUpdate option
 
 # Functions
 
@@ -1063,8 +1064,18 @@ if ($isDell) {
     Write-Output '' # Makes log look better
   }
   if (Test-Path -Path $dcuCliExe -PathType Leaf) {
+    Write-Output "Attempting to set Dell Command Update settings..."
+    $dcuConfig = Start-Process -FilePath $dcuCliExe -ArgumentList $dcuConfigureArgs -NoNewWindow -PassThru -Wait
+    Write-Output '' # Makes log look better
+    # 0 = set settings successfully
+    if (0 -eq $dcuConfig.ExitCode) {
+      Write-Output "Successfully set Dell Command Update settings."
+    } else {
+      Write-Warning "Failed to set Dell Command Update settings."
+    }
+    Write-Output '' # Makes log look better
     Write-Output "Attempting to update all Dell drivers/firmwares directly from manufacturer..."
-    $dcuUpdate = Start-Process -FilePath $dcuCliExe -ArgumentList $dcuArgs -NoNewWindow -PassThru -Wait
+    $dcuUpdate = Start-Process -FilePath $dcuCliExe -ArgumentList $dcuApplyArgs -NoNewWindow -PassThru -Wait
     $dcuRebootRequired = (1 -eq $dcuUpdate.ExitCode) -Or (5 -eq $dcuUpdate.ExitCode)
     # 0 = updated, 500 = no updates were available, a.k.a. up-to-date
     Write-Output '' # Makes log look better
@@ -1318,7 +1329,7 @@ $actionFinalizeOnline = New-ScheduledTaskAction -Execute 'powershell.exe' -Argum
   ```$computerObj.Dispose() `
   }\`"`"`"`"`"`"`"`" -Credential `$psCred -Wait ; `
   $(if ($isDell) {
-    "Start-Process -FilePath '${dcuCliExe}' -ArgumentList '${dcuArgs}' -NoNewWindow -Wait -ErrorAction SilentlyContinue ; "
+    "Start-Process -FilePath '${dcuCliExe}' -ArgumentList '${dcuApplyArgs}' -NoNewWindow -Wait -ErrorAction SilentlyContinue ; "
   } else { '' }) `
   Remove-Item -Path `$domainAdminPasswordPath -Force ; `
   Start-Process 'rundll32.exe' -ArgumentList 'user32.dll,LockWorkStation' -NoNewWindow ; `
