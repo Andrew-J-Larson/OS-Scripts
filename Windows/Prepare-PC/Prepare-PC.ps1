@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.2.4
+  Prepare PC v1.2.5
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -929,10 +929,10 @@ if (-Not $isWDGA) { # online Windows Updates are not possible in WDGA
       if ($ResultCodesIntArray -contains $SearcherResults.ResultCode)
       { $ResultCodesString[$SearcherResults.ResultCode] } else { 'stopped, result unknown' }
     )."
-    if ($ResultsUpdates -And ($SearcherResults.ResultCode -eq $ResultCodesInt.SUCCEEDED) -And ($ResultsUpdates.Count -le 0)) {
+    if ($ResultsUpdates -And ($SearcherResults.ResultCode -eq $ResultCodesInt.SUCCEEDED) -And (0 -eq $ResultsUpdates.Count)) {
       $attemptUpdates = $False
       $resultMsg = "Windows is already up-to-date."
-    } elseif (-Not $ResultsUpdates) {
+    } elseif ((-Not $ResultsUpdates) -Or (0 -gt $ResultsUpdates.Count)) {
       $resultMsg = "There was a problem searching for updates."
     }
     Switch ($SearcherResults.ResultCode) {
