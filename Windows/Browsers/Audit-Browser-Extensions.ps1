@@ -100,7 +100,7 @@
   Requires admin! Due to needing access every users AppData folder.
 
   .LINK
-  Script from: https://github.com/Andrew-J-Larson/OS-Scripts/blob/main/Windows/Audit-Browser-Extensions.ps1
+  Script from: https://github.com/Andrew-J-Larson/OS-Scripts/blob/main/Windows/Browsers/Audit-Browser-Extensions.ps1
 #>
 #Requires -RunAsAdministrator
 
