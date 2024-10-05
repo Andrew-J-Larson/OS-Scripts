@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.2.5
+  Prepare PC v1.2.6
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -202,6 +202,35 @@ if ($usbMediaDevices) {
     Write-Warning "Media USB dongles must be removed to continue. Aborting script."
     exit 1
   }
+}
+
+# Some Windows 11 builds have a preinstalled update that brake the Windows Update API (used later in script)
+# - see about the known issue from Microsoft:
+#   - https://learn.microsoft.com/en-us/windows/release-health/resolved-issues-windows-11-23h2#the-june-2024-preview-update-might-impact-applications-using-windows-update-apis
+# - see about issue with KB5040442:
+#   - https://github.com/mgajda83/PSWindowsUpdate/issues/27#issuecomment-2223311835
+$isWindows11 = (Get-CimInstance -ClassName Win32_OperatingSystem -Property Caption).Caption -like "* Windows 11 *"
+$hasBadHotFixKB5040442 = (Get-CimInstance -Class Win32_QuickFixEngineering -Property HotFixID) | Where-Object { $_.HotFixID -eq "KB5043076" }
+$fixedBuild = [System.Version]"10.0.22621.3958"
+$checkBuild = [System.Environment]::OSVersion.Version.ToString().split('.')
+$checkBuild[3] = $(Get-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\Software\Microsoft\Windows NT\CurrentVersion' UBR).UBR
+$checkBuild = [System.Version]($checkBuild -Join '.')
+$hasBrokenUpdateAPI = $isWindows11 -And $hasBadHotFixKB5040442 -And ($checkBuild -lt $fixedBuild)
+if ($hasBrokenUpdateAPI) {
+  $uninstallMsg = "faulty hotfix KB5040442"
+  Write-Host "Uninstalling ${uninstallMsg} (please confirm the prompt)..."
+  $UninstallBadHotFixProcess = Start-Process 'wusa.exe' -ArgumentList '/uninstall /kb:5040442 /norestart' -PassThru -Wait
+  if (0 -eq $UninstallBrokenUpdateProcess.ExitCode) {
+    Write-Host "Successfully uninstalled ${uninstallMsg}."
+  } else {
+    Write-Warning "Failed to uninstall ${uninstallMsg}, please uninstall this update manually (exit code = $($UninstallBrokenUpdateProcess.ExitCode))."
+  }
+  Write-Host "`nPlease reboot, and then attempt to run this script again.`n"
+  Read-Host -Prompt "Press any key to reboot or CTRL+C to quit" | Out-Null
+  # Reboot to finish uninstallation of bad hotfix
+  Write-Host "Rebooting..."
+  Restart-Computer -Force
+  exit 1
 }
 
 # Check if running in Windows Terminal (determines if encoding needs to be changed when running some apps)
