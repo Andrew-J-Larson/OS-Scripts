@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.2.6
+  Prepare PC v1.2.7
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -306,8 +306,9 @@ $dcuApplyArgs = '/applyUpdates' + $(if ($dcuCliExe -eq $dcuCli) { ' -forceUpdate
 # Functions
 
 # installs WinGet from the internet: code via https://github.com/Andrew-J-Larson/OS-Scripts/blob/main/Windows/Wrapper-Functions/Install-WinGet-Function.ps1
+# installs WinGet from the internet
 function Install-WinGet {
-  # v1.2.6
+  # v1.2.7
   param(
     [switch]$Force
   )
@@ -573,8 +574,22 @@ function Install-WinGet {
         # if we have a known dependency, download and work on them if needed
         $dependencyPackage.name = $packageElement.Name
         if ($dependencyPackage) {
-          # only re-register dependency if we have an equal or newer version already installed (don't try to download package)
-          $dependencyPackagePreinstalledList = @($appxPackagesAllUsers | Where-Object { $_.Name -eq $dependencyPackage.name} | Where-Object { [System.Version]$_.Version -ge [System.Version]$packageElement.MinVersion })
+          $dependencyPackagePreinstalledList = $Null
+          # only re-register newest dependency if we have an equal or newer version already installed (don't try to download package)
+          $dependencyPackagePreinstalledCheckList = @(
+            $appxPackagesAllUsers | Where-Object { $_.Name -eq $dependencyPackage.name} | Where-Object {
+              [System.Version]($_.Version) -ge [System.Version]($packageElement.MinVersion)
+            }
+          )
+          # only grabs the packages that match the highest version found, avoids issues with architecture guessing
+          if ($dependencyPackagePreinstalledCheckList) {
+            $dependencyPackagePreinstalledHighestVersion = $dependencyPackagePreinstalledCheckList | Sort-Object -Property Version | Select-Object -Last 1 -ExpandProperty Version
+            $dependencyPackagePreinstalledList = @(
+              $dependencyPackagePreinstalledCheckList | Where-Object {
+                [System.Version]$_.Version -eq $dependencyPackagePreinstalledHighestVersion
+              }
+            )
+          }
 
           # sometimes may have more than one architecture of the package that needs to be registered
           if ($dependencyPackagePreinstalledList) {
@@ -654,12 +669,17 @@ function Install-WinGet {
 
     # install WinGet (updates Desktop App Installer) with any missing dependencies prior
     Write-Host "Installing WinGet...`n"
+    $DesktopAppInstallerRunning = $False
+    do {
+
+      Start-Sleep -Seconds $appxInstallDelay
+    } while ($DesktopAppInstallerRunning)
     $wingetInstalled = $True
     try {
       $dependencyFiles = @()
       if ($wingetDependencies.vcLibs -And $wingetDependencies.vcLibs.file) { $dependencyFiles += , ($wingetDependencies.vcLibs.file) }
       if ($wingetDependencies.uiXaml -And $wingetDependencies.uiXaml.file) { $dependencyFiles += , ($wingetDependencies.uiXaml.file) }
-      $addPackageCommand = 'Add-AppxPackage -Path "' + $tempWingetPackage + '"'
+      $addPackageCommand = 'Add-AppxPackage -Path "' + $tempWingetPackage + '" -ForceTargetApplicationShutdown'
       if ($dependencyFiles) { $addPackageCommand += ' -DependencyPath "' + "$($dependencyFiles -Join '","')" + '"' }
       Invoke-Expression $addPackageCommand
       # need to wait a moment to allow install to register with Windows
