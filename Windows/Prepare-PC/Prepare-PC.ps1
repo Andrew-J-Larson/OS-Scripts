@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.2.8
+  Prepare PC v1.2.9
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -1031,8 +1031,8 @@ if (-Not $isWDGA) { # online Windows Updates are not possible in WDGA
     }
     $updateAttempt++
     # Unfortunately, below is needed because some Windows versions break update API all together
-    # (constantly searches and fails to install on 24H2 versions of Windows 10/11)
-    $attemptUpdates = $maxRetries -neq $updateAttempt
+    # (constantly searches and fails to install on 24H2 builds of Windows 10/11)
+    if ($attemptUpdates) { $attemptUpdates = $maxRetries -ne $updateAttempt }
   }
 }
 
