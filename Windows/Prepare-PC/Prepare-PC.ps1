@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.2.7
+  Prepare PC v1.2.8
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -261,8 +261,9 @@ if ($logEnabled) {
 
 # Constants
 
+$maxRetries = 5 # times to attempt Windows Updates
 $loopDelay = 1 # second
-$domainSyncDelay = 5 # seconds
+$domainSyncDelay = 10 # seconds
 $resources = "${PSScriptRoot}\resources"
 $installers = "${resources}\installers"
 $baseAppListFilename = "0-base.txt"
@@ -1029,6 +1030,9 @@ if (-Not $isWDGA) { # online Windows Updates are not possible in WDGA
       }
     }
     $updateAttempt++
+    # Unfortunately, below is needed because some Windows versions break update API all together
+    # (constantly searches and fails to install on 24H2 versions of Windows 10/11)
+    $attemptUpdates = $maxRetries -neq $updateAttempt
   }
 }
 
