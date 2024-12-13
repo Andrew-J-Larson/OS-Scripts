@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.2.9
+  Prepare PC v1.3.0
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -95,10 +95,10 @@ if ($Help.IsPresent) {
   exit
 }
 if ($FullScreen.IsPresent) {
-  $wshell = New-Object -ComObject wscript.shell
-  $wshell.AppActivate($PID) | Out-Null
-  $wshell.SendKeys("{F11}")
-  [System.Runtime.Interopservices.Marshal]::ReleaseComObject($wshell) | Out-Null
+  # can't use wscript.shell, as there is a bug when a physical keyboard is connected
+  [System.Reflection.Assembly]::LoadWithPartialName("'System.Windows.Forms") | Out-Null
+  [System.Windows.Forms.SendKeys]::SendWait("{ESC}") # required since Windows 11 will open the start menu randomly
+  [System.Windows.Forms.SendKeys]::SendWait("{F11}")
 }
 $logEnabled = $Log.IsPresent
 # $SelectAppList is checked later in script
