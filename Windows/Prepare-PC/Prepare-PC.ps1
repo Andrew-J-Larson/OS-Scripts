@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.3.0
+  Prepare PC v1.3.1
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -95,9 +95,11 @@ if ($Help.IsPresent) {
   exit
 }
 if ($FullScreen.IsPresent) {
-  # can't use wscript.shell, as there is a bug when a physical keyboard is connected
-  [System.Reflection.Assembly]::LoadWithPartialName("'System.Windows.Forms") | Out-Null
-  [System.Windows.Forms.SendKeys]::SendWait("{ESC}") # required since Windows 11 will open the start menu randomly
+  # can't use wscript.shell for F11, as there is a bug when a physical keyboard is connected
+  [System.Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms") | Out-Null
+  [System.Reflection.Assembly]::LoadWithPartialName("Microsoft.VisualBasic") | Out-Null
+  # Windows 11 locked up functionality, so the following might only work on Windows 10
+  [Microsoft.VisualBasic.Interaction]::AppActivate($PID) | Out-Null
   [System.Windows.Forms.SendKeys]::SendWait("{F11}")
 }
 $logEnabled = $Log.IsPresent
