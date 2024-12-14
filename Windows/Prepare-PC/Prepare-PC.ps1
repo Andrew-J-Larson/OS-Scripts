@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.3.1
+  Prepare PC v1.3.2
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -98,7 +98,9 @@ if ($FullScreen.IsPresent) {
   # can't use wscript.shell for F11, as there is a bug when a physical keyboard is connected
   [System.Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms") | Out-Null
   [System.Reflection.Assembly]::LoadWithPartialName("Microsoft.VisualBasic") | Out-Null
-  # Windows 11 locked up functionality, so the following might only work on Windows 10
+  # Windows 11 might randomly popup the start menu, so need to close it first
+  $startMenuProcess = Get-Process -Name "StartMenuExperienceHost" -ErrorAction SilentlyContinue
+  if ($startMenuProcess) { Stop-Process -Id $startMenuProcess.Id -Force }
   [Microsoft.VisualBasic.Interaction]::AppActivate($PID) | Out-Null
   [System.Windows.Forms.SendKeys]::SendWait("{F11}")
 }
