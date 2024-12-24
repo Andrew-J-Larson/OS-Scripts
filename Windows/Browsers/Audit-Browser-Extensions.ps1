@@ -1,6 +1,6 @@
 ﻿<#
   .SYNOPSIS
-  Audit Browser Extensions v1.2.4
+  Audit Browser Extensions v1.2.5
 
   .DESCRIPTION
   This script will audit all browser extensions installed from all local drives of the machine, including details such as the user
@@ -181,20 +181,20 @@ Set-Variable -Name DRIVE_LETTERS -Option Constant -Value @(
   }
 ) -ErrorAction SilentlyContinue
 
-Set-Variable -Name DRIVE_LETTER_REGEX_GROUP -Option Constant -Value "DRIVE_LETTER" -ErrorAction SilentlyContinue
-Set-Variable -Name USER_IS_DEFAULT_REGEX_GROUP -Option Constant -Value "USER_IS_DEFAULT" -ErrorAction SilentlyContinue
-Set-Variable -Name USER_IS_SERVICE_REGEX_GROUP -Option Constant -Value "USER_IS_SERVICE" -ErrorAction SilentlyContinue
-Set-Variable -Name USER_IS_SYSTEM_REGEX_GROUP -Option Constant -Value "USER_IS_SYSTEM" -ErrorAction SilentlyContinue
-Set-Variable -Name USER_SAM_REGEX_GROUP -Option Constant -Value "USER_SAM" -ErrorAction SilentlyContinue
-Set-Variable -Name USER_SID_REGEX_GROUP -Option Constant -Value "USER_SID" -ErrorAction SilentlyContinue
-Set-Variable -Name BLINK_PREFERENCES_REGEX_GROUP -Option Constant -Value "BLINK_PREFERENCES" -ErrorAction SilentlyContinue
-Set-Variable -Name GECKO_EXTENSIONS_REGEX_GROUP -Option Constant -Value "GECKO_EXTENSIONS" -ErrorAction SilentlyContinue
-Set-Variable -Name BROWSER_MSIX_FULLNAME_REGEX_GROUP -Option Constant -Value "BROWSER_MSIX_FULLNAME" -ErrorAction SilentlyContinue
-Set-Variable -Name BROWSER_EXE_FULLNAME_REGEX_GROUP -Option Constant -Value "BROWSER_EXE_FULLNAME" -ErrorAction SilentlyContinue
-Set-Variable -Name BROWSER_ATYPICAL_FULLNAME_REGEX_GROUP -Option Constant -Value "BROWSER_ATYPICAL_FULLNAME" -ErrorAction SilentlyContinue
-Set-Variable -Name BROWSER_PROFILE_NAME_REGEX_GROUP -Option Constant -Value "BROWSER_PROFILE_NAME" -ErrorAction SilentlyContinue
-Set-Variable -Name NONSTANDARD_BROWSER_PROFILE_NAME_REGEX_GROUP -Option Constant -Value "NONSTANDARD_BROWSER_PROFILE" -ErrorAction SilentlyContinue
-Set-Variable -Name POSSIBLE_BROWSER_PATH_REGEX_GROUP -Option Constant -Value "POSSIBLE_BROWSER_PATH" -ErrorAction SilentlyContinue
+Set-Variable -Name DRIVE_LETTER_REGEX_GROUP -Option Constant -Value "D0" -ErrorAction SilentlyContinue
+Set-Variable -Name USER_IS_DEFAULT_REGEX_GROUP -Option Constant -Value "U0" -ErrorAction SilentlyContinue
+Set-Variable -Name USER_IS_SERVICE_REGEX_GROUP -Option Constant -Value "U1" -ErrorAction SilentlyContinue
+Set-Variable -Name USER_IS_SYSTEM_REGEX_GROUP -Option Constant -Value "U2" -ErrorAction SilentlyContinue
+Set-Variable -Name USER_SAM_REGEX_GROUP -Option Constant -Value "U3" -ErrorAction SilentlyContinue
+Set-Variable -Name USER_SID_REGEX_GROUP -Option Constant -Value "U4" -ErrorAction SilentlyContinue
+Set-Variable -Name BLINK_PREFERENCES_REGEX_GROUP -Option Constant -Value "B0" -ErrorAction SilentlyContinue
+Set-Variable -Name GECKO_EXTENSIONS_REGEX_GROUP -Option Constant -Value "G0" -ErrorAction SilentlyContinue
+Set-Variable -Name BROWSER_MSIX_FULLNAME_REGEX_GROUP -Option Constant -Value "B1" -ErrorAction SilentlyContinue
+Set-Variable -Name BROWSER_EXE_FULLNAME_REGEX_GROUP -Option Constant -Value "B2" -ErrorAction SilentlyContinue
+Set-Variable -Name BROWSER_ATYPICAL_FULLNAME_REGEX_GROUP -Option Constant -Value "B3" -ErrorAction SilentlyContinue
+Set-Variable -Name BROWSER_PROFILE_NAME_REGEX_GROUP -Option Constant -Value "B4" -ErrorAction SilentlyContinue
+Set-Variable -Name NONSTANDARD_BROWSER_PROFILE_NAME_REGEX_GROUP -Option Constant -Value "N0" -ErrorAction SilentlyContinue
+Set-Variable -Name POSSIBLE_BROWSER_PATH_REGEX_GROUP -Option Constant -Value "P0" -ErrorAction SilentlyContinue
 
 Set-Variable -Name DRIVE_LETTER_REGEX -Option Constant -Value @"
 [a-zA-Z]\:
@@ -567,7 +567,7 @@ Set-Variable -Name BROWSER_PREFERENCES_OR_EXTENSIONS_FILE_MATCH_REGEX -Value $(
   '$' # ends with
 ) -ErrorAction SilentlyContinue
 
-Set-Variable -Name GECKO_THUNDERBIRD_ADDON_ID_REGEX_GROUP -Option Constant -Value "ADDON_ID" -ErrorAction SilentlyContinue
+Set-Variable -Name GECKO_THUNDERBIRD_ADDON_ID_REGEX_GROUP -Option Constant -Value "A0" -ErrorAction SilentlyContinue
 Set-Variable -Name GECKO_THUNDERBIRD_ADDON_XPI_URL_REGEX -Option Constant -Value "https?\:\/\/addons\.thunderbird\.net\/thunderbird\/downloads\/latest\/[^\/]+\/addon\-(?<${GECKO_THUNDERBIRD_ADDON_ID_REGEX_GROUP}>\d+)\-latest\.xpi.*" -ErrorAction SilentlyContinue
 
 # these constants are values pulled from the source code of each browser engine
@@ -1365,7 +1365,7 @@ $AllBrowserPreferencesOrExtensionsFileMatches | ForEach-Object {
       # been loaded would be very complicated, and it would have incomplete data necessary to be viable information...
       # - 3 files, in a browser profile, contain pieces of information
       #   - '.\datareporting\glean\events\events'
-      #     - each event... only captures later addon reloads or unloads (unreliable, since ther first load of an unpacked
+      #     - each event... only captures later addon reloads or unloads (unreliable, since the initial load of an unpacked
       #       extension isn't logged)
       #       - `extra.source` = "temporary-addon", for unpacked extensions (un)loaded in
       #       - `extra.addon_id` = (if id exists in manifest of extension) ? true addon id : temporary addon id
@@ -1387,6 +1387,7 @@ $AllBrowserPreferencesOrExtensionsFileMatches | ForEach-Object {
       # - due to bugs, "prefs.js" and "addonsreconciler.json" do not remove temporary addon entries that have been unloaded from
       #   browser restarts/terminations, unless manually unloaded beforehand (unreliable detection of currently loaded unpacked
       #   extensions)
+      #   - See the following bug report: https://bugzilla.mozilla.org/show_bug.cgi?id=1880215
 
       if ($addon.defaultLocale -And ($addon.type -match "(web)?extension") -And
           ($GECKO_BROWSER_CHECK_BUILTIN -notcontains $addon.location)) {
