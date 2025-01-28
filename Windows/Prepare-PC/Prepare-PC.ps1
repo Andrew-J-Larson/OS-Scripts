@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.3.2
+  Prepare PC v1.3.3
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -1327,14 +1327,14 @@ $actionFinalizeOffline = New-ScheduledTaskAction -Execute 'powershell.exe' -Argu
   Remove-ItemProperty -Path '${regWinlogon}' -Name 'DefaultPassword' -Force -ErrorAction SilentlyContinue ; `
   Set-ItemProperty -Path '${regWinlogon}' -Name 'AutoAdminLogon' -Value '0' -Type String -Force ; `
   Set-ItemProperty -Path '${regWinlogon}' -Name 'DefaultUserName' -Value '' -Type String -Force ; `
-  $(if ($isBuiltInAdmin) { '' } else {
+  $(if (-Not $isBuiltInAdmin) {
     "Get-CimInstance -Class Win32_UserProfile `
     | Where-Object { `$_.LocalPath.split('\')[-1] -eq '${currentUser}' } `
     | Remove-CimInstance ; `
     Remove-LocalUser -Name '${currentUser}' -ErrorAction SilentlyContinue ; "
   }) `
   Unregister-ScheduledTask -TaskName '${taskNameFinalizeOffline}' -Confirm:`$False `
-  }`" -NoProfile -WindowStyle Maximized " `
+  }`" -NoProfile -WindowStyle Maximized "
   ).replace("`n", "")).replace("`r", "")
 $settingsFinalizeOffline = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -Compatibility Win8 -DontStopIfGoingOnBatteries -ExecutionTimeLimit 0
 $triggerFinalizeOffline = New-ScheduledTaskTrigger -AtLogon
@@ -1365,8 +1365,8 @@ $actionFinalizeOnline = New-ScheduledTaskAction -Execute 'powershell.exe' -Argum
   `"& { $(if ($bitLockerVolume) {
     "if ((Get-BitLockerVolume -MountPoint '$($bitLockerVolume.MountPoint)').VolumeStatus -eq 'EncryptionInProgress') { `
       Write-Output 'Waiting for BitLocker encryption to complete...' ; Write-Output '' ; `
-      while ((Get-BitLockerVolume -MountPoint '$($bitLockerVolume.MountPoint)').VolumeStatus -eq 'EncryptionInProgress') { Start-Sleep -Seconds ${loopDelay} } } "
-  } else { '' }) `
+      while ((Get-BitLockerVolume -MountPoint '$($bitLockerVolume.MountPoint)').VolumeStatus -eq 'EncryptionInProgress') { Start-Sleep -Seconds ${loopDelay} } } " 
+  }) `
   while (-Not ((Get-NetConnectionProfile).IPv4Connectivity -contains 'Internet' `
   -or (Get-NetConnectionProfile).IPv6Connectivity -contains 'Internet')) `
   { Start-Sleep -Seconds ${loopDelay} } ; `
@@ -1389,11 +1389,11 @@ $actionFinalizeOnline = New-ScheduledTaskAction -Execute 'powershell.exe' -Argum
   }\`"`"`"`"`"`"`"`" -Credential `$psCred -Wait ; `
   $(if ($isDell) {
     "Start-Process -FilePath '${dcuCliExe}' -ArgumentList '${dcuApplyArgs}' -NoNewWindow -Wait -ErrorAction SilentlyContinue ; "
-  } else { '' }) `
+  }) `
   Remove-Item -Path `$domainAdminPasswordPath -Force ; `
   Start-Process 'rundll32.exe' -ArgumentList 'user32.dll,LockWorkStation' -NoNewWindow ; `
   Unregister-ScheduledTask -TaskName '${taskNameFinalizeOnline}' -Confirm:`$False `
-  }`" -NoProfile -WindowStyle Maximized " `
+  }`" -NoProfile -WindowStyle Maximized "
   ).replace("`n", "")).replace("`r", "")
 $settingsFinalizeOnline = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -Compatibility Win8 -DontStopIfGoingOnBatteries -ExecutionTimeLimit 0
 $triggerFinalizeOnline = New-ScheduledTaskTrigger -AtLogon
