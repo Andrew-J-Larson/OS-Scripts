@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.3.3
+  Prepare PC v1.3.4
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -283,9 +283,7 @@ $currentUser = ($currentUsername).split('\')[-1]
 $shortDomainName = Get-Content "${resources}\shortDomainName.txt"
 $domainName = Get-Content "${resources}\domainName.txt"
 $adRootOU = "DC=$(${domainName}.Replace(".",",DC="))"
-$mainDomainServerName = Get-Content "${resources}\mainDomainServerName.txt"
-$mainDomainServerShareName = Get-Content "${resources}\mainDomainServerShareName.txt"
-$mainDomainServerShare = "\\${mainDomainServerName}.${domainName}\${mainDomainServerShareName}"
+$domainAdminServerShare = "\\${domainName}\" + 'Admin$'
 $localAdminUser = Get-Content "${resources}\localAdminUser.txt"
 $localAdminPass = Get-Content "${resources}\localAdminPass.txt"
 $adPathFromRootOU = Get-Content "${resources}\adPathFromRootOU.txt"
@@ -897,7 +895,7 @@ do {
     $tempUserName = $shortDomainName + '\' + $tempUserName
   }
   $credentials = New-Object System.Management.Automation.PSCredential($tempUserName, $tempPassword)
-  $validDomainAdminUser = New-PSDrive -Name $tempDriveLetter -PSProvider FileSystem -Root $mainDomainServerShare -Credential $credentials -ErrorAction SilentlyContinue
+  $validDomainAdminUser = New-PSDrive -Name $tempDriveLetter -PSProvider FileSystem -Root $domainAdminServerShare -Credential $credentials -ErrorAction SilentlyContinue
   Remove-PSDrive -Name $tempDriveLetter -ErrorAction SilentlyContinue
 } while (-Not $validDomainAdminUser)
 Write-Output "Domain admin user credentials confirmed."
