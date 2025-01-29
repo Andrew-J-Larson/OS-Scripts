@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.3.4
+  Prepare PC v1.4.0
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -267,7 +267,7 @@ if ($logEnabled) {
 
 $maxRetries = 5 # times to attempt Windows Updates
 $loopDelay = 1 # second
-$domainSyncDelay = 10 # seconds
+$adsiSetInfoDelay = 10 # seconds
 $resources = "${PSScriptRoot}\resources"
 $installers = "${resources}\installers"
 $baseAppListFilename = "0-base.txt"
@@ -282,13 +282,13 @@ $currentUsername = "$(
 $currentUser = ($currentUsername).split('\')[-1]
 $shortDomainName = Get-Content "${resources}\shortDomainName.txt"
 $domainName = Get-Content "${resources}\domainName.txt"
-$adRootOU = "DC=$(${domainName}.Replace(".",",DC="))"
+$distinguishedDomainName = @($domainName.split('.') | ForEach-Object { "DC=${_}" }) -Join ','
 $domainAdminServerShare = "\\${domainName}\" + 'Admin$'
 $localAdminUser = Get-Content "${resources}\localAdminUser.txt"
 $localAdminPass = Get-Content "${resources}\localAdminPass.txt"
 $adPathFromRootOU = Get-Content "${resources}\adPathFromRootOU.txt"
 $adPathArrayFromRootOU = $adPathFromRootOU.split('/') ; [array]::Reverse($adPathArrayFromRootOU)
-$adPathOU = "OU=$($adPathArrayFromRootOU -Join ',OU='),${adRootOU}"
+$distinguishedAdPathOU = "$(@($adPathArrayFromRootOU | ForEach-Object { "OU=${_}" }) -Join ','),${distinguishedDomainName}"
 $timezone = Get-Content "${resources}\timezone.txt"
 $RegisteredOwner = Get-Content "${resources}\RegisteredOwner.txt"
 $RegisteredOrganization = Get-Content "${resources}\RegisteredOrganization.txt"
@@ -749,9 +749,6 @@ if ($localAdminUser -eq $currentUser) {
   Write-Warning "Can't use the same username for local admin, as the currently logged in user!"
   Write-Output "Please use a different username for local admin, or create a new temporary admin user, and delete the currently logged in profile/data afterwards." 
   Write-Output '' # Makes log look better
-  if ($logEnabled) {
-    Stop-Transcript # Logging
-  }
   exit 1
 } elseif ("Administrator" -eq $currentUser) {
   # Current user could be logged into the built-in Administrator account, but data/account shouldn't be deleted,
@@ -770,6 +767,7 @@ if ($localAdminUser -eq $currentUser) {
 }
 
 # Prevent computer from sleeping: code modified via https://gist.github.com/CMCDragonkai/bf8e8b7553c48e4f65124bc6f41769eb
+$disabledSleep = $True
 $steCode = @'
 [DllImport("kernel32.dll", CharSet = CharSet.Auto,SetLastError = true)]
 public static extern void SetThreadExecutionState(uint esFlags);
@@ -780,20 +778,42 @@ $ste = Add-Type -MemberDefinition $steCode -Name System -Namespace Win32 -PassTh
 # one of the other EXECUTION_STATE flags cleared.
 $ES_CONTINUOUS = [uint32]"0x80000000"
 $ES_DISPLAY_REQUIRED = [uint32]"0x00000002"
-$disabledSleep = $True
-Write-Output "Disabling default sleep settings temporarily..."
-Write-Output '' # Makes log look better
-try {
-  $ste::SetThreadExecutionState($ES_CONTINUOUS -bor $ES_DISPLAY_REQUIRED)
-} catch {
-  $disabledSleep = $False
+$setSleep = @{
+  disable = $ES_CONTINUOUS -bor $ES_DISPLAY_REQUIRED
+  enable = $ES_CONTINUOUS
 }
-if ($disabledSleep) {
-  Write-Output "Successfully disabled default sleep settings."
-} else {
-  Write-Warning "Failed to disable default sleep settings."
+$changeSleepSettings = {
+  param($setting)
+  #  scriptblock to change sleep state
+  $testEnabling = $setSleep.enable -eq $setting
+  $stateChange = if ($testEnabling) {
+    @{
+      action = 'Enabling'
+      fail = 'enabled'
+      success = 'enable'
+    }
+  } else {
+      action = 'Disabling'
+      fail = 'disabled'
+      success = 'disable'
+  }
+  Write-Output "$($stateChange.action) default sleep settings temporarily..."
+  Write-Output '' # Makes log look better
+  try {
+    $ste::SetThreadExecutionState($setting)
+    Write-Output "Successfully $($stateChange.success) default sleep settings."
+    $disabledSleep = $testEnabling
+  } catch {
+    Write-Warning "Failed to $($stateChange.fail) default sleep settings."
+    $disabledSleep = -Not $testEnabling
+  }
+  Write-Output '' # Makes log look better
 }
-Write-Output '' # Makes log look better
+Invoke-Command -ScriptBlock $changeSleepSettings -ArgumentList $setSleep.disable
+Register-EngineEvent -SourceIdentifier PowerShell.Exiting -Action {
+  # Revert changed sleep settings: code modified via https://gist.github.com/CMCDragonkai/bf8e8b7553c48e4f65124bc6f41769eb
+  Invoke-Command -ScriptBlock $changeSleepSettings -ArgumentList $setSleep.enable
+}
 
 # Sync time and set timezone to automatic (uses https://time.is/ for time)
 # - Note: need to grab a user agent, otherwise website will shut us out for webscraping.
@@ -1292,23 +1312,86 @@ if ($enabledAutoLogon) {
 }
 Write-Output '' # Makes log look better
 
-# Loop until computer is bound to domain, by which then sets the new computer's name and location in AD
-# - Note: the description for the computer, gets set after a reboot
-$joinedPC = $True
+# Loop until a new description is set for the computer on the domain in AD
+$ComputerDescription = "Spare ${pcModel} - Staged".split([IO.Path]::GetInvalidFileNameChars()) -Join $InvalidCharacterReplacement
+$RootDSE = $null
+$RootDSE_Searcher = $null
+$ComputerDSE = $null
+Write-Output "Changing the description of the computer on the domain..."
+Write-Output '' # Makes log look better
 do {
-  Write-Output "Binding computer to domain, and setting its new name and OU location..."
-  Write-Output '' # Makes log look better
+  # wait for RootDSE to connect
   try {
-    Add-Computer -DomainName $domainName -OUPath $adPathOU -ComputerName $env:computername -NewName $serialnumber -Credential $credentials
+    $RootDSE = New-Object DirectoryServices.DirectoryEntry(
+      "LDAP://${domainName}",
+      $credentials.username,
+      $credentials.GetNetworkCredential().password
+    ) -ErrorAction Stop
+    $RootDSE.RefreshCache()
   } catch {
-    if (($_.Exception -match ".* because it is already in that domain\.$") -Or ($_.Exception -match ".* because the new name is the same as the current name\.$")) {
-      Write-Warning "$($_.Exception | Out-String)"
-    } else {
-      $joinedPC = $False
-    }
+    $RootDSE = $null
+    Start-Sleep -Seconds $loopDelay
   }
-  Write-Output '' # Makes log look better
-} while (-Not $joinedPC)
+} while (-Not $RootDSE.distinguishedName)
+do {
+  # wait for RootDSE searcher to connect
+  try {
+    $RootDSE_Searcher = New-Object DirectoryServices.DirectorySearcher($RootDSE) -ErrorAction Stop
+  } catch {
+    $RootDSE_Searcher = $null
+    Start-Sleep -Seconds $loopDelay
+  }
+} while (-Not $RootDSE_Searcher.SearchRoot.distinguishedName)
+do {
+  # try searching the RootDSE only for the matching computer
+  $RootDSE_Searcher.Filter = "(&(objectCategory=Computer)(CN=$($computerName.current)))"
+  try {
+    $foundComputer = $RootDSE_Searcher.FindOne()
+    if ($foundComputer) {
+      $ComputerDSE = $foundComputer.GetDirectoryEntry()
+      $ComputerDSE.RefreshCache()
+    }
+    Break
+  } catch {
+    $foundComputer = $null
+    Start-Sleep -Seconds $loopDelay
+  }
+} while ($True)
+if ($ComputerDSE -And $ComputerDSE.distinguishedName) {
+  # check description of computer
+  if ($ComputerDescription -eq $ComputerDSE.description) {
+    Write-Output "The computer description is already set, skipping."
+  } else {
+    # set the computer's new description
+    $setDescription = $False
+    do {
+      try {
+        $ComputerDSE.Put('Description', $ComputerDescription)
+        $ComputerDSE.SetInfo()
+        $ComputerDSE.RefreshCache()
+        $setDescription = $ComputerDescription -eq $ComputerDSE.description
+      } catch {
+        $setDescription = $False
+      }
+      if (-Not $setDescription) { Start-Sleep -Seconds $adsiSetInfoDelay }
+    } while (-Not $setDescription)
+    Write-Output "Successfully set the description for the computer."
+  }
+} else {
+  $errorSetInfoReason = if ($ComputerDSE -eq $null) {
+    "couldn't find computer"
+  } else {
+    "found computer, but had issues with connection"
+  }
+  Write-Warning "Failed to set the description for the computer, skipping (${errorSetInfoReason})."
+}
+Write-Output '' # Makes log look better
+if ($RootDSE) {
+  # these objects require to be disposed
+  if ($ComputerDSE) { $ComputerDSE.Dispose() }
+  $RootDSE_Searcher.Dispose()
+  $RootDSE.Dispose()
+}
 
 # Set a scheduled task to run at startup and ...
 # - Resume BitLocker encryption (if it was suspended)
@@ -1349,15 +1432,11 @@ Write-Output '' # Makes log look better
 # Set a scheduled task to run at startup and ...
 # - Wait for BitLocker to be done encypting (if needed),
 # - Wait for a network connection,
-# - Set computer AD description,
 # - Run Check for Dell updates again, as some updates only show up after the first update (only on Dell machines)
 # - Lock the computer,
 # - Then, delete itself (the scheduled task)
 Write-Output "Scheduling final online tasks..."
 Write-Output '' # Makes log look better
-$domainAdminPasswordPath = $env:SystemDrive + '\temp-pass' # avoids issues with password containing quotes (which would break the following scheduled task)
-$credentials.GetNetworkCredential().password | Out-File -FilePath $domainAdminPasswordPath # might need to change this in the future, so that clear-text password isn't being written to disk
-$adObjectDescription = "Spare ${pcModel} - Staged".split([IO.Path]::GetInvalidFileNameChars()) -Join $InvalidCharacterReplacement
 $taskNameFinalizeOnline = "Prepare_PC_Finalize_Online".split([IO.Path]::GetInvalidFileNameChars()) -Join $InvalidCharacterReplacement
 $actionFinalizeOnline = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument ($( "-c `
   `"& { $(if ($bitLockerVolume) {
@@ -1368,34 +1447,16 @@ $actionFinalizeOnline = New-ScheduledTaskAction -Execute 'powershell.exe' -Argum
   while (-Not ((Get-NetConnectionProfile).IPv4Connectivity -contains 'Internet' `
   -or (Get-NetConnectionProfile).IPv6Connectivity -contains 'Internet')) `
   { Start-Sleep -Seconds ${loopDelay} } ; `
-  Start-Sleep -Seconds ${domainSyncDelay} ; `
-  `$domainAdminPasswordPath = `"`"`"`"${domainAdminPasswordPath}`"`"`"`" ; `
-  `$domainAdminPassword = Get-Content -Path `$domainAdminPasswordPath ; `
-  `$psCred = New-Object System.Management.Automation.PSCredential('$($credentials.username)', `$(ConvertTo-SecureString `$domainAdminPassword -AsPlainText -Force)) ; `
-  Start-Process -FilePath 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe' -ArgumentList `"`"`"`"-c \`"`"`"`"& { `
-  ```$ComputerSearcher = New-Object DirectoryServices.DirectorySearcher ; `
-  ```$ComputerSearcher.SearchRoot = 'LDAP://${adRootOU}' ; `
-  ```$ComputerSearcher.Filter = '(&(objectCategory=Computer)(CN=`${env:COMPUTERNAME}))' ; `
-  ```$computerObj = ```$null ; `
-  while (```$null -eq ```$computerObj) `
-  { Write-Output 'Searching for computer in AD...' ; Write-Output '' ; `
-  ```$computerObj = [ADSI]```$ComputerSearcher.FindOne().Path ; `
-  Start-Sleep -Seconds ${domainSyncDelay} `
-  } ; ```$computerObj.Put('Description', '${adObjectDescription}') ; `
-  ```$computerObj.SetInfo() ; `
-  ```$computerObj.Dispose() `
-  }\`"`"`"`"`"`"`"`" -Credential `$psCred -Wait ; `
   $(if ($isDell) {
     "Start-Process -FilePath '${dcuCliExe}' -ArgumentList '${dcuApplyArgs}' -NoNewWindow -Wait -ErrorAction SilentlyContinue ; "
   }) `
-  Remove-Item -Path `$domainAdminPasswordPath -Force ; `
   Start-Process 'rundll32.exe' -ArgumentList 'user32.dll,LockWorkStation' -NoNewWindow ; `
   Unregister-ScheduledTask -TaskName '${taskNameFinalizeOnline}' -Confirm:`$False `
   }`" -NoProfile -WindowStyle Maximized "
   ).replace("`n", "")).replace("`r", "")
 $settingsFinalizeOnline = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -Compatibility Win8 -DontStopIfGoingOnBatteries -ExecutionTimeLimit 0
 $triggerFinalizeOnline = New-ScheduledTaskTrigger -AtLogon
-$principalFinalizeOnline = New-ScheduledTaskPrincipal -UserId $credentials.username -LogonType Interactive -RunLevel Highest
+$principalFinalizeOnline = New-ScheduledTaskPrincipal -GroupId 'INTERACTIVE' -LogonType Interactive -RunLevel Highest
 $definitionFinalizeOnline = New-ScheduledTask -Action $actionFinalizeOnline -Settings $settingsFinalizeOnline -Trigger $triggerFinalizeOnline -Principal $principalFinalizeOnline
 $taskFinalizeOnline = Register-ScheduledTask -TaskName $taskNameFinalizeOnline -InputObject $definitionFinalizeOnline
 if ($null -ne $taskFinalizeOnline) {
@@ -1405,28 +1466,7 @@ if ($null -ne $taskFinalizeOnline) {
 }
 Write-Output '' # Makes log look better
 
-# Revert changed sleep settings: code modified via https://gist.github.com/CMCDragonkai/bf8e8b7553c48e4f65124bc6f41769eb
-if ($disabledSleep) {
-  $disabledSleep = $False
-  Write-Output "Enabling default sleep settings..."
-  Write-Output '' # Makes log look better
-  try {
-    $ste::SetThreadExecutionState($ES_CONTINUOUS)
-  } catch {
-    $disabledSleep = $True
-  }
-  if ($disabledSleep) {
-    Write-Warning "Failed to enable default sleep settings."
-  } else {
-    Write-Output "Successfully enabled default sleep settings."
-  }
-  Write-Output '' # Makes log look better
-}
-
 # Reboot to apply changes
 Write-Output "Rebooting..."
 Write-Output '' # Makes log look better
-if ($logEnabled) {
-  Stop-Transcript # Logging
-}
 Restart-Computer -Force
