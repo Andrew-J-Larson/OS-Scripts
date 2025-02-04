@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.4.0
+  Prepare PC v1.4.1
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -793,9 +793,11 @@ $changeSleepSettings = {
       success = 'enable'
     }
   } else {
+    @{
       action = 'Disabling'
       fail = 'disabled'
       success = 'disable'
+    }
   }
   Write-Output "$($stateChange.action) default sleep settings temporarily..."
   Write-Output '' # Makes log look better
