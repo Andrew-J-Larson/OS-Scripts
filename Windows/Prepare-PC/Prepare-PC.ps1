@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.4.1
+  Prepare PC v1.4.2
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -815,7 +815,7 @@ Invoke-Command -ScriptBlock $changeSleepSettings -ArgumentList $setSleep.disable
 Register-EngineEvent -SourceIdentifier PowerShell.Exiting -Action {
   # Revert changed sleep settings: code modified via https://gist.github.com/CMCDragonkai/bf8e8b7553c48e4f65124bc6f41769eb
   Invoke-Command -ScriptBlock $changeSleepSettings -ArgumentList $setSleep.enable
-}
+} -SupportEvent
 
 # Sync time and set timezone to automatic (uses https://time.is/ for time)
 # - Note: need to grab a user agent, otherwise website will shut us out for webscraping.
