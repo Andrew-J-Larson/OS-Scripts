@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.4.4
+  Prepare PC v1.5.0
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -251,12 +251,16 @@ $isDell = $manufacturer -like "Dell*"
 
 # Required Computer Info
 $serialnumber = (Get-WMIObject win32_bios).serialnumber
+$computerName = @{
+  new = $serialnumber
+  current = (Get-WMIObject -class win32_computersystem).name
+}
 $pcModel = (Get-CimInstance -ClassName Win32_ComputerSystem).Model
 $InvalidCharacterReplacement = '~'
 
 # Logging
 $scriptName = (Get-Item $PSCommandPath).Basename
-$logName = ("${serialnumber}_${pcModel}_${scriptName}.log".replace(' ', '-')).split([IO.Path]::GetInvalidFileNameChars()) -Join $InvalidCharacterReplacement
+$logName = ("$($computerName.new)_${pcModel}_${scriptName}.log".replace(' ', '-')).split([IO.Path]::GetInvalidFileNameChars()) -Join $InvalidCharacterReplacement
 $logFile = "${env:SystemDrive}\${logName}"
 if ($logEnabled) {
   Start-Transcript -Path $logFile
@@ -272,14 +276,13 @@ $resources = "${PSScriptRoot}\resources"
 $installers = "${resources}\installers"
 $baseAppListFilename = "0-base.txt"
 $baseAppList = "${installers}\${baseAppListFilename}"
-$currentDomain = if ($env:USERDOMAIN) { $env:USERDOMAIN } else {
-  (Get-WMIObject -class win32_computersystem).name
-}
+$currentDomain = if ($env:USERDOMAIN) { $env:USERDOMAIN } else { $computerName.current }
 $currentUsername = "$(
   $testUsername = (Get-WMIObject -class win32_computersystem).username
   if ($testUsername) { $testUsername } else { $currentDomain + '\' + $env:USERNAME }
 )"
 $currentUser = ($currentUsername).split('\')[-1]
+$currentUserSID = if (-Not $env:USERDOMAIN) { (Get-LocalUser $currentUser).SID.Value }
 $shortDomainName = Get-Content "${resources}\shortDomainName.txt"
 $domainName = Get-Content "${resources}\domainName.txt"
 $distinguishedDomainName = @($domainName.split('.') | ForEach-Object { "DC=${_}" }) -Join ','
@@ -1314,6 +1317,23 @@ if ($enabledAutoLogon) {
 }
 Write-Output '' # Makes log look better
 
+# Loop until computer is bound to domain, by which then sets the new computer's name and location in AD
+$joinedPC = $null
+do {
+  Write-Output "Binding computer to domain, and setting its new name and OU location..."
+  Write-Output '' # Makes log look better
+  try {
+    $joinedPC = Add-Computer -DomainName $domainName -OUPath $distinguishedAdPathOU -ComputerName $computerName.current -NewName $computerName.new -Credential $credentials -PassThru -ErrorAction Stop
+    if ($joinedPC.HasSucceeded) { $computerName.current = $joinedPC.ComputerName }
+  } catch {
+    Write-Warning "$($_.Exception | Out-String)"
+    if ($_.Exception -notmatch ".* because (it is already in that domain|the new name is the same as the current name)\.$") {
+      $joinedPC = $False
+    }
+  }
+  Write-Output '' # Makes log look better
+} while (-Not $joinedPC)
+
 # Loop until a new description is set for the computer on the domain in AD
 $ComputerDescription = "Spare ${pcModel} - Staged".split([IO.Path]::GetInvalidFileNameChars()) -Join $InvalidCharacterReplacement
 $RootDSE = $null
@@ -1395,46 +1415,10 @@ if ($RootDSE) {
   $RootDSE.Dispose()
 }
 
-# Set a scheduled task to run at startup and ...
-# - Resume BitLocker encryption (if it was suspended)
-# - Turn back on the privacy experience,
-# - Turn off auto logon for domain admin user,
-# - Delete temp admin account + data (only if not built-in Administrator),
-# - Then, delete itself (the scheduled task)
-Write-Output "Scheduling final offline tasks..."
-Write-Output '' # Makes log look better
-$taskNameFinalizeOffline = "Prepare_PC_Finalize_Offline".split([IO.Path]::GetInvalidFileNameChars()) -Join $InvalidCharacterReplacement
-$actionFinalizeOffline = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument ($( "-c `
-  `"& { $(if ((Get-BitLockerVolume -MountPoint "$($bitLockerVolume.MountPoint)").ProtectionStatus -eq "Off") {"Resume-BitLocker -MountPoint '$($bitLockerVolume.MountPoint)' ; "} else {''}) `
-  Remove-ItemProperty -Path '${regMachinePolicies}\OOBE' -Name 'DisablePrivacyExperience' -Force -ErrorAction SilentlyContinue ; `
-  Remove-ItemProperty -Path '${regWinlogon}' -Name 'DefaultPassword' -Force -ErrorAction SilentlyContinue ; `
-  Set-ItemProperty -Path '${regWinlogon}' -Name 'AutoAdminLogon' -Value '0' -Type String -Force ; `
-  Set-ItemProperty -Path '${regWinlogon}' -Name 'DefaultUserName' -Value '' -Type String -Force ; `
-  $(if (-Not $isBuiltInAdmin) {
-    "Get-CimInstance -Class Win32_UserProfile `
-    | Where-Object { `$_.LocalPath.split('\')[-1] -eq '${currentUser}' } `
-    | Remove-CimInstance ; `
-    Remove-LocalUser -Name '${currentUser}' -ErrorAction SilentlyContinue ; "
-  }) `
-  Unregister-ScheduledTask -TaskName '${taskNameFinalizeOffline}' -Confirm:`$False `
-  }`" -NoProfile -WindowStyle Maximized "
-  ).replace("`n", "")).replace("`r", "")
-$settingsFinalizeOffline = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -Compatibility Win8 -DontStopIfGoingOnBatteries -ExecutionTimeLimit 0
-$triggerFinalizeOffline = New-ScheduledTaskTrigger -AtLogon
-$principalFinalizeOffline = New-ScheduledTaskPrincipal -UserId SYSTEM -LogonType ServiceAccount -RunLevel Highest
-$definitionFinalizeOffline = New-ScheduledTask -Action $actionFinalizeOffline -Settings $settingsFinalizeOffline -Trigger $triggerFinalizeOffline -Principal $principalFinalizeOffline
-$taskFinalizeOffline = Register-ScheduledTask -TaskName $taskNameFinalizeOffline -InputObject $definitionFinalizeOffline
-if ($null -ne $taskFinalizeOffline) {
-  Write-Output "Successfully scheduled the offline tasks."
-} else {
-  Write-Warning "Failed to schedule the offline tasks."
-}
-Write-Output '' # Makes log look better
-
-# Set a scheduled task to run at startup and ...
+# Set a scheduled task to run on demand of the domain admin user (elevated) ...
 # - Wait for BitLocker to be done encypting (if needed),
 # - Wait for a network connection,
-# - Run Check for Dell updates again, as some updates only show up after the first update (only on Dell machines)
+# - Run Check for Dell updates again, as some updates only show up after the first update (only on Dell machines),
 # - Lock the computer,
 # - Then, delete itself (the scheduled task)
 Write-Output "Scheduling final online tasks..."
@@ -1458,13 +1442,55 @@ $actionFinalizeOnline = New-ScheduledTaskAction -Execute 'powershell.exe' -Argum
   ).replace("`n", "")).replace("`r", "")
 $settingsFinalizeOnline = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -Compatibility Win8 -DontStopIfGoingOnBatteries -ExecutionTimeLimit 0
 $triggerFinalizeOnline = New-ScheduledTaskTrigger -AtLogon
-$principalFinalizeOnline = New-ScheduledTaskPrincipal -GroupId 'INTERACTIVE' -LogonType Interactive -RunLevel Highest
+$principalFinalizeOnline = New-ScheduledTaskPrincipal -UserId $localAdminUser -LogonType Interactive -RunLevel Highest # user id gets changed later
 $definitionFinalizeOnline = New-ScheduledTask -Action $actionFinalizeOnline -Settings $settingsFinalizeOnline -Trigger $triggerFinalizeOnline -Principal $principalFinalizeOnline
 $taskFinalizeOnline = Register-ScheduledTask -TaskName $taskNameFinalizeOnline -InputObject $definitionFinalizeOnline
 if ($null -ne $taskFinalizeOnline) {
   Write-Output "Successfully scheduled the online tasks."
 } else {
   Write-Warning "Failed to schedule the online tasks."
+}
+Write-Output '' # Makes log look better
+
+# Set a scheduled task to run at startup and ...
+# - Modify the online scheduled task to run as the user (elevated) then immediately run it,
+# - Resume BitLocker encryption (if it was suspended),
+# - Turn back on the privacy experience,
+# - Turn off auto logon for domain admin user,
+# - Delete temp admin user tasks + data + account (only if not built-in Administrator),
+# - Then, delete itself (the scheduled task)
+Write-Output "Scheduling final offline tasks..."
+Write-Output '' # Makes log look better
+$taskNameFinalizeOffline = "Prepare_PC_Finalize_Offline".split([IO.Path]::GetInvalidFileNameChars()) -Join $InvalidCharacterReplacement
+$actionFinalizeOffline = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument ($( "-c `
+  `"& { `$task = Get-ScheduledTask -TaskName '$taskNameFinalizeOnline' ; `
+  `$task.Principal.UserId = '$($credentials.username)' ; `
+  `$task | Set-ScheduledTask ; `
+  `$task | Start-ScheduledTask ; `
+  $(if ((Get-BitLockerVolume -MountPoint "$($bitLockerVolume.MountPoint)").ProtectionStatus -eq "Off") {"Resume-BitLocker -MountPoint '$($bitLockerVolume.MountPoint)' ; "} else {''}) `
+  Remove-ItemProperty -Path '${regMachinePolicies}\OOBE' -Name 'DisablePrivacyExperience' -Force -ErrorAction SilentlyContinue ; `
+  Remove-ItemProperty -Path '${regWinlogon}' -Name 'DefaultPassword' -Force -ErrorAction SilentlyContinue ; `
+  Set-ItemProperty -Path '${regWinlogon}' -Name 'AutoAdminLogon' -Value '0' -Type String -Force ; `
+  Set-ItemProperty -Path '${regWinlogon}' -Name 'DefaultUserName' -Value '' -Type String -Force ; `
+  $(if (-Not $isBuiltInAdmin) {
+    "Get-ScheduledTask -TaskName '*$currentUserSID' | Unregister-ScheduledTask -Confirm:`$False ; `
+    Get-CimInstance -Class Win32_UserProfile `
+    | Where-Object { `$_.LocalPath.split('\')[-1] -eq '${currentUser}' } `
+    | Remove-CimInstance ; `
+    Remove-LocalUser -Name '${currentUser}' -ErrorAction SilentlyContinue ; "
+  }) `
+  Unregister-ScheduledTask -TaskName '${taskNameFinalizeOffline}' -Confirm:`$False `
+  }`" -NoProfile -WindowStyle Maximized "
+  ).replace("`n", "")).replace("`r", "")
+$settingsFinalizeOffline = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -Compatibility Win8 -DontStopIfGoingOnBatteries -ExecutionTimeLimit 0
+$triggerFinalizeOffline = New-ScheduledTaskTrigger -AtLogon
+$principalFinalizeOffline = New-ScheduledTaskPrincipal -UserId SYSTEM -LogonType ServiceAccount -RunLevel Highest
+$definitionFinalizeOffline = New-ScheduledTask -Action $actionFinalizeOffline -Settings $settingsFinalizeOffline -Trigger $triggerFinalizeOffline -Principal $principalFinalizeOffline
+$taskFinalizeOffline = Register-ScheduledTask -TaskName $taskNameFinalizeOffline -InputObject $definitionFinalizeOffline
+if ($null -ne $taskFinalizeOffline) {
+  Write-Output "Successfully scheduled the offline tasks."
+} else {
+  Write-Warning "Failed to schedule the offline tasks."
 }
 Write-Output '' # Makes log look better
 
