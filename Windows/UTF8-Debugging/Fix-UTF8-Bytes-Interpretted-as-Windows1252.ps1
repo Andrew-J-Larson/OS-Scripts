@@ -29,7 +29,7 @@
   Script from: https://github.com/Andrew-J-Larson/OS-Scripts/blob/main/Windows/UTF8-Debugging/Fix-UTF8-Bytes-Interpretted-as-Windows1252.ps1
 #>
 
-<# Copyright (C) 2024  Andrew Larson (github@andrew-larson.dev)
+<# Copyright (C) 2024  Andrew Larson (github@drewj.la)
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
