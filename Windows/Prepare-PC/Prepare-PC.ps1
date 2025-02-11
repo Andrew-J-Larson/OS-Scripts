@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.5.0
+  Prepare PC v1.5.1
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -271,7 +271,7 @@ if ($logEnabled) {
 
 $maxRetries = 5 # times to attempt Windows Updates
 $loopDelay = 1 # second
-$adsiSetInfoDelay = 10 # seconds
+$activeDirectoryDelay = 10 # seconds
 $resources = "${PSScriptRoot}\resources"
 $installers = "${resources}\installers"
 $baseAppListFilename = "0-base.txt"
@@ -1324,15 +1324,23 @@ do {
   Write-Output '' # Makes log look better
   try {
     $joinedPC = Add-Computer -DomainName $domainName -OUPath $distinguishedAdPathOU -ComputerName $computerName.current -NewName $computerName.new -Credential $credentials -PassThru -ErrorAction Stop
-    if ($joinedPC.HasSucceeded) { $computerName.current = $joinedPC.ComputerName }
-  } catch {
-    Write-Warning "$($_.Exception | Out-String)"
-    if ($_.Exception -notmatch ".* because (it is already in that domain|the new name is the same as the current name)\.$") {
-      $joinedPC = $False
+    if ($joinedPC.HasSucceeded) {
+      $computerName.current = $joinedPC.ComputerName
+      Write-Host "Computer has been bound to the domain successfully."
     }
+  } catch {
+    if ($_.Exception -notmatch '^The changes will take effect after you restart the computer .*$') {
+      $joinedPC = $true
+      $computerName.current = $joinedPC.ComputerName
+      Write-Output "$($_.Exception | Out-String)"
+      Start-Sleep -Seconds $activeDirectoryDelay
+    } elseif ($_.Exception -notmatch '^.* because (it is already in that domain|the new name is the same as the current name)\.$') {
+      $joinedPC = $False
+      Write-Warning "$($_.Exception | Out-String)"
+    } else { Start-Sleep -Seconds $loopDelay }
   }
   Write-Output '' # Makes log look better
-} while (-Not $joinedPC)
+} while ($Null -eq $joinedPC)
 
 # Loop until a new description is set for the computer on the domain in AD
 $ComputerDescription = "Spare ${pcModel} - Staged".split([IO.Path]::GetInvalidFileNameChars()) -Join $InvalidCharacterReplacement
@@ -1395,7 +1403,7 @@ if ($ComputerDSE -And $ComputerDSE.distinguishedName) {
       } catch {
         $setDescription = $False
       }
-      if (-Not $setDescription) { Start-Sleep -Seconds $adsiSetInfoDelay }
+      if (-Not $setDescription) { Start-Sleep -Seconds $activeDirectoryDelay }
     } while (-Not $setDescription)
     Write-Output "Successfully set the description for the computer."
   }
