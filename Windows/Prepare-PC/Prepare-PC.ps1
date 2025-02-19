@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.5.1
+  Prepare PC v1.5.2
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -1381,7 +1381,7 @@ do {
       $ComputerDSE = $foundComputer.GetDirectoryEntry()
       $ComputerDSE.RefreshCache()
     }
-    Break
+    if ($ComputerDSE) { Break }
   } catch {
     $foundComputer = $null
     Start-Sleep -Seconds $loopDelay
@@ -1465,7 +1465,7 @@ Write-Output '' # Makes log look better
 # - Resume BitLocker encryption (if it was suspended),
 # - Turn back on the privacy experience,
 # - Turn off auto logon for domain admin user,
-# - Delete temp admin user tasks + data + account (only if not built-in Administrator),
+# - Delete temp admin user OneDrive tasks + data + account (only if not built-in Administrator),
 # - Then, delete itself (the scheduled task)
 Write-Output "Scheduling final offline tasks..."
 Write-Output '' # Makes log look better
@@ -1481,7 +1481,7 @@ $actionFinalizeOffline = New-ScheduledTaskAction -Execute 'powershell.exe' -Argu
   Set-ItemProperty -Path '${regWinlogon}' -Name 'AutoAdminLogon' -Value '0' -Type String -Force ; `
   Set-ItemProperty -Path '${regWinlogon}' -Name 'DefaultUserName' -Value '' -Type String -Force ; `
   $(if (-Not $isBuiltInAdmin) {
-    "Get-ScheduledTask -TaskName '*$currentUserSID' | Unregister-ScheduledTask -Confirm:`$False ; `
+    "Get-ScheduledTask -TaskName 'OneDrive *$currentUserSID' | Unregister-ScheduledTask -Confirm:`$False ; `
     Get-CimInstance -Class Win32_UserProfile `
     | Where-Object { `$_.LocalPath.split('\')[-1] -eq '${currentUser}' } `
     | Remove-CimInstance ; `
