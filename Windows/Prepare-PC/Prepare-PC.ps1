@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.5.5
+  Prepare PC v1.5.6
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -297,7 +297,11 @@ $RegisteredOwner = Get-Content "${resources}\RegisteredOwner.txt"
 $RegisteredOrganization = Get-Content "${resources}\RegisteredOrganization.txt"
 $regHKLM = "HKLM:"
 $regLocalMachineSoftware = "${regHKLM}\SOFTWARE"
-$regTzautoupdate = "${regHKLM}\SYSTEM\CurrentControlSet\Services\tzautoupdate"
+$regSystemCurrentControlSet = "${regHKLM}\SYSTEM\CurrentControlSet"
+$regControlComputerName = "${regSystemCurrentControlSet}\Control\ComputerName"
+$regComputerName = "${regControlComputerName}\ComputerName"
+$regActiveComputerName = "${regControlComputerName}\ActiveComputerName"
+$regTzautoupdate = "${regSystemCurrentControlSet}\Services\tzautoupdate"
 $regCurrentVersion = "${regLocalMachineSoftware}\Microsoft\Windows NT\CurrentVersion"
 $regMachinePolicies = "${regLocalMachineSoftware}\Policies\Microsoft\Windows"
 $regWindowsUpdate = "${regMachinePolicies}\WindowsUpdate"
@@ -1331,12 +1335,17 @@ do {
   } catch {
     if ($_.Exception -match '^The changes will take effect after you restart the computer .*$') {
       $joinedPC = $true
-      $computerName.current = $joinedPC.ComputerName
+      $computerName.current = if ($joinedPC.ComputerName) {
+        $joinedPC.ComputerName
+      } else {
+        (Get-ItemProperty -Path $regComputerName).ComputerName
+      }
       Write-Output "$($_.Exception | Out-String)"
       Start-Sleep -Seconds $activeDirectoryDelay
     } elseif ($_.Exception -match '^.* The account already exists\$.') {
       $joinedPC = $true
-      # didn't change the name, so using the name originally given to PC
+      # didn't change the name, so use name from registry
+      $computerName.current = (Get-ItemProperty -Path $regComputerName).ComputerName
       Write-Warning "$($_.Exception | Out-String)"
       Start-Sleep -Seconds $activeDirectoryDelay
     } elseif ($_.Exception -match '^.* because (it is already in that domain|the new name is the same as the current name)\.$') {
