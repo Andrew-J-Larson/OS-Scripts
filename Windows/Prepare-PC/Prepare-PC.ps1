@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.5.3
+  Prepare PC v1.5.4
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -1325,7 +1325,7 @@ do {
   try {
     $joinedPC = Add-Computer -DomainName $domainName -OUPath $distinguishedAdPathOU -ComputerName $computerName.current -NewName $computerName.new -Credential $credentials -PassThru -ErrorAction Stop
     if ($joinedPC.HasSucceeded) {
-      $computerName.current = $joinedPC.ComputerName
+      if ($joinedPC.ComputerName) { $computerName.current = $joinedPC.ComputerName }
       Write-Host "Computer has been bound to the domain successfully."
     }
   } catch {
@@ -1334,7 +1334,12 @@ do {
       $computerName.current = $joinedPC.ComputerName
       Write-Output "$($_.Exception | Out-String)"
       Start-Sleep -Seconds $activeDirectoryDelay
-    } elseif ($_.Exception -match '^.* (because (it is already in that domain|the new name is the same as the current name)|The account already exists)\.$') {
+    } elseif ($_.Exception -match '^.* The account already exists\$.') {
+      $joinedPC = $true
+      # didn't change the name, so using the name originally given to PC
+      Write-Warning "$($_.Exception | Out-String)"
+      Start-Sleep -Seconds $activeDirectoryDelay
+    } elseif ($_.Exception -match '^.* because (it is already in that domain|the new name is the same as the current name)\.$') {
       $joinedPC = $False
       Write-Warning "$($_.Exception | Out-String)"
     } else { Start-Sleep -Seconds $loopDelay }
