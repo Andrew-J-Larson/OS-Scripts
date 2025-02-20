@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.5.4
+  Prepare PC v1.5.5
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -1389,7 +1389,8 @@ do {
     if ($ComputerDSE) { Break }
   } catch {
     $foundComputer = $null
-    Start-Sleep -Seconds $loopDelay
+    # may take a bit of time, due to domain controller replication
+    Start-Sleep -Seconds $activeDirectoryDelay
   }
 } while ($True)
 if ($ComputerDSE -And $ComputerDSE.distinguishedName) {
