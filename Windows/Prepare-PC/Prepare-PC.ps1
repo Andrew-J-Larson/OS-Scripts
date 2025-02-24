@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.5.8
+  Prepare PC v1.6.0
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -1327,10 +1327,10 @@ do {
   Write-Output "Binding computer to domain, and setting its new name and OU location..."
   Write-Output '' # Makes log look better
   try {
-    $joinedPC = Add-Computer -DomainName $domainName -OUPath $distinguishedAdPathOU -ComputerName $computerName.current -NewName $computerName.new -Credential $credentials -PassThru -ErrorAction Stop
-    if (-Not $joinedPC.HasSucceeded) {
-      # try again without trying to change name
-      $joinedPC = Add-Computer -DomainName $domainName -OUPath $distinguishedAdPathOU -ComputerName $computerName.current -Credential $credentials -PassThru -ErrorAction Stop
+    $joinedPC = if ($computerName.current -eq $computerName.new) {
+      Add-Computer -DomainName $domainName -OUPath $distinguishedAdPathOU -ComputerName $computerName.current -Credential $credentials -PassThru -ErrorAction Stop
+    } else {
+      Add-Computer -DomainName $domainName -OUPath $distinguishedAdPathOU -ComputerName $computerName.current -NewName $computerName.new -Credential $credentials -PassThru -ErrorAction Stop
     }
     if ($joinedPC.HasSucceeded) {
       if ($joinedPC.ComputerName) { $computerName.current = $joinedPC.ComputerName }
