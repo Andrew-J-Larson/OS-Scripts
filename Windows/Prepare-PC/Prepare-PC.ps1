@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.5.7
+  Prepare PC v1.5.8
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -1328,6 +1328,10 @@ do {
   Write-Output '' # Makes log look better
   try {
     $joinedPC = Add-Computer -DomainName $domainName -OUPath $distinguishedAdPathOU -ComputerName $computerName.current -NewName $computerName.new -Credential $credentials -PassThru -ErrorAction Stop
+    if (-Not $joinedPC.HasSucceeded) {
+      # try again without trying to change name
+      $joinedPC = Add-Computer -DomainName $domainName -OUPath $distinguishedAdPathOU -ComputerName $computerName.current -Credential $credentials -PassThru -ErrorAction Stop
+    }
     if ($joinedPC.HasSucceeded) {
       if ($joinedPC.ComputerName) { $computerName.current = $joinedPC.ComputerName }
       Write-Host "Computer has been bound to the domain successfully."
@@ -1341,11 +1345,15 @@ do {
       }
       Write-Output "$($_.Exception | Out-String)"
       Start-Sleep -Seconds $activeDirectoryDelay
-    } elseif ($_.Exception -match '^.* The account already exists\$.') {
+    } elseif ($_.Exception -match '^.* The account already exists\.$') {
       $joinedPC = $true
       Write-Warning "$($_.Exception | Out-String)"
       Start-Sleep -Seconds $activeDirectoryDelay
-    } elseif ($_.Exception -match '^.* because (it is already in that domain|the new name is the same as the current name)\.$') {
+    } elseif ($_.Exception -match '^.* because it is already in that domain\.$') {
+      $joinedPC = $False
+      Write-Warning "$($_.Exception | Out-String)"
+    } elseif ($_.Exception -match '^.* because the new name is the same as the current name\.$') {
+      # should never get here
       $joinedPC = $False
       Write-Warning "$($_.Exception | Out-String)"
     } else { Start-Sleep -Seconds $loopDelay }
