@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.6.0
+  Prepare PC v1.6.1
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -1342,6 +1342,8 @@ do {
       $joinedPC = $true
       if ($joinedPC.ComputerName) {
         $computerName.current = $joinedPC.ComputerName
+      } else {
+        $computerName.current = $computerName.new
       }
       Write-Output "$($_.Exception | Out-String)"
       Start-Sleep -Seconds $activeDirectoryDelay
