@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.6.3
+  Prepare PC v1.6.4
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -1162,7 +1162,7 @@ if ($isDell) {
       } else {
         Start-Sleep -Seconds $loopDelay
       }
-    } while ((-Not $dcuConfig) -Or (6 -eq $dcuConfig.ExitCode))
+    } while (6 -eq $dcuConfig.ExitCode)
     Write-Output '' # Makes log look better
     Write-Output "Attempting to update all Dell drivers/firmwares directly from manufacturer..."
     $dcuUpdate = Start-Process -FilePath $dcuCliExe -ArgumentList $dcuApplyArgs -NoNewWindow -PassThru -Wait
