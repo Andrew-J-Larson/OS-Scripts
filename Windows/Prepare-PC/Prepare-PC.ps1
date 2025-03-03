@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.6.1
+  Prepare PC v1.6.2
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -1151,14 +1151,18 @@ if ($isDell) {
   }
   if (Test-Path -Path $dcuCliExe -PathType Leaf) {
     Write-Output "Attempting to set Dell Command Update settings..."
-    $dcuConfig = Start-Process -FilePath $dcuCliExe -ArgumentList $dcuConfigureArgs -NoNewWindow -PassThru -Wait
-    Write-Output '' # Makes log look better
-    # 0 = set settings successfully
-    if (0 -eq $dcuConfig.ExitCode) {
-      Write-Output "Successfully set Dell Command Update settings."
-    } else {
-      Write-Warning "Failed to set Dell Command Update settings."
-    }
+    do {
+      $dcuConfig = Start-Process -FilePath $dcuCliExe -ArgumentList $dcuConfigureArgs -NoNewWindow -PassThru -Wait
+      # 0 = set settings successfully
+      # 6 = application is already running (need to wait)
+      if (0 -eq $dcuConfig.ExitCode) {
+        Write-Output "Successfully set Dell Command Update settings."
+      } elseif (6 -ne $dcuConfig.ExitCode) {
+        Write-Warning "Failed to set Dell Command Update settings."
+      } else {
+        Start-Sleep -Seconds $loopDelay
+      }
+    } while ((-Not $dcuConfig) -Or (6 -eq $dcuConfig.ExitCode))
     Write-Output '' # Makes log look better
     Write-Output "Attempting to update all Dell drivers/firmwares directly from manufacturer..."
     $dcuUpdate = Start-Process -FilePath $dcuCliExe -ArgumentList $dcuApplyArgs -NoNewWindow -PassThru -Wait
@@ -1340,11 +1344,7 @@ do {
     $computerName.current = (Get-ItemProperty -Path $regComputerName).ComputerName
     if ($_.Exception -match '^The changes will take effect after you restart the computer .*$') {
       $joinedPC = $true
-      if ($joinedPC.ComputerName) {
-        $computerName.current = $joinedPC.ComputerName
-      } else {
-        $computerName.current = $computerName.new
-      }
+      $computerName.current = $computerName.new
       Write-Output "$($_.Exception | Out-String)"
       Start-Sleep -Seconds $activeDirectoryDelay
     } elseif ($_.Exception -match '^.* The account already exists\.$') {
