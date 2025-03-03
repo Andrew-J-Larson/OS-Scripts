@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.6.2
+  Prepare PC v1.6.3
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -1158,7 +1158,7 @@ if ($isDell) {
       if (0 -eq $dcuConfig.ExitCode) {
         Write-Output "Successfully set Dell Command Update settings."
       } elseif (6 -ne $dcuConfig.ExitCode) {
-        Write-Warning "Failed to set Dell Command Update settings."
+        Write-Warning "Failed to set Dell Command Update settings (exit code = $($dcuConfig.ExitCode))."
       } else {
         Start-Sleep -Seconds $loopDelay
       }
