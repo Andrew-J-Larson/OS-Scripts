@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.6.4
+  Prepare PC v1.6.5
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -1327,15 +1327,17 @@ Write-Output '' # Makes log look better
 
 # Loop until computer is bound to domain, by which then sets the new computer's name and location in AD
 $joinedPC = $null
+$warningJoinedPC = ""
 do {
   Write-Output "Binding computer to domain, and setting its new name and OU location..."
   Write-Output '' # Makes log look better
   try {
     $joinedPC = if ($computerName.current -eq $computerName.new) {
-      Add-Computer -DomainName $domainName -OUPath $distinguishedAdPathOU -ComputerName $computerName.current -Credential $credentials -PassThru -ErrorAction Stop
+      Add-Computer -DomainName $domainName -OUPath $distinguishedAdPathOU -ComputerName $computerName.current -Credential $credentials -WarningVariable $warningJoinedPC -PassThru -ErrorAction Stop
     } else {
-      Add-Computer -DomainName $domainName -OUPath $distinguishedAdPathOU -ComputerName $computerName.current -NewName $computerName.new -Credential $credentials -PassThru -ErrorAction Stop
+      Add-Computer -DomainName $domainName -OUPath $distinguishedAdPathOU -ComputerName $computerName.current -NewName $computerName.new -Credential $credentials -WarningVariable $warningJoinedPC -PassThru -ErrorAction Stop
     }
+    if ($warningJoinedPC) { Throw $warningJoinedPC } # wanting to check warnings and errors at the same time
     if ($joinedPC.HasSucceeded) {
       if ($joinedPC.ComputerName) { $computerName.current = $joinedPC.ComputerName }
       Write-Host "Computer has been bound to the domain successfully."
