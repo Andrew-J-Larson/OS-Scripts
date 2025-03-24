@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.6.7
+  Prepare PC v1.6.8
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -1343,19 +1343,19 @@ do {
     }
   } catch {
     $computerName.current = (Get-ItemProperty -Path $regComputerName).ComputerName
-    if ($_.Exception -match '^.* The changes will take effect after you restart the computer\.*$') {
+    if ($_.Exception -match '^.*The changes will take effect after you restart the computer\..*$') {
       $joinedPC = $true
       $computerName.current = $computerName.new
       Write-Output "$($_.Exception | Out-String)"
       Start-Sleep -Seconds $activeDirectoryDelay
-    } elseif ($_.Exception -match '^.* The account already exists\.$') {
+    } elseif ($_.Exception -match '^.*The account already exists\.$') {
       $joinedPC = $true
       Write-Warning "$($_.Exception | Out-String)"
       Start-Sleep -Seconds $activeDirectoryDelay
-    } elseif ($_.Exception -match '^.* because it is already in that domain\.$') {
+    } elseif ($_.Exception -match '^.*because it is already in that domain\.$') {
       $joinedPC = $False
       Write-Warning "$($_.Exception | Out-String)"
-    } elseif ($_.Exception -match '^.* because the new name is the same as the current name\.$') {
+    } elseif ($_.Exception -match '^.*because the new name is the same as the current name\.$') {
       # should never get here
       $joinedPC = $False
       Write-Warning "$($_.Exception | Out-String)"
