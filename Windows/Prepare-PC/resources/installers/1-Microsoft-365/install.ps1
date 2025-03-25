@@ -25,6 +25,36 @@ $officeRoot = "${env:ProgramFiles}\Microsoft Office\root\Office16"
 $regOfficeOEM = "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Office\16.0\Common\OEM"
 $officeReleasehistoryDownloadURL = 'https://officecdn.microsoft.com/pr/wsus/releasehistory.cab'
 $officeInstallerDownloadURL = 'https://officecdn.microsoft.com/pr/wsus/setup.exe'
+# need to remove possible separate Microsoft OneNote install first
+$officeOneNoteIsSeparate = @(Get-Package -Name "Microsoft OneNote*" -ErrorAction SilentlyContinue)
+if ($officeOneNoteIsSeparate) {
+  Write-Output "Uninstalling ${appTitle} - OneNote..."
+  Write-Output '' # Makes log look better
+  $Apps = @()
+  $Apps += Get-ItemProperty "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*" # 32 Bit
+  $Apps += Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*"             # 64 Bit
+  $uninstallerOneNote = @($Apps | Where-Object {
+    ($_.DisplayName -And $_.Publisher) -And
+    ($_.DisplayName -like 'Microsoft OneNote*') -And
+    ($_.Publisher -eq 'Microsoft Corporation') -And $_.UninstallString
+  })
+  if ($uninstallerOneNote.length) {
+    for ($i = 0; $i -lt $uninstallerOneNote.length; $i++) {
+        $UninstallString = $uninstallerOneNote[$i].UninstallString
+        $splitUninstallString = @($UninstallString -split 'OfficeClickToRun.exe',2)
+        $exePath = $splitUninstallString[0].substring(1, $splitUninstallString[0].length - 1) + 'OfficeClickToRun.exe'
+        $exeArgs = $splitUninstallString[1].substring(2) + ' DisplayLevel=False'
+        $uninstallOneNote = Start-Process $exePath -ArgumentList $exeArgs -PassThru -Wait
+        if (0 -eq $uninstallOneNote.ExitCode) {
+          Write-Output "Successfully uninstalled ${appTitle} - OneNote."
+        } else {
+          Write-Warning "Failed to uninstall ${appTitle} - OneNote."
+        }
+        Write-Output '' # Makes log look better
+    }
+  }
+}
+# continue with normal installation/configure
 $officeWasPreinstalled = @(Get-Package -Name "Microsoft 365*" -ErrorAction SilentlyContinue)
 $officeCameFromOEM = Test-Path -Path $regOfficeOEM
 $officeIncludesSfB = Test-Path -Path "${officeRoot}\lync.exe" -PathType Leaf
