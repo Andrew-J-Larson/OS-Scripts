@@ -151,6 +151,7 @@ if ($officeWasPreinstalled -And (-Not $officeNeedsConfiguring) -And (-Not $offic
     Write-Output "Successfully $(if ($officeNeedsConfiguring) { "configured" } elseif ($officeWasPreinstalled) { "updated" } else { "installed" }) ${appTitle}."
   } else {
     throw "Failed to $(if ($officeNeedsConfiguring) { "configure" } elseif ($officeWasPreinstalled) { "update" } else { "install" }) ${appTitle} (exit code: $($officeInstall.ExitCode))."
+    # exit code 17000 might indicate that a separate M365 app install still exists alongside the main M365 install, which prevents the configure command from working properly
   }
 }
 Write-Output '' # Makes log look better
