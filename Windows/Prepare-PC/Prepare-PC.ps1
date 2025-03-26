@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.6.8
+  Prepare PC v1.6.9
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -1343,7 +1343,7 @@ do {
     }
   } catch {
     $computerName.current = (Get-ItemProperty -Path $regComputerName).ComputerName
-    if ($_.Exception -match '^.*The changes will take effect after you restart the computer\..*$') {
+    if ($_.Exception -match '^.*The changes will take effect after you restart the computer .*$') {
       $joinedPC = $true
       $computerName.current = $computerName.new
       Write-Output "$($_.Exception | Out-String)"
