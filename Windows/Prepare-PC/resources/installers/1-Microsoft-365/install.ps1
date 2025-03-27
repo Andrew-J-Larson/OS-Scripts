@@ -15,7 +15,7 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <https://www.gnu.org/licenses/>. #>
 
-# If needed, removes the annoying Microsoft 365 trial/buy prompt and the standalone SfB install, and installs/configures (will remove old version of OneDrive and SfB)/updates Microsoft 365
+# If needed, removes the annoying Microsoft 365 trial/buy prompt, standalone SfB install, Home/Free versions of office apps and standlone OneNote, and installs/configures (will remove old version of OneDrive and SfB)/updates Microsoft 365
 $envTEMP = (Get-Item -LiteralPath $env:TEMP).FullName # Required due to PowerShell bug with shortnames appearing when they shouldn't be
 $loopDelay = 1 # second
 $appTitle = 'Microsoft 365'
@@ -25,37 +25,66 @@ $officeRoot = "${env:ProgramFiles}\Microsoft Office\root\Office16"
 $regOfficeOEM = "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Office\16.0\Common\OEM"
 $officeReleasehistoryDownloadURL = 'https://officecdn.microsoft.com/pr/wsus/releasehistory.cab'
 $officeInstallerDownloadURL = 'https://officecdn.microsoft.com/pr/wsus/setup.exe'
-# need to remove possible separate Microsoft OneNote install first
-$officeOneNoteIsSeparate = @(Get-Package -Name "Microsoft OneNote*" -ErrorAction SilentlyContinue)
-if ($officeOneNoteIsSeparate) {
-  Write-Output "Uninstalling ${appTitle} - OneNote..."
-  Write-Output '' # Makes log look better
-  $Apps = @()
-  $Apps += Get-ItemProperty "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*" # 32 Bit
-  $Apps += Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*"             # 64 Bit
+# used to check for preinstalled apps
+$Apps = @()
+$Apps += Get-ItemProperty "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*" # 32 Bit
+$Apps += Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*"             # 64 Bit
+# need to remove possible standalone Microsoft OneNote installs first
+$officeOneNoteStandalone = @(Get-Package -Name "Microsoft OneNote - *" -ErrorAction SilentlyContinue)
+if ($officeOneNoteStandalone) {
   $uninstallerOneNote = @($Apps | Where-Object {
     ($_.DisplayName -And $_.Publisher) -And
-    ($_.DisplayName -like 'Microsoft OneNote*') -And
+    ($_.DisplayName -like 'Microsoft OneNote - *') -And
     ($_.Publisher -eq 'Microsoft Corporation') -And $_.UninstallString
   })
   if ($uninstallerOneNote.length) {
     for ($i = 0; $i -lt $uninstallerOneNote.length; $i++) {
+        $langOneNote = (($uninstallerOneNote[$i]).DisplayName -split 'Microsoft OneNote - ')[1]
+        Write-Output "Uninstalling Microsoft OneNote - ${langOneNote} (Standalone)..."
+        Write-Output '' # Makes log look better
         $UninstallString = $uninstallerOneNote[$i].UninstallString
         $splitUninstallString = @($UninstallString -split 'OfficeClickToRun.exe',2)
         $exePath = $splitUninstallString[0].substring(1, $splitUninstallString[0].length - 1) + 'OfficeClickToRun.exe'
         $exeArgs = $splitUninstallString[1].substring(2) + ' DisplayLevel=False'
         $uninstallOneNote = Start-Process $exePath -ArgumentList $exeArgs -PassThru -Wait
         if (0 -eq $uninstallOneNote.ExitCode) {
-          Write-Output "Successfully uninstalled ${appTitle} - OneNote."
+          Write-Output "Successfully uninstalled Microsoft OneNote - ${langOneNote} (Standalone)."
         } else {
-          Write-Warning "Failed to uninstall ${appTitle} - OneNote."
+          Write-Warning "Failed to uninstall Microsoft OneNote - ${langOneNote} (Standalone)."
+        }
+        Write-Output '' # Makes log look better
+    }
+  }
+}
+# then, need to remove possible home/personal Microsoft 365 installs next
+$officeHomeIsInstalled = @(Get-Package -Name "Microsoft 365 - *" -ErrorAction SilentlyContinue)
+if ($officeHomeIsInstalled) {
+  $uninstallerHomeM365 = @($Apps | Where-Object {
+    ($_.DisplayName -And $_.Publisher) -And
+    ($_.DisplayName -like 'Microsoft 365 - *') -And
+    ($_.Publisher -eq 'Microsoft Corporation') -And $_.UninstallString
+  })
+  if ($uninstallerHomeM365.length) {
+    for ($i = 0; $i -lt $uninstallerHomeM365.length; $i++) {
+        $langHomeM365 = (($uninstallerHomeM365[$i]).DisplayName -split 'Microsoft 365 - ')[1]
+        Write-Output "Uninstalling Microsoft 365 - ${langHomeM365} (Home)..."
+        Write-Output '' # Makes log look better
+        $UninstallString = $uninstallerHomeM365[$i].UninstallString
+        $splitUninstallString = @($UninstallString -split 'OfficeClickToRun.exe',2)
+        $exePath = $splitUninstallString[0].substring(1, $splitUninstallString[0].length - 1) + 'OfficeClickToRun.exe'
+        $exeArgs = $splitUninstallString[1].substring(2) + ' DisplayLevel=False'
+        $uninstallHomeM365 = Start-Process $exePath -ArgumentList $exeArgs -PassThru -Wait
+        if (0 -eq $uninstallHomeM365.ExitCode) {
+          Write-Output "Successfully uninstalled Microsoft 365 - ${langHomeM365} (Home)."
+        } else {
+          Write-Warning "Failed to uninstall Microsoft 365 - ${langHomeM365} (Home)."
         }
         Write-Output '' # Makes log look better
     }
   }
 }
 # continue with normal installation/configure
-$officeWasPreinstalled = @(Get-Package -Name "Microsoft 365*" -ErrorAction SilentlyContinue)
+$officeWasPreinstalled = @(Get-Package -Name "Microsoft 365 Apps *" -ErrorAction SilentlyContinue)
 $officeCameFromOEM = Test-Path -Path $regOfficeOEM
 $officeIncludesSfB = Test-Path -Path "${officeRoot}\lync.exe" -PathType Leaf
 $officeNeedsConfiguring = $officeWasPreinstalled -And ($officeCameFromOEM -Or $officeIncludesSfB)
@@ -134,7 +163,7 @@ if ($officeWasPreinstalled -And (-Not $officeNeedsConfiguring) -And (-Not $offic
   Stop-Process -Name 'msouc' -Force -ErrorAction SilentlyContinue # Upload Center
   Stop-Process -Name 'ois' -Force -ErrorAction SilentlyContinue # Picture Manager
   Stop-Process -Name 'onenote' -Force -ErrorAction SilentlyContinue # OneNote
-  Stop-Process -Name 'outlook' -Force -ErrorAction SilentlyContinue # Outlook (old)
+  Stop-Process -Name 'outlook' -Force -ErrorAction SilentlyContinue # Outlook (classic)
   Stop-Process -Name 'powerpnt' -Force -ErrorAction SilentlyContinue # PowerPoint
   Stop-Process -Name 'mspub' -Force -ErrorAction SilentlyContinue # Publisher
   Stop-Process -Name 'groove' -Force -ErrorAction SilentlyContinue # OneDrive for Business (deprecated)
@@ -142,7 +171,7 @@ if ($officeWasPreinstalled -And (-Not $officeNeedsConfiguring) -And (-Not $offic
   Stop-Process -Name 'winproj' -Force -ErrorAction SilentlyContinue # Project
   Stop-Process -Name 'graph' -Force -ErrorAction SilentlyContinue # Graph Facility
   Stop-Process -Name 'onedrive' -Force -ErrorAction SilentlyContinue # OneDrive
-  Stop-Process -Name 'teams' -Force -ErrorAction SilentlyContinue # Teams (old)
+  Stop-Process -Name 'teams' -Force -ErrorAction SilentlyContinue # Teams (classic)
   Stop-Process -Name 'ms-teams' -Force -ErrorAction SilentlyContinue # Teams
   Stop-Process -Name 'olk' -Force -ErrorAction SilentlyContinue # Outlook
   $officeInstall = Start-Process -FilePath $tempSetupEXE -ArgumentList "/configure `"${installconfigXML}`"" -NoNewWindow -PassThru -Wait
