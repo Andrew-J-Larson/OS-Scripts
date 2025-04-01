@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.6.9
+  Prepare PC v1.7.0
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -1265,8 +1265,8 @@ Write-Output '' # Makes log look better
 try {
   $createdLocaladmin = New-LocalUser -Name $localAdminUser -Password $(ConvertTo-SecureString -String $localAdminPass -AsPlainText -Force)
 } catch {
-  if ($_.Exception -match ".* already exists\.$") {
-    Write-Warning "$($_.Exception | Out-String)"
+  if ($_.Exception.Message -match ".* already exists\.$") {
+    Write-Warning "$($_.Exception.Message | Out-String)"
     $createdLocaladmin = $True
   }
 }
@@ -1281,8 +1281,8 @@ if ($createdLocaladmin) {
   try {
     Add-LocalGroupMember -Group $adminGroup -Member $localAdminUser
   } catch {
-    if ($_.Exception -match ".* is already a member of group ${adminGroup}\.$") {
-      Write-Warning "$($_.Exception | Out-String)"
+    if ($_.Exception.Message -match ".* is already a member of group ${adminGroup}\.$") {
+      Write-Warning "$($_.Exception.Message | Out-String)"
     } else {
       $localAdminPassNeverExpire = $False
     }
@@ -1343,22 +1343,22 @@ do {
     }
   } catch {
     $computerName.current = (Get-ItemProperty -Path $regComputerName).ComputerName
-    if ($_.Exception -match '^.*The changes will take effect after you restart the computer .*$') {
+    if ($_.Exception.Message -match '^.*The changes will take effect after you restart the computer .*$') {
       $joinedPC = $true
       $computerName.current = $computerName.new
-      Write-Output "$($_.Exception | Out-String)"
+      Write-Output "$($_.Exception.Message | Out-String)"
       Start-Sleep -Seconds $activeDirectoryDelay
-    } elseif ($_.Exception -match '^.*The account already exists\.$') {
+    } elseif ($_.Exception.Message -match '^.*The account already exists\.$') {
       $joinedPC = $true
-      Write-Warning "$($_.Exception | Out-String)"
+      Write-Warning "$($_.Exception.Message | Out-String)"
       Start-Sleep -Seconds $activeDirectoryDelay
-    } elseif ($_.Exception -match '^.*because it is already in that domain\.$') {
+    } elseif ($_.Exception.Message -match '^.*because it is already in that domain\.$') {
       $joinedPC = $False
-      Write-Warning "$($_.Exception | Out-String)"
-    } elseif ($_.Exception -match '^.*because the new name is the same as the current name\.$') {
+      Write-Warning "$($_.Exception.Message | Out-String)"
+    } elseif ($_.Exception.Message -match '^.*because the new name is the same as the current name\.$') {
       # should never get here
       $joinedPC = $False
-      Write-Warning "$($_.Exception | Out-String)"
+      Write-Warning "$($_.Exception.Message | Out-String)"
     } else { Start-Sleep -Seconds $loopDelay }
   }
   Write-Output '' # Makes log look better
