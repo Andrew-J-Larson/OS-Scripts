@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.7.0
+  Prepare PC v1.8.0
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -89,6 +89,9 @@ param(
   [string]$SelectAppList
 )
 
+# used for message boxes (InputBox for getting input)
+Add-Type -AssemblyName Microsoft.VisualBasic
+
 # check for parameters and execute accordingly
 if ($Help.IsPresent) {
   Get-Help $MyInvocation.MyCommand.Path
@@ -97,7 +100,8 @@ if ($Help.IsPresent) {
 if ($FullScreen.IsPresent) {
   # can't use wscript.shell for F11, as there is a bug when a physical keyboard is connected
   [System.Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms") | Out-Null
-  [System.Reflection.Assembly]::LoadWithPartialName("Microsoft.VisualBasic") | Out-Null
+  ### commented out due to adding it in at line 93
+  ### [System.Reflection.Assembly]::LoadWithPartialName("Microsoft.VisualBasic") | Out-Null
   # Windows 11 might randomly popup the start menu, so need to close it first
   $startMenuProcess = Get-Process -Name "StartMenuExperienceHost" -ErrorAction SilentlyContinue
   if ($startMenuProcess) { Stop-Process -Id $startMenuProcess.Id -Force }
@@ -930,6 +934,16 @@ do {
 Write-Output "Domain admin user credentials confirmed."
 Write-Output '' # Makes log look better
 
+# Prompt for Active Directory description, in case it should be changed later on
+$promptTitle = "Computer Description (Active Directory)"
+$promptMessage = "Keep the default computer description, or change it?"
+$promptDefaultValue = "Spare ${pcModel} - Staged"
+$promptInputValue = $null
+do {
+  $promptInputValue = [Microsoft.VisualBasic.Interaction]::InputBox($promptMessage, $promptTitle, $promptDefaultValue)
+} while (-Not $promptInputValue)
+$ComputerDescription = $promptInputValue.split([IO.Path]::GetInvalidFileNameChars()) -Join $InvalidCharacterReplacement
+
 # Set computer owner/org info
 Write-Output "Setting device information..."
 Write-Output '' # Makes log look better
@@ -1365,7 +1379,6 @@ do {
 } while ($Null -eq $joinedPC)
 
 # Loop until a new description is set for the computer on the domain in AD
-$ComputerDescription = "Spare ${pcModel} - Staged".split([IO.Path]::GetInvalidFileNameChars()) -Join $InvalidCharacterReplacement
 $RootDSE = $null
 $RootDSE_Searcher = $null
 $ComputerDSE = $null
