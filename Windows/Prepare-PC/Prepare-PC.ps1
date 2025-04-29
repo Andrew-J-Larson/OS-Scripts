@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.9.0
+  Prepare PC v1.9.1
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -306,6 +306,7 @@ $regControlComputerName = "${regSystemCurrentControlSet}\Control\ComputerName"
 $regComputerName = "${regControlComputerName}\ComputerName"
 $regActiveComputerName = "${regControlComputerName}\ActiveComputerName"
 $regTzautoupdate = "${regSystemCurrentControlSet}\Services\tzautoupdate"
+$regUninstall64bit = "${regLocalMachineSoftware}\Microsoft\Windows\CurrentVersion\Uninstall"
 $regCurrentVersion = "${regLocalMachineSoftware}\Microsoft\Windows NT\CurrentVersion"
 $regMachinePolicies = "${regLocalMachineSoftware}\Policies\Microsoft\Windows"
 $regWindowsUpdate = "${regMachinePolicies}\WindowsUpdate"
@@ -1155,7 +1156,7 @@ if ($isDell) {
     # Newer versions of Dell Command Update require .NET Desktop Runtime 8
     Write-Output "Attempting to install .NET Desktop Runtime 8..."
     Write-Output '' # Makes log look better
-    $Apps64BIT = @(Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*")
+    $Apps64BIT = @(Get-ItemProperty "${regUninstall64bit}\*")
     $preinstalledDotNetDesktopRuntime8 = $Apps64BIT | Where-Object { $_.DisplayName -like 'Microsoft Windows Desktop Runtime - 8.*' }
     if (-Not $preinstalledDotNetDesktopRuntime8) {
       $installDotNetDesktopRuntime8 = Start-Process 'winget.exe' -ArgumentList 'install --id Microsoft.DotNet.DesktopRuntime.8 --accept-package-agreements --accept-source-agreements --override "/install /quiet"' -NoNewWindow -PassThru -Wait
