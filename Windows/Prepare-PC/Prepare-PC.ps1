@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.9.2
+  Prepare PC v1.9.3
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -228,10 +228,10 @@ if ($hasBrokenUpdateAPI) {
   $uninstallMsg = "faulty hotfix KB5040442"
   Write-Host "Uninstalling ${uninstallMsg} (please confirm the prompt)..."
   $UninstallBadHotFixProcess = Start-Process 'wusa.exe' -ArgumentList '/uninstall /kb:5040442 /norestart' -PassThru -Wait
-  if (0 -eq $UninstallBrokenUpdateProcess.ExitCode) {
+  if (0 -eq $UninstallBadHotFixProcess.ExitCode) {
     Write-Host "Successfully uninstalled ${uninstallMsg}."
   } else {
-    Write-Warning "Failed to uninstall ${uninstallMsg}, please uninstall this update manually (exit code = $($UninstallBrokenUpdateProcess.ExitCode))."
+    Write-Warning "Failed to uninstall ${uninstallMsg}, please uninstall this update manually (exit code = $($UninstallBadHotFixProcess.ExitCode))."
   }
   Write-Host "`nPlease reboot, and then attempt to run this script again.`n"
   Read-Host -Prompt "Press any key to reboot or CTRL+C to quit" | Out-Null
@@ -304,9 +304,7 @@ $regLocalMachineSoftware = "${regHKLM}\SOFTWARE"
 $regSystemCurrentControlSet = "${regHKLM}\SYSTEM\CurrentControlSet"
 $regControlComputerName = "${regSystemCurrentControlSet}\Control\ComputerName"
 $regComputerName = "${regControlComputerName}\ComputerName"
-$regActiveComputerName = "${regControlComputerName}\ActiveComputerName"
 $regTzautoupdate = "${regSystemCurrentControlSet}\Services\tzautoupdate"
-$regUninstall64bit = "${regLocalMachineSoftware}\Microsoft\Windows\CurrentVersion\Uninstall"
 $regCurrentVersion = "${regLocalMachineSoftware}\Microsoft\Windows NT\CurrentVersion"
 $regMachinePolicies = "${regLocalMachineSoftware}\Policies\Microsoft\Windows"
 $regWindowsUpdate = "${regMachinePolicies}\WindowsUpdate"
@@ -1445,7 +1443,7 @@ if ($ComputerDSE -And $ComputerDSE.distinguishedName) {
     Write-Output "Successfully set the description for the computer."
   }
 } else {
-  $errorSetInfoReason = if ($ComputerDSE -eq $null) {
+  $errorSetInfoReason = if ($null -eq $ComputerDSE) {
     "couldn't find computer"
   } else {
     "found computer, but had issues with connection"
