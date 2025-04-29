@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.9.1
+  Prepare PC v1.9.2
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -1153,20 +1153,6 @@ if ($bitLockerVolume -And ($bitLockerVolume.VolumeStatus -eq 'EncryptionInProgre
 # Run Dell Command Update (get it up-to-date) w/ reboot disabled (done at the end)
 if ($isDell) {
   if ((-Not (Test-Path -Path $dcuCliExe -PathType Leaf)) -And (Get-Command 'winget.exe' -ErrorAction SilentlyContinue)) {
-    # Newer versions of Dell Command Update require .NET Desktop Runtime 8
-    Write-Output "Attempting to install .NET Desktop Runtime 8..."
-    Write-Output '' # Makes log look better
-    $Apps64BIT = @(Get-ItemProperty "${regUninstall64bit}\*")
-    $preinstalledDotNetDesktopRuntime8 = $Apps64BIT | Where-Object { $_.DisplayName -like 'Microsoft Windows Desktop Runtime - 8.*' }
-    if (-Not $preinstalledDotNetDesktopRuntime8) {
-      $installDotNetDesktopRuntime8 = Start-Process 'winget.exe' -ArgumentList 'install --id Microsoft.DotNet.DesktopRuntime.8 --accept-package-agreements --accept-source-agreements --override "/install /quiet"' -NoNewWindow -PassThru -Wait
-      if (0 -eq $installDotNetDesktopRuntime8.ExitCode) {
-        Write-Output "Successfully installed .NET Desktop Runtime 8."
-      } else {
-        Write-Warning "Failed to install .NET Desktop Runtime 8."
-      }
-      Write-Output '' # Makes log look better
-    }
     # Need to install Dell Command Update first
     Write-Output "Attempting to install Dell Command Update..."
     Write-Output '' # Makes log look better
