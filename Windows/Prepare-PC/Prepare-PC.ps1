@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.9.3
+  Prepare PC v1.9.4
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -1080,60 +1080,6 @@ if (-Not $isWDGA) { # online Windows Updates are not possible in WDGA
   }
 }
 
-# Update all apps (not from the Microsoft Store)
-if ($(Install-WinGet) -eq 0) { # installs/updates WinGet if needed
-  Write-Output "Attempting to update all apps (not from the Microsoft Store)..."
-  Write-Output '' # Makes log look better
-  $wingetUpgradePSI = New-object System.Diagnostics.ProcessStartInfo
-  $wingetUpgradePSI.CreateNoWindow = $true
-  $wingetUpgradePSI.UseShellExecute = $false
-  $wingetUpgradePSI.RedirectStandardOutput = $true
-  $wingetUpgradePSI.RedirectStandardError = $false
-  $wingetUpgradePSI.FileName = 'winget.exe'
-  $wingetUpgradePSI.Arguments = @('upgrade --silent --all --accept-source-agreements')
-  $wingetUpgradeProcess = New-Object System.Diagnostics.Process
-  $wingetUpgradeProcess.StartInfo = $wingetUpgradePSI
-  # if not running in Windows Terminal, need to change encoding to UTF-8 temporarily for winget
-  $oldOutputEncoding = $OutputEncoding; $oldConsoleEncoding = [Console]::OutputEncoding
-  if (-Not $runningInWindowsTerminal) {
-    $OutputEncoding = [Console]::OutputEncoding = New-Object System.Text.Utf8Encoding
-  }
-  [void]$wingetUpgradeProcess.Start()
-  $wingetOutput = $wingetUpgradeProcess.StandardOutput.ReadToEnd()
-  $wingetUpgradeProcess.WaitForExit()
-  Strip-Progress -ScriptBlock {
-    # show output after so that we at least know what went on
-    Write-Output $wingetOutput
-  }
-  # revert any encoding changes we made from earlier if needed
-  if (-Not $runningInWindowsTerminal) {
-    $OutputEncoding = $oldOutputEncoding; [Console]::OutputEncoding = $oldConsoleEncoding
-  }
-  if (0 -eq $wingetUpgradeProcess.ExitCode) {
-    Write-Output "Successfully updated all apps (not from the Microsoft Store)."
-  } else {
-    # Can't use exit code to determine different issues with upgrade, see https://github.com/microsoft/winget-cli/discussions/3338
-    [String[]]$wingetExceptionList = @()
-    if ($wingetOutput.Contains('Another version of this application is already installed.') -Or $wingetOutput.Contains('A higher version of this application is already installed.')) {
-      $wingetExceptionList += "didn't update some apps that were already up-to-date"
-    }
-    if ($wingetOutput.Contains('Restart your PC to finish installation.')) {
-      $wingetExceptionList += "some apps require a reboot to update"
-    }
-    if (0 -eq $wingetExceptionList.length) {
-      Write-Warning "Failed to update all apps (not from the Microsoft Store)."
-    } else {
-      $wingetExceptionMessage = "$(
-        if ($wingetOutput.Contains('An unexpected error occurred while executing the command:')) { 'Partially' } else { 'Successfully' }
-      ) updated most apps (not from the Microsoft Store), but " + ($wingetExceptionList -Join ', ') + '.'
-      Write-Warning $wingetExceptionMessage
-    }
-  }
-} else {
-  Write-Warning "Failed to install WinGet, skipping attempt to update all apps (not from the Microsoft Store)."
-}
-Write-Output '' # Makes log look better
-
 # Suspend BitLocker (if needed, before updates)
 $bitLockerVolume = (Get-BitLockerVolume | Where-Object { $_.VolumeType -eq 'OperatingSystem' })
 if ($bitLockerVolume -And ($bitLockerVolume.VolumeStatus -eq 'EncryptionInProgress')) {
@@ -1195,6 +1141,60 @@ if ($isDell) {
   }
   Write-Output '' # Makes log look better
 }
+
+# Update all apps (not from the Microsoft Store)
+if ($(Install-WinGet) -eq 0) { # installs/updates WinGet if needed
+  Write-Output "Attempting to update all apps (not from the Microsoft Store)..."
+  Write-Output '' # Makes log look better
+  $wingetUpgradePSI = New-object System.Diagnostics.ProcessStartInfo
+  $wingetUpgradePSI.CreateNoWindow = $true
+  $wingetUpgradePSI.UseShellExecute = $false
+  $wingetUpgradePSI.RedirectStandardOutput = $true
+  $wingetUpgradePSI.RedirectStandardError = $false
+  $wingetUpgradePSI.FileName = 'winget.exe'
+  $wingetUpgradePSI.Arguments = @('upgrade --silent --all --accept-source-agreements')
+  $wingetUpgradeProcess = New-Object System.Diagnostics.Process
+  $wingetUpgradeProcess.StartInfo = $wingetUpgradePSI
+  # if not running in Windows Terminal, need to change encoding to UTF-8 temporarily for winget
+  $oldOutputEncoding = $OutputEncoding; $oldConsoleEncoding = [Console]::OutputEncoding
+  if (-Not $runningInWindowsTerminal) {
+    $OutputEncoding = [Console]::OutputEncoding = New-Object System.Text.Utf8Encoding
+  }
+  [void]$wingetUpgradeProcess.Start()
+  $wingetOutput = $wingetUpgradeProcess.StandardOutput.ReadToEnd()
+  $wingetUpgradeProcess.WaitForExit()
+  Strip-Progress -ScriptBlock {
+    # show output after so that we at least know what went on
+    Write-Output $wingetOutput
+  }
+  # revert any encoding changes we made from earlier if needed
+  if (-Not $runningInWindowsTerminal) {
+    $OutputEncoding = $oldOutputEncoding; [Console]::OutputEncoding = $oldConsoleEncoding
+  }
+  if (0 -eq $wingetUpgradeProcess.ExitCode) {
+    Write-Output "Successfully updated all apps (not from the Microsoft Store)."
+  } else {
+    # Can't use exit code to determine different issues with upgrade, see https://github.com/microsoft/winget-cli/discussions/3338
+    [String[]]$wingetExceptionList = @()
+    if ($wingetOutput.Contains('Another version of this application is already installed.') -Or $wingetOutput.Contains('A higher version of this application is already installed.')) {
+      $wingetExceptionList += "didn't update some apps that were already up-to-date"
+    }
+    if ($wingetOutput.Contains('Restart your PC to finish installation.')) {
+      $wingetExceptionList += "some apps require a reboot to update"
+    }
+    if (0 -eq $wingetExceptionList.length) {
+      Write-Warning "Failed to update all apps (not from the Microsoft Store)."
+    } else {
+      $wingetExceptionMessage = "$(
+        if ($wingetOutput.Contains('An unexpected error occurred while executing the command:')) { 'Partially' } else { 'Successfully' }
+      ) updated most apps (not from the Microsoft Store), but " + ($wingetExceptionList -Join ', ') + '.'
+      Write-Warning $wingetExceptionMessage
+    }
+  }
+} else {
+  Write-Warning "Failed to install WinGet, skipping attempt to update all apps (not from the Microsoft Store)."
+}
+Write-Output '' # Makes log look better
 
 # Install additional applications
 Write-Output "Checking application install list selection..."
