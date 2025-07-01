@@ -1,0 +1,5 @@
+Some builds of Windows 24H2 (10.0.26100) are missing the driver necessary for the "Microsoft Print to PDF" option (where upon if you tried to reinstall it in the optional features, you'd get the error 0x800F0922. The missing driver is caused by the entire folder for "prnms009.inf_amd64_5555b7fbfa8487e2" being absent in path "C:\Windows\System32\DriverStore\FileRepository\".
+
+To resolve the issue, the drivers have to be reinstalled, prior to turning the feature back on.
+
+This should automatically get taken care of in the script.

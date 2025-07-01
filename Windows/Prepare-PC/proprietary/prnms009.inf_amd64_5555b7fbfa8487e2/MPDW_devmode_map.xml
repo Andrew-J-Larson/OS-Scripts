@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<Properties xmlns="http://schemas.microsoft.com/windows/2011/08/printing/devmodemap">
+  <Property Name="DocumentUserPassword">
+    <String Length="1024"></String>
+  </Property>
+  <Property Name="DocumentOwnerPassword">
+    <String Length="1024"></String>
+  </Property>
+  <Property Name="DocumentCryptSecurity">
+    <String Length="32"></String>
+  </Property>
+</Properties>

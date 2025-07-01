@@ -1,0 +1,7 @@
+<Filters>
+  <Filter dll="PDFRenderFilter.dll" clsid="{CD087E95-A362-4A50-B233-20DC89DED268}" name="Microsoft XPS to PDF">
+    <Input guid="{b8cf8530-5562-47c4-ab67-b1f69ecf961e}" Comment ="IID_IXpsDocumentProvider"/>
+    <Output guid="{65bb7f1b-371e-4571-8ac7-912f510c1a38}" comment="IID_IPrintWriteStream" />
+  </Filter>
+  <FilterServiceProvider dll="XpsRasterService.dll"/>
+</Filters>

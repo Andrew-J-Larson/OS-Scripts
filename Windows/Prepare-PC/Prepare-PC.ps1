@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.9.4
+  Prepare PC v1.9.5
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -212,19 +212,22 @@ if ($usbMediaDevices) {
   }
 }
 
-# Some Windows 11 builds have a preinstalled update that brake the Windows Update API (used later in script)
+# Some Windows 11 builds have preinstalled updates that brake functionality needed in this script, or post-deployment
+$isWindows11 = (Get-CimInstance -ClassName Win32_OperatingSystem -Property Caption).Caption -like "* Windows 11 *"
+$currentBuild = [System.Environment]::OSVersion.Version.ToString().split('.')
+$currentBuild[3] = $(Get-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\Software\Microsoft\Windows NT\CurrentVersion' UBR).UBR
+$currentBuild = [System.Version]($currentBuild -Join '.')
+
+# Build 23H2, bug fix for the Windows Update API (the API is used later in script)
 # - see about the known issue from Microsoft:
 #   - https://learn.microsoft.com/en-us/windows/release-health/resolved-issues-windows-11-23h2#the-june-2024-preview-update-might-impact-applications-using-windows-update-apis
 # - see about issue with KB5040442:
 #   - https://github.com/mgajda83/PSWindowsUpdate/issues/27#issuecomment-2223311835
-$isWindows11 = (Get-CimInstance -ClassName Win32_OperatingSystem -Property Caption).Caption -like "* Windows 11 *"
 $hasBadHotFixKB5040442 = (Get-CimInstance -Class Win32_QuickFixEngineering -Property HotFixID) | Where-Object { $_.HotFixID -eq "KB5043076" }
-$fixedBuild = [System.Version]"10.0.22621.3958"
-$checkBuild = [System.Environment]::OSVersion.Version.ToString().split('.')
-$checkBuild[3] = $(Get-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\Software\Microsoft\Windows NT\CurrentVersion' UBR).UBR
-$checkBuild = [System.Version]($checkBuild -Join '.')
-$hasBrokenUpdateAPI = $isWindows11 -And $hasBadHotFixKB5040442 -And ($checkBuild -lt $fixedBuild)
+$fixedBuildForBadHotFixKB5040442 = [System.Version]"10.0.22621.3958"
+$hasBrokenUpdateAPI = $isWindows11 -And $hasBadHotFixKB5040442 -And ($currentBuild -lt $fixedBuildForBadHotFixKB5040442)
 if ($hasBrokenUpdateAPI) {
+  Write-Host "Detected the `"Windows Update API`" bug on this system...`n"
   $uninstallMsg = "faulty hotfix KB5040442"
   Write-Host "Uninstalling ${uninstallMsg} (please confirm the prompt)..."
   $UninstallBadHotFixProcess = Start-Process 'wusa.exe' -ArgumentList '/uninstall /kb:5040442 /norestart' -PassThru -Wait
@@ -239,6 +242,86 @@ if ($hasBrokenUpdateAPI) {
   Write-Host "Rebooting..."
   Restart-Computer -Force
   exit 1
+}
+
+# Build 24H2, bug fix for the missing "Microsoft Print to PDF" option (which would be obvious post-deployment by user complaints)
+# - no official information from Microsoft at the time of writing this fix
+# - see about issue with 10.0.26100.xxxx:
+#   - https://www.reddit.com/r/sysadmin/comments/1kp02gw/windows_11_24h2_again_missing_pdf_printer/
+$pathToDriverStoreFileRepository = "${env:SystemRoot}\System32\DriverStore\FileRepository"
+$pathToProprietaryBackups = "${PSScriptRoot}\proprietary"
+$affectedPrintDriver = 'prnms009.inf'
+$folderMicrosoftPrintToPDF = @{
+  anyArchAnyHash = "${affectedPrintDriver}_*"
+  x64 = @{
+    wildcard = "${affectedPrintDriver}_amd64_*"
+    exact = "${affectedPrintDriver}_amd64_5555b7fbfa8487e2"
+  }
+  arm64 = @{ # if someone can provide the files for arm64 devices, that would be great, otherwise going to have to exclude arm64 systems for now
+    wildcard = "${affectedPrintDriver}_arm64_*"
+    exact = "${affectedPrintDriver}_amd64_XXXXXXXXXXXXXXXX" # todo, get actual hash
+  }
+}
+$hasBadMicrosoftPrintToPDF = ($currentBuild.Major -eq 10) -And ($currentBuild.Minor -eq 0) -And ($currentBuild.Build -eq 26100) -And (-Not (Get-PrinterDriver "Microsoft Print To PDF" -ErrorAction SilentlyContinue))
+$driverOnSystemForBadMicrosoftPrintToPDF = @{
+  system = Test-Path -Path "${pathToDriverStoreFileRepository}\$($folderMicrosoftPrintToPDF.anyArchAnyHash)\*.inf" -PathType Leaf
+  backup = @{
+    x64 = Test-Path -Path "${pathToDriverStoreFileRepository}\$($folderMicrosoftPrintToPDF.x64.exact)\*.inf" -PathType Leaf
+    arm64 = Test-Path -Path "${pathToDriverStoreFileRepository}\$($folderMicrosoftPrintToPDF.arm64.exact)\*.inf" -PathType Leaf
+  }
+}
+$fixedBadMicrosoftPrintToPDF = $False
+if ($hasBadMicrosoftPrintToPDF) {
+  Write-Host "Detected the `"Microsoft Print to PDF`" bug on this system...`n"
+  if ($driverOnSystemForBadMicrosoftPrintToPDF.system) {
+    $pathToInfToReinstall = @(Get-ChildItem "${pathToDriverStoreFileRepository}\$($folderMicrosoftPrintToPDF.anyArchAnyHash)\*.inf")[0].FullName
+    Write-Host 'Original drivers found left on system, attempting fix via reinstall...'
+  } else {
+    if ($osArch -eq 'x64') {
+      $pathToInfToReinstall = if ($driverInProprietaryBackupForBadMicrosoftPrintToPDF) { @(Get-ChildItem "${pathToProprietaryBackups}\$($folderMicrosoftPrintToPDF.x64.exact)\*.inf")[0].FullName }
+    } else { # arm64
+      $pathToInfToReinstall = if ($driverInProprietaryBackupForBadMicrosoftPrintToPDF) { @(Get-ChildItem "${pathToProprietaryBackups}\$($folderMicrosoftPrintToPDF.arm64.exact)\*.inf")[0].FullName }
+    }
+  }
+  if ($pathToInfToReinstall) {
+    Write-Host "Attempting to reinstall driver for `"Microsoft Print to PDF`"..."
+    # Potentially better to use command? (unsure) ...
+    #   Add-PrinterDriver -Name "Microsoft Print To PDF" -InfPath $pathToInfToReinstall
+    # ... but haven't tested it ... however pnputil works fine for now.
+    $reinstallResults = Start-Process 'pnputil.exe' -ArgumentList "/add-driver `"${pathToInfToReinstall}`" /install" -PassThru -Wait
+    # Exit codes via https://learn.microsoft.com/en-us/windows-hardware/drivers/devtest/pnputil-return-values
+    #    0 = The requested operation completed successfully.
+    #  259 = No devices match the supplied driver or the target device is already using a better or newer driver than the driver specified for installation.
+    # 3010 = The requested operation completed successfully and a system reboot is required.
+    # 1641 = The operation was successful and a system reboot is underway because the /reboot option was specified.
+    if (0,259,3010,1641 -contains $reinstallResults.ExitCode) {
+      if (259 -eq $reinstallResults.ExitCode) {
+        Write-Host "Successfully installed driver."
+      } else {
+        Write-Host "Driver is already installed."
+      }
+      $enabledCheck = (Get-WindowsOptionalFeature -FeatureName "Printing-PrintToPDFServices-Features" -Online).State -eq 'Enabled'
+      if ($enabledCheck) {
+        Write-Warning "The `"Microsoft Print to PDF`" feature already appears to be turned on, but going to try anyways."
+      }
+      Write-Host "Attempting to turn the `"Microsoft Print to PDF`" feature back on..."
+      try {
+        $enablementResults = Enable-WindowsOptionalFeature -FeatureName "Printing-PrintToPDFServices-Features" -All -NoRestart -Online
+        Write-Host "Successfully turned the `"Microsoft Print to PDF`" feature back on."
+        $fixedBadMicrosoftPrintToPDF = $True
+      } catch {
+        Write-Warning "Failed to turn the `"Microsoft Print to PDF`" feature back on (error code = $($_.Exception.ErrorCode)), error message was `"$($_.Exception.Message.Trim())`""
+      }
+    } else {
+      Write-Warning "Failed to install driver (exit code = $($reinstallResults.ExitCode)), fix not applied."
+    }
+  } else {
+    Write-Warning 'Original drivers were not found on the system, and no proprietary backup exists, fix not applied.'
+  }
+  if (-Not $fixedBadMicrosoftPrintToPDF) {
+    Write-Host "The rest of the script should work fine, but `"Microsoft Print to PDF`" might not be fixed."
+    Read-Host -Prompt "Press any key to continue the script or CTRL+C to quit" | Out-Null
+  }
 }
 
 # Check if running in Windows Terminal (determines if encoding needs to be changed when running some apps)
