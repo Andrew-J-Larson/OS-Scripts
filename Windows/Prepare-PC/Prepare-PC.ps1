@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.9.5
+  Prepare PC v1.9.6
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -270,6 +270,8 @@ $driverOnSystemForBadMicrosoftPrintToPDF = @{
     arm64 = Test-Path -Path "${pathToDriverStoreFileRepository}\$($folderMicrosoftPrintToPDF.arm64.exact)\*.inf" -PathType Leaf
   }
 }
+$driverInProprietaryBackupForBadMicrosoftPrintToPDF = (Test-Path -Path "${pathToProprietaryBackups}\$($folderMicrosoftPrintToPDF.x64.exact)\*.inf" -PathType Leaf) -Or
+  (Test-Path -Path  "${pathToProprietaryBackups}\$($folderMicrosoftPrintToPDF.arm64.exact)\*.inf" -PathType Leaf)
 $fixedBadMicrosoftPrintToPDF = $False
 if ($hasBadMicrosoftPrintToPDF) {
   Write-Host "Detected the `"Microsoft Print to PDF`" bug on this system...`n"
