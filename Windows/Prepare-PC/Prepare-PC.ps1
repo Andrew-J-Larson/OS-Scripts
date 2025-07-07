@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.9.6
+  Prepare PC v1.9.7
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -132,6 +132,7 @@ $osArch = $(
 ) # = x86 | x64 | arm | arm64
 if (-Not ($osIsWindows -And $osIs64Bit)) {
   Write-Warning "Not supported for $(if ($osIsWindows) { $osArch } else { $osName }) operating systems. Aborting script."
+  Read-Host -Prompt "Press any key to continue" | Out-Null
   exit 1
 }
 
@@ -139,6 +140,7 @@ if (-Not ($osIsWindows -And $osIs64Bit)) {
 $InternetAccess = (Get-NetConnectionProfile).IPv4Connectivity -contains "Internet" -or (Get-NetConnectionProfile).IPv6Connectivity -contains "Internet"
 if (-Not $InternetAccess) {
   Write-Warning "Please connect to the internet first. Aborting script."
+  Read-Host -Prompt "Press any key to continue" | Out-Null
   exit 1
 }
 
@@ -180,11 +182,13 @@ if ($HardwareType -eq 2) {
     { 5,9 -contains $_ } {
       # Exit and stress to user to charge their computer more
       Write-Warning "Battery status is critical, please charge your device more. Aborting script."
+      Read-Host -Prompt "Press any key to continue" | Out-Null
       exit 1
     }
     default {
       # default = 10 = Exit and warn user about undefined battery status
       Write-Warning "Battery status is undefined, please check your battery health. Aborting script."
+      Read-Host -Prompt "Press any key to continue" | Out-Null
       exit 1
     }
   }
@@ -208,6 +212,7 @@ if ($usbMediaDevices) {
     Clear-Host # no need to keep this information on screen
   } else {
     Write-Warning "Media USB dongles must be removed to continue. Aborting script."
+    Read-Host -Prompt "Press any key to continue" | Out-Null
     exit 1
   }
 }
