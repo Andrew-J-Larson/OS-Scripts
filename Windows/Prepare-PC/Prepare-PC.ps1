@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.9.7
+  Prepare PC v1.9.8
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -1192,14 +1192,16 @@ if ($isDell) {
     Write-Output '' # Makes log look better
     $installDellCommandUpdate = Start-Process 'winget.exe' -ArgumentList 'install -h --id "Dell.CommandUpdate.Universal" --accept-package-agreements --accept-source-agreements' -NoNewWindow -PassThru -Wait
     if (0 -eq $installDellCommandUpdate.ExitCode) {
-      Write-Output "Successfully installed Dell Command Update.$(if ($dcuRebootRequired) { " (reboot required)" } else { '' })"
+      Write-Output "Successfully installed Dell Command Update."
     } else {
       Write-Warning "Failed to install Dell Command Update."
     }
     Write-Output '' # Makes log look better
   }
   if (Test-Path -Path $dcuCliExe -PathType Leaf) {
+    $dcuConfig = $Null
     Write-Output "Attempting to set Dell Command Update settings..."
+    Write-Output '' # Makes log look better
     do {
       $dcuConfig = Start-Process -FilePath $dcuCliExe -ArgumentList $dcuConfigureArgs -NoNewWindow -PassThru -Wait
       # 0 = set settings successfully
