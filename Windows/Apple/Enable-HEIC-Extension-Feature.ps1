@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Enable HEIC Extension Feature v2.1.0
+  Enable HEIC Extension Feature v2.2.0
 
   .DESCRIPTION
   Script downloads and installs all extensions needed for viewing/editing HEIF/HEVC/HEIC file types.
@@ -61,19 +61,39 @@ if ($Help.IsPresent) {
 }
 
 # Constants
-Set-Variable -Name PHOTOS_APPX_PACKAGEFAMILYNAME -Option Constant -Value "Microsoft.Windows.Photos_8wekyb3d8bbwe" # ProductId = 9WZDNCRFJBH4
-Set-Variable -Name PHOTOS_APPX_NAME -Option Constant -Value ${PHOTOS_APPX_PACKAGEFAMILYNAME}.split('_')[0]
-Set-Variable -Name HEIF_APPX_PACKAGEFAMILYNAME -Option Constant -Value "Microsoft.HEIFImageExtension_8wekyb3d8bbwe" # ProductId = 9PMMSR1CGPWG
-Set-Variable -Name HEIF_APPX_NAME -Option Constant -Value ${HEIF_APPX_PACKAGEFAMILYNAME}.split('_')[0]
-Set-Variable -Name HEVC_APPX_PACKAGEFAMILYNAME -Option Constant -Value "Microsoft.HEVCVideoExtension_8wekyb3d8bbwe" # ProductId = 9N4WGH0Z6VHQ
-Set-Variable -Name HEVC_APPX_NAME -Option Constant -Value ${HEVC_APPX_PACKAGEFAMILYNAME}.split('_')[0]
+Set-Variable -Name PHOTOS_APPX -Option Constant -Value @{
+  ProductId = '9WZDNCRFJBH4'
+  PackageFamilyName = 'Microsoft.Windows.Photos_8wekyb3d8bbwe'
+  Name = 'Microsoft.Windows.Photos'
+}
+Set-Variable -Name HEIF_APPX -Option Constant -Value @{
+  ProductId = '9PMMSR1CGPWG'
+  PackageFamilyName = 'Microsoft.HEIFImageExtension_8wekyb3d8bbwe'
+  Name = 'Microsoft.HEIFImageExtension'
+}
+Set-Variable -Name HEVC_APPX -Option Constant -Value @{
+  ProductId = '9N4WGH0Z6VHQ'
+  PackageFamilyName = 'Microsoft.HEVCVideoExtension_8wekyb3d8bbwe'
+  Name = 'Microsoft.HEVCVideoExtension'
+}
 
 # Functions
 
-# Input = PackageFamilyName of Microsoft Store app
-# Output = Array of paths to successfully downloaded packages (app of PackageFamilyName and its dependencies)
+# Input = PackageFamilyName or ProductId of Microsoft Store app
+# Output = Array of paths to successfully downloaded packages (of app and its dependencies)
 # Errors = Display in console
 function Download-AppxPackage {
+  param(
+    # there has to be an alternative, as sometimes the API fails on PackageFamilyName
+    [string]$PackageFamilyName,
+    [string]$ProductId
+  )
+  if (-Not ($PackageFamilyName -Or $ProductId)) {
+    # can't do anything without at least one
+    Write-Error "Missing either PackageFamilyName or ProductId."
+    return $null
+  }
+
   $UserAgent = [Microsoft.PowerShell.Commands.PSUserAgent]::Chrome # needed as sometimes the API will block things when it knows requests are coming from PowerShell
 
   $DownloadedFiles = @()
@@ -91,24 +111,28 @@ function Download-AppxPackage {
     default { "neutral" } # should never get here
   }
 
-  $AppxPackageFamilyName = $args[0]
-  $AppxName = $AppxPackageFamilyName.split('_')[0]
-
   $downloadFolder = Join-Path $env:TEMP "StoreDownloads"
   if (!(Test-Path $downloadFolder -PathType Container)) {
     [void](New-Item $downloadFolder -ItemType Directory -Force)
   }
 
   $body = @{
-    type = 'PackageFamilyName'
-    url  = $AppxPackageFamilyName
+    type = if ($ProductId) { 'ProductId' } else { 'PackageFamilyName' }
+    url  = if ($ProductId) { $ProductId } else { $PackageFamilyName }
     ring = $versionRing
     lang = 'en-US'
   }
 
+  # required due to the api being protected behind Cloudflare now
+  if (-Not $apiWebSession) {
+    $global:$apiWebSession = $null
+    $apiHostname = (($apiUrl.split('/'))[0..2]) -Join '/'
+    Invoke-WebRequest -Uri $apiHostname -UserAgent $UserAgent -SessionVariable $apiWebSession -UseBasicParsing
+  }
+
   $raw = $null
   try {
-    $raw = Invoke-RestMethod -Method Post -Uri $apiUrl -ContentType 'application/x-www-form-urlencoded' -Body $body -UserAgent $UserAgent
+    $raw = Invoke-RestMethod -Method Post -Uri $apiUrl -ContentType 'application/x-www-form-urlencoded' -Body $body -UserAgent $UserAgent -WebSession $apiWebSession
   } catch {
     $errorMsg = "An error occurred: " + $_
     Write-Host $errorMsg
@@ -122,7 +146,7 @@ function Download-AppxPackage {
   [Collections.Generic.Dictionary[string, Collections.Generic.Dictionary[string, array]]] $packageList = @{}
   # populate $packageList
   $patternUrlAndText = '<tr style.*<a href=\"(?<url>.*)"\s.*>(?<text>.*\.(app|msi)x.*)<\/a>'
-  $raw | Select-String $patternUrlAndText -AllMatches | % { $_.Matches } | % {
+  $raw | Select-String $patternUrlAndText -AllMatches | ForEach-Object { $_.Matches } | ForEach-Object {
     $url = ($_.Groups['url']).Value
     $text = ($_.Groups['text']).Value
     $textSplitUnderscore = $text.split('_')
@@ -157,12 +181,12 @@ function Download-AppxPackage {
   # an array of packages as objects, meant to only contain one of each $name
   $latestPackages = @()
   # grabs the most updated package for $name and puts it into $latestPackages
-  $packageList.GetEnumerator() | % { ($_.value).GetEnumerator() | Select-Object -Last 1 } | % {
+  $packageList.GetEnumerator() | ForEach-Object { ($_.value).GetEnumerator() | Select-Object -Last 1 } | ForEach-Object {
     $packagesByType = $_.value
-    $msixbundle = ($packagesByType | ? { $_.type -match "^msixbundle$" })
-    $appxbundle = ($packagesByType | ? { $_.type -match "^appxbundle$" })
-    $msix = ($packagesByType | ? { ($_.type -match "^msix$") -And ($_.arch -match ('^' + [Regex]::Escape($architecture) + '$')) })
-    $appx = ($packagesByType | ? { ($_.type -match "^appx$") -And ($_.arch -match ('^' + [Regex]::Escape($architecture) + '$')) })
+    $msixbundle = ($packagesByType | Where-Object { $_.type -match "^msixbundle$" })
+    $appxbundle = ($packagesByType | Where-Object { $_.type -match "^appxbundle$" })
+    $msix = ($packagesByType | Where-Object { ($_.type -match "^msix$") -And ($_.arch -match ('^' + [Regex]::Escape($architecture) + '$')) })
+    $appx = ($packagesByType | Where-Object { ($_.type -match "^appx$") -And ($_.arch -match ('^' + [Regex]::Escape($architecture) + '$')) })
     if ($msixbundle) { $latestPackages += $msixbundle }
     elseif ($appxbundle) { $latestPackages += $appxbundle }
     elseif ($msix) { $latestPackages += $msix }
@@ -170,10 +194,10 @@ function Download-AppxPackage {
   }
 
   # download packages
-  $latestPackages | % {
+  $latestPackages | ForEach-Object {
     $url = $_.url
     $filename = $_.filename
-    # TODO: may need to include detection in the future of expired package download URLs..... in the case that downloads take over an hour to complete
+    # TODO: may need to include detection in the future of expired package download URLs..... in the case that downloads take over 10 minutes to complete
 
     $downloadFile = Join-Path $downloadFolder $filename
 
@@ -218,16 +242,24 @@ function Download-AppxPackage {
   return $DownloadedFiles
 }
 
-# Input = Product ID of Microsoft Store app
-# Output = Downloads and installs app of ID and its dependencies
+# Input = PackageFamilyName or ProductID of Microsoft Store app
+# Output = Downloads and installs app and its dependencies
 # Errors = Display in console
 function Install-AppxPackage {
+  param(
+    [string]$PackageFamilyName,
+    [string]$ProductId
+  )
+  if (-Not ($PackageFamilyName -Or $ProductId)) {
+    # can't do anything without at least one
+    Write-Error "Missing either PackageFamilyName or ProductId."
+    return $null
+  }
+
   $errored = $false
 
-  $AppxPackageFamilyName = $args[0]
-
   try {
-    [Array]$appxPackages = Download-AppxPackage $AppxPackageFamilyName
+    [Array]$appxPackages = Download-AppxPackage @args # neat trick to pass all parameters
     for ($i = 0; $i -lt $appxPackages.count; $i++) {
       $appxFilePath = $appxPackages[$i]
       $appxFileName = Split-Path $appxFilePath -leaf
@@ -272,28 +304,40 @@ if ($powershellUser -ne $loggedInUser) {
 $installedApps = 0
 try {
   # First, Microsoft Photos
-  if (Get-AppxPackage -Name ${PHOTOS_APPX_NAME}) {
+  if (Get-AppxPackage -Name $PHOTOS_APPX.Name) {
     Write-Host "`"Microsoft Photos`" already installed.`n"
   } else {
     $installedApps++
     Write-Host 'Installing "Microsoft Photos"...'
-    if (-Not (Install-AppxPackage ${PHOTOS_APPX_PACKAGEFAMILYNAME})) { throw "Couldn't install `"Microsoft Photos`"" }
+    if (-Not (Install-AppxPackage -ProductID $PHOTOS_APPX.ProductID )) {
+      if (-Not (Install-AppxPackage -PackageFamilyName $PHOTOS_APPX.PackageFamilyName)) {
+        throw "Couldn't install `"Microsoft Photos`""
+      }
+    }
   }
   # Then, HEIF Image Extensions
-  if (Get-AppxPackage -Name ${HEIF_APPX_NAME}) {
+  if (Get-AppxPackage -Name $HEIF_APPX.Name) {
     Write-Host "`"HEIF Image Extensions`" already installed.`n"
   } else {
     $installedApps++
     Write-Host 'Installing "HEIF Image Extensions"...'
-    if (-Not (Install-AppxPackage ${HEIF_APPX_PACKAGEFAMILYNAME})) { throw "Couldn't install `"HEIF Image Extensions`"" }
+    if (-Not (Install-AppxPackage -ProductID $HEIF_APPX.ProductID )) {
+      if (-Not (Install-AppxPackage -PackageFamilyName $HEIF_APPX.PackageFamilyName)) {
+        throw "Couldn't install `"HEIF Image Extensions`""
+      }
+    }
   }
   # Lastly, HEVC Video Extensions from Device Manufacturer
-  if (Get-AppxPackage -Name ${HEVC_APPX_NAME}) {
+  if (Get-AppxPackage -Name $HEVC_APPX.Name) {
     Write-Host "`"HEVC Video Extensions from Device Manufacturer`" already installed.`n"
   } else {
     $installedApps++
     Write-Host 'Installing "HEVC Video Extensions from Device Manufacturer"...'
-    if (-Not (Install-AppxPackage ${HEVC_APPX_PACKAGEFAMILYNAME})) { throw "Couldn't install `"HEVC Video Extensions from Device Manufacturer`"" }
+    if (-Not (Install-AppxPackage -ProductID $HEVC_APPX.ProductID )) {
+      if (-Not (Install-AppxPackage -PackageFamilyName $HEVC_APPX.PackageFamilyName)) {
+        throw "Couldn't install `"HEVC Video Extensions from Device Manufacturer`""
+      }
+    }
   }
 } catch {
   $errorMsg = "An error occurred: " + $_

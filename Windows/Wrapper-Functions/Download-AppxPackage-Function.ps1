@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Download AppxPackage Function v2.0.5
+  Download AppxPackage Function v2.1.0
 
   .DESCRIPTION
   Script that contains a function which helps facilitate downloading Microsoft Store apps from their servers (via third-party API's).
@@ -26,7 +26,10 @@
   Function: Display errors if any, but returned is an array of paths to successfully downloaded files.
 
   .EXAMPLE
-  PS> [Array]$packages = Download-AppxPackage "Clipchamp.Clipchamp_yxz26nhyzhsrt"
+  PS> [Array]$packages = Download-AppxPackage -PackageFamilyName "Clipchamp.Clipchamp_yxz26nhyzhsrt"
+
+  .EXAMPLE
+  PS> [Array]$packages = Download-AppxPackage -ProductId "9P1J8S7CCWWT"
 
   .LINK
   Third-Party API for Downloading Microsoft Store Apps: https://store.rg-adguard.net/
@@ -63,6 +66,17 @@ if ($Help.IsPresent) {
 
 # MAIN function
 function Download-AppxPackage {
+  param(
+    # there has to be an alternative, as sometimes the API fails on PackageFamilyName
+    [string]$PackageFamilyName,
+    [string]$ProductId
+  )
+  if (-Not ($PackageFamilyName -Or $ProductId)) {
+    # can't do anything without at least one
+    Write-Error "Missing either PackageFamilyName or ProductId."
+    return $null
+  }
+
   $UserAgent = [Microsoft.PowerShell.Commands.PSUserAgent]::Chrome # needed as sometimes the API will block things when it knows requests are coming from PowerShell
 
   $DownloadedFiles = @()
@@ -80,24 +94,28 @@ function Download-AppxPackage {
     default { "neutral" } # should never get here
   }
 
-  $AppxPackageFamilyName = $args[0]
-  # $AppxName = $AppxPackageFamilyName.split('_')[0]
-
   $downloadFolder = Join-Path $env:TEMP "StoreDownloads"
   if (!(Test-Path $downloadFolder -PathType Container)) {
     [void](New-Item $downloadFolder -ItemType Directory -Force)
   }
 
   $body = @{
-    type = 'PackageFamilyName'
-    url  = $AppxPackageFamilyName
+    type = if ($ProductId) { 'ProductId' } else { 'PackageFamilyName' }
+    url  = if ($ProductId) { $ProductId } else { $PackageFamilyName }
     ring = $versionRing
     lang = 'en-US'
   }
 
+  # required due to the api being protected behind Cloudflare now
+  if (-Not $apiWebSession) {
+    $global:$apiWebSession = $null
+    $apiHostname = (($apiUrl.split('/'))[0..2]) -Join '/'
+    Invoke-WebRequest -Uri $apiHostname -UserAgent $UserAgent -SessionVariable $apiWebSession -UseBasicParsing
+  }
+
   $raw = $null
   try {
-    $raw = Invoke-RestMethod -Method Post -Uri $apiUrl -ContentType 'application/x-www-form-urlencoded' -Body $body -UserAgent $UserAgent
+    $raw = Invoke-RestMethod -Method Post -Uri $apiUrl -ContentType 'application/x-www-form-urlencoded' -Body $body -UserAgent $UserAgent -WebSession $apiWebSession
   } catch {
     $errorMsg = "An error occurred: " + $_
     Write-Host $errorMsg
