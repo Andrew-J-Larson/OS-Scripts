@@ -17,33 +17,33 @@
 
 # Install OpenVPN along with the config file
 $AppName = "OpenVPN"
-$configOVPN = "${PSScriptRoot}\example-config.ovpn"
-$ovpnFolder = $env:ProgramFiles + "\OpenVPN"
-$ovpnConfigFolder = $ovpnFolder + "\config"
-$ovpnBinEXE = $ovpnFolder + "\bin\openvpn.exe"
-$ovpnWingetID = 'OpenVPNTechnologies.OpenVPN'
+$configFile = "${PSScriptRoot}\example-config.ovpn"
+$appFolder = $env:ProgramFiles + "\OpenVPN"
+$appConfigFolder = $appFolder + "\config"
+$appEXE = $appFolder + "\bin\openvpn.exe"
+$appWingetID = 'OpenVPNTechnologies.OpenVPN'
 Write-Output "Attempting to install ${AppName}..."
 Write-Output '' # Makes log look better
-$ovpnWasPreinstalled = (Get-Package -Name "OpenVPN *" -ErrorAction SilentlyContinue) -And (Test-Path -Path $ovpnBinEXE -PathType Leaf)
-if ($ovpnWasPreinstalled) {
+$appWasPreinstalled = (Get-Package -Name "OpenVPN *" -ErrorAction SilentlyContinue) -And (Test-Path -Path $appEXE -PathType Leaf)
+if ($appWasPreinstalled) {
   Write-Output "${AppName} is already installed, skipped."
 } else {
   # copy config first
-  New-Item -ItemType Directory -Force -Path $ovpnConfigFolder -ErrorAction SilentlyContinue | Out-Null
-  $configCopied = Copy-Item -Path $configOVPN -Destination $ovpnConfigFolder -PassThru -Force
+  New-Item -ItemType Directory -Force -Path $appConfigFolder -ErrorAction SilentlyContinue | Out-Null
+  $configCopied = Copy-Item -Path $configFile -Destination $appConfigFolder -PassThru -Force
   # use winget to install
-  $wingetArgs = 'install --id "' + $ovpnWingetID + '" --silent --accept-package-agreements --accept-source-agreements'
-  $ovpnInstall = Start-Process 'winget.exe' -ArgumentList $wingetArgs -NoNewWindow -PassThru -Wait
-  if ($configCopied -And (0 -eq $ovpnInstall.ExitCode)) {
+  $wingetArgs = 'install --id "' + $appWingetID + '" --silent --scope machine --accept-package-agreements --accept-source-agreements'
+  $appInstall = Start-Process 'winget.exe' -ArgumentList $wingetArgs -NoNewWindow -PassThru -Wait
+  if ($configCopied -And (0 -eq $appInstall.ExitCode)) {
     Write-Output "Successfully installed ${AppName}."
   } else {
-    $ovpnInstallError = ""
+    $appInstallError = ""
     if (-Not $configCopied) {
-      $ovpnInstallError += "the config being unable to copy"
-      if (0 -ne $ovpnInstall.ExitCode) { $ovpnInstallError += ' and ' }
+      $appInstallError += "the config being unable to copy"
+      if (0 -ne $appInstall.ExitCode) { $appInstallError += ' and ' }
     }
-    if (0 -ne $ovpnInstall.ExitCode) { $ovpnInstallError += "the installer failing (exit code: $($ovpnInstall.ExitCode))" }
-    throw "Failed to install ${AppName}, due to ${ovpnInstallError}."
+    if (0 -ne $appInstall.ExitCode) { $appInstallError += "the installer failing (exit code: $($appInstall.ExitCode))" }
+    throw "Failed to install ${AppName}, due to ${appInstallError}."
   }
 }
 Write-Output '' # Makes log look better
