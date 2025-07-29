@@ -32,7 +32,7 @@ if ($ovpnWasPreinstalled) {
   New-Item -ItemType Directory -Force -Path $ovpnConfigFolder -ErrorAction SilentlyContinue | Out-Null
   $configCopied = Copy-Item -Path $configOVPN -Destination $ovpnConfigFolder -PassThru -Force
   # use winget to install
-  $wingetArgs = 'install -h --id "' + $ovpnWingetID + '" --accept-package-agreements --accept-source-agreements'
+  $wingetArgs = 'install --id "' + $ovpnWingetID + '" --silent --accept-package-agreements --accept-source-agreements'
   $ovpnInstall = Start-Process 'winget.exe' -ArgumentList $wingetArgs -NoNewWindow -PassThru -Wait
   if ($configCopied -And (0 -eq $ovpnInstall.ExitCode)) {
     Write-Output "Successfully installed ${AppName}."
