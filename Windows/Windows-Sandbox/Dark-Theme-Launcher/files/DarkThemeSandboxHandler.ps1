@@ -13,6 +13,21 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <https://www.gnu.org/licenses/>. #>
 
+# these functions fixes compatibility with older/newer versions of the Sandbox app
+
+function Get-WindowsSandboxClientProcess {
+  $process = @(Get-Process -Name 'WindowsSandbox*' -ErrorAction SilentlyContinue | Where-Object {
+    $_.Name -match 'WindowsSandbox(Client|RemoteSession)'
+  })[0]
+  return $process
+}
+function Get-WindowsSandboxVmProcess {
+  $process = @(Get-Process -Name 'vmmem*Sandbox' -ErrorAction SilentlyContinue | Where-Object {
+    $_.Name -match 'vmmem(Windows)?Sandbox'
+  })[0]
+  return $process
+}
+
 # Dynamically create "WindowsSandboxDarkTheme.wsb" config file, so that mapped folders work properly
 
 $envTEMP = Get-Item -LiteralPath $env:TEMP # Required due to PowerShell bug with shortnames appearing when they shouldn't be
@@ -58,10 +73,7 @@ $clientProcess = $Null # need to track for compatibility reasons
 $MainWindowHandle = $Null
 Do {
   Start-Sleep -Milliseconds $VisualDelay
-  $clientProcess = @(Get-Process -Name 'WindowsSandbox*' -ErrorAction SilentlyContinue | Where-Object {
-    # fixes compatibility with older/newer version of the Sandbox app
-    $_.Name -match 'WindowsSandbox(Client|RemoteSession)'
-  })[0]
+  $clientProcess = (Get-WindowsSandboxClientProcess)
   $MainWindowHandle = $clientProcess.MainWindowHandle
 } Until ($MainWindowHandle -And (0 -ne $MainWindowHandle))
 
@@ -72,10 +84,7 @@ if ('WindowsSandboxRemoteSession' -eq $clientProcess.Name) {
   $MainWindowHandle = $Null
   Do {
     Start-Sleep -Milliseconds $VisualDelay
-    $clientProcess = @(Get-Process -Name 'WindowsSandbox*' -ErrorAction SilentlyContinue | Where-Object {
-      # fixes compatibility with older/newer version of the Sandbox app
-      $_.Name -match 'WindowsSandbox(Client|RemoteSession)'
-    })[0]
+    $clientProcess = (Get-WindowsSandboxClientProcess)
     $MainWindowHandle = $clientProcess.MainWindowHandle
   } Until ($MainWindowHandle -And (0 -ne $MainWindowHandle) -And ($OldMainWindowHandle -ne $MainWindowHandle))
   
@@ -93,10 +102,7 @@ $vmProcessOperationalGB = $OneGB * $MagicMultiplier # rough value of peak memory
 $PeakWorkingSet64 = -1
 Do {
   Start-Sleep -Milliseconds $VisualDelay
-  $vmProcess = @(Get-Process -Name 'vmmem*Sandbox' -ErrorAction SilentlyContinue | Where-Object {
-    # fixes compatibility with older/newer version of the Sandbox app
-    $_.Name -match 'vmmem(Windows)?Sandbox'
-  })[0]
+  $vmProcess = (Get-WindowsSandboxVmProcess)
   $PeakWorkingSet64 = $vmProcess.PeakWorkingSet64
 } Until ($PeakWorkingSet64 -ge $vmProcessOperationalGB)
 
