@@ -54,11 +54,34 @@ $Win32ShowWindowAsync = Add-Type -memberDefinition @"
 public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
 "@ -name "Win32ShowWindowAsync" -namespace Win32Functions -PassThru
 
+$clientProcess = $Null # need to track for compatibility reasons
 $MainWindowHandle = $Null
 Do {
   Start-Sleep -Milliseconds $VisualDelay
-  $MainWindowHandle = (Get-Process -Name "WindowsSandboxClient" -ErrorAction SilentlyContinue).MainWindowHandle
+  $clientProcess = @(Get-Process -Name 'WindowsSandbox*' -ErrorAction SilentlyContinue | Where-Object {
+    # fixes compatibility with older/newer version of the Sandbox app
+    $_.Name -match 'WindowsSandbox(Client|RemoteSession)'
+  })[0]
+  $MainWindowHandle = $clientProcess.MainWindowHandle
 } Until ($MainWindowHandle -And (0 -ne $MainWindowHandle))
+
+if ('WindowsSandboxRemoteSession' -eq $clientProcess.Name) {
+  # extra quirks with new version require detecting a change of MainWindowHandle after collecting it the first time
+
+  $OldMainWindowHandle = $MainWindowHandle
+  $MainWindowHandle = $Null
+  Do {
+    Start-Sleep -Milliseconds $VisualDelay
+    $clientProcess = @(Get-Process -Name 'WindowsSandbox*' -ErrorAction SilentlyContinue | Where-Object {
+      # fixes compatibility with older/newer version of the Sandbox app
+      $_.Name -match 'WindowsSandbox(Client|RemoteSession)'
+    })[0]
+    $MainWindowHandle = $clientProcess.MainWindowHandle
+  } Until ($MainWindowHandle -And (0 -ne $MainWindowHandle) -And ($OldMainWindowHandle -ne $MainWindowHandle))
+  
+  # needs additional sleep time to prevent display bug
+  Start-Sleep -Milliseconds $VisualDelay
+}
 
 $Win32ShowWindowAsync::ShowWindowAsync($MainWindowHandle, $WindowStates['MINIMIZE']) | Out-Null
 
@@ -66,10 +89,16 @@ $Win32ShowWindowAsync::ShowWindowAsync($MainWindowHandle, $WindowStates['MINIMIZ
 
 $OneGB = 1073741824 # bytes
 $MagicMultiplier = 1 + (2/3) # educated guess, see below
-$vmmemSandboxOperationalGB = $OneGB * $MagicMultiplier # rough value of peak memory in use once sandbox is fully loaded
+$vmProcessOperationalGB = $OneGB * $MagicMultiplier # rough value of peak memory in use once sandbox is fully loaded
+$PeakWorkingSet64 = -1
 Do {
   Start-Sleep -Milliseconds $VisualDelay
-} Until ((Get-Process -Name 'vmmemSandbox' -ErrorAction SilentlyContinue).PeakWorkingSet64 -ge $vmmemSandboxOperationalGB)
+  $vmProcess = @(Get-Process -Name 'vmmem*Sandbox' -ErrorAction SilentlyContinue | Where-Object {
+    # fixes compatibility with older/newer version of the Sandbox app
+    $_.Name -match 'vmmem(Windows)?Sandbox'
+  })[0]
+  $PeakWorkingSet64 = $vmProcess.PeakWorkingSet64
+} Until ($PeakWorkingSet64 -ge $vmProcessOperationalGB)
 
 # Basically a magic number, there is no easy way to guess how much time it'll take Windows Sandbox to perform
 # the LogonCommand, and apply the dark theme, but this is a good estimate after peak memory (noted earlier) is reached
