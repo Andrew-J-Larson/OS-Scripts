@@ -1,6 +1,6 @@
 ﻿<#
   .SYNOPSIS
-  DSIA Get Docks Example v1.0.0
+  DSIA Get Docks Example v1.0.1
 
   .DESCRIPTION
   This script will attempt to check DSIA for docking stations (certain models only).
@@ -61,6 +61,31 @@ if ($Help.IsPresent) {
   exit
 }
 
+# FUNCTIONS
+
+# winget can't normally be ran under system, unless it's specifically called by the EXE
+# code via https://github.com/Romanitho/Winget-Install/blob/main/winget-install.ps1
+function Get-WingetCmd {
+
+    $WingetCmd = $null
+
+    #Get WinGet Path
+    try {
+        #Get Admin Context Winget Location
+        $WingetInfo = (Get-Item "$env:ProgramFiles\WindowsApps\Microsoft.DesktopAppInstaller_*_8wekyb3d8bbwe\winget.exe").VersionInfo | Sort-Object -Property FileVersionRaw
+        #If multiple versions, pick most recent one
+        $WingetCmd = $WingetInfo[-1].FileName
+    }
+    catch {
+        #Get User context Winget Location
+        if (Test-Path "$env:LocalAppData\Microsoft\WindowsApps\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe\winget.exe") {
+            $WingetCmd = "$env:LocalAppData\Microsoft\WindowsApps\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe\winget.exe"
+        }
+    }
+
+    return $WingetCmd
+}
+
 # CONSTANTS
 
 # Required due to PowerShell bug with shortnames appearing when they shouldn't be
@@ -82,6 +107,17 @@ $RegexDSIA = '^Dell (OpenManage|(Client )?System) Inventory Agent.*$'
 $cleanupFiles = @($CAB_DellSDPCatalogPC, $XML_DellSDPCatalogPC) # could have an additional files tacked on later for cleanup
 
 # MAIN
+
+$results = 0
+
+$msiErrorSuccessCodes = @(0, 1641, 3010) # https://learn.microsoft.com/en-us/windows/win32/msi/error-codes
+
+$msiexecEXE = (Split-Path $env:ComSpec) + '\msiexec.exe'
+$wingetEXE = Get-WingetCmd
+
+$AppName = 'Dell System Inventory Agent'
+
+$appWingetName = $Null # gets set later
 
 # Test to see if we really need to download and install DSIA first
 $Dell_SoftwareIdentity = Get-CimInstance -Namespace root\dell\sysinv -ClassName dell_softwareidentity -ErrorAction SilentlyContinue
@@ -114,10 +150,10 @@ if (-Not $Dell_SoftwareIdentity) {
   $URL_MSI_DSIAPC = $DATA_SPD_DSIAPC.InstallableItem.OriginFile.OriginUri
   # Install DSIA (directly from the URL for the MSI)
   $installMsiArgs = "/i `"${URL_MSI_DSIAPC}`" /qn /l*v `"${LOG_MSI_DSIAPC}`""
-  $ProcessInstallDSIAPC = Start-Process 'msiexec.exe' -ArgumentList $installMsiArgs -PassThru -Wait
+  $ProcessInstallDSIAPC = Start-Process $msiexecEXE -ArgumentList $installMsiArgs -PassThru -Wait
   # If install was successful...
-  if (0 -eq $ProcessInstallDSIAPC.ExitCode) {
-    Write-Host "DSIA was installed."
+  if ($msiErrorSuccessCodes -contains $ProcessInstallDSIAPC.ExitCode) {
+    Write-Host "${AppName} was installed."
     # Include LOG in temp files to delete
     $cleanupFiles += @($LOG_MSI_DSIAPC)
   }
@@ -126,7 +162,7 @@ if (-Not $Dell_SoftwareIdentity) {
   Remove-Item $cleanupFiles -Force
 
   # Make sure to force exit if the install was a fail
-  if (0 -ne $ProcessInstallDSIAPC.ExitCode) {
+  if ($msiErrorSuccessCodes -notcontains $ProcessInstallDSIAPC.ExitCode) {
     Throw "Exit code = $($ProcessInstallDSIAPC.ExitCode), see log file at: ${LOG_MSI_DSIAPC}"
   }
 }
@@ -171,17 +207,42 @@ if (-Not $PreInstalled) {
   $Apps = @()
   $Apps += Get-ItemProperty "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*" # 32 Bit
   $Apps += Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*"             # 64 Bit
+
   $uninstaller = @($Apps | Where-Object {
     # has a display name matching the regex, with a valid uninstall string
     $_.DisplayName -And ($_.DisplayName -match $RegexDSIA) -And $_.UninstallString
   }) | Sort-Object -Property InstallDate -Descending | Select-Object -First 1
-  $uninstallMsiArgs = ($uninstaller.UninstallString -split 'msiexec.exe ',2)[1] + ' /qn /noreboot'
-  $uninstallDSIA = Start-Process 'msiexec.exe' -ArgumentList $uninstallMsiArgs -PassThru -Wait
-  if (0 -eq $uninstallDSIA.ExitCode) {
-    Write-Host "DSIA was uninstalled."
-  } else {
-    Write-Warning "DSIA couldn't be uninstalled (exit code = $($uninstallDSIA.ExitCode))."
+
+  $appWingetName = $uninstaller.DisplayName
+  $uninstallAppPSI = New-object System.Diagnostics.ProcessStartInfo
+  $uninstallAppPSI.CreateNoWindow = $true
+  $uninstallAppPSI.UseShellExecute = $false
+  $uninstallAppPSI.RedirectStandardOutput = $true
+  $uninstallAppPSI.RedirectStandardError = $false
+  $uninstallAppPSI.FileName = $wingetEXE
+  $uninstallAppPSI.Arguments = @('uninstall --name "' + $appWingetName + '" --silent --scope machine')
+  $uninstallApp = New-Object System.Diagnostics.Process
+  $uninstallApp.StartInfo = $uninstallAppPSI
+  [void]$uninstallApp.Start()
+  $wingetOutput = $uninstallApp.StandardOutput.ReadToEnd()
+  $uninstallApp.WaitForExit()
+
+  if (0 -ne $uninstallApp.ExitCode) {
+    # Can't use exit code to determine different issues with uninstalls, see https://github.com/microsoft/winget-cli/discussions/3338
+    # - $wingetOutput can be checked for exit codes
+
+    # special circumstance with silent uninstall showing up as fail when it actually succeeded
+    $wingetOutputErrorMessage = $wingetOutput | Select-Object -Last 1
+    $wingetOutputErrorCode = ($wingetOutputErrorMessage -split ' ')[-1]
+    if ($msiErrorSuccessCodes -notcontains $wingetOutputErrorCode) {
+      $results = $wingetOutputErrorCode
+
+      Write-Warning "Failed to uninstall ${AppName}, due to the uninstaller failing (exit code: ${wingetOutputErrorCode})."
+    }
+  }
+  if (0 -eq $results) {
+    Write-Host "Successfully uninstalled ${AppName}."
   }
 }
 
-Exit 0
+Exit $results
