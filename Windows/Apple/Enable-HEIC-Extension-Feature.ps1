@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Enable HEIC Extension Feature v2.2.0
+  Enable HEIC Extension Feature v2.2.1
 
   .DESCRIPTION
   Script downloads and installs all extensions needed for viewing/editing HEIF/HEVC/HEIC file types.
@@ -125,7 +125,7 @@ function Download-AppxPackage {
 
   # required due to the api being protected behind Cloudflare now
   if (-Not $apiWebSession) {
-    $global:$apiWebSession = $null
+    $global:apiWebSession = $null
     $apiHostname = (($apiUrl.split('/'))[0..2]) -Join '/'
     Invoke-WebRequest -Uri $apiHostname -UserAgent $UserAgent -SessionVariable $apiWebSession -UseBasicParsing
   }
