@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.9.8
+  Prepare PC v1.9.9
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -408,10 +408,33 @@ $dcuApplyArgs = '/applyUpdates' + $(if ($dcuCliExe -eq $dcuCli) { ' -forceUpdate
 
 # Functions
 
+# winget can't normally be ran under system, unless it's specifically called by the EXE
+# code via https://github.com/Romanitho/Winget-Install/blob/main/winget-install.ps1
+function Get-WingetCmd {
+
+    $WingetCmd = $null
+
+    #Get WinGet Path
+    try {
+        #Get Admin Context Winget Location
+        $WingetInfo = (Get-Item "$env:ProgramFiles\WindowsApps\Microsoft.DesktopAppInstaller_*_8wekyb3d8bbwe\winget.exe").VersionInfo | Sort-Object -Property FileVersionRaw
+        #If multiple versions, pick most recent one
+        $WingetCmd = $WingetInfo[-1].FileName
+    }
+    catch {
+        #Get User context Winget Location
+        if (Test-Path "$env:LocalAppData\Microsoft\WindowsApps\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe\winget.exe") {
+            $WingetCmd = "$env:LocalAppData\Microsoft\WindowsApps\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe\winget.exe"
+        }
+    }
+
+    return $WingetCmd
+}
+
 # installs WinGet from the internet: code via https://github.com/Andrew-J-Larson/OS-Scripts/blob/main/Windows/Wrapper-Functions/Install-WinGet-Function.ps1
 # installs WinGet from the internet
 function Install-WinGet {
-  # v1.2.7
+  # v1.2.8
   param(
     [switch]$Force
   )
@@ -462,8 +485,32 @@ function Install-WinGet {
 
   # FUNCTIONS
 
+  # winget can't normally be ran under system, unless it's specifically called by the EXE
+  # code via https://github.com/Romanitho/Winget-Install/blob/main/winget-install.ps1
+  function Get-WingetCmd {
+
+      $WingetCmd = $null
+
+      #Get WinGet Path
+      try {
+          #Get Admin Context Winget Location
+          $WingetInfo = (Get-Item "$env:ProgramFiles\WindowsApps\Microsoft.DesktopAppInstaller_*_8wekyb3d8bbwe\winget.exe").VersionInfo | Sort-Object -Property FileVersionRaw
+          #If multiple versions, pick most recent one
+          $WingetCmd = $WingetInfo[-1].FileName
+      }
+      catch {
+          #Get User context Winget Location
+          if (Test-Path "$env:LocalAppData\Microsoft\WindowsApps\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe\winget.exe") {
+              $WingetCmd = "$env:LocalAppData\Microsoft\WindowsApps\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe\winget.exe"
+          }
+      }
+
+      return $WingetCmd
+  }
+
   function Test-WinGet {
-    return Get-Command 'winget.exe' -ErrorAction SilentlyContinue
+    $exists = (Get-Command 'winget.exe' -ErrorAction SilentlyContinue) -Or (Get-WingetCmd)
+    return $exists
   }
 
   # VARIABLES
@@ -543,23 +590,23 @@ function Install-WinGet {
   # if we can't find WinGet, try re-registering it (only a first time logon issue)
   $desktopAppInstaller = $appxPackagesAllUsers | Where-Object { $_.Name -eq "Microsoft.DesktopAppInstaller"}
   if ($desktopAppInstaller) {
-    if (-Not $(Test-WinGet)) {
+    if (-Not (Test-WinGet)) {
       # if the version is new enough to contain WinGet, this should fix things
       Add-AppxPackage -DisableDevelopmentMode -Register "$($desktopAppInstaller.InstallLocation)\AppxManifest.xml"
       # need to wait a moment to allow Windows to recognize registration
       Start-Sleep -Seconds $appxInstallDelay
     }
-    if ((-Not $forceWingetUpdate) -And $(Test-WinGet)) {
+    if ((-Not $forceWingetUpdate) -And (Test-WinGet)) {
       # if WinGet version is retired, force it to update
       $currentWingetVersion = [System.Version](
-        ((winget.exe -v).split('v')[1].split('.') | Select-Object -First 2) -join '.'
+        ((& (Get-WingetCmd) -v).split('v')[1].split('.') | Select-Object -First 2) -join '.'
       )
       $forceWingetUpdate = ($currentWingetVersion -le $retiredWingetVersion)
     }
   }
 
   # if WinGet is still not found, download WinGet package with any dependent packages, and attempt install
-  if ($forceWingetUpdate -Or (-Not $(Test-WinGet))) {
+  if ($forceWingetUpdate -Or (-Not (Test-WinGet))) {
     # Internet connection check
     $InternetAccess = (Get-NetConnectionProfile).IPv4Connectivity -contains "Internet" -or (Get-NetConnectionProfile).IPv6Connectivity -contains "Internet"
     if (-Not $InternetAccess) {
@@ -794,7 +841,7 @@ function Install-WinGet {
     if ($dependencyFiles) { $dependencyFiles | ForEach-Object { Remove-Item -Path $_ -Force -ErrorAction SilentlyContinue } }
     Remove-Item -Path $tempWingetPackage -Force -ErrorAction SilentlyContinue
     $result = 0
-    if ($wingetInstalled -And $(Test-WinGet)) {
+    if ($wingetInstalled -And (Test-WinGet)) {
       Write-Host "WinGet successfully installed.`n"
     } else {
       Write-Error = "WinGet failed to install."
@@ -1045,6 +1092,10 @@ if ($regSetOwner -And $regSetOrganization) {
 }
 Write-Output '' # Makes log look better
 
+# installs/updates WinGet if needed (necessary to start here, to prevent issues with further stages)
+$wingetInstalled = 0 -eq (Install-WinGet)
+$wingetEXE = (Get-WingetCmd)
+
 # Force the Microsoft Store to check for and install updates
 # NOTE: Not useful, since this only affects the currently logged in user (which gets deleted anyways)
 #       and, major updates already include updated versions of the provisioned store apps
@@ -1186,11 +1237,11 @@ if ($bitLockerVolume -And ($bitLockerVolume.VolumeStatus -eq 'EncryptionInProgre
 
 # Run Dell Command Update (get it up-to-date) w/ reboot disabled (done at the end)
 if ($isDell) {
-  if ((-Not (Test-Path -Path $dcuCliExe -PathType Leaf)) -And (Get-Command 'winget.exe' -ErrorAction SilentlyContinue)) {
+  if ((-Not (Test-Path -Path $dcuCliExe -PathType Leaf)) -And $wingetInstalled) {
     # Need to install Dell Command Update first
     Write-Output "Attempting to install Dell Command Update..."
     Write-Output '' # Makes log look better
-    $installDellCommandUpdate = Start-Process 'winget.exe' -ArgumentList 'install -h --id "Dell.CommandUpdate.Universal" --accept-package-agreements --accept-source-agreements' -NoNewWindow -PassThru -Wait
+    $installDellCommandUpdate = Start-Process $wingetEXE -ArgumentList 'install -h --id "Dell.CommandUpdate.Universal" --accept-package-agreements --accept-source-agreements' -NoNewWindow -PassThru -Wait
     if (0 -eq $installDellCommandUpdate.ExitCode) {
       Write-Output "Successfully installed Dell Command Update."
     } else {
@@ -1235,7 +1286,7 @@ if ($isDell) {
 }
 
 # Update all apps (not from the Microsoft Store)
-if ($(Install-WinGet) -eq 0) { # installs/updates WinGet if needed
+if ($wingetInstalled) {
   Write-Output "Attempting to update all apps (not from the Microsoft Store)..."
   Write-Output '' # Makes log look better
   $wingetUpgradePSI = New-object System.Diagnostics.ProcessStartInfo
@@ -1243,7 +1294,7 @@ if ($(Install-WinGet) -eq 0) { # installs/updates WinGet if needed
   $wingetUpgradePSI.UseShellExecute = $false
   $wingetUpgradePSI.RedirectStandardOutput = $true
   $wingetUpgradePSI.RedirectStandardError = $false
-  $wingetUpgradePSI.FileName = 'winget.exe'
+  $wingetUpgradePSI.FileName = $wingetEXE
   $wingetUpgradePSI.Arguments = @('upgrade --silent --all --accept-source-agreements')
   $wingetUpgradeProcess = New-Object System.Diagnostics.Process
   $wingetUpgradeProcess.StartInfo = $wingetUpgradePSI
