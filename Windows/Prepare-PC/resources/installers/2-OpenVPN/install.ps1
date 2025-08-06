@@ -15,6 +15,31 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <https://www.gnu.org/licenses/>. #>
 
+# winget can't normally be ran under system, unless it's specifically called by the EXE
+# code via https://github.com/Romanitho/Winget-Install/blob/main/winget-install.ps1
+function Get-WingetCmd {
+
+    $WingetCmd = $null
+
+    #Get WinGet Path
+    try {
+        #Get Admin Context Winget Location
+        $WingetInfo = (Get-Item "$env:ProgramFiles\WindowsApps\Microsoft.DesktopAppInstaller_*_8wekyb3d8bbwe\winget.exe").VersionInfo | Sort-Object -Property FileVersionRaw
+        #If multiple versions, pick most recent one
+        $WingetCmd = $WingetInfo[-1].FileName
+    }
+    catch {
+        #Get User context Winget Location
+        if (Test-Path "$env:LocalAppData\Microsoft\WindowsApps\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe\winget.exe") {
+            $WingetCmd = "$env:LocalAppData\Microsoft\WindowsApps\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe\winget.exe"
+        }
+    }
+
+    return $WingetCmd
+}
+
+$wingetEXE = (Get-WingetCmd)
+
 # Install OpenVPN along with the config file
 $AppName = "OpenVPN"
 $configFile = "${PSScriptRoot}\example-config.ovpn"
@@ -33,7 +58,7 @@ if ($appWasPreinstalled) {
   $configCopied = Copy-Item -Path $configFile -Destination $appConfigFolder -PassThru -Force
   # use winget to install
   $wingetArgs = 'install --id "' + $appWingetID + '" --silent --scope machine --accept-package-agreements --accept-source-agreements'
-  $appInstall = Start-Process 'winget.exe' -ArgumentList $wingetArgs -NoNewWindow -PassThru -Wait
+  $appInstall = Start-Process $wingetEXE -ArgumentList $wingetArgs -NoNewWindow -PassThru -Wait
   if ($configCopied -And (0 -eq $appInstall.ExitCode)) {
     Write-Output "Successfully installed ${AppName}."
   } else {
