@@ -36,9 +36,10 @@ if ($officeOneNoteStandalone) {
     ($_.DisplayName -And $_.Publisher) -And
     ($_.DisplayName -like 'Microsoft OneNote - *') -And
     ($_.Publisher -eq 'Microsoft Corporation') -And $_.UninstallString
-  })
+  }) # sorting by date doesn't matter
   if ($uninstallerOneNote.length) {
     for ($i = 0; $i -lt $uninstallerOneNote.length; $i++) {
+      if ($uninstallerOneNote[$i]) {
         $langOneNote = (($uninstallerOneNote[$i]).DisplayName -split 'Microsoft OneNote - ')[1]
         Write-Output "Uninstalling Microsoft OneNote - ${langOneNote} (Standalone)..."
         Write-Output '' # Makes log look better
@@ -53,6 +54,7 @@ if ($officeOneNoteStandalone) {
           Write-Warning "Failed to uninstall Microsoft OneNote - ${langOneNote} (Standalone)."
         }
         Write-Output '' # Makes log look better
+      }
     }
   }
 }
@@ -63,9 +65,10 @@ if ($officeHomeIsInstalled) {
     ($_.DisplayName -And $_.Publisher) -And
     ($_.DisplayName -like 'Microsoft 365 - *') -And
     ($_.Publisher -eq 'Microsoft Corporation') -And $_.UninstallString
-  })
+  }) # sorting by date doesn't matter
   if ($uninstallerHomeM365.length) {
     for ($i = 0; $i -lt $uninstallerHomeM365.length; $i++) {
+      if ($uninstallerHomeM365[$i]) {
         $langHomeM365 = (($uninstallerHomeM365[$i]).DisplayName -split 'Microsoft 365 - ')[1]
         Write-Output "Uninstalling Microsoft 365 - ${langHomeM365} (Home)..."
         Write-Output '' # Makes log look better
@@ -80,6 +83,7 @@ if ($officeHomeIsInstalled) {
           Write-Warning "Failed to uninstall Microsoft 365 - ${langHomeM365} (Home)."
         }
         Write-Output '' # Makes log look better
+      }
     }
   }
 }

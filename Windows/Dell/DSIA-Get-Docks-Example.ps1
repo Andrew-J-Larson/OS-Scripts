@@ -1,6 +1,6 @@
 ﻿<#
   .SYNOPSIS
-  DSIA Get Docks Example v1.0.1
+  DSIA Get Docks Example v1.0.2
 
   .DESCRIPTION
   This script will attempt to check DSIA for docking stations (certain models only).
@@ -113,7 +113,7 @@ $results = 0
 $msiErrorSuccessCodes = @(0, 1641, 3010) # https://learn.microsoft.com/en-us/windows/win32/msi/error-codes
 
 $msiexecEXE = (Split-Path $env:ComSpec) + '\msiexec.exe'
-$wingetEXE = Get-WingetCmd
+$wingetEXE = (Get-WingetCmd)
 
 $AppName = 'Dell System Inventory Agent'
 
@@ -211,37 +211,43 @@ if (-Not $PreInstalled) {
   $uninstaller = @($Apps | Where-Object {
     # has a display name matching the regex, with a valid uninstall string
     $_.DisplayName -And ($_.DisplayName -match $RegexDSIA) -And $_.UninstallString
-  }) | Sort-Object -Property InstallDate -Descending | Select-Object -First 1
+  }) | Sort-Object -Property InstallDate -Descending
+  if ($uninstaller.length) { $uninstaller = $uninstaller[0] }
 
-  $appWingetName = $uninstaller.DisplayName
-  $uninstallAppPSI = New-object System.Diagnostics.ProcessStartInfo
-  $uninstallAppPSI.CreateNoWindow = $true
-  $uninstallAppPSI.UseShellExecute = $false
-  $uninstallAppPSI.RedirectStandardOutput = $true
-  $uninstallAppPSI.RedirectStandardError = $false
-  $uninstallAppPSI.FileName = $wingetEXE
-  $uninstallAppPSI.Arguments = @('uninstall --name "' + $appWingetName + '" --silent --scope machine')
-  $uninstallApp = New-Object System.Diagnostics.Process
-  $uninstallApp.StartInfo = $uninstallAppPSI
-  [void]$uninstallApp.Start()
-  $wingetOutput = $uninstallApp.StandardOutput.ReadToEnd()
-  $uninstallApp.WaitForExit()
+  # If found, uninstall
+  if ($uninstaller) {
+    $appWingetName = $uninstaller.DisplayName
+    $uninstallAppPSI = New-object System.Diagnostics.ProcessStartInfo
+    $uninstallAppPSI.CreateNoWindow = $true
+    $uninstallAppPSI.UseShellExecute = $false
+    $uninstallAppPSI.RedirectStandardOutput = $true
+    $uninstallAppPSI.RedirectStandardError = $false
+    $uninstallAppPSI.FileName = $wingetEXE
+    $uninstallAppPSI.Arguments = @('uninstall --name "' + $appWingetName + '" --silent --scope machine')
+    $uninstallApp = New-Object System.Diagnostics.Process
+    $uninstallApp.StartInfo = $uninstallAppPSI
+    [void]$uninstallApp.Start()
+    $wingetOutput = $uninstallApp.StandardOutput.ReadToEnd()
+    $uninstallApp.WaitForExit()
 
-  if (0 -ne $uninstallApp.ExitCode) {
-    # Can't use exit code to determine different issues with uninstalls, see https://github.com/microsoft/winget-cli/discussions/3338
-    # - $wingetOutput can be checked for exit codes
+    if (0 -ne $uninstallApp.ExitCode) {
+      # Can't use exit code to determine different issues with uninstalls, see https://github.com/microsoft/winget-cli/discussions/3338
+      # - $wingetOutput can be checked for exit codes
 
-    # special circumstance with silent uninstall showing up as fail when it actually succeeded
-    $wingetOutputErrorMessage = $wingetOutput | Select-Object -Last 1
-    $wingetOutputErrorCode = ($wingetOutputErrorMessage -split ' ')[-1]
-    if ($msiErrorSuccessCodes -notcontains $wingetOutputErrorCode) {
-      $results = $wingetOutputErrorCode
+      # special circumstance with silent uninstall showing up as fail when it actually succeeded
+      $wingetOutputErrorMessage = $wingetOutput | Select-Object -Last 1
+      $wingetOutputErrorCode = ($wingetOutputErrorMessage -split ' ')[-1]
+      if ($msiErrorSuccessCodes -notcontains $wingetOutputErrorCode) {
+        $results = $wingetOutputErrorCode
 
-      Write-Warning "Failed to uninstall ${AppName}, due to the uninstaller failing (exit code: ${wingetOutputErrorCode})."
+        Write-Warning "Failed to uninstall ${AppName}, due to the uninstaller failing (exit code: ${wingetOutputErrorCode})."
+      }
     }
-  }
-  if (0 -eq $results) {
-    Write-Host "Successfully uninstalled ${AppName}."
+    if (0 -eq $results) {
+      Write-Host "Successfully uninstalled ${AppName}."
+    }
+  } else {
+    Write-Host "${AppName} is already uninstalled."
   }
 }
 
