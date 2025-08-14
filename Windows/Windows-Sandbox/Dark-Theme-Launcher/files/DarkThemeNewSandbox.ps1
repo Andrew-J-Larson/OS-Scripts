@@ -13,7 +13,7 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <https://www.gnu.org/licenses/>. #>
 
-# these functions fixes compatibility with older/newer versions of the Sandbox app
+# This function fixes compatibility with older/newer versions of the Sandbox app
 
 function Get-WindowsSandboxClientProcess {
   $process = @(Get-Process -Name 'WindowsSandbox*' -ErrorAction SilentlyContinue | Where-Object {
@@ -21,36 +21,74 @@ function Get-WindowsSandboxClientProcess {
   })[0]
   return $process
 }
-function Get-WindowsSandboxVmProcess {
-  $process = @(Get-Process -Name 'vmmem*Sandbox' -ErrorAction SilentlyContinue | Where-Object {
-    $_.Name -match 'vmmem(Windows)?Sandbox'
-  })[0]
-  return $process
-}
+
+# Constants
+
+$HostFolder = (Get-Item $PSScriptRoot).FullName
+$SandboxFolder = 'C:\VM-Sandbox'
 
 # Capture previous clipboard, in order to set it back to normal later, and clear the clipboard to prepare for below
 
 $PreviousClipboard = Get-Clipboard
-Set-Clipboard -Value $Null
+$ThemeLoadedClipboard = 'WindowsSandbox_' + ([System.Guid]::NewGuid()).ToString()
 
-# Dynamically create "WindowsSandboxDarkTheme.wsb" config file, so that mapped folders work properly
+# Encode loggon script first, which is required before starting up Windows Sandbox
+
+$LoggonCommandScriptContent = @'
+# Track if VM is Windows 10
+
+$IsWindows10 = ((Get-CimInstance -ClassName Win32_OperatingSystem).Caption).StartsWith("Microsoft Windows 10")
+
+# Set dark mode for apps and system
+
+Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "AppsUseLightTheme" -Value 0
+Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "SystemUsesLightTheme" -Value 0
+
+# Set dark wallpaper
+
+$DarkWallpaperPath = $(if ($IsWindows10) {
+'@ + "  `"${SandboxFolder}`"" + @'
+} else { "C:\Windows\Web\Wallpaper\Windows" }),"img19.jpg" -Join "\"
+$SPI_SETDESKWALLPAPER = 0x0014
+$UPDATE_INI_FILE = 0x01
+$SEND_CHANGE = 0x02
+$Win32Functions = Add-Type -memberDefinition @"
+[DllImport("user32.dll", CharSet=CharSet.Auto)]
+public static extern int SystemParametersInfo(int uAction, int uParam, string lpvParam, int fuWinIni);
+"@ -name "Win32Functions" -PassThru
+$Win32Functions::SystemParametersInfo($SPI_SETDESKWALLPAPER, 0, $DarkWallpaperPath, ($UPDATE_INI_FILE -bor $SEND_CHANGE))
+
+# Windows 11+ needs explorer to be restarted for the rest of the system to recognize the theme changes
+
+if (-Not $IsWindows10) {
+  Stop-Process -Name "explorer" -Force ; Wait-Process -Name "explorer"
+  Start-Process "explorer"
+  $Shell = New-Object -ComObject Shell.Application
+  While (-Not ($Shell.Windows()).Count) { Start-Sleep -Milliseconds 1 }
+  $Shell.Windows() | % { $_.quit() }
+}
+'@ + "Set-Clipboard `"${ThemeLoadedClipboard}`" # used to set off theme loaded detection `n"
+$EncodedLoggonCommandScript = [System.Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes($LoggonCommandScriptContent))
+$Command = "powershell.exe -ExecutionPolicy Bypass -EncodedCommand ${EncodedLoggonCommandScript}"
+
+# Then, dynamically create the Windows Sandbox config file, so that mapped folders work properly
 
 $envTEMP = Get-Item -LiteralPath $env:TEMP # Required due to PowerShell bug with shortnames appearing when they shouldn't be
 $PathDarkThemeWSB = "${envTEMP}\WindowsSandboxDarkTheme.wsb"
 
-# Uses the LogonCommand to execute change to dark theme, close the Settings app (opens after theme change), restarts Windows
-# Explorer (to let theme fully propigate), and finally closes the last File Explorer window (which opens after the restart)
+# Uses the LogonCommand to execute change to dark theme, restarts Windows Explorer (to let theme fully propagate),
+# and finally closes the last File Explorer window (which opens after the restart) unless it's Windows 10 (where it doesn't happen)
 $DarkThemeWSB = @"
 <Configuration>
   <MappedFolders>
     <MappedFolder>
-      <HostFolder>$((Get-Item "${PSScriptRoot}\Sandbox").FullName)</HostFolder>
-      <SandboxFolder>C:\VM-Sandbox</SandboxFolder>
+      <HostFolder>${HostFolder}</HostFolder>
+      <SandboxFolder>${SandboxFolder}</SandboxFolder>
       <ReadOnly>true</ReadOnly>
     </MappedFolder>
   </MappedFolders>
   <LogonCommand>
-    <Command>powershell.exe -ExecutionPolicy Bypass -File "C:\VM-Sandbox\DarkThemeLogonCommand.ps1"</Command>
+    <Command>${Command}</Command>
   </LogonCommand>
 </Configuration>
 "@
@@ -60,7 +98,7 @@ $DarkThemeWSB | Out-File -FilePath $PathDarkThemeWSB
 
 Start-Process $PathDarkThemeWSB
 
-# Minimize the Sandbox window until the theme fully applies (to prevent blinding eyes)
+# Hide the window until the theme fully applies (to prevent blinding eyes)
 
 $DisplayBugDelay = 500 # ms; prevents white screen flashes between window state changes
 
@@ -97,9 +135,9 @@ if ('WindowsSandboxRemoteSession' -eq $clientProcess.Name) {
 
 $Win32Functions::ShowWindowAsync($MainWindowHandle, $WindowStates['HIDE']) | Out-Null
 
-# Restore the Sandbox window after theme is fully applied (by monitoring the the clipboard for boolean)
+# Show minimized then restore the window after theme is fully applied (by monitoring the the clipboard for boolean)
 
-Do { <# nothing #> } Until (Get-Clipboard)
+Do { <# nothing #> } Until ($ThemeLoadedClipboard -eq (Get-Clipboard))
 
 Set-Clipboard -Value $PreviousClipboard # restore what was originally in the clipboard
 $Win32Functions::ShowWindowAsync($MainWindowHandle, $WindowStates['SHOWMINIMIZED']) | Out-Null
