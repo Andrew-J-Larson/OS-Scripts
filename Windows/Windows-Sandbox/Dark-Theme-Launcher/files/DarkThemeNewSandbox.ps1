@@ -24,13 +24,18 @@ function Get-WindowsSandboxClientProcess {
 
 # Constants
 
+$DarkWallpaperFilename = 'img19.jpg'
 $HostFolder = (Get-Item $PSScriptRoot).FullName
 $SandboxFolder = 'C:\VM-Sandbox'
+$SandboxFolderDarkWallpaperPath = $SandboxFolder,$DarkWallpaperFilename -Join '\'
+$DefaultWindowsWallpapersPath = 'C:\Windows\Web\Wallpaper\Windows'
+$DefaultWindowsDarkWallpaperPath = $DefaultWindowsWallpapersPath,$DarkWallpaperFilename -Join '\'
 
 # Capture previous clipboard, in order to set it back to normal later, and clear the clipboard to prepare for below
 
 $PreviousClipboard = Get-Clipboard
 $ThemeLoadedClipboard = 'WindowsSandbox_' + ([System.Guid]::NewGuid()).ToString()
+# Write-Host "`$ThemeLoadedClipboard = '${ThemeLoadedClipboard}'" # in case we need to manually make the window show up
 
 # Encode loggon script first, which is required before starting up Windows Sandbox
 
@@ -46,9 +51,11 @@ Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\P
 
 # Set dark wallpaper
 
-$DarkWallpaperPath = $(if ($IsWindows10) {
-'@ + "  `"${SandboxFolder}`"" + @'
-} else { "C:\Windows\Web\Wallpaper\Windows" }),"img19.jpg" -Join "\"
+$WallpaperPath = if ($IsWindows10) {
+'@ + "  '${SandboxFolderDarkWallpaperPath}'" + @'
+} else {
+'@ + "  '${DefaultWindowsDarkWallpaperPath}'" + @'
+}
 $SPI_SETDESKWALLPAPER = 0x0014
 $UPDATE_INI_FILE = 0x01
 $SEND_CHANGE = 0x02
@@ -56,7 +63,7 @@ $Win32Functions = Add-Type -memberDefinition @"
 [DllImport("user32.dll", CharSet=CharSet.Auto)]
 public static extern int SystemParametersInfo(int uAction, int uParam, string lpvParam, int fuWinIni);
 "@ -name "Win32Functions" -PassThru
-$Win32Functions::SystemParametersInfo($SPI_SETDESKWALLPAPER, 0, $DarkWallpaperPath, ($UPDATE_INI_FILE -bor $SEND_CHANGE))
+$Win32Functions::SystemParametersInfo($SPI_SETDESKWALLPAPER, 0, $WallpaperPath, ($UPDATE_INI_FILE -bor $SEND_CHANGE))
 
 # Windows 11+ needs explorer to be restarted for the rest of the system to recognize the theme changes
 
@@ -67,7 +74,7 @@ if (-Not $IsWindows10) {
   While (-Not ($Shell.Windows()).Count) { Start-Sleep -Milliseconds 1 }
   $Shell.Windows() | % { $_.quit() }
 }
-'@ + "Set-Clipboard `"${ThemeLoadedClipboard}`" # used to set off theme loaded detection `n"
+'@ + "Set-Clipboard '${ThemeLoadedClipboard}' # used to set off theme loaded detection `n"
 $EncodedLoggonCommandScript = [System.Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes($LoggonCommandScriptContent))
 $Command = "powershell.exe -ExecutionPolicy Bypass -EncodedCommand ${EncodedLoggonCommandScript}"
 
