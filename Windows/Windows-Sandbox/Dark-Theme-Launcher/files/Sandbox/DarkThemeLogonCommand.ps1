@@ -13,14 +13,32 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <https://www.gnu.org/licenses/>. #>
 
-$DarkThemeLocation = "C:\Windows\Resources\Themes\dark.theme"
+# Track if VM is Windows 10
+
 $IsWindows10 = ((Get-CimInstance -ClassName Win32_OperatingSystem).Caption).StartsWith("Microsoft Windows 10")
-if ($IsWindows10) {
-  $DarkThemeLocation = "C:\Resources\Windows (dark).deskthemepack"
+
+# Set dark mode for apps and system
+
+Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "AppsUseLightTheme" -Value 0
+Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "SystemUsesLightTheme" -Value 0
+
+# Set dark wallpaper
+
+$DarkWallpaperPath = $(if ($IsWindows10) { "C:\VM-Sandbox" } else { "C:\Windows\Web\Wallpaper\Windows" }),'img19.jpg' -Join '\'
+$SPI_SETDESKWALLPAPER = 0x0014
+$UPDATE_INI_FILE = 0x01
+$SEND_CHANGE = 0x02
+$Win32Functions = Add-Type -memberDefinition @"
+[DllImport("user32.dll", CharSet=CharSet.Auto)]
+public static extern int SystemParametersInfo(int uAction, int uParam, string lpvParam, int fuWinIni);
+"@ -name "Win32Functions" -PassThru
+$Win32Functions::SystemParametersInfo($SPI_SETDESKWALLPAPER, 0, $DarkWallpaperPath, ($UPDATE_INI_FILE -bor $SEND_CHANGE))
+if (-Not $IsWindows10) {
+  # Windows 11+ needs explorer to be restarted for the rest of the system to recognize the theme change
+  Stop-Process -Name "explorer" -Force ; Wait-Process -Name "explorer"
+  Start-Process "explorer"
+  $Shell = New-Object -ComObject Shell.Application
+  While (-Not ($Shell.Windows()).Count) { Start-Sleep -Milliseconds 1 }
+  $Shell.Windows() | % { $_.quit() }
 }
-Start-Process $DarkThemeLocation -Wait
-"systemsettings","explorer" | % { Stop-Process -Name $_ -Force ; Wait-Process -Name $_ }
-Start-Process "explorer"
-$Shell = New-Object -ComObject Shell.Application
-While (-Not ($Shell.Windows()).Count) { Start-Sleep -Milliseconds 1 }
-$Shell.Windows() | % { $_.quit() }
+Set-Clipboard $True # used to set off theme loaded detection

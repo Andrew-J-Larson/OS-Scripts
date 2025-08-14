@@ -28,6 +28,11 @@ function Get-WindowsSandboxVmProcess {
   return $process
 }
 
+# Capture previous clipboard, in order to set it back to normal later, and clear the clipboard to prepare for below
+
+$PreviousClipboard = Get-Clipboard
+Set-Clipboard -Value $Null
+
 # Dynamically create "WindowsSandboxDarkTheme.wsb" config file, so that mapped folders work properly
 
 $envTEMP = Get-Item -LiteralPath $env:TEMP # Required due to PowerShell bug with shortnames appearing when they shouldn't be
@@ -57,22 +62,21 @@ Start-Process $PathDarkThemeWSB
 
 # Minimize the Sandbox window until the theme fully applies (to prevent blinding eyes)
 
-$VisualDelay = 200 # ms; usually the fastest visual detection an eye can detect
-# Note: making VisualDelay too short can cause the window to not get minimized
+$DisplayBugDelay = 500 # ms; prevents white screen flashes between window state changes
 
 $WindowStates = @{
-  'MINIMIZE' = 6
+  'HIDE' = 0 # plays nicer with the windows, preventing a blank screen bug on restore
+  'SHOWMINIMIZED' = 2 # without this, the restore will not properly reactivate the window
   'RESTORE'  = 9
 }
-$Win32ShowWindowAsync = Add-Type -memberDefinition @"
+$Win32Functions = Add-Type -memberDefinition @"
 [DllImport("user32.dll")]
 public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
-"@ -name "Win32ShowWindowAsync" -namespace Win32Functions -PassThru
+"@ -name "Win32Functions" -PassThru
 
 $clientProcess = $Null # need to track for compatibility reasons
 $MainWindowHandle = $Null
 Do {
-  Start-Sleep -Milliseconds $VisualDelay
   $clientProcess = (Get-WindowsSandboxClientProcess)
   $MainWindowHandle = $clientProcess.MainWindowHandle
 } Until ($MainWindowHandle -And (0 -ne $MainWindowHandle))
@@ -83,31 +87,20 @@ if ('WindowsSandboxRemoteSession' -eq $clientProcess.Name) {
   $OldMainWindowHandle = $MainWindowHandle
   $MainWindowHandle = $Null
   Do {
-    Start-Sleep -Milliseconds $VisualDelay
     $clientProcess = (Get-WindowsSandboxClientProcess)
     $MainWindowHandle = $clientProcess.MainWindowHandle
   } Until ($MainWindowHandle -And (0 -ne $MainWindowHandle) -And ($OldMainWindowHandle -ne $MainWindowHandle))
   
-  # needs additional sleep time to prevent display bug
-  Start-Sleep -Milliseconds $VisualDelay
+  # needs additional sleep time to prevent blinding white window flash bug
+  Start-Sleep -Milliseconds $DisplayBugDelay
 }
 
-$Win32ShowWindowAsync::ShowWindowAsync($MainWindowHandle, $WindowStates['MINIMIZE']) | Out-Null
+$Win32Functions::ShowWindowAsync($MainWindowHandle, $WindowStates['HIDE']) | Out-Null
 
-# Restore the Sandbox window after theme is fully applied (by monitoring memory usage of Sandbox starting up)
+# Restore the Sandbox window after theme is fully applied (by monitoring the the clipboard for boolean)
 
-$OneGB = 1073741824 # bytes
-$MagicMultiplier = 1 + (2/3) # educated guess, see below
-$vmProcessOperationalGB = $OneGB * $MagicMultiplier # rough value of peak memory in use once sandbox is fully loaded
-$PeakWorkingSet64 = -1
-Do {
-  Start-Sleep -Milliseconds $VisualDelay
-  $vmProcess = (Get-WindowsSandboxVmProcess)
-  $PeakWorkingSet64 = $vmProcess.PeakWorkingSet64
-} Until ($PeakWorkingSet64 -ge $vmProcessOperationalGB)
+Do { <# nothing #> } Until (Get-Clipboard)
 
-# Basically a magic number, there is no easy way to guess how much time it'll take Windows Sandbox to perform
-# the LogonCommand, and apply the dark theme, but this is a good estimate after peak memory (noted earlier) is reached
-$MagicDelayThemeFullyApplied = 13600 # ms
-Start-Sleep -Milliseconds $MagicDelayThemeFullyApplied
-$Win32ShowWindowAsync::ShowWindowAsync($MainWindowHandle, $WindowStates['RESTORE']) | Out-Null
+Set-Clipboard -Value $PreviousClipboard # restore what was originally in the clipboard
+$Win32Functions::ShowWindowAsync($MainWindowHandle, $WindowStates['SHOWMINIMIZED']) | Out-Null
+$Win32Functions::ShowWindowAsync($MainWindowHandle, $WindowStates['RESTORE']) | Out-Null

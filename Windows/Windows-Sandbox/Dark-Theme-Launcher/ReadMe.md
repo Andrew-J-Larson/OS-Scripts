@@ -13,6 +13,6 @@ If you want to put the shortcut somewhere else on your computer, without moving 
 
 ## Extra Info
 
-I've also tried to include logic to handle hiding the sandbox window until the theme is fully loaded, so that eyes aren't blinded during the app startup.
+I've also included fancy logic (utilizing the clipboard) to handle hiding the sandbox window until the theme is fully loaded, so that your eyes aren't blinded during the app startup.
 
-The `Windows (dark).deskthemepack` helps to theme the Windows 10 sandbox version with dark mode, and replaces the background with the original Windows 10 launch version of the desktop background for a darker appearance.
+The `img19.jpg` helps to theme the **Windows 10** sandbox version with dark mode, and replaces the background with the original Windows 10 launch version of the desktop background for a darker appearance.
