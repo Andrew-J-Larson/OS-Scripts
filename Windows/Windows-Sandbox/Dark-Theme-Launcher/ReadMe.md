@@ -5,14 +5,20 @@ A launcher for Windows Sandbox to start using the dark theme.
 
 Launch the dark theme by using the shortcut file `Windows Sandbox (Dark Theme)`. The entire folder should be portable, so can place it anywhere on your computer to use.
 
-It launches the `DarkThemeSandboxHandler.ps1` script which helps to dynamically create the working config file to run Windows Sandbox with the dark theme.
+It launches the `DarkThemeNewSandbox.ps1` script which helps to dynamically create the working config file to run Windows Sandbox with the dark theme.
 
-If you want to put the shortcut somewhere else on your computer, without moving the files (e.g. just a shortcut on the desktop), then make sure to move the `files` folder to a good location on your computer and modify the `Start in` parameter in the shortcut to the parent directory (e.g.):
-1. Moved `files` folder to: `C:\CustomSandboxTheme\files`
+If you want to put the shortcut somewhere else on your computer, without moving the files (e.g. just a shortcut on the desktop), then make sure to move the `DarkThemeNewSandbox.ps1` script to a good location on your computer and modify the `Start in` parameter in the shortcut to the parent directory (e.g.):
+1. Moved `DarkThemeNewSandbox.ps1` script to: `C:\CustomSandboxTheme\DarkThemeNewSandbox.ps1`
 2. Set shortcut `Start in` to: `C:\CustomSandboxTheme`
 
 ## Extra Info
 
 I've also included fancy logic (utilizing the clipboard) to handle hiding the sandbox window until the theme is fully loaded, so that your eyes aren't blinded during the app startup.
 
-The `img19.jpg` helps to theme the **Windows 10** sandbox version with dark mode, and replaces the background with the original Windows 10 launch version of the desktop background for a darker appearance.
+The `embedded-resources` contains only files that were used to embed into the script (they aren't read by the script, and doesn't need to be downloaded).
+The `img0_3840x2160.jpg` wallpaper inside that folder is for the **Windows 10** sandbox version, as the launch version of the desktop background had a nicer darker appearance.
+- The clipboard is also utilized in order to load in the wallpaper without mounting any folders
+
+## Standalone version
+
+A working standalone shortcut is available, but not recommended (it will likely trip your anti-virus software due to the nature with how the shortcut was created).
