@@ -259,7 +259,8 @@ function Install-AppxPackage {
   $errored = $false
 
   try {
-    [Array]$appxPackages = Download-AppxPackage @args # neat trick to pass all parameters
+    # splatting @args doesn't appear to work due to a bug
+    [Array]$appxPackages = Download-AppxPackage -PackageFamilyName $PackageFamilyName -ProductId $ProductId
     for ($i = 0; $i -lt $appxPackages.count; $i++) {
       $appxFilePath = $appxPackages[$i]
       $appxFileName = Split-Path $appxFilePath -leaf
