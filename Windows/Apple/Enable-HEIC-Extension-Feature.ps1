@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Enable HEIC Extension Feature v2.2.1
+  Enable HEIC Extension Feature v2.2.2
 
   .DESCRIPTION
   Script downloads and installs all extensions needed for viewing/editing HEIF/HEVC/HEIC file types.
