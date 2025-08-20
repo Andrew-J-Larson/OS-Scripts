@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v1.9.9
+  Prepare PC v2.0.0
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -434,7 +434,7 @@ function Get-WingetCmd {
 # installs WinGet from the internet: code via https://github.com/Andrew-J-Larson/OS-Scripts/blob/main/Windows/Wrapper-Functions/Install-WinGet-Function.ps1
 # installs WinGet from the internet
 function Install-WinGet {
-  # v1.2.8
+  # v1.2.9
   param(
     [switch]$Force
   )
@@ -507,8 +507,16 @@ function Install-WinGet {
 
       return $WingetCmd
   }
-
+  
   function Test-WinGet {
+    # makes sure that winget can work properly
+    try {
+      Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe | Out-Null
+      Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.Winget.Source_8wekyb3d8bbwe | Out-Null
+    } catch {
+      Write-Warning "Issues activating Winget."
+    }
+
     $exists = (Get-Command 'winget.exe' -ErrorAction SilentlyContinue) -Or (Get-WingetCmd)
     return $exists
   }

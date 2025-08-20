@@ -40,6 +40,14 @@ function Get-WingetCmd {
 
 $wingetEXE = (Get-WingetCmd)
 
+# makes sure that winget can work properly
+try {
+  Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe | Out-Null
+  Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.Winget.Source_8wekyb3d8bbwe | Out-Null
+} catch {
+  Write-Warning "Issues activating Winget."
+}
+
 # Install OpenVPN along with the config file
 $AppName = "OpenVPN"
 $configFile = "${PSScriptRoot}\example-config.ovpn"
