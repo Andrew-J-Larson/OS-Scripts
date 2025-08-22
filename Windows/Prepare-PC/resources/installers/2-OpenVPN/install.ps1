@@ -42,8 +42,8 @@ $wingetEXE = (Get-WingetCmd)
 
 # makes sure that winget can work properly
 try {
-  Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe | Out-Null
-  Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.Winget.Source_8wekyb3d8bbwe | Out-Null
+  Get-AppxPackage -Name 'Microsoft.DesktopAppInstaller' -AllUsers | ForEach-Object { Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml" | Out-Null }
+  Get-AppxPackage -Name 'Microsoft.Winget.Source' -AllUsers | ForEach-Object { Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml" | Out-Null }
 } catch {
   Write-Warning "Issues activating Winget."
 }
