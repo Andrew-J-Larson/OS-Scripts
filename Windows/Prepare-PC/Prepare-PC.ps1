@@ -434,7 +434,7 @@ function Get-WingetCmd {
 # installs WinGet from the internet: code via https://github.com/Andrew-J-Larson/OS-Scripts/blob/main/Windows/Wrapper-Functions/Install-WinGet-Function.ps1
 # installs WinGet from the internet
 function Install-WinGet {
-  # v1.2.9
+  # v1.3.0
   param(
     [switch]$Force
   )
@@ -507,12 +507,12 @@ function Install-WinGet {
 
       return $WingetCmd
   }
-  
+
   function Test-WinGet {
     # makes sure that winget can work properly
     try {
-      Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe | Out-Null
-      Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.Winget.Source_8wekyb3d8bbwe | Out-Null
+      Get-AppxPackage -Name 'Microsoft.DesktopAppInstaller' -AllUsers | ForEach-Object { Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml" | Out-Null }
+      Get-AppxPackage -Name 'Microsoft.Winget.Source' -AllUsers | ForEach-Object { Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml" | Out-Null }
     } catch {
       Write-Warning "Issues activating Winget."
     }
