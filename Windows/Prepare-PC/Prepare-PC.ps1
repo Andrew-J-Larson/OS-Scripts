@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v2.0.0
+  Prepare PC v2.0.2
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -434,7 +434,7 @@ function Get-WingetCmd {
 # installs WinGet from the internet: code via https://github.com/Andrew-J-Larson/OS-Scripts/blob/main/Windows/Wrapper-Functions/Install-WinGet-Function.ps1
 # installs WinGet from the internet
 function Install-WinGet {
-  # v1.3.0
+  # v1.3.1
   param(
     [switch]$Force
   )
@@ -509,12 +509,20 @@ function Install-WinGet {
   }
 
   function Test-WinGet {
-    # makes sure that winget can work properly
-    try {
-      Get-AppxPackage -Name 'Microsoft.DesktopAppInstaller' -AllUsers | ForEach-Object { Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml" | Out-Null }
-      Get-AppxPackage -Name 'Microsoft.Winget.Source' -AllUsers | ForEach-Object { Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml" | Out-Null }
-    } catch {
-      Write-Warning "Issues activating Winget."
+    # makes sure that winget can work properly (when ran from user profiles)
+    if ($env:username -ne 'SYSTEM') {
+      try {
+        $wingetAppxPackages = @('Microsoft.DesktopAppInstaller', 'Microsoft.Winget.Source')
+        ForEach ($package in $wingetAppxPackages) {
+          if (-Not (Get-AppxPackage -Name $package)) {
+            Get-AppxPackage -Name $package -AllUsers | ForEach-Object {
+              Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml" | Out-Null
+            }
+          }
+        }
+      } catch {
+        Write-Warning "Issues activating Winget."
+      }
     }
 
     $exists = (Get-Command 'winget.exe' -ErrorAction SilentlyContinue) -Or (Get-WingetCmd)

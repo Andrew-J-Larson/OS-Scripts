@@ -86,6 +86,22 @@ function Get-WingetCmd {
     return $WingetCmd
 }
 
+# makes sure that winget can work properly (when ran from user profiles)
+if ($env:username -ne 'SYSTEM') {
+  try {
+    $wingetAppxPackages = @('Microsoft.DesktopAppInstaller', 'Microsoft.Winget.Source')
+    ForEach ($package in $wingetAppxPackages) {
+      if (-Not (Get-AppxPackage -Name $package)) {
+        Get-AppxPackage -Name $package -AllUsers | ForEach-Object {
+          Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml" | Out-Null
+        }
+      }
+    }
+  } catch {
+    Write-Warning "Issues activating Winget."
+  }
+}
+
 # CONSTANTS
 
 # Required due to PowerShell bug with shortnames appearing when they shouldn't be
