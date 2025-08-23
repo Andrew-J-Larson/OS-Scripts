@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v2.0.2
+  Prepare PC v2.0.3
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -407,6 +407,27 @@ $dcuConfigureArgs = '/configure -scheduleManual -updatesNotification=disable'
 $dcuApplyArgs = '/applyUpdates' + $(if ($dcuCliExe -eq $dcuCli) { ' -forceUpdate=enable' } else { '' }) + ' -reboot=disable -autoSuspendBitLocker=enable' # if using the universal version, need forceUpdate option
 
 # Functions
+
+# waits for current installations to finish
+function Wait-ForMsiexecSilently {
+  $MutexName = "Global\_MSIExecute"
+  #Write-Host "Checking for a busy Windows Installer..." -NoNewline
+  while ($true) {
+    # Attempt to open the global MSI mutex.
+    # If it exists, another installation is in progress.
+    try {
+      $Mutex = [System.Threading.Mutex]::OpenExisting($MutexName)
+      $Mutex.Dispose()
+      #Write-Host "." -NoNewline # Show progress with a dot
+      Start-Sleep -Seconds 1
+    }
+    catch {
+      #Write-Host " Done."
+      # Mutex does not exist, safe to proceed
+      return
+    }
+  }
+}
 
 # winget can't normally be ran under system, unless it's specifically called by the EXE
 # code via https://github.com/Romanitho/Winget-Install/blob/main/winget-install.ps1
@@ -1257,6 +1278,7 @@ if ($isDell) {
     # Need to install Dell Command Update first
     Write-Output "Attempting to install Dell Command Update..."
     Write-Output '' # Makes log look better
+    Wait-ForMsiexecSilently
     $installDellCommandUpdate = Start-Process $wingetEXE -ArgumentList 'install -h --id "Dell.CommandUpdate.Universal" --accept-package-agreements --accept-source-agreements' -NoNewWindow -PassThru -Wait
     if (0 -eq $installDellCommandUpdate.ExitCode) {
       Write-Output "Successfully installed Dell Command Update."
@@ -1283,6 +1305,7 @@ if ($isDell) {
     } while (6 -eq $dcuConfig.ExitCode)
     Write-Output '' # Makes log look better
     Write-Output "Attempting to update all Dell drivers/firmwares directly from manufacturer..."
+    Wait-ForMsiexecSilently
     $dcuUpdate = Start-Process -FilePath $dcuCliExe -ArgumentList $dcuApplyArgs -NoNewWindow -PassThru -Wait
     $dcuRebootRequired = (1 -eq $dcuUpdate.ExitCode) -Or (5 -eq $dcuUpdate.ExitCode)
     # 0 = updated, 500 = no updates were available, a.k.a. up-to-date
@@ -1319,6 +1342,7 @@ if ($wingetInstalled) {
   if (-Not $runningInWindowsTerminal) {
     $OutputEncoding = [Console]::OutputEncoding = New-Object System.Text.Utf8Encoding
   }
+  Wait-ForMsiexecSilently
   [void]$wingetUpgradeProcess.Start()
   $wingetOutput = $wingetUpgradeProcess.StandardOutput.ReadToEnd()
   $wingetUpgradeProcess.WaitForExit()

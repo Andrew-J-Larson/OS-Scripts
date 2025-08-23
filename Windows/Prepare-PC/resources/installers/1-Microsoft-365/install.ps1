@@ -15,6 +15,43 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <https://www.gnu.org/licenses/>. #>
 
+# waits for current installations to finish
+function Wait-ForMsiexecSilently {
+  $MutexName = "Global\_MSIExecute"
+  #Write-Host "Checking for a busy Windows Installer..." -NoNewline
+  while ($true) {
+    # Attempt to open the global MSI mutex.
+    # If it exists, another installation is in progress.
+    try {
+      $Mutex = [System.Threading.Mutex]::OpenExisting($MutexName)
+      $Mutex.Dispose()
+      #Write-Host "." -NoNewline # Show progress with a dot
+      Start-Sleep -Seconds 1
+    }
+    catch {
+      #Write-Host " Done."
+      # Mutex does not exist, safe to proceed
+      return
+    }
+  }
+}
+
+# makes sure that winget can work properly (when ran from user profiles)
+if ($env:username -ne 'SYSTEM') {
+  try {
+    $wingetAppxPackages = @('Microsoft.DesktopAppInstaller', 'Microsoft.Winget.Source')
+    ForEach ($package in $wingetAppxPackages) {
+      if (-Not (Get-AppxPackage -Name $package)) {
+        Get-AppxPackage -Name $package -AllUsers | ForEach-Object {
+          Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml" | Out-Null
+        }
+      }
+    }
+  } catch {
+    Write-Warning "Issues activating Winget."
+  }
+}
+
 # If needed, removes the annoying Microsoft 365 trial/buy prompt, standalone SfB install, Home/Free versions of office apps and standlone OneNote, and installs/configures (will remove old version of OneDrive and SfB)/updates Microsoft 365
 $envTEMP = (Get-Item -LiteralPath $env:TEMP).FullName # Required due to PowerShell bug with shortnames appearing when they shouldn't be
 $loopDelay = 1 # second
@@ -47,6 +84,7 @@ if ($officeOneNoteStandalone) {
         $splitUninstallString = @($UninstallString -split 'OfficeClickToRun.exe',2)
         $exePath = $splitUninstallString[0].substring(1, $splitUninstallString[0].length - 1) + 'OfficeClickToRun.exe'
         $exeArgs = $splitUninstallString[1].substring(2) + ' DisplayLevel=False'
+        Wait-ForMsiexecSilently
         $uninstallOneNote = Start-Process $exePath -ArgumentList $exeArgs -PassThru -Wait
         if (0 -eq $uninstallOneNote.ExitCode) {
           Write-Output "Successfully uninstalled Microsoft OneNote - ${langOneNote} (Standalone)."
@@ -76,6 +114,7 @@ if ($officeHomeIsInstalled) {
         $splitUninstallString = @($UninstallString -split 'OfficeClickToRun.exe',2)
         $exePath = $splitUninstallString[0].substring(1, $splitUninstallString[0].length - 1) + 'OfficeClickToRun.exe'
         $exeArgs = $splitUninstallString[1].substring(2) + ' DisplayLevel=False'
+        Wait-ForMsiexecSilently
         $uninstallHomeM365 = Start-Process $exePath -ArgumentList $exeArgs -PassThru -Wait
         if (0 -eq $uninstallHomeM365.ExitCode) {
           Write-Output "Successfully uninstalled Microsoft 365 - ${langHomeM365} (Home)."
@@ -178,6 +217,7 @@ if ($officeWasPreinstalled -And (-Not $officeNeedsConfiguring) -And (-Not $offic
   Stop-Process -Name 'teams' -Force -ErrorAction SilentlyContinue # Teams (classic)
   Stop-Process -Name 'ms-teams' -Force -ErrorAction SilentlyContinue # Teams
   Stop-Process -Name 'olk' -Force -ErrorAction SilentlyContinue # Outlook
+  Wait-ForMsiexecSilently
   $officeInstall = Start-Process -FilePath $tempSetupEXE -ArgumentList "/configure `"${installconfigXML}`"" -NoNewWindow -PassThru -Wait
   Remove-Item -Path $tempSetupEXE -Force
   if (0 -eq $officeInstall.ExitCode) {

@@ -63,6 +63,27 @@ if ($Help.IsPresent) {
 
 # FUNCTIONS
 
+# waits for current installations to finish
+function Wait-ForMsiexecSilently {
+  $MutexName = "Global\_MSIExecute"
+  #Write-Host "Checking for a busy Windows Installer..." -NoNewline
+  while ($true) {
+    # Attempt to open the global MSI mutex.
+    # If it exists, another installation is in progress.
+    try {
+      $Mutex = [System.Threading.Mutex]::OpenExisting($MutexName)
+      $Mutex.Dispose()
+      #Write-Host "." -NoNewline # Show progress with a dot
+      Start-Sleep -Seconds 1
+    }
+    catch {
+      #Write-Host " Done."
+      # Mutex does not exist, safe to proceed
+      return
+    }
+  }
+}
+
 # winget can't normally be ran under system, unless it's specifically called by the EXE
 # code via https://github.com/Romanitho/Winget-Install/blob/main/winget-install.ps1
 function Get-WingetCmd {
@@ -166,6 +187,7 @@ if (-Not $Dell_SoftwareIdentity) {
   $URL_MSI_DSIAPC = $DATA_SPD_DSIAPC.InstallableItem.OriginFile.OriginUri
   # Install DSIA (directly from the URL for the MSI)
   $installMsiArgs = "/i `"${URL_MSI_DSIAPC}`" /qn /l*v `"${LOG_MSI_DSIAPC}`""
+  Wait-ForMsiexecSilently
   $ProcessInstallDSIAPC = Start-Process $msiexecEXE -ArgumentList $installMsiArgs -PassThru -Wait
   # If install was successful...
   if ($msiErrorSuccessCodes -contains $ProcessInstallDSIAPC.ExitCode) {
@@ -242,6 +264,7 @@ if (-Not $PreInstalled) {
     $uninstallAppPSI.Arguments = @('uninstall --name "' + $appWingetName + '" --silent --scope machine')
     $uninstallApp = New-Object System.Diagnostics.Process
     $uninstallApp.StartInfo = $uninstallAppPSI
+    Wait-ForMsiexecSilently
     [void]$uninstallApp.Start()
     $wingetOutput = $uninstallApp.StandardOutput.ReadToEnd()
     $uninstallApp.WaitForExit()

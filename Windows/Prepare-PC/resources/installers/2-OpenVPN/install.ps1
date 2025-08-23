@@ -15,6 +15,27 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <https://www.gnu.org/licenses/>. #>
 
+# waits for current installations to finish
+function Wait-ForMsiexecSilently {
+  $MutexName = "Global\_MSIExecute"
+  #Write-Host "Checking for a busy Windows Installer..." -NoNewline
+  while ($true) {
+    # Attempt to open the global MSI mutex.
+    # If it exists, another installation is in progress.
+    try {
+      $Mutex = [System.Threading.Mutex]::OpenExisting($MutexName)
+      $Mutex.Dispose()
+      #Write-Host "." -NoNewline # Show progress with a dot
+      Start-Sleep -Seconds 1
+    }
+    catch {
+      #Write-Host " Done."
+      # Mutex does not exist, safe to proceed
+      return
+    }
+  }
+}
+
 # winget can't normally be ran under system, unless it's specifically called by the EXE
 # code via https://github.com/Romanitho/Winget-Install/blob/main/winget-install.ps1
 function Get-WingetCmd {
@@ -74,6 +95,7 @@ if ($appWasPreinstalled) {
   $configCopied = Copy-Item -Path $configFile -Destination $appConfigFolder -PassThru -Force
   # use winget to install
   $wingetArgs = 'install --id "' + $appWingetID + '" --silent --scope machine --accept-package-agreements --accept-source-agreements'
+  Wait-ForMsiexecSilently
   $appInstall = Start-Process $wingetEXE -ArgumentList $wingetArgs -NoNewWindow -PassThru -Wait
   if ($configCopied -And (0 -eq $appInstall.ExitCode)) {
     Write-Output "Successfully installed ${AppName}."
