@@ -62,7 +62,7 @@ function Get-WingetCmd {
 $wingetEXE = (Get-WingetCmd)
 
 # makes sure that winget can work properly (when ran from user profiles)
-if ($env:username -ne 'SYSTEM') {
+if (-Not ($env:username).EndsWith('$')) {
   try {
     $wingetAppxPackages = @('Microsoft.DesktopAppInstaller', 'Microsoft.Winget.Source')
     ForEach ($package in $wingetAppxPackages) {

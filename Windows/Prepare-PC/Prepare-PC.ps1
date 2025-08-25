@@ -531,7 +531,7 @@ function Install-WinGet {
 
   function Test-WinGet {
     # makes sure that winget can work properly (when ran from user profiles)
-    if ($env:username -ne 'SYSTEM') {
+    if (-Not ($env:username).EndsWith('$')) {
       try {
         $wingetAppxPackages = @('Microsoft.DesktopAppInstaller', 'Microsoft.Winget.Source')
         ForEach ($package in $wingetAppxPackages) {
@@ -1001,50 +1001,28 @@ Register-EngineEvent -SourceIdentifier PowerShell.Exiting -Action {
   Invoke-Command -ScriptBlock $changeSleepSettings -ArgumentList $setSleep.enable
 } -SupportEvent
 
-# Sync time and set timezone to automatic (uses https://time.is/ for time)
-# - Note: need to grab a user agent, otherwise website will shut us out for webscraping.
+# Sync time and set timezone to automatic (uses DigiCert to get current time)
 Write-Output "Setting timezone to automatic and syncing time..."
 Write-Output '' # Makes log look better
 $setTimezone = Set-TimeZone $timezone -PassThru
 $regSetTzautoupdate = Set-ItemProperty -Path $regTzautoupdate -Name "Start" -Value 3 -Type Dword -PassThru -Force
-$userAgentStringsURL = "https://jnrbsn.github.io/user-agents/user-agents.json"
-$UserAgent = $null
-$PreviousProgressPreference = $ProgressPreference
-$ProgressPreference = "SilentlyContinue" # avoids slow download when using Invoke-WebRequest
-while (-Not $UserAgent) {
-  # need to loop until user agent string is pulled from URL
-  $getUserAgentStrings = Invoke-WebRequest -Uri $userAgentStringsURL -UseBasicParsing
-  if ($getUserAgentStrings.StatusCode -eq 200) {
-    $UserAgent = ($getUserAgentStrings.Content | ConvertFrom-Json)[0]
-  } else {
-    Start-Sleep -Seconds $loopDelay
-  }
-}
-$timeIsURL = "https://time.is/"
-$TimeHTML = $null
-while (-Not $TimeHTML) {
+$timestampURL = "http://timestamp.digicert.com/"
+$timestampRequest = [System.Net.HttpWebRequest]::Create($timestampURL)
+$timestampRequest.Method = "GET"
+$timestampDate = $Null
+while (-Not $timestampDate) {
   # need to loop until current time is pulled from URL
-  $getTimeHTML = Invoke-WebRequest -Uri $timeIsURL -UserAgent $UserAgent -UseBasicParsing
-  if ($getTimeHTML.StatusCode -eq 200) {
-    $TimeHTML = $getTimeHTML.Content
-  } else {
-    Start-Sleep -Seconds $loopDelay
+  $timestampResponse = $Null
+  try {
+    $timestampResponse = $timestampRequest.GetResponse()
+    $timestampDate = $timestampResponse.Headers['Date']
+  } catch [System.Net.WebException] {
+    $timestampResponse = $_.Exception.Response
   }
 }
-$ProgressPreference = $PreviousProgressPreference # return ProgressPreference back to normal
-$RegexClock = [Regex]::new('(?<=<time id="clock">).*(?=</time>)')
-$MatchClock = $RegexClock.Match($TimeHTML)
-$RegexTime = [Regex]::new('.*(?=<span)')
-$MatchTime = $RegexTime.Match($MatchClock.value)
-$RegexAMPM = [Regex]::new('(?<=>).*(?=<)')
-$MatchAMPM = $RegexAMPM.Match($MatchClock.value)
-$setDate = $null
-if ($MatchClock.Success -And $MatchTime.Success -And $MatchAMPM.Success) {
-  $NewTime = $MatchTime.value + $MatchAMPM.value
-  $NewDate = Get-Date $NewTime
-  $setDate = Set-Date $NewDate
-}
-if ($setTimezone -And $regSetTzautoupdate -And $setDate) {
+$NewDate = Get-Date $timestampDate
+$SetDate = Set-Date $NewDate
+if ($setTimezone -And $regSetTzautoupdate -And $SetDate) {
   Write-Output "Successfully set timezone and synced time."
 } else {
   Write-Warning "Failed to set timezone and sync time."
