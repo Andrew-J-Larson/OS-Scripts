@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v2.0.3
+  Prepare PC v2.0.4
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -1015,9 +1015,11 @@ while (-Not $timestampDate) {
   $timestampResponse = $Null
   try {
     $timestampResponse = $timestampRequest.GetResponse()
-    $timestampDate = $timestampResponse.Headers['Date']
   } catch [System.Net.WebException] {
     $timestampResponse = $_.Exception.Response
+  }
+  if ($timestampResponse -And $timestampResponse.Headers) {
+    $timestampDate = $timestampResponse.Headers['Date']
   }
 }
 $NewDate = Get-Date $timestampDate
