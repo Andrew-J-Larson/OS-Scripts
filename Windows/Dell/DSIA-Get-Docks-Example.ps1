@@ -255,6 +255,7 @@ if (-Not $PreInstalled) {
   # If found, uninstall
   if ($uninstaller) {
     $appWingetName = $uninstaller.DisplayName
+    Wait-ForMsiexecSilently
     $uninstallAppPSI = New-object System.Diagnostics.ProcessStartInfo
     $uninstallAppPSI.CreateNoWindow = $true
     $uninstallAppPSI.UseShellExecute = $false
@@ -264,7 +265,6 @@ if (-Not $PreInstalled) {
     $uninstallAppPSI.Arguments = @('uninstall --name "' + $appWingetName + '" --silent --scope machine')
     $uninstallApp = New-Object System.Diagnostics.Process
     $uninstallApp.StartInfo = $uninstallAppPSI
-    Wait-ForMsiexecSilently
     [void]$uninstallApp.Start()
     $wingetOutput = $uninstallApp.StandardOutput.ReadToEnd()
     $uninstallApp.WaitForExit()

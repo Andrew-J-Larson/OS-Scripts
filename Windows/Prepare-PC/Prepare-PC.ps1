@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v2.0.4
+  Prepare PC v2.0.5
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -1308,6 +1308,7 @@ if ($isDell) {
 if ($wingetInstalled) {
   Write-Output "Attempting to update all apps (not from the Microsoft Store)..."
   Write-Output '' # Makes log look better
+  Wait-ForMsiexecSilently
   $wingetUpgradePSI = New-object System.Diagnostics.ProcessStartInfo
   $wingetUpgradePSI.CreateNoWindow = $true
   $wingetUpgradePSI.UseShellExecute = $false
@@ -1322,7 +1323,6 @@ if ($wingetInstalled) {
   if (-Not $runningInWindowsTerminal) {
     $OutputEncoding = [Console]::OutputEncoding = New-Object System.Text.Utf8Encoding
   }
-  Wait-ForMsiexecSilently
   [void]$wingetUpgradeProcess.Start()
   $wingetOutput = $wingetUpgradeProcess.StandardOutput.ReadToEnd()
   $wingetUpgradeProcess.WaitForExit()
