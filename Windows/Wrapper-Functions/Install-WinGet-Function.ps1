@@ -147,8 +147,10 @@ function Install-WinGet {
   }
 
   function Test-WinGet {
+    $ScriptIsSystem = ($env:userdomain -eq 'NT AUTHORITY') -Or ($env:username).EndsWith('$')
+
     # makes sure that winget can work properly (when ran from user profiles)
-    if (-Not ($env:username).EndsWith('$')) {
+    if (-Not $ScriptIsSystem) {
       try {
         $wingetAppxPackages = @('Microsoft.DesktopAppInstaller', 'Microsoft.Winget.Source')
         ForEach ($package in $wingetAppxPackages) {

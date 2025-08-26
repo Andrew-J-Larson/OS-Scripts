@@ -87,28 +87,28 @@ function Wait-ForMsiexecSilently {
 # winget can't normally be ran under system, unless it's specifically called by the EXE
 # code via https://github.com/Romanitho/Winget-Install/blob/main/winget-install.ps1
 function Get-WingetCmd {
+  $WingetCmd = $null
 
-    $WingetCmd = $null
-
-    #Get WinGet Path
-    try {
-        #Get Admin Context Winget Location
-        $WingetInfo = (Get-Item "$env:ProgramFiles\WindowsApps\Microsoft.DesktopAppInstaller_*_8wekyb3d8bbwe\winget.exe").VersionInfo | Sort-Object -Property FileVersionRaw
-        #If multiple versions, pick most recent one
-        $WingetCmd = $WingetInfo[-1].FileName
+  #Get WinGet Path
+  try {
+    #Get Admin Context Winget Location
+    $WingetInfo = (Get-Item "$env:ProgramFiles\WindowsApps\Microsoft.DesktopAppInstaller_*_8wekyb3d8bbwe\winget.exe").VersionInfo | Sort-Object -Property FileVersionRaw
+    #If multiple versions, pick most recent one
+    $WingetCmd = $WingetInfo[-1].FileName
+  } catch {
+    #Get User context Winget Location
+    if (Test-Path "$env:LocalAppData\Microsoft\WindowsApps\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe\winget.exe") {
+      $WingetCmd = "$env:LocalAppData\Microsoft\WindowsApps\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe\winget.exe"
     }
-    catch {
-        #Get User context Winget Location
-        if (Test-Path "$env:LocalAppData\Microsoft\WindowsApps\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe\winget.exe") {
-            $WingetCmd = "$env:LocalAppData\Microsoft\WindowsApps\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe\winget.exe"
-        }
-    }
+  }
 
-    return $WingetCmd
+  return $WingetCmd
 }
 
+$ScriptIsSystem = ($env:userdomain -eq 'NT AUTHORITY') -Or ($env:username).EndsWith('$')
+
 # makes sure that winget can work properly (when ran from user profiles)
-if (-Not ($env:username).EndsWith('$')) {
+if (-Not $ScriptIsSystem) {
   try {
     $wingetAppxPackages = @('Microsoft.DesktopAppInstaller', 'Microsoft.Winget.Source')
     ForEach ($package in $wingetAppxPackages) {
@@ -261,6 +261,7 @@ if (-Not $PreInstalled) {
     $uninstallAppPSI.UseShellExecute = $false
     $uninstallAppPSI.RedirectStandardOutput = $true
     $uninstallAppPSI.RedirectStandardError = $false
+    $uninstallAppPSI.WorkingDirectory = (Split-Path $wingetEXE) # required, when app is launched in System context in some instances
     $uninstallAppPSI.FileName = $wingetEXE
     $uninstallAppPSI.Arguments = @('uninstall --name "' + $appWingetName + '" --silent --scope machine')
     $uninstallApp = New-Object System.Diagnostics.Process
