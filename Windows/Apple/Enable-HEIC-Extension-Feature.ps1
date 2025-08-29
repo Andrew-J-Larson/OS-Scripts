@@ -83,6 +83,7 @@ Set-Variable -Name HEVC_APPX -Option Constant -Value @{
 # Output = Array of paths to successfully downloaded packages (of app and its dependencies)
 # Errors = Display in console
 function Download-AppxPackage {
+  # v2.1.2
   param(
     # there has to be an alternative, as sometimes the API fails on PackageFamilyName
     [string]$PackageFamilyName,

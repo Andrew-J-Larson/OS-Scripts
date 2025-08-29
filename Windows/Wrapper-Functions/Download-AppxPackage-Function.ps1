@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Download AppxPackage Function v2.1.1
+  Download AppxPackage Function v2.1.2
 
   .DESCRIPTION
   Script that contains a function which helps facilitate downloading Microsoft Store apps from their servers (via third-party API's).
@@ -110,7 +110,7 @@ function Download-AppxPackage {
   if (-Not $apiWebSession) {
     $global:apiWebSession = $null
     $apiHostname = (($apiUrl.split('/'))[0..2]) -Join '/'
-    Invoke-WebRequest -Uri $apiHostname -UserAgent $UserAgent -SessionVariable $apiWebSession -UseBasicParsing
+    Invoke-WebRequest -Uri $apiHostname -UserAgent $UserAgent -SessionVariable $apiWebSession -UseBasicParsing | Out-Null
   }
 
   $raw = $null
