@@ -16,7 +16,7 @@
 
   .OUTPUTS
   Successes, warnings, and errors log to the console.
-  
+
   If logging is turned on, a log file will be created (normally at the root of the machine's drive).
 
   .EXAMPLE
@@ -77,7 +77,7 @@
 param(
   [Alias("h")]
   [switch]$Help,
-  
+
   [Alias("f11")]
   [switch]$FullScreen,
 
@@ -522,7 +522,7 @@ function Install-WinGet {
     } else { # Required for non-Windows
       [System.IO.Path]::GetTempPath().TrimEnd('\')
     }
-  )).FullName 
+  )).FullName
   $loopDelay = 1 # second
   $appxInstallDelay = 3 # seconds
 
@@ -845,13 +845,13 @@ function Install-WinGet {
               $dependencyPackageDownloadTime += $loopDelay
             }
             $ProgressPreference = $PreviousProgressPreference # return ProgressPreference back to normal
-  
+
             # need to see if package is uiXaml, if so, extract dependency needed
             $packageIsUiXaml = ($dependencyPackage -eq $wingetDependencies.uiXaml) -And $dependencyPackage.file
             $successMsg = @("Successfully downloaded a ", "dependency for Winget.`n")
             if ($packageIsUiXaml) {
               Write-Host "$($successMsg -Join 'source file containing a ')"
-  
+
               Write-Host "Extracting dependency, from downloaded source file, for WinGet...`n"
               $uiXamlNupkg = $dependencyPackage.file
               $dependencyPackage.file = $envTEMP + '\' + $dependencyPackage.name
@@ -933,7 +933,7 @@ function Install-WinGet {
 $isBuiltInAdmin = $False
 if ($localAdminUser -eq $currentUser) {
   Write-Warning "Can't use the same username for local admin, as the currently logged in user!"
-  Write-Output "Please use a different username for local admin, or create a new temporary admin user, and delete the currently logged in profile/data afterwards." 
+  Write-Output "Please use a different username for local admin, or create a new temporary admin user, and delete the currently logged in profile/data afterwards."
   Write-Output '' # Makes log look better
   exit 1
 } elseif ("Administrator" -eq $currentUser) {
@@ -1049,7 +1049,7 @@ while (-Not $internetReconnected) {
   Start-Sleep -Seconds $loopDelay
 }
 $setNetworksToPrivate = $True
-$networkProfiles = Get-NetConnectionProfile | 
+$networkProfiles = Get-NetConnectionProfile |
 Where-Object { (($_.IPv4Connectivity -eq "Internet") -Or ($_.IPv6Connectivity -eq "Internet")) -And $_.NetworkCategory -eq "Public" }
 for ($i = 0; $i -lt $networkProfiles.length; $i++) {
   try {
@@ -1174,7 +1174,7 @@ if (-Not $isWDGA) { # online Windows Updates are not possible in WDGA
       ($ResultCodesInt.ABORTED)  = 'aborted'
     }
     # get all updates that normally come from from auto updates (no optional updates)
-    $Criteria = "IsInstalled=0 and IsHidden=0 and AutoSelectOnWebSites=1" 
+    $Criteria = "IsInstalled=0 and IsHidden=0 and AutoSelectOnWebSites=1"
     $MicrosoftUpdateSession = New-Object -ComObject 'Microsoft.Update.Session'
     $UpdateSearcher = $MicrosoftUpdateSession.CreateUpdateSearcher()
     $SearcherResults = $UpdateSearcher.Search($Criteria)
@@ -1455,7 +1455,7 @@ $enabledAutoLogon = ($regSetAutoAdminLogon -And $regSetDefaultUserName -And $reg
 if ($enabledAutoLogon) {
   Write-Output "Successfully set the domain admin user to auto logon once on reboot."
   Write-Output '' # Makes log look better
-  
+
   # Disable privacy experience prompt on first logon
   Write-Output "Setting the OOBE privacy experience prompt to disabled..."
   Write-Output '' # Makes log look better
@@ -1608,7 +1608,7 @@ $actionFinalizeOnline = New-ScheduledTaskAction -Execute 'powershell.exe' -Argum
   `"& { $(if ($bitLockerVolume) {
     "if ((Get-BitLockerVolume -MountPoint '$($bitLockerVolume.MountPoint)').VolumeStatus -eq 'EncryptionInProgress') { `
       Write-Output 'Waiting for BitLocker encryption to complete...' ; Write-Output '' ; `
-      while ((Get-BitLockerVolume -MountPoint '$($bitLockerVolume.MountPoint)').VolumeStatus -eq 'EncryptionInProgress') { Start-Sleep -Seconds ${loopDelay} } } " 
+      while ((Get-BitLockerVolume -MountPoint '$($bitLockerVolume.MountPoint)').VolumeStatus -eq 'EncryptionInProgress') { Start-Sleep -Seconds ${loopDelay} } } "
   }) `
   while (-Not ((Get-NetConnectionProfile).IPv4Connectivity -contains 'Internet' `
   -or (Get-NetConnectionProfile).IPv6Connectivity -contains 'Internet')) `
