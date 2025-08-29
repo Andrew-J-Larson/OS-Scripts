@@ -94,9 +94,9 @@ if ($appWasPreinstalled) {
   New-Item -ItemType Directory -Force -Path $appConfigFolder -ErrorAction SilentlyContinue | Out-Null
   $configCopied = Copy-Item -Path $configFile -Destination $appConfigFolder -PassThru -Force
   # use winget to install
-  $wingetArgs = 'install --id "' + $appWingetID + '" --silent --scope machine --accept-package-agreements --accept-source-agreements'
+  $wingetArgs = 'install --id "' + $appWingetID + '" --silent --disable-interactivity --scope machine --accept-package-agreements --accept-source-agreements'
   Wait-ForMsiexecSilently
-  $appInstall = Start-Process $wingetEXE -ArgumentList $wingetArgs -NoNewWindow -PassThru -Wait
+  $appInstall = Start-Process $wingetEXE -ArgumentList $wingetArgs -WindowsStyle Hidden -PassThru -Wait
   if ($configCopied -And (0 -eq $appInstall.ExitCode)) {
     Write-Output "Successfully installed ${AppName}."
   } else {

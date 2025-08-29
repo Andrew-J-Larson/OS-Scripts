@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v2.0.6
+  Prepare PC v2.0.7
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a domain joining.
@@ -331,14 +331,6 @@ if ($hasBadMicrosoftPrintToPDF) {
   }
 }
 
-# Check if running in Windows Terminal (determines if encoding needs to be changed when running some apps)
-# code modified from https://stackoverflow.com/a/72575526
-$ps = Get-Process -Id $PID
-while ($ps -and 0 -eq [int] $ps.MainWindowHandle) { 
-  $ps = Get-Process -ErrorAction Ignore -Id (Get-CimInstance Win32_Process -Filter "ProcessID = $($ps.Id)").ParentProcessId 
-}
-$runningInWindowsTerminal = $ps.ProcessName -eq 'WindowsTerminal'
-
 # Check manufacturer (only required for using Dell Command Update on Dell computers)
 $manufacturer = (Get-WmiObject -Class Win32_ComputerSystem -Property Manufacturer).Manufacturer
 $isDell = $manufacturer -like "Dell*"
@@ -450,10 +442,53 @@ function Get-WingetCmd {
   return $WingetCmd
 }
 
+# strips progress spinner/blocks from WinGet outputs, and fixes minor character issues
+# code via https://github.com/microsoft/winget-cli/issues/2582#issuecomment-1945481998
+function Fix-WingetOutput {
+  param(
+      [ScriptBlock]$ScriptBlock
+  )
+
+  # Regex pattern to match spinner characters and progress bar patterns
+  $progressPattern = 'Γû[Æê]|^\s+[-\\|/]\s+$'
+
+  # Malformed elipsis character (to replace with fixed version)
+  $ellipsisCharacter = @{
+    Bad = 'ΓÇª'
+    Good = '…'
+  }
+
+  # Corrected regex pattern for size formatting, ensuring proper capture groups are utilized
+  $sizePattern = '(\d+(\.\d{1,2})?)\s+(B|KB|MB|GB|TB|PB) /\s+(\d+(\.\d{1,2})?)\s+(B|KB|MB|GB|TB|PB)'
+
+  $previousLineWasEmpty = $false # Track if the previous line was empty
+
+  & $ScriptBlock 2>&1 | ForEach-Object {
+      if ($_ -is [System.Management.Automation.ErrorRecord]) {
+          "ERROR: $($_.Exception.Message)"
+      } elseif ($_ -match '^\s*$') {
+          if (-not $previousLineWasEmpty) {
+              Write-Output ""
+              $previousLineWasEmpty = $true
+          }
+      } else {
+          $line = $(
+                    $(
+                      $_ -replace $ellipsisCharacter.Bad, $ellipsisCharacter.Good
+                    ) -replace $progressPattern
+                  ) -replace $sizePattern, '$1 $3 / $4 $6'
+          if (-not [string]::IsNullOrWhiteSpace($line)) {
+              $previousLineWasEmpty = $false
+              $line
+          }
+      }
+  }
+}
+
 # installs WinGet from the internet: code via https://github.com/Andrew-J-Larson/OS-Scripts/blob/main/Windows/Wrapper-Functions/Install-WinGet-Function.ps1
 # installs WinGet from the internet
 function Install-WinGet {
-  # v1.3.1
+  # v1.3.2
   param(
     [switch]$Force
   )
@@ -868,7 +903,7 @@ function Install-WinGet {
       if ($wingetDependencies.uiXaml -And $wingetDependencies.uiXaml.file) { $dependencyFiles += , ($wingetDependencies.uiXaml.file) }
       $addPackageCommand = 'Add-AppxPackage -Path "' + $tempWingetPackage + '" -ForceTargetApplicationShutdown'
       if ($dependencyFiles) { $addPackageCommand += ' -DependencyPath "' + "$($dependencyFiles -Join '","')" + '"' }
-      Invoke-Expression $addPackageCommand
+      Invoke-Expression -Command $addPackageCommand
       # need to wait a moment to allow install to register with Windows
       Start-Sleep -Seconds $appxInstallDelay
     } catch {
@@ -889,39 +924,6 @@ function Install-WinGet {
     # special return of results, if a working version of WinGet is already installed
     Write-Host "WinGet is already installed.`n"
     return 0
-  }
-}
-
-# strips progress spinner/blocks from WinGet outputs
-# code via https://github.com/microsoft/winget-cli/issues/2582#issuecomment-1945481998
-function Strip-Progress {
-  param(
-      [ScriptBlock]$ScriptBlock
-  )
-
-  # Regex pattern to match spinner characters and progress bar patterns
-  $progressPattern = 'Γû[Æê]|^\s+[-\\|/]\s+$'
-
-  # Corrected regex pattern for size formatting, ensuring proper capture groups are utilized
-  $sizePattern = '(\d+(\.\d{1,2})?)\s+(B|KB|MB|GB|TB|PB) /\s+(\d+(\.\d{1,2})?)\s+(B|KB|MB|GB|TB|PB)'
-
-  $previousLineWasEmpty = $false # Track if the previous line was empty
-
-  & $ScriptBlock 2>&1 | ForEach-Object {
-      if ($_ -is [System.Management.Automation.ErrorRecord]) {
-          "ERROR: $($_.Exception.Message)"
-      } elseif ($_ -match '^\s*$') {
-          if (-not $previousLineWasEmpty) {
-              Write-Output ""
-              $previousLineWasEmpty = $true
-          }
-      } else {
-          $line = $_ -replace $progressPattern, '' -replace $sizePattern, '$1 $3 / $4 $6'
-          if (-not [string]::IsNullOrWhiteSpace($line)) {
-              $previousLineWasEmpty = $false
-              $line
-          }
-      }
   }
 }
 
@@ -1259,7 +1261,7 @@ if ($isDell) {
     Write-Output "Attempting to install Dell Command Update..."
     Write-Output '' # Makes log look better
     Wait-ForMsiexecSilently
-    $installDellCommandUpdate = Start-Process $wingetEXE -ArgumentList 'install -h --id "Dell.CommandUpdate.Universal" --accept-package-agreements --accept-source-agreements' -NoNewWindow -PassThru -Wait
+    $installDellCommandUpdate = Start-Process $wingetEXE -ArgumentList 'install -h --id "Dell.CommandUpdate.Universal" --disable-interactivity --accept-package-agreements --accept-source-agreements' -NoNewWindow -PassThru -Wait
     if (0 -eq $installDellCommandUpdate.ExitCode) {
       Write-Output "Successfully installed Dell Command Update."
     } else {
@@ -1308,34 +1310,16 @@ if ($isDell) {
 if ($wingetInstalled) {
   Write-Output "Attempting to update all apps (not from the Microsoft Store)..."
   Write-Output '' # Makes log look better
+  $wingetOutput = $Null
+  $wingetExitCode = 0
   Wait-ForMsiexecSilently
-  $wingetUpgradePSI = New-object System.Diagnostics.ProcessStartInfo
-  $wingetUpgradePSI.CreateNoWindow = $true
-  $wingetUpgradePSI.UseShellExecute = $false
-  $wingetUpgradePSI.RedirectStandardOutput = $true
-  $wingetUpgradePSI.RedirectStandardError = $false
-  $wingetUpgradePSI.WorkingDirectory = (Split-Path $wingetEXE) # required, when app is launched in System context in some instances
-  $wingetUpgradePSI.FileName = $wingetEXE
-  $wingetUpgradePSI.Arguments = @('upgrade --silent --all --accept-source-agreements')
-  $wingetUpgradeProcess = New-Object System.Diagnostics.Process
-  $wingetUpgradeProcess.StartInfo = $wingetUpgradePSI
-  # if not running in Windows Terminal, need to change encoding to UTF-8 temporarily for winget
-  $oldOutputEncoding = $OutputEncoding; $oldConsoleEncoding = [Console]::OutputEncoding
-  if (-Not $runningInWindowsTerminal) {
-    $OutputEncoding = [Console]::OutputEncoding = New-Object System.Text.Utf8Encoding
+  Fix-WingetOutput -ScriptBlock {
+    # capture output of winget after stripping / fixing it
+    & $wingetEXE upgrade --all --silent --disable-interactivity --accept-source-agreements | Tee-Object -Variable 'wingetOutput'
+    $wingetExitCode = $LASTEXITCODE
+    $LASTEXITCODE = 0
   }
-  [void]$wingetUpgradeProcess.Start()
-  $wingetOutput = $wingetUpgradeProcess.StandardOutput.ReadToEnd()
-  $wingetUpgradeProcess.WaitForExit()
-  Strip-Progress -ScriptBlock {
-    # show output after so that we at least know what went on
-    Write-Output $wingetOutput
-  }
-  # revert any encoding changes we made from earlier if needed
-  if (-Not $runningInWindowsTerminal) {
-    $OutputEncoding = $oldOutputEncoding; [Console]::OutputEncoding = $oldConsoleEncoding
-  }
-  if (0 -eq $wingetUpgradeProcess.ExitCode) {
+  if (0 -eq $wingetExitCode) {
     Write-Output "Successfully updated all apps (not from the Microsoft Store)."
   } else {
     # Can't use exit code to determine different issues with upgrade, see https://github.com/microsoft/winget-cli/discussions/3338
@@ -1413,22 +1397,11 @@ if ($appsToInstall -And $appFolders) {
   Write-Output '' # Makes log look better
   $appFolders | ForEach-Object {
     if ($appsToInstall.contains($_.name)) {
-      $appsInstallPSI = New-Object System.Diagnostics.ProcessStartInfo
-      $appsInstallPSI.CreateNoWindow = $true
-      $appsInstallPSI.UseShellExecute = $false
-      $appsInstallPSI.RedirectStandardOutput = $true
-      $appsInstallPSI.RedirectStandardError = $true
-      $appsInstallPSI.FileName = 'powershell.exe'
-      $appsInstallPSI.WorkingDirectory = $_.fullname
-      $appsInstallPSI.Arguments = @("-File .\install.ps1")
-      $appsInstallProcess = New-Object System.Diagnostics.Process
-      $appsInstallProcess.StartInfo = $appsInstallPSI
-      [void]$appsInstallProcess.Start()
-      $appsInstallProcess.StandardOutput.ReadToEnd()
-      $appsInstallProcess.StandardError.ReadToEnd()
-      $appsInstallProcess.WaitForExit()
+      Set-Location -Path $_.fullname
+      & 'powershell.exe' -File .\install.ps1
     }
   }
+  Set-Location -Path $PSScriptRoot
 } else {
   Write-Output "No application install list selected."
 }

@@ -38,22 +38,6 @@ function Wait-ForMsiexecSilently {
 
 $ScriptIsSystem = ($env:userdomain -eq 'NT AUTHORITY') -Or ($env:username).EndsWith('$')
 
-# makes sure that winget can work properly (when ran from user profiles)
-if (-Not $ScriptIsSystem) {
-  try {
-    $wingetAppxPackages = @('Microsoft.DesktopAppInstaller', 'Microsoft.Winget.Source')
-    ForEach ($package in $wingetAppxPackages) {
-      if (-Not (Get-AppxPackage -Name $package)) {
-        Get-AppxPackage -Name $package -AllUsers | ForEach-Object {
-          Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml" | Out-Null
-        }
-      }
-    }
-  } catch {
-    Write-Warning "Issues activating Winget."
-  }
-}
-
 # If needed, removes the annoying Microsoft 365 trial/buy prompt, standalone SfB install, Home/Free versions of office apps and standlone OneNote, and installs/configures (will remove old version of OneDrive and SfB)/updates Microsoft 365
 $envTEMP = (Get-Item -LiteralPath $env:TEMP).FullName # Required due to PowerShell bug with shortnames appearing when they shouldn't be
 $loopDelay = 1 # second

@@ -105,6 +105,51 @@ function Get-WingetCmd {
   return $WingetCmd
 }
 
+# strips progress spinner/blocks from WinGet outputs, and fixes minor character issues
+# code via https://github.com/microsoft/winget-cli/issues/2582#issuecomment-1945481998
+function Fix-WingetOutput {
+  param(
+      [ScriptBlock]$ScriptBlock
+  )
+
+  # Regex pattern to match spinner characters and progress bar patterns
+  $progressPattern = 'Γû[Æê]|^\s+[-\\|/]\s+$'
+
+  # Malformed elipsis character (to replace with fixed version)
+  $ellipsisCharacter = @{
+    Bad = 'ΓÇª'
+    Good = '…'
+  }
+
+  # Corrected regex pattern for size formatting, ensuring proper capture groups are utilized
+  $sizePattern = '(\d+(\.\d{1,2})?)\s+(B|KB|MB|GB|TB|PB) /\s+(\d+(\.\d{1,2})?)\s+(B|KB|MB|GB|TB|PB)'
+
+  $previousLineWasEmpty = $false # Track if the previous line was empty
+
+  & $ScriptBlock 2>&1 | ForEach-Object {
+      if ($_ -is [System.Management.Automation.ErrorRecord]) {
+          "ERROR: $($_.Exception.Message)"
+      } elseif ($_ -match '^\s*$') {
+          if (-not $previousLineWasEmpty) {
+              Write-Output ""
+              $previousLineWasEmpty = $true
+          }
+      } else {
+          $line = $(
+                    $(
+                      $_ -replace $ellipsisCharacter.Bad, $ellipsisCharacter.Good
+                    ) -replace $progressPattern
+                  ) -replace $sizePattern, '$1 $3 / $4 $6'
+          if (-not [string]::IsNullOrWhiteSpace($line)) {
+              $previousLineWasEmpty = $false
+              $line
+          }
+      }
+  }
+}
+
+# PRE CHECKS
+
 $ScriptIsSystem = ($env:userdomain -eq 'NT AUTHORITY') -Or ($env:username).EndsWith('$')
 
 # makes sure that winget can work properly (when ran from user profiles)
@@ -255,22 +300,17 @@ if (-Not $PreInstalled) {
   # If found, uninstall
   if ($uninstaller) {
     $appWingetName = $uninstaller.DisplayName
+    $wingetOutput = $Null
+    $wingetExitCode = 0
     Wait-ForMsiexecSilently
-    $uninstallAppPSI = New-object System.Diagnostics.ProcessStartInfo
-    $uninstallAppPSI.CreateNoWindow = $true
-    $uninstallAppPSI.UseShellExecute = $false
-    $uninstallAppPSI.RedirectStandardOutput = $true
-    $uninstallAppPSI.RedirectStandardError = $false
-    $uninstallAppPSI.WorkingDirectory = (Split-Path $wingetEXE) # required, when app is launched in System context in some instances
-    $uninstallAppPSI.FileName = $wingetEXE
-    $uninstallAppPSI.Arguments = @('uninstall --name "' + $appWingetName + '" --silent --scope machine')
-    $uninstallApp = New-Object System.Diagnostics.Process
-    $uninstallApp.StartInfo = $uninstallAppPSI
-    [void]$uninstallApp.Start()
-    $wingetOutput = $uninstallApp.StandardOutput.ReadToEnd()
-    $uninstallApp.WaitForExit()
+    Fix-WingetOutput -ScriptBlock {
+      # capture output of winget after stripping / fixing it
+      & $wingetEXE uninstall --name $appWingetName --silent --disable-interactivity --scope machine | Tee-Object -Variable 'wingetOutput'
+      $wingetExitCode = $LASTEXITCODE
+      $LASTEXITCODE = 0
+    } | Out-Null # don't need the output
 
-    if (0 -ne $uninstallApp.ExitCode) {
+    if (0 -ne $wingetExitCode) {
       # Can't use exit code to determine different issues with uninstalls, see https://github.com/microsoft/winget-cli/discussions/3338
       # - $wingetOutput can be checked for exit codes
 

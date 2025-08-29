@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Install WinGet Function v1.3.1
+  Install WinGet Function v1.3.2
 
   .DESCRIPTION
   Script contains a function which can be used to install WinGet (to current user profile) automatically.
@@ -487,7 +487,7 @@ function Install-WinGet {
       if ($wingetDependencies.uiXaml -And $wingetDependencies.uiXaml.file) { $dependencyFiles += , ($wingetDependencies.uiXaml.file) }
       $addPackageCommand = 'Add-AppxPackage -Path "' + $tempWingetPackage + '" -ForceTargetApplicationShutdown'
       if ($dependencyFiles) { $addPackageCommand += ' -DependencyPath "' + "$($dependencyFiles -Join '","')" + '"' }
-      Invoke-Expression $addPackageCommand
+      Invoke-Expression -Command $addPackageCommand
       # need to wait a moment to allow install to register with Windows
       Start-Sleep -Seconds $appxInstallDelay
     } catch {
