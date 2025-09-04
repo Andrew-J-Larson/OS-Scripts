@@ -3,9 +3,9 @@ A theme launcher for Windows Sandbox.
 
 ## Instructions
 
-Launch the user themed version by using the shortcut file, `Windows Sandbox`, in this project. The entire folder should be portable, so you can place it anywhere on your computer to use.
+Launch the themed version by using the shortcut file, `Windows Sandbox`, in this project. The entire folder should be portable, so you can place it anywhere on your computer to use.
 
-It launches the `ThemedSandbox.ps1` script which helps to dynamically run the sandbox with your main user theme.
+It launches the `ThemedSandbox.ps1` script which helps to dynamically run the sandbox with your main user theme (that means your accent color, dark/light theme options, and wallpaper backgrounds).
 
 If you want to put the shortcut somewhere else on your computer, without moving the files (e.g. just a shortcut on the desktop), then make sure to move the `ThemedSandbox.ps1` script to a good location on your computer and modify the `Start in` parameter in the shortcut to the parent directory (e.g.):
 1. Moved `ThemedSandbox.ps1` script to: `C:\SandboxThemeLauncher\ThemedSandbox.ps1`
