@@ -1,4 +1,4 @@
-# Windows Sandbox Dark Theme Launcher - v1.0.0
+# Windows Sandbox Dark Theme Launcher - v1.0.1
 
 <# Copyright (C) 2025  Andrew Larson (github@drewj.la)
 
@@ -174,11 +174,16 @@ if (`$IsWindows10) {
 `$SPI_SETDESKWALLPAPER = 0x0014
 `$UPDATE_INI_FILE = 0x01
 `$SEND_CHANGE = 0x02
-`[WinAPI] = Add-Type -memberDefinition @'
-[DllImport("user32.dll", CharSet=CharSet.Auto)]
-public static extern int SystemParametersInfo(int uAction, int uParam, string lpvParam, int fuWinIni);
-'@ -name "Win32Functions" -PassThru
-`[WinAPI]::SystemParametersInfo(`$SPI_SETDESKWALLPAPER, 0, `$WallpaperPath, (`$UPDATE_INI_FILE -bor `$SEND_CHANGE))
+Add-Type @'
+using System;
+using System.Runtime.InteropServices;
+
+public class WinAPI {
+  [DllImport("user32.dll", CharSet=CharSet.Auto)]
+  public static extern int SystemParametersInfo(int uAction, int uParam, string lpvParam, int fuWinIni);
+}
+'@
+`[WinAPI]::SystemParametersInfo(`$SPI_SETDESKWALLPAPER, 0, `$WallpaperPath, (`$UPDATE_INI_FILE -bor `$SEND_CHANGE)) | Out-Null
 
 # Windows 11+ needs explorer to be restarted for the rest of the system to recognize the theme changes + close a window afterwards
 
@@ -254,7 +259,7 @@ Set-Clipboard '${ThemeLoadedClipboard}' # used to set off theme loaded detection
     $height = $rect.Bottom - $rect.Top
     $parentProcess = Get-Process -Id $Using:PID
     [WinAPI]::ShowWindowAsync($parentProcess.MainWindowHandle, $WindowStates['RESTORE']) | Out-Null
-    [WinAPI]::MoveWindow($parentProcess.MainWindowHandle, $x, $y, $width, $height, $true)
+    [WinAPI]::MoveWindow($parentProcess.MainWindowHandle, $x, $y, $width, $height, $true) | Out-Null
   } catch { <# nothing #> }
 
   try {

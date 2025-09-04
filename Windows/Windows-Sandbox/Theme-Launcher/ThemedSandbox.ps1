@@ -1,4 +1,4 @@
-# Windows Sandbox Theme Launcher - v1.0.0
+# Windows Sandbox Theme Launcher - v1.0.1
 
 <# Copyright (C) 2025  Andrew Larson (github@drewj.la)
 
@@ -284,7 +284,7 @@ Set-Clipboard '${ThemeLoadedClipboard}' # used to set off theme loaded detection
     $height = $rect.Bottom - $rect.Top
     $parentProcess = Get-Process -Id $Using:PID
     [WinAPI]::ShowWindowAsync($parentProcess.MainWindowHandle, $WindowStates['RESTORE']) | Out-Null
-    [WinAPI]::MoveWindow($parentProcess.MainWindowHandle, $x, $y, $width, $height, $true)
+    [WinAPI]::MoveWindow($parentProcess.MainWindowHandle, $x, $y, $width, $height, $true) | Out-Null
   } catch { <# nothing #> }
 
   try {
