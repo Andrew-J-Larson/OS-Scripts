@@ -1,9 +1,9 @@
 <#
   .SYNOPSIS
-  Prepare PC v2.0.7
+  Prepare PC v2.1.0
 
   .DESCRIPTION
-  Script will prepare a fresh machine all the way up to a domain joining.
+  Script will prepare a fresh machine all the way up to a hybrid entra domain join, or additional prep for a post-Entra joined machine.
 
   .PARAMETER Log
   Turns on logging for the script.
@@ -391,6 +391,10 @@ $regCurrentVersion = "${regLocalMachineSoftware}\Microsoft\Windows NT\CurrentVer
 $regMachinePolicies = "${regLocalMachineSoftware}\Policies\Microsoft\Windows"
 $regWindowsUpdate = "${regMachinePolicies}\WindowsUpdate"
 $regWinlogon = "${regCurrentVersion}\Winlogon"
+$dsreg = & dsregcmd /status
+$azureAdJoined = ($dsreg | Select-String "AzureAdJoined\s*:\s*YES")
+$domainJoined = ($dsreg | Select-String "DomainJoined\s*:\s*YES")
+$isEntraJoined = $azureAdJoined -And (-Not $domainJoined)
 $dcuEndPath = "Dell\CommandUpdate\dcu-cli.exe"
 $dcuCli = "${env:ProgramFiles}\${dcuEndPath}"
 $dcuCli32bit = "${env:ProgramFiles(x86)}\${dcuEndPath}" # required in the case of Dell SupportAssist OS reinstalls
@@ -931,24 +935,26 @@ function Install-WinGet {
 
 # Current user can't have the same username local admin to be setup, because of deletions
 $isBuiltInAdmin = $False
-if ($localAdminUser -eq $currentUser) {
-  Write-Warning "Can't use the same username for local admin, as the currently logged in user!"
-  Write-Output "Please use a different username for local admin, or create a new temporary admin user, and delete the currently logged in profile/data afterwards."
-  Write-Output '' # Makes log look better
-  exit 1
-} elseif ("Administrator" -eq $currentUser) {
-  # Current user could be logged into the built-in Administrator account, but data/account shouldn't be deleted,
-  # and a warning about turning off the admin account later should be given
-  $isBuiltInAdmin = $True
-  # Prompt before continuing
-  $title = 'You are running this script from the built-in Administrator account, please advise that this might have unintended affects if ran from this account.'
-  $question = 'Are you sure you want to proceed?'
-  $choices = '&Yes', '&No'
-  $decision = $Host.UI.PromptForChoice($title, $question, $choices, 1)
-  if ($decision -eq 0) {
-    Clear-Host # no need to keep this information on screen
-  } else {
-    exit 0 # user chose to exit from script
+if (-Not $isEntraJoined) {
+  if ($localAdminUser -eq $currentUser) {
+    Write-Warning "Can't use the same username for local admin, as the currently logged in user!"
+    Write-Output "Please use a different username for local admin, or create a new temporary admin user, and delete the currently logged in profile/data afterwards."
+    Write-Output '' # Makes log look better
+    exit 1
+  } elseif ("Administrator" -eq $currentUser) {
+    # Current user could be logged into the built-in Administrator account, but data/account shouldn't be deleted,
+    # and a warning about turning off the admin account later should be given
+    $isBuiltInAdmin = $True
+    # Prompt before continuing
+    $title = 'You are running this script from the built-in Administrator account, please advise that this might have unintended affects if ran from this account.'
+    $question = 'Are you sure you want to proceed?'
+    $choices = '&Yes', '&No'
+    $decision = $Host.UI.PromptForChoice($title, $question, $choices, 1)
+    if ($decision -eq 0) {
+      Clear-Host # no need to keep this information on screen
+    } else {
+      exit 0 # user chose to exit from script
+    }
   }
 }
 
@@ -1004,100 +1010,108 @@ Register-EngineEvent -SourceIdentifier PowerShell.Exiting -Action {
 } -SupportEvent
 
 # Sync time and set timezone to automatic (uses DigiCert to get current time)
-Write-Output "Setting timezone to automatic and syncing time..."
-Write-Output '' # Makes log look better
-$setTimezone = Set-TimeZone $timezone -PassThru
-$regSetTzautoupdate = Set-ItemProperty -Path $regTzautoupdate -Name "Start" -Value 3 -Type Dword -PassThru -Force
-$timestampURL = "http://timestamp.digicert.com/"
-$timestampRequest = [System.Net.HttpWebRequest]::Create($timestampURL)
-$timestampRequest.Method = "GET"
-$timestampDate = $Null
-while (-Not $timestampDate) {
-  # need to loop until current time is pulled from URL
-  $timestampResponse = $Null
-  try {
-    $timestampResponse = $timestampRequest.GetResponse()
-  } catch [System.Net.WebException] {
-    $timestampResponse = $_.Exception.Response
+if (-Not $isEntraJoined) {
+  Write-Output "Setting timezone to automatic and syncing time..."
+  Write-Output '' # Makes log look better
+  $setTimezone = Set-TimeZone $timezone -PassThru
+  $regSetTzautoupdate = Set-ItemProperty -Path $regTzautoupdate -Name "Start" -Value 3 -Type Dword -PassThru -Force
+  $timestampURL = "http://timestamp.digicert.com/"
+  $timestampRequest = [System.Net.HttpWebRequest]::Create($timestampURL)
+  $timestampRequest.Method = "GET"
+  $timestampDate = $Null
+  while (-Not $timestampDate) {
+    # need to loop until current time is pulled from URL
+    $timestampResponse = $Null
+    try {
+      $timestampResponse = $timestampRequest.GetResponse()
+    } catch [System.Net.WebException] {
+      $timestampResponse = $_.Exception.Response
+    }
+    if ($timestampResponse -And $timestampResponse.Headers) {
+      $timestampDate = $timestampResponse.Headers['Date']
+    }
   }
-  if ($timestampResponse -And $timestampResponse.Headers) {
-    $timestampDate = $timestampResponse.Headers['Date']
+  $NewDate = Get-Date $timestampDate
+  $SetDate = Set-Date $NewDate
+  if ($setTimezone -And $regSetTzautoupdate -And $SetDate) {
+    Write-Output "Successfully set timezone and synced time."
+  } else {
+    Write-Warning "Failed to set timezone and sync time."
   }
+  Write-Output '' # Makes log look better
 }
-$NewDate = Get-Date $timestampDate
-$SetDate = Set-Date $NewDate
-if ($setTimezone -And $regSetTzautoupdate -And $SetDate) {
-  Write-Output "Successfully set timezone and synced time."
-} else {
-  Write-Warning "Failed to set timezone and sync time."
-}
-Write-Output '' # Makes log look better
 
 # Reset internet connection (fixes any issues due to date change)
-Write-Output "Resetting network connections and setting computer to be discoverable..."
-Write-Output '' # Makes log look better
-$networkAdapterConfigs = Get-WmiObject -List | Where-Object { $_.Name -eq "Win32_NetworkAdapterConfiguration" }
-$releaseDHCP = $networkAdapterConfigs.InvokeMethod("ReleaseDHCPLeaseAll", $null)
-$renewDHCP = $networkAdapterConfigs.InvokeMethod("RenewDHCPLeaseAll", $null)
-if (-Not $isWDAG) {
-  Clear-DnsClientCache
-  Register-DnsClient
-}
-$internetReconnected = $False
-while (-Not $internetReconnected) {
-  $internetReconnected = (Get-NetConnectionProfile).IPv4Connectivity -contains "Internet" -or (Get-NetConnectionProfile).IPv6Connectivity -contains "Internet"
-  Start-Sleep -Seconds $loopDelay
-}
-$setNetworksToPrivate = $True
-$networkProfiles = Get-NetConnectionProfile |
-Where-Object { (($_.IPv4Connectivity -eq "Internet") -Or ($_.IPv6Connectivity -eq "Internet")) -And $_.NetworkCategory -eq "Public" }
-for ($i = 0; $i -lt $networkProfiles.length; $i++) {
-  try {
-    Set-NetConnectionProfile -Name $_.name -NetworkCategory Private
-  } catch {
-    $setNetworksToPrivate = $False
-  }
-}
-if ((0 -eq $releaseDHCP) -And (0 -eq $renewDHCP) -And $internetReconnected -And $setNetworksToPrivate) {
-  Write-Host "Successfully reset network connections and set computer to be discoverable."
-} else {
-  Write-Warning "Failed to reset network connections and set computer to be discoverable, ignoring."
-}
-Write-Output '' # Makes log look better
-
-# Loop until valid domain admin user credentials are used
-[pscredential]$credentials = $null
-$validDomainAdminUser = $False
-$tempDriveLetter = 'Z'
-do {
-  if ($null -ne $credentials) {
-    Write-Output "The user name or password is incorrect, please try again."
-    Write-Output '' # Makes log look better
-  }
-  Write-Output "Validating the domain admin user credentials..."
+if (-Not $isEntraJoined) {
+  Write-Output "Resetting network connections and setting computer to be discoverable..."
   Write-Output '' # Makes log look better
-  $tempCredentials = Get-Credential -Credential $null
-  $tempUserName = $tempCredentials.username
-  $tempPassword = $tempCredentials.password
-  if (-Not($tempUserName.StartsWith("${shortDomainName}\") -Or $tempUserName.EndsWith("@${domainName}"))) {
-    $tempUserName = $shortDomainName + '\' + $tempUserName
+  $networkAdapterConfigs = Get-WmiObject -List | Where-Object { $_.Name -eq "Win32_NetworkAdapterConfiguration" }
+  $releaseDHCP = $networkAdapterConfigs.InvokeMethod("ReleaseDHCPLeaseAll", $null)
+  $renewDHCP = $networkAdapterConfigs.InvokeMethod("RenewDHCPLeaseAll", $null)
+  if (-Not $isWDAG) {
+    Clear-DnsClientCache
+    Register-DnsClient
   }
-  $credentials = New-Object System.Management.Automation.PSCredential($tempUserName, $tempPassword)
-  $validDomainAdminUser = New-PSDrive -Name $tempDriveLetter -PSProvider FileSystem -Root $domainAdminServerShare -Credential $credentials -ErrorAction SilentlyContinue
-  Remove-PSDrive -Name $tempDriveLetter -ErrorAction SilentlyContinue
-} while (-Not $validDomainAdminUser)
-Write-Output "Domain admin user credentials confirmed."
-Write-Output '' # Makes log look better
+  $internetReconnected = $False
+  while (-Not $internetReconnected) {
+    $internetReconnected = (Get-NetConnectionProfile).IPv4Connectivity -contains "Internet" -or (Get-NetConnectionProfile).IPv6Connectivity -contains "Internet"
+    Start-Sleep -Seconds $loopDelay
+  }
+  $setNetworksToPrivate = $True
+  $networkProfiles = Get-NetConnectionProfile |
+  Where-Object { (($_.IPv4Connectivity -eq "Internet") -Or ($_.IPv6Connectivity -eq "Internet")) -And $_.NetworkCategory -eq "Public" }
+  for ($i = 0; $i -lt $networkProfiles.length; $i++) {
+    try {
+      Set-NetConnectionProfile -Name $_.name -NetworkCategory Private
+    } catch {
+      $setNetworksToPrivate = $False
+    }
+  }
+  if ((0 -eq $releaseDHCP) -And (0 -eq $renewDHCP) -And $internetReconnected -And $setNetworksToPrivate) {
+    Write-Host "Successfully reset network connections and set computer to be discoverable."
+  } else {
+    Write-Warning "Failed to reset network connections and set computer to be discoverable, ignoring."
+  }
+  Write-Output '' # Makes log look better
+}
 
-# Prompt for Active Directory description, in case it should be changed later on
-$promptTitle = "Computer Description (Active Directory)"
-$promptMessage = "Keep the default computer description, or change it?"
-$promptDefaultValue = "Spare ${pcModel} - Staged"
-$promptInputValue = $null
-do {
-  $promptInputValue = [Microsoft.VisualBasic.Interaction]::InputBox($promptMessage, $promptTitle, $promptDefaultValue)
-} while (-Not $promptInputValue)
-$ComputerDescription = $promptInputValue.split([IO.Path]::GetInvalidFileNameChars()) -Join $InvalidCharacterReplacement
+# Other hybrid-only actions
+[pscredential]$credentials = $null
+$ComputerDescription = $null
+if (-Not $isEntraJoined) {
+  # Loop until valid domain admin user credentials are used
+  $validDomainAdminUser = $False
+  $tempDriveLetter = 'Z'
+  do {
+    if ($null -ne $credentials) {
+      Write-Output "The user name or password is incorrect, please try again."
+      Write-Output '' # Makes log look better
+    }
+    Write-Output "Validating the domain admin user credentials..."
+    Write-Output '' # Makes log look better
+    $tempCredentials = Get-Credential -Credential $null
+    $tempUserName = $tempCredentials.username
+    $tempPassword = $tempCredentials.password
+    if (-Not($tempUserName.StartsWith("${shortDomainName}\") -Or $tempUserName.EndsWith("@${domainName}"))) {
+      $tempUserName = $shortDomainName + '\' + $tempUserName
+    }
+    $credentials = New-Object System.Management.Automation.PSCredential($tempUserName, $tempPassword)
+    $validDomainAdminUser = New-PSDrive -Name $tempDriveLetter -PSProvider FileSystem -Root $domainAdminServerShare -Credential $credentials -ErrorAction SilentlyContinue
+    Remove-PSDrive -Name $tempDriveLetter -ErrorAction SilentlyContinue
+  } while (-Not $validDomainAdminUser)
+  Write-Output "Domain admin user credentials confirmed."
+  Write-Output '' # Makes log look better
+
+  # Prompt for Active Directory description, in case it should be changed later on
+  $promptTitle = "Computer Description (Active Directory)"
+  $promptMessage = "Keep the default computer description, or change it?"
+  $promptDefaultValue = "Spare ${pcModel} - Staged"
+  $promptInputValue = $null
+  do {
+    $promptInputValue = [Microsoft.VisualBasic.Interaction]::InputBox($promptMessage, $promptTitle, $promptDefaultValue)
+  } while (-Not $promptInputValue)
+  $ComputerDescription = $promptInputValue.split([IO.Path]::GetInvalidFileNameChars()) -Join $InvalidCharacterReplacement
+}
 
 # Set computer owner/org info
 Write-Output "Setting device information..."
@@ -1407,272 +1421,275 @@ if ($appsToInstall -And $appFolders) {
 }
 Write-Output '' # Makes log look better
 
-# Create the local admin account
-$createdLocaladmin = $False
-$adminGroup = 'Administrators'
-Write-Output "Creating the local admin account..."
-Write-Output '' # Makes log look better
-try {
-  $createdLocaladmin = New-LocalUser -Name $localAdminUser -Password $(ConvertTo-SecureString -String $localAdminPass -AsPlainText -Force)
-} catch {
-  if ($_.Exception.Message -match ".* already exists\.$") {
-    Write-Warning "$($_.Exception.Message | Out-String)"
-    $createdLocaladmin = $True
-  }
-}
-if ($createdLocaladmin) {
-  Write-Output "Successfully created the local admin account."
+# additional hybrid-only actions
+if (-Not $isEntraJoined) {
+  # Create the local admin account
+  $createdLocaladmin = $False
+  $adminGroup = 'Administrators'
+  Write-Output "Creating the local admin account..."
   Write-Output '' # Makes log look better
-
-  Write-Output "Setting the local admin password to never expire..."
-  Write-Output '' # Makes log look better
-  $localAdminPassNeverExpire = $True
-  Set-LocalUser -Name $localAdminUser -PasswordNeverExpires $True
   try {
-    Add-LocalGroupMember -Group $adminGroup -Member $localAdminUser
+    $createdLocaladmin = New-LocalUser -Name $localAdminUser -Password $(ConvertTo-SecureString -String $localAdminPass -AsPlainText -Force)
   } catch {
-    if ($_.Exception.Message -match ".* is already a member of group ${adminGroup}\.$") {
+    if ($_.Exception.Message -match ".* already exists\.$") {
       Write-Warning "$($_.Exception.Message | Out-String)"
-    } else {
-      $localAdminPassNeverExpire = $False
+      $createdLocaladmin = $True
     }
   }
-  if ($localAdminPassNeverExpire) {
-    Write-Output "Successfully set the local admin password to never expire."
-  } else {
-    Write-Warning "Failed to set the local admin password to never expire."
-  }
-  Write-Output '' # Makes log look better
-}
+  if ($createdLocaladmin) {
+    Write-Output "Successfully created the local admin account."
+    Write-Output '' # Makes log look better
 
-# Turn on auto logon to cache domain admin user account once (auto logon is removed later)
-Write-Output "Setting the domain admin user to auto logon once on reboot..."
-Write-Output '' # Makes log look better
-$regSetAutoAdminLogon = Set-ItemProperty -Path $regWinlogon -Name "AutoAdminLogon" -Value "1" -Type String -PassThru -Force
-$regSetDefaultUserName = Set-ItemProperty -Path $regWinlogon -Name "DefaultUserName" -Value $credentials.username -Type String -PassThru -Force
-$regSetDefaultPassword = Set-ItemProperty -Path $regWinlogon -Name "DefaultPassword" -Value $credentials.GetNetworkCredential().password -Type String -PassThru -Force
-$enabledAutoLogon = ($regSetAutoAdminLogon -And $regSetDefaultUserName -And $regSetDefaultPassword)
-if ($enabledAutoLogon) {
-  Write-Output "Successfully set the domain admin user to auto logon once on reboot."
-  Write-Output '' # Makes log look better
-
-  # Disable privacy experience prompt on first logon
-  Write-Output "Setting the OOBE privacy experience prompt to disabled..."
-  Write-Output '' # Makes log look better
-  $regCreatedKeyOOBE = New-Item -Path $regMachinePolicies -Name "OOBE" -Force -ErrorAction SilentlyContinue
-  if ($regCreatedKeyOOBE) {
-    $regSetDisablePrivacyExperience = Set-ItemProperty -Path "${regMachinePolicies}\OOBE" -Name "DisablePrivacyExperience" -Value 1 -Type Dword -PassThru -Force
-    if ($regSetDisablePrivacyExperience) {
-      Write-Output "Successfully disabled the privacy experience prompt."
-    } else {
-      Write-Warning "Failed to disable the privacy experience prompt, skipping."
-    }
-  } else {
-    Write-Warning "Failed to create the OOBE path in registry, skipping."
-  }
-} else {
-  Write-Warning "Failed to set the domain admin user to auto logon once on reboot."
-}
-Write-Output '' # Makes log look better
-
-# Loop until computer is bound to domain, by which then sets the new computer's name and location in AD
-$joinedPC = $null
-do {
-  Write-Output "Binding computer to domain, and setting its new name and OU location..."
-  Write-Output '' # Makes log look better
-  # wanting to check warnings and errors at the same time
-  try {
-    $joinedPC = if ($computerName.current -eq $computerName.new) {
-      Add-Computer -DomainName $domainName -OUPath $distinguishedAdPathOU -ComputerName $computerName.current -Credential $credentials -PassThru -WarningAction Stop -ErrorAction Stop
-    } else {
-      Add-Computer -DomainName $domainName -OUPath $distinguishedAdPathOU -ComputerName $computerName.current -NewName $computerName.new -Credential $credentials -PassThru -WarningAction Stop -ErrorAction Stop
-    }
-    if ($joinedPC.HasSucceeded) {
-      if ($joinedPC.ComputerName) { $computerName.current = $joinedPC.ComputerName }
-      Write-Host "Computer has been bound to the domain successfully."
-    }
-  } catch {
-    $computerName.current = (Get-ItemProperty -Path $regComputerName).ComputerName
-    if ($_.Exception.Message -match '^.*The changes will take effect after you restart the computer .*$') {
-      $joinedPC = $true
-      $computerName.current = $computerName.new
-      Write-Output "$($_.Exception.Message | Out-String)"
-      Start-Sleep -Seconds $activeDirectoryDelay
-    } elseif ($_.Exception.Message -match '^.*The account already exists\.$') {
-      $joinedPC = $true
-      Write-Warning "$($_.Exception.Message | Out-String)"
-      Start-Sleep -Seconds $activeDirectoryDelay
-    } elseif ($_.Exception.Message -match '^.*because it is already in that domain\.$') {
-      $joinedPC = $False
-      Write-Warning "$($_.Exception.Message | Out-String)"
-    } elseif ($_.Exception.Message -match '^.*because the new name is the same as the current name\.$') {
-      # should never get here
-      $joinedPC = $False
-      Write-Warning "$($_.Exception.Message | Out-String)"
-    } else { Start-Sleep -Seconds $loopDelay }
-  }
-  Write-Output '' # Makes log look better
-} while ($Null -eq $joinedPC)
-
-# Loop until a new description is set for the computer on the domain in AD
-$RootDSE = $null
-$RootDSE_Searcher = $null
-$ComputerDSE = $null
-Write-Output "Changing the description of the computer on the domain..."
-Write-Output '' # Makes log look better
-do {
-  # wait for RootDSE to connect
-  try {
-    $RootDSE = New-Object DirectoryServices.DirectoryEntry(
-      "LDAP://${domainName}",
-      $credentials.username,
-      $credentials.GetNetworkCredential().password
-    ) -ErrorAction Stop
-    $RootDSE.RefreshCache()
-  } catch {
-    $RootDSE = $null
-    Start-Sleep -Seconds $loopDelay
-  }
-} while (-Not $RootDSE.distinguishedName)
-do {
-  # wait for RootDSE searcher to connect
-  try {
-    $RootDSE_Searcher = New-Object DirectoryServices.DirectorySearcher($RootDSE) -ErrorAction Stop
-  } catch {
-    $RootDSE_Searcher = $null
-    Start-Sleep -Seconds $loopDelay
-  }
-} while (-Not $RootDSE_Searcher.SearchRoot.distinguishedName)
-do {
-  # try searching the RootDSE only for the matching computer
-  $RootDSE_Searcher.Filter = "(&(objectCategory=Computer)(CN=$($computerName.current)))"
-  try {
-    $foundComputer = $RootDSE_Searcher.FindOne()
-    if ($foundComputer) {
-      $ComputerDSE = $foundComputer.GetDirectoryEntry()
-      $ComputerDSE.RefreshCache()
-    }
-    if ($ComputerDSE) { Break }
-  } catch {
-    $foundComputer = $null
-    # may take a bit of time, due to domain controller replication
-    Start-Sleep -Seconds $activeDirectoryDelay
-  }
-} while ($True)
-if ($ComputerDSE -And $ComputerDSE.distinguishedName) {
-  # check description of computer
-  if ($ComputerDescription -eq $ComputerDSE.description) {
-    Write-Output "The computer description is already set, skipping."
-  } else {
-    # set the computer's new description
-    $setDescription = $False
-    do {
-      try {
-        $ComputerDSE.Put('Description', $ComputerDescription)
-        $ComputerDSE.SetInfo()
-        $ComputerDSE.RefreshCache()
-        $setDescription = $ComputerDescription -eq $ComputerDSE.description
-      } catch {
-        $setDescription = $False
+    Write-Output "Setting the local admin password to never expire..."
+    Write-Output '' # Makes log look better
+    $localAdminPassNeverExpire = $True
+    Set-LocalUser -Name $localAdminUser -PasswordNeverExpires $True
+    try {
+      Add-LocalGroupMember -Group $adminGroup -Member $localAdminUser
+    } catch {
+      if ($_.Exception.Message -match ".* is already a member of group ${adminGroup}\.$") {
+        Write-Warning "$($_.Exception.Message | Out-String)"
+      } else {
+        $localAdminPassNeverExpire = $False
       }
-      if (-Not $setDescription) { Start-Sleep -Seconds $activeDirectoryDelay }
-    } while (-Not $setDescription)
-    Write-Output "Successfully set the description for the computer."
+    }
+    if ($localAdminPassNeverExpire) {
+      Write-Output "Successfully set the local admin password to never expire."
+    } else {
+      Write-Warning "Failed to set the local admin password to never expire."
+    }
+    Write-Output '' # Makes log look better
   }
-} else {
-  $errorSetInfoReason = if ($null -eq $ComputerDSE) {
-    "couldn't find computer"
+
+  # Turn on auto logon to cache domain admin user account once (auto logon is removed later)
+  Write-Output "Setting the domain admin user to auto logon once on reboot..."
+  Write-Output '' # Makes log look better
+  $regSetAutoAdminLogon = Set-ItemProperty -Path $regWinlogon -Name "AutoAdminLogon" -Value "1" -Type String -PassThru -Force
+  $regSetDefaultUserName = Set-ItemProperty -Path $regWinlogon -Name "DefaultUserName" -Value $credentials.username -Type String -PassThru -Force
+  $regSetDefaultPassword = Set-ItemProperty -Path $regWinlogon -Name "DefaultPassword" -Value $credentials.GetNetworkCredential().password -Type String -PassThru -Force
+  $enabledAutoLogon = ($regSetAutoAdminLogon -And $regSetDefaultUserName -And $regSetDefaultPassword)
+  if ($enabledAutoLogon) {
+    Write-Output "Successfully set the domain admin user to auto logon once on reboot."
+    Write-Output '' # Makes log look better
+
+    # Disable privacy experience prompt on first logon
+    Write-Output "Setting the OOBE privacy experience prompt to disabled..."
+    Write-Output '' # Makes log look better
+    $regCreatedKeyOOBE = New-Item -Path $regMachinePolicies -Name "OOBE" -Force -ErrorAction SilentlyContinue
+    if ($regCreatedKeyOOBE) {
+      $regSetDisablePrivacyExperience = Set-ItemProperty -Path "${regMachinePolicies}\OOBE" -Name "DisablePrivacyExperience" -Value 1 -Type Dword -PassThru -Force
+      if ($regSetDisablePrivacyExperience) {
+        Write-Output "Successfully disabled the privacy experience prompt."
+      } else {
+        Write-Warning "Failed to disable the privacy experience prompt, skipping."
+      }
+    } else {
+      Write-Warning "Failed to create the OOBE path in registry, skipping."
+    }
   } else {
-    "found computer, but had issues with connection"
+    Write-Warning "Failed to set the domain admin user to auto logon once on reboot."
   }
-  Write-Warning "Failed to set the description for the computer, skipping (${errorSetInfoReason})."
-}
-Write-Output '' # Makes log look better
-if ($RootDSE) {
-  # these objects require to be disposed
-  if ($ComputerDSE) { $ComputerDSE.Dispose() }
-  $RootDSE_Searcher.Dispose()
-  $RootDSE.Dispose()
-}
+  Write-Output '' # Makes log look better
 
-# Set a scheduled task to run on demand of the domain admin user (elevated) ...
-# - Wait for BitLocker to be done encypting (if needed),
-# - Wait for a network connection,
-# - Run Check for Dell updates again, as some updates only show up after the first update (only on Dell machines),
-# - Lock the computer,
-# - Then, delete itself (the scheduled task)
-Write-Output "Scheduling final online tasks..."
-Write-Output '' # Makes log look better
-$taskNameFinalizeOnline = "Prepare_PC_Finalize_Online".split([IO.Path]::GetInvalidFileNameChars()) -Join $InvalidCharacterReplacement
-$actionFinalizeOnline = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument ($( "-c `
-  `"& { $(if ($bitLockerVolume) {
-    "if ((Get-BitLockerVolume -MountPoint '$($bitLockerVolume.MountPoint)').VolumeStatus -eq 'EncryptionInProgress') { `
-      Write-Output 'Waiting for BitLocker encryption to complete...' ; Write-Output '' ; `
-      while ((Get-BitLockerVolume -MountPoint '$($bitLockerVolume.MountPoint)').VolumeStatus -eq 'EncryptionInProgress') { Start-Sleep -Seconds ${loopDelay} } } "
-  }) `
-  while (-Not ((Get-NetConnectionProfile).IPv4Connectivity -contains 'Internet' `
-  -or (Get-NetConnectionProfile).IPv6Connectivity -contains 'Internet')) `
-  { Start-Sleep -Seconds ${loopDelay} } ; `
-  $(if ($isDell) {
-    "Start-Process -FilePath '${dcuCliExe}' -ArgumentList '${dcuApplyArgs}' -NoNewWindow -Wait -ErrorAction SilentlyContinue ; "
-  }) `
-  Start-Process 'rundll32.exe' -ArgumentList 'user32.dll,LockWorkStation' -NoNewWindow ; `
-  Unregister-ScheduledTask -TaskName '${taskNameFinalizeOnline}' -Confirm:`$False `
-  }`" -NoProfile -WindowStyle Maximized "
-  ).replace("`n", "")).replace("`r", "")
-$settingsFinalizeOnline = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -Compatibility Win8 -DontStopIfGoingOnBatteries -ExecutionTimeLimit 0
-$triggerFinalizeOnline = New-ScheduledTaskTrigger -AtLogon
-$principalFinalizeOnline = New-ScheduledTaskPrincipal -UserId $localAdminUser -LogonType Interactive -RunLevel Highest # user id gets changed later
-$definitionFinalizeOnline = New-ScheduledTask -Action $actionFinalizeOnline -Settings $settingsFinalizeOnline -Trigger $triggerFinalizeOnline -Principal $principalFinalizeOnline
-$taskFinalizeOnline = Register-ScheduledTask -TaskName $taskNameFinalizeOnline -InputObject $definitionFinalizeOnline
-if ($null -ne $taskFinalizeOnline) {
-  Write-Output "Successfully scheduled the online tasks."
-} else {
-  Write-Warning "Failed to schedule the online tasks."
-}
-Write-Output '' # Makes log look better
+  # Loop until computer is bound to domain, by which then sets the new computer's name and location in AD
+  $joinedPC = $null
+  do {
+    Write-Output "Binding computer to domain, and setting its new name and OU location..."
+    Write-Output '' # Makes log look better
+    # wanting to check warnings and errors at the same time
+    try {
+      $joinedPC = if ($computerName.current -eq $computerName.new) {
+        Add-Computer -DomainName $domainName -OUPath $distinguishedAdPathOU -ComputerName $computerName.current -Credential $credentials -PassThru -WarningAction Stop -ErrorAction Stop
+      } else {
+        Add-Computer -DomainName $domainName -OUPath $distinguishedAdPathOU -ComputerName $computerName.current -NewName $computerName.new -Credential $credentials -PassThru -WarningAction Stop -ErrorAction Stop
+      }
+      if ($joinedPC.HasSucceeded) {
+        if ($joinedPC.ComputerName) { $computerName.current = $joinedPC.ComputerName }
+        Write-Host "Computer has been bound to the domain successfully."
+      }
+    } catch {
+      $computerName.current = (Get-ItemProperty -Path $regComputerName).ComputerName
+      if ($_.Exception.Message -match '^.*The changes will take effect after you restart the computer .*$') {
+        $joinedPC = $true
+        $computerName.current = $computerName.new
+        Write-Output "$($_.Exception.Message | Out-String)"
+        Start-Sleep -Seconds $activeDirectoryDelay
+      } elseif ($_.Exception.Message -match '^.*The account already exists\.$') {
+        $joinedPC = $true
+        Write-Warning "$($_.Exception.Message | Out-String)"
+        Start-Sleep -Seconds $activeDirectoryDelay
+      } elseif ($_.Exception.Message -match '^.*because it is already in that domain\.$') {
+        $joinedPC = $False
+        Write-Warning "$($_.Exception.Message | Out-String)"
+      } elseif ($_.Exception.Message -match '^.*because the new name is the same as the current name\.$') {
+        # should never get here
+        $joinedPC = $False
+        Write-Warning "$($_.Exception.Message | Out-String)"
+      } else { Start-Sleep -Seconds $loopDelay }
+    }
+    Write-Output '' # Makes log look better
+  } while ($Null -eq $joinedPC)
 
-# Set a scheduled task to run at startup and ...
-# - Modify the online scheduled task to run as the user (elevated) then immediately run it,
-# - Resume BitLocker encryption (if it was suspended),
-# - Turn back on the privacy experience,
-# - Turn off auto logon for domain admin user,
-# - Delete temp admin user OneDrive tasks + data + account (only if not built-in Administrator),
-# - Then, delete itself (the scheduled task)
-Write-Output "Scheduling final offline tasks..."
-Write-Output '' # Makes log look better
-$taskNameFinalizeOffline = "Prepare_PC_Finalize_Offline".split([IO.Path]::GetInvalidFileNameChars()) -Join $InvalidCharacterReplacement
-$actionFinalizeOffline = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument ($( "-c `
-  `"& { `$task = Get-ScheduledTask -TaskName '$taskNameFinalizeOnline' ; `
-  `$task.Principal.UserId = '$($credentials.username)' ; `
-  `$task | Set-ScheduledTask ; `
-  `$task | Start-ScheduledTask ; `
-  $(if ((Get-BitLockerVolume -MountPoint "$($bitLockerVolume.MountPoint)").ProtectionStatus -eq "Off") {"Resume-BitLocker -MountPoint '$($bitLockerVolume.MountPoint)' ; "} else {''}) `
-  Remove-ItemProperty -Path '${regMachinePolicies}\OOBE' -Name 'DisablePrivacyExperience' -Force -ErrorAction SilentlyContinue ; `
-  Remove-ItemProperty -Path '${regWinlogon}' -Name 'DefaultPassword' -Force -ErrorAction SilentlyContinue ; `
-  Set-ItemProperty -Path '${regWinlogon}' -Name 'AutoAdminLogon' -Value '0' -Type String -Force ; `
-  Set-ItemProperty -Path '${regWinlogon}' -Name 'DefaultUserName' -Value '' -Type String -Force ; `
-  $(if (-Not $isBuiltInAdmin) {
-    "Get-ScheduledTask -TaskName 'OneDrive *$currentUserSID' | Unregister-ScheduledTask -Confirm:`$False ; `
-    Get-CimInstance -Class Win32_UserProfile `
-    | Where-Object { `$_.LocalPath.split('\')[-1] -eq '${currentUser}' } `
-    | Remove-CimInstance ; `
-    Remove-LocalUser -Name '${currentUser}' -ErrorAction SilentlyContinue ; "
-  }) `
-  Unregister-ScheduledTask -TaskName '${taskNameFinalizeOffline}' -Confirm:`$False `
-  }`" -NoProfile -WindowStyle Maximized "
-  ).replace("`n", "")).replace("`r", "")
-$settingsFinalizeOffline = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -Compatibility Win8 -DontStopIfGoingOnBatteries -ExecutionTimeLimit 0
-$triggerFinalizeOffline = New-ScheduledTaskTrigger -AtLogon
-$principalFinalizeOffline = New-ScheduledTaskPrincipal -UserId SYSTEM -LogonType ServiceAccount -RunLevel Highest
-$definitionFinalizeOffline = New-ScheduledTask -Action $actionFinalizeOffline -Settings $settingsFinalizeOffline -Trigger $triggerFinalizeOffline -Principal $principalFinalizeOffline
-$taskFinalizeOffline = Register-ScheduledTask -TaskName $taskNameFinalizeOffline -InputObject $definitionFinalizeOffline
-if ($null -ne $taskFinalizeOffline) {
-  Write-Output "Successfully scheduled the offline tasks."
-} else {
-  Write-Warning "Failed to schedule the offline tasks."
+  # Loop until a new description is set for the computer on the domain in AD
+  $RootDSE = $null
+  $RootDSE_Searcher = $null
+  $ComputerDSE = $null
+  Write-Output "Changing the description of the computer on the domain..."
+  Write-Output '' # Makes log look better
+  do {
+    # wait for RootDSE to connect
+    try {
+      $RootDSE = New-Object DirectoryServices.DirectoryEntry(
+        "LDAP://${domainName}",
+        $credentials.username,
+        $credentials.GetNetworkCredential().password
+      ) -ErrorAction Stop
+      $RootDSE.RefreshCache()
+    } catch {
+      $RootDSE = $null
+      Start-Sleep -Seconds $loopDelay
+    }
+  } while (-Not $RootDSE.distinguishedName)
+  do {
+    # wait for RootDSE searcher to connect
+    try {
+      $RootDSE_Searcher = New-Object DirectoryServices.DirectorySearcher($RootDSE) -ErrorAction Stop
+    } catch {
+      $RootDSE_Searcher = $null
+      Start-Sleep -Seconds $loopDelay
+    }
+  } while (-Not $RootDSE_Searcher.SearchRoot.distinguishedName)
+  do {
+    # try searching the RootDSE only for the matching computer
+    $RootDSE_Searcher.Filter = "(&(objectCategory=Computer)(CN=$($computerName.current)))"
+    try {
+      $foundComputer = $RootDSE_Searcher.FindOne()
+      if ($foundComputer) {
+        $ComputerDSE = $foundComputer.GetDirectoryEntry()
+        $ComputerDSE.RefreshCache()
+      }
+      if ($ComputerDSE) { Break }
+    } catch {
+      $foundComputer = $null
+      # may take a bit of time, due to domain controller replication
+      Start-Sleep -Seconds $activeDirectoryDelay
+    }
+  } while ($True)
+  if ($ComputerDSE -And $ComputerDSE.distinguishedName) {
+    # check description of computer
+    if ($ComputerDescription -eq $ComputerDSE.description) {
+      Write-Output "The computer description is already set, skipping."
+    } else {
+      # set the computer's new description
+      $setDescription = $False
+      do {
+        try {
+          $ComputerDSE.Put('Description', $ComputerDescription)
+          $ComputerDSE.SetInfo()
+          $ComputerDSE.RefreshCache()
+          $setDescription = $ComputerDescription -eq $ComputerDSE.description
+        } catch {
+          $setDescription = $False
+        }
+        if (-Not $setDescription) { Start-Sleep -Seconds $activeDirectoryDelay }
+      } while (-Not $setDescription)
+      Write-Output "Successfully set the description for the computer."
+    }
+  } else {
+    $errorSetInfoReason = if ($null -eq $ComputerDSE) {
+      "couldn't find computer"
+    } else {
+      "found computer, but had issues with connection"
+    }
+    Write-Warning "Failed to set the description for the computer, skipping (${errorSetInfoReason})."
+  }
+  Write-Output '' # Makes log look better
+  if ($RootDSE) {
+    # these objects require to be disposed
+    if ($ComputerDSE) { $ComputerDSE.Dispose() }
+    $RootDSE_Searcher.Dispose()
+    $RootDSE.Dispose()
+  }
+
+  # Set a scheduled task to run on demand of the domain admin user (elevated) ...
+  # - Wait for BitLocker to be done encypting (if needed),
+  # - Wait for a network connection,
+  # - Run Check for Dell updates again, as some updates only show up after the first update (only on Dell machines),
+  # - Lock the computer,
+  # - Then, delete itself (the scheduled task)
+  Write-Output "Scheduling final online tasks..."
+  Write-Output '' # Makes log look better
+  $taskNameFinalizeOnline = "Prepare_PC_Finalize_Online".split([IO.Path]::GetInvalidFileNameChars()) -Join $InvalidCharacterReplacement
+  $actionFinalizeOnline = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument ($( "-c `
+    `"& { $(if ($bitLockerVolume) {
+      "if ((Get-BitLockerVolume -MountPoint '$($bitLockerVolume.MountPoint)').VolumeStatus -eq 'EncryptionInProgress') { `
+        Write-Output 'Waiting for BitLocker encryption to complete...' ; Write-Output '' ; `
+        while ((Get-BitLockerVolume -MountPoint '$($bitLockerVolume.MountPoint)').VolumeStatus -eq 'EncryptionInProgress') { Start-Sleep -Seconds ${loopDelay} } } "
+    }) `
+    while (-Not ((Get-NetConnectionProfile).IPv4Connectivity -contains 'Internet' `
+    -or (Get-NetConnectionProfile).IPv6Connectivity -contains 'Internet')) `
+    { Start-Sleep -Seconds ${loopDelay} } ; `
+    $(if ($isDell) {
+      "Start-Process -FilePath '${dcuCliExe}' -ArgumentList '${dcuApplyArgs}' -NoNewWindow -Wait -ErrorAction SilentlyContinue ; "
+    }) `
+    Start-Process 'rundll32.exe' -ArgumentList 'user32.dll,LockWorkStation' -NoNewWindow ; `
+    Unregister-ScheduledTask -TaskName '${taskNameFinalizeOnline}' -Confirm:`$False `
+    }`" -NoProfile -WindowStyle Maximized "
+    ).replace("`n", "")).replace("`r", "")
+  $settingsFinalizeOnline = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -Compatibility Win8 -DontStopIfGoingOnBatteries -ExecutionTimeLimit 0
+  $triggerFinalizeOnline = New-ScheduledTaskTrigger -AtLogon
+  $principalFinalizeOnline = New-ScheduledTaskPrincipal -UserId $localAdminUser -LogonType Interactive -RunLevel Highest # user id gets changed later
+  $definitionFinalizeOnline = New-ScheduledTask -Action $actionFinalizeOnline -Settings $settingsFinalizeOnline -Trigger $triggerFinalizeOnline -Principal $principalFinalizeOnline
+  $taskFinalizeOnline = Register-ScheduledTask -TaskName $taskNameFinalizeOnline -InputObject $definitionFinalizeOnline
+  if ($null -ne $taskFinalizeOnline) {
+    Write-Output "Successfully scheduled the online tasks."
+  } else {
+    Write-Warning "Failed to schedule the online tasks."
+  }
+  Write-Output '' # Makes log look better
+
+  # Set a scheduled task to run at startup and ...
+  # - Modify the online scheduled task to run as the user (elevated) then immediately run it,
+  # - Resume BitLocker encryption (if it was suspended),
+  # - Turn back on the privacy experience,
+  # - Turn off auto logon for domain admin user,
+  # - Delete temp admin user tasks + data + account (only if not built-in Administrator),
+  # - Then, delete itself (the scheduled task)
+  Write-Output "Scheduling final offline tasks..."
+  Write-Output '' # Makes log look better
+  $taskNameFinalizeOffline = "Prepare_PC_Finalize_Offline".split([IO.Path]::GetInvalidFileNameChars()) -Join $InvalidCharacterReplacement
+  $actionFinalizeOffline = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument ($( "-c `
+    `"& { `$task = Get-ScheduledTask -TaskName '$taskNameFinalizeOnline' ; `
+    `$task.Principal.UserId = '$($credentials.username)' ; `
+    `$task | Set-ScheduledTask ; `
+    `$task | Start-ScheduledTask ; `
+    $(if ((Get-BitLockerVolume -MountPoint "$($bitLockerVolume.MountPoint)").ProtectionStatus -eq "Off") {"Resume-BitLocker -MountPoint '$($bitLockerVolume.MountPoint)' ; "} else {''}) `
+    Remove-ItemProperty -Path '${regMachinePolicies}\OOBE' -Name 'DisablePrivacyExperience' -Force -ErrorAction SilentlyContinue ; `
+    Remove-ItemProperty -Path '${regWinlogon}' -Name 'DefaultPassword' -Force -ErrorAction SilentlyContinue ; `
+    Set-ItemProperty -Path '${regWinlogon}' -Name 'AutoAdminLogon' -Value '0' -Type String -Force ; `
+    Set-ItemProperty -Path '${regWinlogon}' -Name 'DefaultUserName' -Value '' -Type String -Force ; `
+    $(if (-Not $isBuiltInAdmin) {
+      "Get-ScheduledTask -TaskName 'OneDrive *$currentUserSID' | Unregister-ScheduledTask -Confirm:`$False ; `
+      Get-CimInstance -Class Win32_UserProfile `
+      | Where-Object { `$_.LocalPath.split('\')[-1] -eq '${currentUser}' } `
+      | Remove-CimInstance ; `
+      Remove-LocalUser -Name '${currentUser}' -ErrorAction SilentlyContinue ; "
+    }) `
+    Unregister-ScheduledTask -TaskName '${taskNameFinalizeOffline}' -Confirm:`$False `
+    }`" -NoProfile -WindowStyle Maximized "
+    ).replace("`n", "")).replace("`r", "")
+  $settingsFinalizeOffline = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -Compatibility Win8 -DontStopIfGoingOnBatteries -ExecutionTimeLimit 0
+  $triggerFinalizeOffline = New-ScheduledTaskTrigger -AtLogon
+  $principalFinalizeOffline = New-ScheduledTaskPrincipal -UserId SYSTEM -LogonType ServiceAccount -RunLevel Highest
+  $definitionFinalizeOffline = New-ScheduledTask -Action $actionFinalizeOffline -Settings $settingsFinalizeOffline -Trigger $triggerFinalizeOffline -Principal $principalFinalizeOffline
+  $taskFinalizeOffline = Register-ScheduledTask -TaskName $taskNameFinalizeOffline -InputObject $definitionFinalizeOffline
+  if ($null -ne $taskFinalizeOffline) {
+    Write-Output "Successfully scheduled the offline tasks."
+  } else {
+    Write-Warning "Failed to schedule the offline tasks."
+  }
+  Write-Output '' # Makes log look better
 }
-Write-Output '' # Makes log look better
 
 # Reboot to apply changes
 Write-Output "Rebooting..."
