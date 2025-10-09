@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Install WinGet Function v1.3.2
+  Install WinGet Function v1.3.3
 
   .DESCRIPTION
   Script contains a function which can be used to install WinGet (to current user profile) automatically.
@@ -263,8 +263,9 @@ function Install-WinGet {
 
   # if WinGet is still not found, download WinGet package with any dependent packages, and attempt install
   if ($forceWingetUpdate -Or (-Not (Test-WinGet))) {
-    # Internet connection check
-    $InternetAccess = (Get-NetConnectionProfile).IPv4Connectivity -contains "Internet" -or (Get-NetConnectionProfile).IPv6Connectivity -contains "Internet"
+    # Internet connection check (using CloudFlare's 1.1.1.1 DNS server for fastest check)
+    $NetworkActive = (Get-NetConnectionProfile).IPv4Connectivity -contains "Internet" -or (Get-NetConnectionProfile).IPv6Connectivity -contains "Internet"
+    $InternetAccess = $NetworkActive -And (Test-NetConnection 1.1.1.1 -Port 53 -InformationLevel Quiet -ErrorAction SilentlyContinue)
     if (-Not $InternetAccess) {
       Write-Error "Please connect to the internet first. Aborting."
       return $FAILED.NO_INTERNET

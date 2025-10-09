@@ -1,6 +1,6 @@
 <#
   .SYNOPSIS
-  Prepare PC v2.1.0
+  Prepare PC v2.1.1
 
   .DESCRIPTION
   Script will prepare a fresh machine all the way up to a hybrid entra domain join, or additional prep for a post-Entra joined machine.
@@ -136,8 +136,9 @@ if (-Not ($osIsWindows -And $osIs64Bit)) {
   exit 1
 }
 
-# Internet connection check
-$InternetAccess = (Get-NetConnectionProfile).IPv4Connectivity -contains "Internet" -or (Get-NetConnectionProfile).IPv6Connectivity -contains "Internet"
+# Internet connection check (using CloudFlare's 1.1.1.1 DNS server for fastest check)
+$NetworkActive = (Get-NetConnectionProfile).IPv4Connectivity -contains "Internet" -or (Get-NetConnectionProfile).IPv6Connectivity -contains "Internet"
+$InternetAccess = $NetworkActive -And (Test-NetConnection 1.1.1.1 -Port 53 -InformationLevel Quiet -ErrorAction SilentlyContinue)
 if (-Not $InternetAccess) {
   Write-Warning "Please connect to the internet first. Aborting script."
   Read-Host -Prompt "Press any key to continue" | Out-Null
@@ -492,7 +493,7 @@ function Fix-WingetOutput {
 # installs WinGet from the internet: code via https://github.com/Andrew-J-Larson/OS-Scripts/blob/main/Windows/Wrapper-Functions/Install-WinGet-Function.ps1
 # installs WinGet from the internet
 function Install-WinGet {
-  # v1.3.2
+  # v1.3.3
   param(
     [switch]$Force
   )
@@ -683,8 +684,9 @@ function Install-WinGet {
 
   # if WinGet is still not found, download WinGet package with any dependent packages, and attempt install
   if ($forceWingetUpdate -Or (-Not (Test-WinGet))) {
-    # Internet connection check
-    $InternetAccess = (Get-NetConnectionProfile).IPv4Connectivity -contains "Internet" -or (Get-NetConnectionProfile).IPv6Connectivity -contains "Internet"
+    # Internet connection check (using CloudFlare's 1.1.1.1 DNS server for fastest check)
+    $NetworkActive = (Get-NetConnectionProfile).IPv4Connectivity -contains "Internet" -or (Get-NetConnectionProfile).IPv6Connectivity -contains "Internet"
+    $InternetAccess = $NetworkActive -And (Test-NetConnection 1.1.1.1 -Port 53 -InformationLevel Quiet -ErrorAction SilentlyContinue)
     if (-Not $InternetAccess) {
       Write-Error "Please connect to the internet first. Aborting."
       return $FAILED.NO_INTERNET
