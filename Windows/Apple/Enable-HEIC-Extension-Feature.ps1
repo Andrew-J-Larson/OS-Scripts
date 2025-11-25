@@ -294,22 +294,9 @@ if (-Not $(Test-NetConnection -InformationLevel Quiet)) {
   exit 1
 }
 
-# some cmdlets got deprecated, so we need to get the current PowerShell version to adapt smoothly
-$psVersionMajor = $PSVersionTable.PSVersion
-if ($psVersionMajor) {
-  $psVersionMajor = $PSVersionTable.PSVersion.Major
-} else {
-  $psVersionMajor = 1
-}
-
 # need to make sure the logged in user is running the script
 $powershellUser = $(whoami)
-if ($psVersionMajor -ge 3) {
-  $loggedInUser = $(Get-CimInstance -ClassName Win32_computerSystem).username.toString()
-} else {
-  # Get-WMIObject was removed in PowerShell 6
-  $loggedInUser = $(Get-WMIObject -class Win32_ComputerSystem).username.toString()
-}
+$loggedInUser = $(Get-CimInstance -ClassName Win32_computerSystem).username.toString()
 if ($powershellUser -ne $loggedInUser) {
   Write-Host "Please make sure the script is running as user (e.g. don't run as admin)."
   exit 1
