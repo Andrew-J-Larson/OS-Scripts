@@ -296,7 +296,7 @@ if (-Not $(Test-NetConnection -InformationLevel Quiet)) {
 
 # need to make sure the logged in user is running the script
 $powershellUser = $(whoami)
-$loggedInUser = $(Get-WMIObject -class Win32_ComputerSystem).username.toString()
+$loggedInUser = $(Get-CimInstance -ClassName Win32_computerSystem).username.toString()
 if ($powershellUser -ne $loggedInUser) {
   Write-Host "Please make sure the script is running as user (e.g. don't run as admin)."
   exit 1
